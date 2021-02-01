@@ -15,8 +15,8 @@ namespace WeaponCore.Support
 {
     internal class AvShot
     {
-        internal WeaponSystem System;
-        internal WeaponDefinition.AmmoDef AmmoDef;
+        internal CoreSystem System;
+        internal WeaponDefinition.ConsumableDef ConsumableDef;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
         internal MySoundPair FireSound;
@@ -29,7 +29,7 @@ namespace WeaponCore.Support
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect FieldEffect;
         internal MyCubeBlock FiringBlock;
-        internal WeaponSystem.FiringSoundState FiringSoundState;
+        internal CoreSystem.FiringSoundState FiringSoundState;
         internal bool Offset;
         internal bool AmmoSound;
         internal bool HasTravelSound;
@@ -162,16 +162,16 @@ namespace WeaponCore.Support
         internal void Init(ProInfo info, double firstStepSize, double maxSpeed, ref Vector3D originDir)
         {
             System = info.System;
-            AmmoDef = info.AmmoDef;
+            ConsumableDef = info.ConsumableDef;
             IsShrapnel = info.IsShrapnel;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
-            Model = (info.AmmoDef.Const.PrimeModel || info.AmmoDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
+            Model = (info.ConsumableDef.Const.PrimeModel || info.ConsumableDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
             PrimeEntity = info.PrimeEntity;
             TriggerEntity = info.TriggerEntity;
             Origin = info.Origin;
             OriginUp = info.OriginUp;
-            Offset = AmmoDef.Const.OffsetEffect;
+            Offset = ConsumableDef.Const.OffsetEffect;
             MaxTracerLength = info.TracerLength;
             MuzzleId = info.MuzzleId;
             UniqueMuzzleId = info.UniqueMuzzleId;
@@ -186,21 +186,21 @@ namespace WeaponCore.Support
             ShrinkInited = false;
             ModelOnly = info.ModelOnly;
             OriginDir = originDir;
-            if (AmmoDef.Const.DrawLine) Tracer = !AmmoDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
+            if (ConsumableDef.Const.DrawLine) Tracer = !ConsumableDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 
-            if (AmmoDef.Const.Trail)
+            if (ConsumableDef.Const.Trail)
             {
-                MaxGlowLength = MathHelperD.Clamp(AmmoDef.AmmoGraphics.Lines.Trail.DecayTime * MaxStepSize, 0.1f, MaxTrajectory);
-                Trail = AmmoDef.AmmoGraphics.Lines.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
-                GlowShrinkSize = !AmmoDef.AmmoGraphics.Lines.Trail.UseColorFade ? AmmoDef.Const.TrailWidth / AmmoDef.AmmoGraphics.Lines.Trail.DecayTime : 1f / AmmoDef.AmmoGraphics.Lines.Trail.DecayTime;
+                MaxGlowLength = MathHelperD.Clamp(ConsumableDef.AmmoGraphics.Lines.Trail.DecayTime * MaxStepSize, 0.1f, MaxTrajectory);
+                Trail = ConsumableDef.AmmoGraphics.Lines.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
+                GlowShrinkSize = !ConsumableDef.AmmoGraphics.Lines.Trail.UseColorFade ? ConsumableDef.Const.TrailWidth / ConsumableDef.AmmoGraphics.Lines.Trail.DecayTime : 1f / ConsumableDef.AmmoGraphics.Lines.Trail.DecayTime;
                 Back = Trail == TrailState.Back;
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, MaxTrajectory);
 
             AvInfoCache infoCache;
-            if (AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && System.Session.AvShotCache.TryGetValue(info.UniqueMuzzleId, out infoCache))
+            if (ConsumableDef.Const.IsBeamWeapon && ConsumableDef.Const.TracerMode != ConsumableConstants.Texture.Normal && System.Session.AvShotCache.TryGetValue(info.UniqueMuzzleId, out infoCache))
                 UpdateCache(infoCache);
         }
         static void ShellSort(List<DeferedAv> list)
@@ -238,7 +238,7 @@ namespace WeaponCore.Support
             {
                 var d = s.Projectiles.DeferedAvDraw[x];
                 var a = d.AvShot;
-                var lineEffect = a.AmmoDef.Const.Trail || a.AmmoDef.Const.DrawLine;
+                var lineEffect = a.ConsumableDef.Const.Trail || a.ConsumableDef.Const.DrawLine;
                 var saveHit = d.Hit;
                 ++a.LifeTime;
                 a.LastTick = s.Tick;
@@ -248,7 +248,7 @@ namespace WeaponCore.Support
                 a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
 
                 a.VisualLength = d.VisualLength;
-                if (a.AmmoDef.Const.ConvergeBeams)
+                if (a.ConsumableDef.Const.ConvergeBeams)
                     a.VisualDir = d.Direction;
                 else if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;
@@ -267,12 +267,12 @@ namespace WeaponCore.Support
                 {
                     a.ModelSphereCurrent.Center = a.TracerFront;
                     if (a.Triggered)
-                        a.ModelSphereCurrent.Radius = d.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
+                        a.ModelSphereCurrent.Radius = d.TriggerGrowthSteps < a.ConsumableDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.ConsumableDef.Const.AreaEffectSize;
 
                     if (s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
                         a.OnScreen = Screen.ModelOnly;
                 }
-                else if (lineEffect || a.AmmoDef.Const.AmmoParticle)
+                else if (lineEffect || a.ConsumableDef.Const.AmmoParticle)
                 {
                     var rayTracer = new RayD(a.TracerBack, a.VisualDir);
                     var rayTrail = new RayD(a.TracerFront + (-a.VisualDir * a.ShortEstTravel), a.VisualDir);
@@ -285,13 +285,13 @@ namespace WeaponCore.Support
 
                     if (dist != null && dist <= a.VisualLength)
                         a.OnScreen = Screen.Tracer;
-                    else if (a.AmmoDef.Const.Trail)
+                    else if (a.ConsumableDef.Const.Trail)
                     {
                         s.CameraFrustrum.Intersects(ref rayTrail, out dist);
                         if (dist != null && dist <= a.ShortEstTravel + a.ShortStepSize + a.MaxGlowLength)
                             a.OnScreen = Screen.Trail;
                     }
-                    if (a.OnScreen != Screen.None && !a.TrailActivated && a.AmmoDef.Const.Trail) a.TrailActivated = true;
+                    if (a.OnScreen != Screen.None && !a.TrailActivated && a.ConsumableDef.Const.Trail) a.TrailActivated = true;
 
                     if (a.OnScreen == Screen.None && a.TrailActivated) a.OnScreen = Screen.Trail;
 
@@ -299,7 +299,7 @@ namespace WeaponCore.Support
                     {
                         a.ModelSphereCurrent.Center = a.TracerFront;
                         if (a.Triggered)
-                            a.ModelSphereCurrent.Radius = d.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
+                            a.ModelSphereCurrent.Radius = d.TriggerGrowthSteps < a.ConsumableDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.ConsumableDef.Const.AreaEffectSize;
 
                         if (a.OnScreen == Screen.None && s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
                             a.OnScreen = Screen.ModelOnly;
@@ -332,9 +332,9 @@ namespace WeaponCore.Support
                 }
                 a.LastStep = a.Hitting || MyUtils.IsZero(a.MaxTrajectory - a.ShortEstTravel, 1E-01F);
 
-                if (a.AmmoDef.Const.DrawLine)
+                if (a.ConsumableDef.Const.DrawLine)
                 {
-                    if (a.AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F))
+                    if (a.ConsumableDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F))
                     {
                         a.Tracer = TracerState.Full;
                     }
@@ -367,14 +367,14 @@ namespace WeaponCore.Support
                 {
                     if (a.Tracer == TracerState.Shrink && !a.ShrinkInited)
                         a.Shrink();
-                    else if (a.AmmoDef.Const.IsBeamWeapon && a.Hitting && a.AmmoDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.AmmoDef.Const.ConvergeBeams || a.AmmoDef.Const.OneHitParticle)))
+                    else if (a.ConsumableDef.Const.IsBeamWeapon && a.Hitting && a.ConsumableDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.ConsumableDef.Const.ConvergeBeams || a.ConsumableDef.Const.OneHitParticle)))
                     {
                         ContainmentType containment;
                         s.CameraFrustrum.Contains(ref a.Hit.SurfaceHit, out containment);
                         if (containment != ContainmentType.Disjoint) a.RunBeam();
                     }
 
-                    if (a.AmmoDef.Const.OffsetEffect)
+                    if (a.ConsumableDef.Const.OffsetEffect)
                         a.PrepOffsetEffect(a.TracerFront, a.VisualDir, a.VisualLength);
                 }
 
@@ -382,12 +382,12 @@ namespace WeaponCore.Support
                 if (a.Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
                     a.RunGlow(ref a.EmptyShrink, false, saveHit);
 
-                if (a.AmmoDef.Const.AmmoParticle && a.Active)
+                if (a.ConsumableDef.Const.AmmoParticle && a.Active)
                 {
                     if (a.OnScreen != Screen.None)
                     {
-                        if (!a.AmmoDef.Const.IsBeamWeapon && !a.AmmoParticleStopped && a.AmmoEffect != null && a.AmmoDef.Const.AmmoParticleShrinks)
-                            a.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1f);
+                        if (!a.ConsumableDef.Const.IsBeamWeapon && !a.AmmoParticleStopped && a.AmmoEffect != null && a.ConsumableDef.Const.AmmoParticleShrinks)
+                            a.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.ConsumableDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1f);
 
                         if ((a.AmmoParticleStopped || !a.AmmoParticleInited))
                             a.PlayAmmoParticle();
@@ -396,12 +396,12 @@ namespace WeaponCore.Support
                         a.DisposeAmmoEffect(false, true);
                 }
 
-                if (a.AmmoDef.Const.FieldParticle && a.Active)
+                if (a.ConsumableDef.Const.FieldParticle && a.Active)
                 {
                     if (a.OnScreen != Screen.None)
                     {
-                        if (!a.AmmoDef.Const.IsBeamWeapon && !a.FieldParticleStopped && a.FieldEffect != null && a.AmmoDef.Const.FieldParticleShrinks)
-                            a.FieldEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AreaEffect.Pulse.Particle.Extras.MaxDistance), 0.05f, 1f);
+                        if (!a.ConsumableDef.Const.IsBeamWeapon && !a.FieldParticleStopped && a.FieldEffect != null && a.ConsumableDef.Const.FieldParticleShrinks)
+                            a.FieldEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.ConsumableDef.AreaEffect.Pulse.Particle.Extras.MaxDistance), 0.05f, 1f);
 
                         if ((a.FieldParticleStopped || !a.FieldParticleInited))
                             a.PlayFieldParticle();
@@ -444,7 +444,7 @@ namespace WeaponCore.Support
                 backPos = Back && !extStart ? TracerBack : TracerFront + pastStep;
             }
 
-            if (glowCount <= AmmoDef.AmmoGraphics.Lines.Trail.DecayTime)
+            if (glowCount <= ConsumableDef.AmmoGraphics.Lines.Trail.DecayTime)
             {
                 var glow = System.Session.Av.Glows.Count > 0 ? System.Session.Av.Glows.Pop() : new AfterGlow();
 
@@ -482,10 +482,10 @@ namespace WeaponCore.Support
                 {
                     if (shrunk.Value.Reduced < 0.1) continue;
 
-                    var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
-                    if (AmmoDef.Const.LineColorVariance)
+                    var color = ConsumableDef.AmmoGraphics.Lines.Tracer.Color;
+                    if (ConsumableDef.Const.LineColorVariance)
                     {
-                        var cv = AmmoDef.AmmoGraphics.Lines.ColorVariance;
+                        var cv = ConsumableDef.AmmoGraphics.Lines.ColorVariance;
                         var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                         color.X *= randomValue;
                         color.Y *= randomValue;
@@ -495,10 +495,10 @@ namespace WeaponCore.Support
                     if (ShotFade > 0)
                         color *= MathHelper.Clamp(1f - ShotFade, 0.005f, 1f);
 
-                    var width = AmmoDef.AmmoGraphics.Lines.Tracer.Width;
-                    if (AmmoDef.Const.LineWidthVariance)
+                    var width = ConsumableDef.AmmoGraphics.Lines.Tracer.Width;
+                    if (ConsumableDef.Const.LineWidthVariance)
                     {
-                        var wv = AmmoDef.AmmoGraphics.Lines.WidthVariance;
+                        var wv = ConsumableDef.AmmoGraphics.Lines.WidthVariance;
                         var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                         width += randomValue;
                     }
@@ -535,19 +535,19 @@ namespace WeaponCore.Support
 
         internal void LineVariableEffects()
         {
-            var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
-            var segmentColor = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
-            if (AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && TextureLastUpdate != System.Session.Tick)
+            var color = ConsumableDef.AmmoGraphics.Lines.Tracer.Color;
+            var segmentColor = ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
+            if (ConsumableDef.Const.TracerMode != ConsumableConstants.Texture.Normal && TextureLastUpdate != System.Session.Tick)
             {
                 if (System.Session.Tick - TextureLastUpdate > 1)
                     AmmoInfoClean();
 
                 TextureLastUpdate = System.Session.Tick;
 
-                switch (AmmoDef.Const.TracerMode) {
-                    case AmmoConstants.Texture.Resize:
+                switch (ConsumableDef.Const.TracerMode) {
+                    case ConsumableConstants.Texture.Resize:
                         var wasGapped = SegmentGaped;
-                        var segSize = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+                        var segSize = ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation;
                         var thisLen = wasGapped ? segSize.SegmentGap : segSize.SegmentLength;
                         var oldmStep = SegMeasureStep;
 
@@ -556,14 +556,14 @@ namespace WeaponCore.Support
                             SegmentGaped = wasGapped;
                             SegMeasureStep = 0;
                         }
-                        SegMeasureStep += AmmoDef.Const.SegmentStep;
+                        SegMeasureStep += ConsumableDef.Const.SegmentStep;
                         SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(segSize.SegmentGap, 0, Math.Min(SegMeasureStep, segSize.SegmentGap)) : MathHelperD.Clamp(segSize.SegmentLength, 0, Math.Min(SegMeasureStep, segSize.SegmentLength));
                         break;
-                    case AmmoConstants.Texture.Cycle:
-                    case AmmoConstants.Texture.Wave:
-                        if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Cycle) {
+                    case ConsumableConstants.Texture.Cycle:
+                    case ConsumableConstants.Texture.Wave:
+                        if (ConsumableDef.Const.TracerMode == ConsumableConstants.Texture.Cycle) {
                             var current = TextureIdx;
-                            if (current + 1 < AmmoDef.Const.TracerTextures.Length)
+                            if (current + 1 < ConsumableDef.Const.TracerTextures.Length)
                                 TextureIdx = current + 1;
                             else
                                 TextureIdx = 0;
@@ -571,7 +571,7 @@ namespace WeaponCore.Support
                         else {
                             var current = TextureIdx;
                             if (!TextureReverse) {
-                                if (current + 1 < AmmoDef.Const.TracerTextures.Length)
+                                if (current + 1 < ConsumableDef.Const.TracerTextures.Length)
                                     TextureIdx = current + 1;
                                 else {
                                     TextureReverse = true;
@@ -588,23 +588,23 @@ namespace WeaponCore.Support
                             }
                         }
                         break;
-                    case AmmoConstants.Texture.Chaos:
-                        TextureIdx = MyUtils.GetRandomInt(0, AmmoDef.Const.TracerTextures.Length);
+                    case ConsumableConstants.Texture.Chaos:
+                        TextureIdx = MyUtils.GetRandomInt(0, ConsumableDef.Const.TracerTextures.Length);
                         break;
                 }
 
-                if (AmmoDef.Const.IsBeamWeapon)
+                if (ConsumableDef.Const.IsBeamWeapon)
                     System.Session.AvShotCache[UniqueMuzzleId] = new AvInfoCache {SegMeasureStep = SegMeasureStep, SegmentGaped = SegmentGaped, SegmentLenTranserved = SegmentLenTranserved, TextureIdx = TextureIdx, TextureLastUpdate = TextureLastUpdate, TextureReverse = TextureReverse};
             }
 
-            if (AmmoDef.Const.LineColorVariance)
+            if (ConsumableDef.Const.LineColorVariance)
             {
-                var cv = AmmoDef.AmmoGraphics.Lines.ColorVariance;
+                var cv = ConsumableDef.AmmoGraphics.Lines.ColorVariance;
                 var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                 color.X *= randomValue;
                 color.Y *= randomValue;
                 color.Z *= randomValue;
-                if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Resize && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
+                if (ConsumableDef.Const.TracerMode == ConsumableConstants.Texture.Resize && ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
                 {
                     segmentColor.X *= randomValue;
                     segmentColor.Y *= randomValue;
@@ -612,9 +612,9 @@ namespace WeaponCore.Support
                 }
             }
 
-            if (AmmoDef.Const.SegmentColorVariance)
+            if (ConsumableDef.Const.SegmentColorVariance)
             {
-                var cv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance;
+                var cv = ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance;
                 var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                 segmentColor.X *= randomValue;
                 segmentColor.Y *= randomValue;
@@ -623,14 +623,14 @@ namespace WeaponCore.Support
 
             Color = color;
             SegmentColor = segmentColor;
-            var tracerWidth = AmmoDef.AmmoGraphics.Lines.Tracer.Width;
-            var trailWidth = AmmoDef.Const.TrailWidth;
-            if (AmmoDef.Const.LineWidthVariance)
+            var tracerWidth = ConsumableDef.AmmoGraphics.Lines.Tracer.Width;
+            var trailWidth = ConsumableDef.Const.TrailWidth;
+            if (ConsumableDef.Const.LineWidthVariance)
             {
-                var wv = AmmoDef.AmmoGraphics.Lines.WidthVariance;
+                var wv = ConsumableDef.AmmoGraphics.Lines.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 tracerWidth += randomValue;
-                if (AmmoDef.AmmoGraphics.Lines.Trail.UseWidthVariance)
+                if (ConsumableDef.AmmoGraphics.Lines.Trail.UseWidthVariance)
                     trailWidth += randomValue;
             }
 
@@ -638,7 +638,7 @@ namespace WeaponCore.Support
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref checkPos, ref System.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, System.Session.CameraMatrix.Translation);
 
-            if (AmmoDef.Const.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
+            if (ConsumableDef.Const.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
             {
                 checkPos = TracerFront + (-VisualDir * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, MaxTrajectory * 0.5)));
                 ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref checkPos, ref System.Session.CameraPos);
@@ -653,11 +653,11 @@ namespace WeaponCore.Support
 
             TrailScaler = ((float)TrailWidth / trailWidth);
 
-            var seg = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+            var seg = ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation;
             SegmentWidth = seg.WidthMultiplier > 0 ? TracerWidth * seg.WidthMultiplier : TracerWidth;
-            if (AmmoDef.Const.SegmentWidthVariance)
+            if (ConsumableDef.Const.SegmentWidthVariance)
             {
-                var wv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance;
+                var wv = ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 SegmentWidth += randomValue;
             }
@@ -669,9 +669,9 @@ namespace WeaponCore.Support
             var startPos = tracerStart + -(direction * tracerLength);
             MatrixD.CreateWorld(ref startPos, ref direction, ref up, out OffsetMatrix);
             TracerLengthSqr = tracerLength * tracerLength;
-            var maxOffset = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
-            var minLength = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MinLength;
-            var maxLength = MathHelperD.Clamp(AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxLength, 0, tracerLength);
+            var maxOffset = ConsumableDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
+            var minLength = ConsumableDef.AmmoGraphics.Lines.OffsetEffect.MinLength;
+            var maxLength = MathHelperD.Clamp(ConsumableDef.AmmoGraphics.Lines.OffsetEffect.MaxLength, 0, tracerLength);
 
             double currentForwardDistance = 0;
             while (currentForwardDistance <= tracerLength)
@@ -690,11 +690,11 @@ namespace WeaponCore.Support
             var up = MatrixD.Identity.Up;
             var startPos = pos + -(direction * tracerLength);
             MatrixD.CreateWorld(ref startPos, ref direction, ref up, out matrix);
-            var offsetMaterial = AmmoDef.Const.TracerTextures[0];
+            var offsetMaterial = ConsumableDef.Const.TracerTextures[0];
             var tracerLengthSqr = tracerLength * tracerLength;
-            var maxOffset = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
-            var minLength = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MinLength;
-            var maxLength = MathHelperD.Clamp(AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxLength, 0, tracerLength);
+            var maxOffset = ConsumableDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
+            var minLength = ConsumableDef.AmmoGraphics.Lines.OffsetEffect.MinLength;
+            var maxLength = MathHelperD.Clamp(ConsumableDef.AmmoGraphics.Lines.OffsetEffect.MaxLength, 0, tracerLength);
 
             double currentForwardDistance = 0;
 
@@ -736,13 +736,13 @@ namespace WeaponCore.Support
         {
 
             var stepSize = (info.DistanceTraveled - info.PrevDistanceTraveled);
-            var avSize = useCollisionSize ? AmmoDef.Const.CollisionSize : info.TracerLength;
+            var avSize = useCollisionSize ? ConsumableDef.Const.CollisionSize : info.TracerLength;
 
             var endPos = hit ? Hit.LastHit : !earlyEnd ? position + -info.Direction * (info.DistanceTraveled - info.MaxTrajectory) : position;
 
             double remainingTracer;
             double stepSizeToHit;
-            if (AmmoDef.Const.IsBeamWeapon)
+            if (ConsumableDef.Const.IsBeamWeapon)
             {
                 double beamLength;
                 Vector3D.Distance(ref Origin, ref endPos, out beamLength);
@@ -779,19 +779,19 @@ namespace WeaponCore.Support
                 if (OnScreen == Screen.Tracer || distToCameraSqr < 360000) {
                     if (FakeExplosion)
                         HitParticle = ParticleState.Explosion;
-                    else if (HitParticleActive && AmmoDef.Const.HitParticle && !(LastHitShield && !AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield))
+                    else if (HitParticleActive && ConsumableDef.Const.HitParticle && !(LastHitShield && !ConsumableDef.AmmoGraphics.Particles.Hit.ApplyToShield))
                         HitParticle = ParticleState.Custom;
                 }
 
 
-                var hitSound = AmmoDef.Const.HitSound && (HitSoundActive && (distToCameraSqr < AmmoDef.Const.HitSoundDistSqr || !LastHitShield || AmmoDef.AmmoAudio.HitPlayShield));
+                var hitSound = ConsumableDef.Const.HitSound && (HitSoundActive && (distToCameraSqr < ConsumableDef.Const.HitSoundDistSqr || !LastHitShield || ConsumableDef.AmmoAudio.HitPlayShield));
                 if (hitSound) {
 
                     MySoundPair pair;
                     Stack<MySoundPair> pool;
-                    if (!AmmoDef.Const.AltHitSounds)                    {
-                        pool = AmmoDef.Const.HitDefaultSoundPairs;
-                        pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(AmmoDef.AmmoAudio.HitSound, false);
+                    if (!ConsumableDef.Const.AltHitSounds)                    {
+                        pool = ConsumableDef.Const.HitDefaultSoundPairs;
+                        pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.HitSound, false);
                     }
                     else {
 
@@ -800,27 +800,27 @@ namespace WeaponCore.Support
                         var player = Hit.Entity as IMyCharacter;
                         var floating = Hit.Entity as MyFloatingObject;
 
-                        if (voxel != null && !string.IsNullOrEmpty(AmmoDef.AmmoAudio.VoxelHitSound)) {
-                            pool = AmmoDef.Const.HitVoxelSoundPairs;
-                            pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(AmmoDef.AmmoAudio.VoxelHitSound, false);
+                        if (voxel != null && !string.IsNullOrEmpty(ConsumableDef.AmmoAudio.VoxelHitSound)) {
+                            pool = ConsumableDef.Const.HitVoxelSoundPairs;
+                            pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.VoxelHitSound, false);
                         }
-                        else if (player != null && !string.IsNullOrEmpty(AmmoDef.AmmoAudio.PlayerHitSound)) {
-                            pool = AmmoDef.Const.HitPlayerSoundPairs;
-                            pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(AmmoDef.AmmoAudio.PlayerHitSound, false);
+                        else if (player != null && !string.IsNullOrEmpty(ConsumableDef.AmmoAudio.PlayerHitSound)) {
+                            pool = ConsumableDef.Const.HitPlayerSoundPairs;
+                            pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.PlayerHitSound, false);
                         }
-                        else if (floating != null && !string.IsNullOrEmpty(AmmoDef.AmmoAudio.FloatingHitSound)) {
-                            pool = AmmoDef.Const.HitFloatingSoundPairs;
-                            pair = AmmoDef.Const.HitFloatingSoundPairs.Count > 0 ? AmmoDef.Const.HitFloatingSoundPairs.Pop() : new MySoundPair(AmmoDef.AmmoAudio.FloatingHitSound, false);
+                        else if (floating != null && !string.IsNullOrEmpty(ConsumableDef.AmmoAudio.FloatingHitSound)) {
+                            pool = ConsumableDef.Const.HitFloatingSoundPairs;
+                            pair = ConsumableDef.Const.HitFloatingSoundPairs.Count > 0 ? ConsumableDef.Const.HitFloatingSoundPairs.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.FloatingHitSound, false);
                         }
                         else {
 
-                            if (shield != null && !string.IsNullOrEmpty(AmmoDef.AmmoAudio.ShieldHitSound)) {
-                                pool = AmmoDef.Const.HitShieldSoundPairs;
-                                pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(AmmoDef.AmmoAudio.ShieldHitSound, false);
+                            if (shield != null && !string.IsNullOrEmpty(ConsumableDef.AmmoAudio.ShieldHitSound)) {
+                                pool = ConsumableDef.Const.HitShieldSoundPairs;
+                                pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.ShieldHitSound, false);
                             }
                             else {
-                                pool = AmmoDef.Const.HitDefaultSoundPairs;
-                                pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(AmmoDef.AmmoAudio.HitSound, false);
+                                pool = ConsumableDef.Const.HitDefaultSoundPairs;
+                                pair = pool.Count > 0 ? pool.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.HitSound, false);
                             }
                         }
                     }
@@ -845,21 +845,21 @@ namespace WeaponCore.Support
         {
             FiringSoundState = System.FiringSound;
 
-            if (!AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.AmmoTravelSound) {
+            if (!ConsumableDef.Const.IsBeamWeapon && ConsumableDef.Const.AmmoTravelSound) {
                 HasTravelSound = true;
                 TravelEmitter = System.Session.Av.TravelEmitters.Count > 0 ? System.Session.Av.TravelEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
 
                 TravelEmitter.CanPlayLoopSounds = true;
-                TravelSound = AmmoDef.Const.TravelSoundPairs.Count > 0 ? AmmoDef.Const.TravelSoundPairs.Pop() : new MySoundPair(AmmoDef.AmmoAudio.TravelSound, false);
+                TravelSound = ConsumableDef.Const.TravelSoundPairs.Count > 0 ? ConsumableDef.Const.TravelSoundPairs.Pop() : new MySoundPair(ConsumableDef.AmmoAudio.TravelSound, false);
             }
             else HasTravelSound = false;
 
-            if (AmmoDef.Const.HitSound) {
-                var hitSoundChance = AmmoDef.AmmoAudio.HitPlayChance;
+            if (ConsumableDef.Const.HitSound) {
+                var hitSoundChance = ConsumableDef.AmmoAudio.HitPlayChance;
                 HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
             }
 
-            if (!IsShrapnel && FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr) {
+            if (!IsShrapnel && FiringSoundState == CoreSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr) {
                 StartSoundActived = true;
 
                 FireEmitter = System.Session.Av.FireEmitters.Count > 0 ? System.Session.Av.FireEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
@@ -892,16 +892,16 @@ namespace WeaponCore.Support
                 matrix = PrimeMatrix;
             else {
                 matrix = MatrixD.CreateWorld(TracerFront, Direction, OriginUp);
-                var offVec = TracerFront + Vector3D.Rotate(AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
+                var offVec = TracerFront + Vector3D.Rotate(ConsumableDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }
 
-            var renderId = AmmoDef.Const.PrimeModel && PrimeEntity != null ? PrimeEntity.Render.GetRenderObjectID() : uint.MaxValue;
-            if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect))
+            var renderId = ConsumableDef.Const.PrimeModel && PrimeEntity != null ? PrimeEntity.Render.GetRenderObjectID() : uint.MaxValue;
+            if (MyParticlesManager.TryCreateParticleEffect(ConsumableDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect))
             {
 
-                AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
-                AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
+                AmmoEffect.UserColorMultiplier = ConsumableDef.AmmoGraphics.Particles.Ammo.Color;
+                AmmoEffect.UserRadiusMultiplier = ConsumableDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
                 AmmoEffect.UserScale = 1;
 
 
@@ -916,10 +916,10 @@ namespace WeaponCore.Support
         internal void PlayFieldParticle()
         {
             var pos = TriggerEntity.PositionComp.WorldAABB.Center;
-            if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
+            if (MyParticlesManager.TryCreateParticleEffect(ConsumableDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
             {
-                FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
-                FieldEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
+                FieldEffect.UserColorMultiplier = ConsumableDef.AreaEffect.Pulse.Particle.Color;
+                FieldEffect.UserRadiusMultiplier = ConsumableDef.AreaEffect.Pulse.Particle.Extras.Scale;
                 FieldEffect.UserScale = 1;
                 FieldParticleStopped = false;
                 FieldParticleInited = true;
@@ -964,24 +964,24 @@ namespace WeaponCore.Support
             if (!System.Session.Av.BeamEffects.TryGetValue(UniqueMuzzleId, out effect)) {
 
                 MatrixD.CreateTranslation(ref TracerFront, out matrix);
-                if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref TracerFront, uint.MaxValue, out effect)) {
+                if (!MyParticlesManager.TryCreateParticleEffect(ConsumableDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref TracerFront, uint.MaxValue, out effect)) {
                     return;
                 }
 
                 if (effect.Loop || effect.DurationMax <= 0)
                     System.Session.Av.BeamEffects[UniqueMuzzleId] = effect;
 
-                effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                effect.UserRadiusMultiplier = ConsumableDef.AmmoGraphics.Particles.Hit.Extras.Scale;
+                effect.UserColorMultiplier = ConsumableDef.AmmoGraphics.Particles.Hit.Color;
                 //effect.WorldMatrix = matrix;
-                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / ConsumableDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
                 //if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
             }
             else if (effect != null && !effect.IsEmittingStopped) {
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
-                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / ConsumableDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 // if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
                 effect.WorldMatrix = matrix;
             }
@@ -990,7 +990,7 @@ namespace WeaponCore.Support
         { 
             if (Vector3D.IsZero(TracerFront)) TracerFront = EndState.EndPos;
 
-            if (AmmoDef.Const.AmmoParticle)
+            if (ConsumableDef.Const.AmmoParticle)
                 DisposeAmmoEffect(true, false);
 
             if (EndState.DetonateFakeExp){
@@ -998,7 +998,7 @@ namespace WeaponCore.Support
                 HitParticle = ParticleState.Dirty;
                 if (System.Session.Av.ExplosionReady) {
                     if (OnScreen != Screen.None)
-                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.Const.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef, Hit.HitVelocity);
+                        SUtils.CreateFakeExplosion(System.Session, ConsumableDef.Const.DetonationRadius, TracerFront, Direction, Hit.Entity, ConsumableDef, Hit.HitVelocity);
                 }
             }
 
@@ -1038,7 +1038,7 @@ namespace WeaponCore.Support
             if (TravelEmitter != null) {
                 
                 AmmoSound = false;
-                System.Session.SoundsToClean.Add(new Session.CleanSound { Force = true, Emitter = TravelEmitter, EmitterPool = System.Session.Av.TravelEmitters, SoundPair = TravelSound, SoundPairPool = AmmoDef.Const.TravelSoundPairs, SpawnTick = System.Session.Tick });
+                System.Session.SoundsToClean.Add(new Session.CleanSound { Force = true, Emitter = TravelEmitter, EmitterPool = System.Session.Av.TravelEmitters, SoundPair = TravelSound, SoundPairPool = ConsumableDef.Const.TravelSoundPairs, SpawnTick = System.Session.Tick });
             }
 
             if (AmmoEffect != null)
@@ -1121,7 +1121,7 @@ namespace WeaponCore.Support
             FiringBlock = null;
             PrimeEntity = null;
             TriggerEntity = null;
-            AmmoDef = null;
+            ConsumableDef = null;
             System = null;
             FireEmitter = null;
             FireSound = null;

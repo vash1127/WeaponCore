@@ -5,7 +5,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.WeaponComponent;
+using static WeaponCore.Support.CoreComponent;
 
 namespace WeaponCore.Platform
 {
@@ -18,7 +18,7 @@ namespace WeaponCore.Platform
 
             if (AiOnlyWeapon) {
 
-                if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
+                if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == CoreSystem.TurretType.Full || System.TurretMovement == CoreSystem.TurretType.AzimuthOnly) {
                     Matrix azRotMatrix;
                     Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
                     var localMatrix = AzimuthPart.OriginalPosition * azRotMatrix;
@@ -26,7 +26,7 @@ namespace WeaponCore.Platform
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                 }
 
-                if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
+                if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == CoreSystem.TurretType.Full || System.TurretMovement == CoreSystem.TurretType.ElevationOnly)) {
                     Matrix elRotMatrix;
                     Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
                     var localMatrix = ElevationPart.OriginalPosition * elRotMatrix;
@@ -68,7 +68,7 @@ namespace WeaponCore.Platform
         {
             using (Comp.MyCube.Pin()) {
 
-                if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                if (Comp.MyCube.MarkedForClose || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
                 if (State.Action != ShootActions.ShootOff || Comp.UserControlled || Target.HasTarget || !ReturingHome) {
                     ReturingHome = false;
@@ -116,7 +116,7 @@ namespace WeaponCore.Platform
         
         internal void UpdatePivotPos()
         {
-            if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var parentPart = ParentIsSubpart ? AzimuthPart.Parent : Comp.MyCube;
             var worldMatrix = parentPart.PositionComp.WorldMatrixRef;
@@ -132,7 +132,7 @@ namespace WeaponCore.Platform
             MyPivotUp = azimuthMatrix.Up;
             MyPivotFwd = elevationMatrix.Forward;
 
-            if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
+            if (System.TurretMovement == CoreSystem.TurretType.ElevationOnly)
             {
                 Vector3D forward;
                 var eLeft = elevationMatrix.Left;
@@ -276,7 +276,7 @@ namespace WeaponCore.Platform
 
         internal void TurnOnAV(object o)
         {
-            if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
                 PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j]);
@@ -286,7 +286,7 @@ namespace WeaponCore.Platform
 
         internal void TurnOffAv(object o)
         {
-            if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             for (int j = 0; j < AnimationsSet[EventTriggers.TurnOff].Length; j++)
                 PlayEmissives(AnimationsSet[EventTriggers.TurnOff][j]);
@@ -300,12 +300,12 @@ namespace WeaponCore.Platform
 
             var newBase = 0f;
 
-            if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Base.Set.DpsModifier;
+            if (ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo)
+                newBase = ActiveAmmoDef.ConsumableDef.Const.BaseDamage * Comp.Data.Repo.Base.Set.DpsModifier;
             else
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
+                newBase = ActiveAmmoDef.ConsumableDef.Const.BaseDamage;
 
-            if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
+            if (ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon)
                 newBase *= Comp.Data.Repo.Base.Set.Overload;
 
             if (newBase < 0)
@@ -318,11 +318,11 @@ namespace WeaponCore.Platform
             UpdateShotEnergy();
             UpdateRequiredPower();
 
-            var multiplier = (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
+            var multiplier = (ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo && ActiveAmmoDef.ConsumableDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.ConsumableDef.Const.BaseDamage : 1;
 
             var dpsMulti = multiplier;
 
-            if (BaseDamage > ActiveAmmoDef.AmmoDef.Const.BaseDamage)
+            if (BaseDamage > ActiveAmmoDef.ConsumableDef.Const.BaseDamage)
                 multiplier *= multiplier;
 
             HeatPShot = System.HeatPerShot * multiplier;
@@ -334,10 +334,10 @@ namespace WeaponCore.Platform
             var oldDps = Dps;
             var oldMaxCharge = MaxCharge;
 
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * multiplier;
+            if (ActiveAmmoDef.ConsumableDef.Const.MustCharge)
+                MaxCharge = ActiveAmmoDef.ConsumableDef.Const.ChargSize * multiplier;
 
-            Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
+            Dps = ActiveAmmoDef.ConsumableDef.Const.PeakDps * dpsMulti;
 
             var newHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
 
@@ -372,7 +372,7 @@ namespace WeaponCore.Platform
                 UseablePower = RequiredPower;
 
             Comp.HeatPerSecond -= heatDif;
-            Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
+            Comp.MaxRequiredPower -= ActiveAmmoDef.ConsumableDef.Const.MustCharge ? chargeDif : powerDif;
             Comp.Ai.UpdatePowerSources = true;
         }
 

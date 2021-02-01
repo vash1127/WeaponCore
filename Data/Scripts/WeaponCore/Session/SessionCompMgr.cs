@@ -16,13 +16,13 @@ namespace WeaponCore
     {
         public struct CompReAdd
         {
-            public WeaponComponent Comp;
+            public CoreComponent Comp;
             public GridAi Ai;
             public int AiVersion;
             public uint AddTick;
         }
 
-        private bool CompRestricted(WeaponComponent comp)
+        private bool CompRestricted(CoreComponent comp)
         {
             var grid = comp.MyCube?.CubeGrid;
 
@@ -68,7 +68,7 @@ namespace WeaponCore
                     continue;
 
                 QuickDisableGunsCheck = true;
-                if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh) {
+                if (weaponComp.Platform.State == CorePlatform.PlatformState.Fresh) {
 
                     if (weaponComp.MyCube.MarkedForClose) {
                         CompsToStart.Remove(weaponComp);
@@ -99,7 +99,7 @@ namespace WeaponCore
 
                 var blockDef = ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) ? VanillaIds[cube.BlockDefinition.Id] : cube.BlockDefinition.Id.SubtypeId;
                 
-                var weaponComp = new WeaponComponent(this, cube, blockDef);
+                var weaponComp = new CoreComponent(this, cube, blockDef);
 
                 CompsToStart.Add(weaponComp);
                 if (thread) CompsToStart.ApplyAdditions();
@@ -133,9 +133,9 @@ namespace WeaponCore
             for (int i = CompsDelayed.Count - 1; i >= 0; i--)
             {
                 var delayed = CompsDelayed[i];
-                if (forceRemove || delayed.Entity == null || delayed.Platform == null || delayed.MyCube.MarkedForClose || delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
+                if (forceRemove || delayed.Entity == null || delayed.Platform == null || delayed.MyCube.MarkedForClose || delayed.Platform.State != CorePlatform.PlatformState.Delay)
                 {
-                    if (delayed.Platform != null && delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
+                    if (delayed.Platform != null && delayed.Platform.State != CorePlatform.PlatformState.Delay)
                         Log.Line($"[DelayedComps skip due to platform != Delay] marked:{delayed.MyCube.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
 
                     CompsDelayed.RemoveAtFast(i);
@@ -169,7 +169,7 @@ namespace WeaponCore
                 if (cube.CubeGrid.IsPreview)
                     return;
 
-                WeaponComponent comp;
+                CoreComponent comp;
                 if (!cube.Components.TryGet(out comp)) return;
 
                 for (int i = 0; i < comp.Monitors.Length; i++) {
@@ -179,7 +179,7 @@ namespace WeaponCore
 
                 //IdToCompMap.Remove(comp.MyCube.EntityId);
 
-                if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                if (comp.Platform.State == CorePlatform.PlatformState.Ready)
                 {
                     comp.GeneralWeaponCleanUp();
                     comp.StopAllSounds();

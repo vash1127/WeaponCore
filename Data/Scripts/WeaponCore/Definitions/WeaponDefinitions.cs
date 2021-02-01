@@ -11,7 +11,7 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal TargetingDef Targeting;
         [ProtoMember(3)] internal AnimationDef Animations;
         [ProtoMember(4)] internal HardPointDef HardPoint;
-        [ProtoMember(5)] internal AmmoDef[] Ammos;
+        [ProtoMember(5)] internal ConsumableDef[] Ammos;
         [ProtoMember(6)] internal string ModPath;
         [ProtoMember(7)] internal Dictionary<string, UpgradeValues[]> Upgrades;
 
@@ -309,7 +309,7 @@ namespace WeaponCore.Support
         }
 
         [ProtoContract]
-        public class AmmoDef
+        public class ConsumableDef
         {
             [ProtoMember(1)] internal string AmmoMagazine;
             [ProtoMember(2)] internal string AmmoRound;
@@ -335,7 +335,7 @@ namespace WeaponCore.Support
             [ProtoMember(22)] internal AmmoEjectionDef Ejection;
             [ProtoMember(23)] internal bool IgnoreWater;
 
-            internal AmmoConstants Const;
+            internal ConsumableConstants Const;
 
             [ProtoContract]
             public struct DamageScaleDef

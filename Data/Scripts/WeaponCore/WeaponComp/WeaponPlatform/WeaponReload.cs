@@ -31,7 +31,7 @@ namespace WeaponCore.Platform
             ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
             PrepAmmoShuffle();
 
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+            if (!ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo)
                 Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
             
             CheckInventorySystem = true;
@@ -61,8 +61,8 @@ namespace WeaponCore.Platform
 
         internal void PrepAmmoShuffle()
         {
-            if (AmmoShufflePattern.Length != ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt) 
-                Array.Resize(ref AmmoShufflePattern, ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt);
+            if (AmmoShufflePattern.Length != ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt) 
+                Array.Resize(ref AmmoShufflePattern, ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt);
 
             for (int i = 0; i < AmmoShufflePattern.Length; i++)
                 AmmoShufflePattern[i] = i;
@@ -100,17 +100,17 @@ namespace WeaponCore.Platform
             if (System.Session.IsServer)
             {
                 ProposedAmmoId = newAmmoId;
-                var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
-                var canReload = Ammo.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var instantChange = System.Session.IsCreative || !ActiveAmmoDef.ConsumableDef.Const.Reloadable;
+                var canReload = Ammo.CurrentAmmo == 0 && ActiveAmmoDef.ConsumableDef.Const.Reloadable;
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
 
-                var unloadMag = !canReload && !instantChange && !Reloading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Ammo.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                var unloadMag = !canReload && !instantChange && !Reloading && !ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo && Ammo.CurrentAmmo == ActiveAmmoDef.ConsumableDef.Const.MagazineSize;
 
-                if (unloadMag && proposedAmmo.AmmoDef.Const.Reloadable)
+                if (unloadMag && proposedAmmo.ConsumableDef.Const.Reloadable)
                 {
                     Ammo.CurrentAmmo = 0;
                     canReload = true;
-                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = Ammo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
+                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = Ammo.AmmoTypeId, Item = ActiveAmmoDef.ConsumableDef.Const.AmmoItem }, 1);
                 }
 
                 if (instantChange)
@@ -118,7 +118,7 @@ namespace WeaponCore.Platform
                 else 
                     ScheduleAmmoChange = true;
 
-                if (proposedAmmo.AmmoDef.Const.Reloadable && canReload)
+                if (proposedAmmo.ConsumableDef.Const.Reloadable && canReload)
                     ComputeServerStorage();
             }
             else 
@@ -127,13 +127,13 @@ namespace WeaponCore.Platform
 
         internal bool HasAmmo()
         {
-            if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon) {
+            if (Comp.Session.IsCreative || !ActiveAmmoDef.ConsumableDef.Const.Reloadable || System.DesignatorWeapon) {
                 NoMagsToLoad = false;
                 return true;
             }
 
             Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
-            var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
+            var energyDrainable = ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo && Comp.Ai.HasPower;
             var nothingToLoad = Ammo.CurrentMags <= 0 && !energyDrainable;
 
             if (NoMagsToLoad) {
@@ -169,8 +169,8 @@ namespace WeaponCore.Platform
             var syncUp = Reload.StartId > ClientStartId;
 
             if (!syncUp) {
-                var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-                if (Ammo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
+                var energyDrainable = ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo && Comp.Ai.HasPower;
+                if (Ammo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.ConsumableDef.Const.Reloadable && !System.DesignatorWeapon) {
                     if (!NoMagsToLoad) 
                         EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                     NoMagsToLoad = true;
@@ -190,7 +190,7 @@ namespace WeaponCore.Platform
             Reloading = true;
             FinishBurst = false;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
+            if (!ActiveAmmoDef.ConsumableDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             StartReload();
             return true;
@@ -200,21 +200,21 @@ namespace WeaponCore.Platform
         {
             var s = Comp.Session;
 
-            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.MyCube.HasInventory ) return false;
+            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.ConsumableDef.Const.Reloadable || !Comp.MyCube.HasInventory ) return false;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+            if (!ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo)
             {
                 if (!s.IsCreative)
                 {
                     Comp.CurrentInventoryVolume = (float)Comp.BlockInventory.CurrentVolume;
                     var freeVolume = System.MaxAmmoVolume - Comp.CurrentInventoryVolume;
-                    var spotsFree = (int)(freeVolume / ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    var spotsFree = (int)(freeVolume / ActiveAmmoDef.ConsumableDef.Const.MagVolume);
                     Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
-                    CurrentAmmoVolume = Ammo.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                    CurrentAmmoVolume = Ammo.CurrentMags * ActiveAmmoDef.ConsumableDef.Const.MagVolume;
 
-                    var magsRequested = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    var magsRequested = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.ConsumableDef.Const.MagVolume);
                     var magsGranted = magsRequested > spotsFree ? spotsFree : magsRequested;
-                    var requestedVolume = ActiveAmmoDef.AmmoDef.Const.MagVolume * magsGranted;
+                    var requestedVolume = ActiveAmmoDef.ConsumableDef.Const.MagVolume * magsGranted;
                     var spaceAvailable = freeVolume > requestedVolume;
                     var lowThreshold = System.MaxAmmoVolume * 0.25f;
 
@@ -256,15 +256,15 @@ namespace WeaponCore.Platform
             ++Reload.StartId;
             ++ClientStartId;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
+            if (!ActiveAmmoDef.ConsumableDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
+            if (!ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo) {
                 
-                if (Comp.BlockInventory.ItemsCanBeRemoved(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
-                    Comp.BlockInventory.RemoveItems(ActiveAmmoDef.AmmoDef.Const.AmmoItem.ItemId, 1);
-                else if (Comp.BlockInventory.ItemCount > 0 && Comp.BlockInventory.ContainItems(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content))
+                if (Comp.BlockInventory.ItemsCanBeRemoved(1, ActiveAmmoDef.ConsumableDef.Const.AmmoItem))
+                    Comp.BlockInventory.RemoveItems(ActiveAmmoDef.ConsumableDef.Const.AmmoItem.ItemId, 1);
+                else if (Comp.BlockInventory.ItemCount > 0 && Comp.BlockInventory.ContainItems(1, ActiveAmmoDef.ConsumableDef.Const.AmmoItem.Content))
                 {
-                    Comp.BlockInventory.Remove(ActiveAmmoDef.AmmoDef.Const.AmmoItem, 1);
+                    Comp.BlockInventory.Remove(ActiveAmmoDef.ConsumableDef.Const.AmmoItem, 1);
                 }
 
                 Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
@@ -281,9 +281,9 @@ namespace WeaponCore.Platform
             Reloading = true;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
 
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
+            if (ActiveAmmoDef.ConsumableDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
                 ChargeReload();
-            else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+            else if (!ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
                 if (System.ReloadTime > 0) {
                     CancelableReloadAction += Reloaded;
                     ReloadSubscribed = true;
@@ -309,7 +309,7 @@ namespace WeaponCore.Platform
 
                 LastLoadedTick = Comp.Session.Tick;
 
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                if (ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
 
                     Comp.CurrentCharge -= Ammo.CurrentCharge;
                     Ammo.CurrentCharge = MaxCharge;
@@ -325,7 +325,7 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                Ammo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                Ammo.CurrentAmmo = !ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo ? ActiveAmmoDef.ConsumableDef.Const.MagazineDef.Capacity : ActiveAmmoDef.ConsumableDef.Const.EnergyMagSize;
 
                 if (System.Session.IsServer) {
                     

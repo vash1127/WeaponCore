@@ -155,7 +155,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        internal static Vector3D? ProcessVoxel(LineD trajectile, MyVoxelBase voxel, WeaponSystem system, List<Vector3I> testPoints)
+        internal static Vector3D? ProcessVoxel(LineD trajectile, MyVoxelBase voxel, CoreSystem system, List<Vector3I> testPoints)
         {
             var planet = voxel as MyPlanet;
             var voxelMap = voxel as MyVoxelMap;

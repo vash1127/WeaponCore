@@ -12,7 +12,7 @@ using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
-    public partial class WeaponComponent
+    public partial class CoreComponent
     {
         internal volatile bool InventoryInited;
         internal volatile BlockType BaseType;
@@ -36,7 +36,7 @@ namespace WeaponCore.Support
         internal InputStateData InputState;
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
-        internal MyWeaponPlatform Platform;
+        internal CorePlatform Platform;
         internal uint LastRayCastTick;
         internal uint IsWorkingChangedTick;
 
@@ -118,7 +118,7 @@ namespace WeaponCore.Support
         }
 
 
-        public WeaponComponent(Session session,  MyCubeBlock myCube, MyStringHash subtype)
+        public CoreComponent(Session session,  MyCubeBlock myCube, MyStringHash subtype)
         {
             Session = session;
             MyCube = myCube;

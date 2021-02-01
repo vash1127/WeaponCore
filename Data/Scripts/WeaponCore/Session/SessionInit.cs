@@ -333,7 +333,7 @@ namespace WeaponCore
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-                WeaponPlatforms[defId] = new WeaponStructure(this, tDef, weapons, modPath);
+                WeaponPlatforms[defId] = new CoreStructure(this, tDef, weapons, modPath);
             }
 
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;

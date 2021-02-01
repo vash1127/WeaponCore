@@ -33,7 +33,7 @@ namespace WeaponCore.Support
         internal readonly Constructs Construct = new Constructs();
         internal readonly FastResourceLock DbLock = new FastResourceLock();
 
-        internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, CoreComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, CoreComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly ConcurrentDictionary<MyCubeBlock, MyInventory> InventoryMonitor = new ConcurrentDictionary<MyCubeBlock, MyInventory>();
 
@@ -47,7 +47,7 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
-        internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
+        internal readonly List<CoreComponent> Weapons = new List<CoreComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
         internal readonly List<Shields> NearByShieldsTmp = new List<Shields>();
@@ -64,7 +64,7 @@ namespace WeaponCore.Support
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly List<MyEntity> NearByEntityCache = new List<MyEntity>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
-        internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
+        internal readonly Dictionary<CoreComponent, int> WeaponsIdx = new Dictionary<CoreComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];

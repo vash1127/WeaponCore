@@ -20,7 +20,7 @@ namespace WeaponCore.Support {
         internal readonly Matrix HomePos;
         internal readonly AnimationType[] TypeSet;
         internal readonly Dictionary<EventTriggers, string> EventIdLookup = new Dictionary<EventTriggers, string>();
-        internal readonly WeaponSystem System;
+        internal readonly CoreSystem System;
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
@@ -76,7 +76,7 @@ namespace WeaponCore.Support {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet,string[] emissiveIds, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntity part, MyEntity mainEnt, string muzzle, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
+        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet,string[] emissiveIds, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntity part, MyEntity mainEnt, string muzzle, uint motionDelay, CoreSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
         {
             EventTrigger = eventTrigger;
             RotationSet = rotationSet;

@@ -22,8 +22,8 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
         
-        internal readonly WeaponComponent Comp;
-        internal readonly WeaponSystem System;
+        internal readonly CoreComponent Comp;
+        internal readonly CoreSystem System;
         internal readonly WeaponFrameCache WeaponCache;
         internal readonly WeaponAcquire Acquire;
         internal readonly Target Target;
@@ -107,7 +107,7 @@ namespace WeaponCore.Platform
         internal WeaponReloadValues Reload;
         internal TransferTarget TargetData;
         internal AmmoValues Ammo;
-        internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
+        internal CoreSystem.ConsumableTypes ActiveAmmoDef;
         internal int[] AmmoShufflePattern = {0};
         internal ParallelRayCallBack RayCallBack;
 
@@ -218,7 +218,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
+                var reloading = (!ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || ActiveAmmoDef.ConsumableDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
                 var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;
@@ -241,7 +241,7 @@ namespace WeaponCore.Platform
             internal ChangeType Change;
         }
 
-        internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
+        internal Weapon(MyEntity entity, CoreSystem system, int weaponId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
 
             System = system;
@@ -272,7 +272,7 @@ namespace WeaponCore.Platform
             bool hitParticle = false;
             foreach (var ammoType in System.AmmoTypes)
             {
-                var c = ammoType.AmmoDef.Const;
+                var c = ammoType.ConsumableDef.Const;
                 if (c.EnergyAmmo) CanUseEnergyAmmo = true;
                 if (c.IsHybrid) CanUseHybridAmmo = true;
                 if (c.MustCharge) CanUseChargeAmmo = true;
@@ -284,7 +284,7 @@ namespace WeaponCore.Platform
 
             AvCapable = System.HasBarrelShootAv && !Comp.Session.DedicatedServer || hitParticle;
 
-            if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
+            if (AvCapable && system.FiringSound == CoreSystem.FiringSoundState.WhenDone)
             {
                 FiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
                 FiringEmitter.CanPlayLoopSounds = true;
@@ -378,7 +378,7 @@ namespace WeaponCore.Platform
             
             FuckMyLife();
             
-            AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
+            AiOnlyWeapon = Comp.BaseType != CoreComponent.BlockType.Turret || (Comp.BaseType == CoreComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
 

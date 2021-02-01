@@ -9,10 +9,10 @@ namespace WeaponCore
 
     public class CompData
     {
-        public readonly WeaponComponent Comp;
+        public readonly CoreComponent Comp;
         public Repo Repo;
 
-        public CompData(WeaponComponent comp)
+        public CompData(CoreComponent comp)
         {
             Comp = comp;
         }

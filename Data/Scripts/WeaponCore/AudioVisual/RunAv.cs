@@ -89,14 +89,14 @@ namespace WeaponCore.Support
                     }
                     if (av.Triggered && av.TriggerEntity != null)
                     {
-                        if (!av.AmmoDef.AreaEffect.Pulse.HideModel && (!av.TriggerEntity.InScene))
+                        if (!av.ConsumableDef.AreaEffect.Pulse.HideModel && (!av.TriggerEntity.InScene))
                         {
                             av.TriggerEntity.InScene = true;
                             av.TriggerEntity.Render.UpdateRenderObject(true, false);
                         }
                         av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
 
-                        if (av.OnScreen != AvShot.Screen.None && av.AmmoDef.Const.FieldParticle && av.FieldEffect != null)
+                        if (av.OnScreen != AvShot.Screen.None && av.ConsumableDef.Const.FieldParticle && av.FieldEffect != null)
                             av.FieldEffect.WorldMatrix = av.PrimeMatrix;
                     }
 
@@ -106,7 +106,7 @@ namespace WeaponCore.Support
                         {
                             double distSqr;
                             Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
-                            if (distSqr <= av.AmmoDef.Const.AmmoTravelSoundDistSqr)
+                            if (distSqr <= av.ConsumableDef.Const.AmmoTravelSoundDistSqr)
                                 av.AmmoSoundStart();
                         }
                         else av.TravelEmitter.SetPosition(av.TracerFront);
@@ -120,12 +120,12 @@ namespace WeaponCore.Support
                             var matrix = MatrixD.CreateTranslation(pos);
 
                             MyParticleEffect hitEffect;
-                            if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
+                            if (MyParticlesManager.TryCreateParticleEffect(av.ConsumableDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
 
-                                hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                                hitEffect.UserColorMultiplier = av.ConsumableDef.AmmoGraphics.Particles.Hit.Color;
                                 var scaler = 1;
-                                hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                                var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
+                                hitEffect.UserRadiusMultiplier = av.ConsumableDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
+                                var scale = av.ConsumableDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.ConsumableDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
                                 hitEffect.UserScale = scale * scaler;
                                 hitEffect.Velocity = av.Hit.HitVelocity;
                             }
@@ -137,21 +137,21 @@ namespace WeaponCore.Support
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             var pos = !MyUtils.IsZero(av.Hit.SurfaceHit) ? av.Hit.SurfaceHit : av.TracerFront;
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.AreaEffectSize, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.ConsumableDef.Const.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.ConsumableDef, av.Hit.HitVelocity);
+                            else SUtils.CreateFakeExplosion(Session, av.ConsumableDef.Const.AreaEffectSize, pos, av.Direction, av.Hit.Entity, av.ConsumableDef, av.Hit.HitVelocity);
                         }
                     }
 
                     if (av.Model != AvShot.ModelState.None)
                     {
-                        if (av.AmmoEffect != null && av.AmmoDef.Const.AmmoParticle && av.AmmoDef.Const.PrimeModel)
+                        if (av.AmmoEffect != null && av.ConsumableDef.Const.AmmoParticle && av.ConsumableDef.Const.PrimeModel)
                         {
-                            var offVec = av.TracerFront + Vector3D.Rotate(av.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, av.PrimeMatrix);
+                            var offVec = av.TracerFront + Vector3D.Rotate(av.ConsumableDef.AmmoGraphics.Particles.Ammo.Offset, av.PrimeMatrix);
                             av.AmmoEffect.WorldMatrix = av.PrimeMatrix;
                             av.AmmoEffect.SetTranslation(ref offVec);
                         }
                     }
-                    else if (av.AmmoEffect != null && av.AmmoDef.Const.AmmoParticle)
+                    else if (av.AmmoEffect != null && av.ConsumableDef.Const.AmmoParticle)
                     {
                         av.AmmoEffect.SetTranslation(ref av.TracerFront);
                     }
@@ -192,20 +192,20 @@ namespace WeaponCore.Support
                         segColor *= fade;
                     }
 
-                    if (!av.AmmoDef.Const.OffsetEffect)
+                    if (!av.ConsumableDef.Const.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
                         {
-                            if (av.AmmoDef.Const.TracerMode == AmmoConstants.Texture.Normal)
-                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, av.TracerBack, av.VisualDir, (float)av.VisualLength, (float)av.TracerWidth);
-                            else if (av.AmmoDef.Const.TracerMode != AmmoConstants.Texture.Resize)
-                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.TextureIdx], color, av.TracerBack, av.VisualDir, (float)av.VisualLength, (float)av.TracerWidth);
+                            if (av.ConsumableDef.Const.TracerMode == ConsumableConstants.Texture.Normal)
+                                MyTransparentGeometry.AddLineBillboard(av.ConsumableDef.Const.TracerTextures[0], color, av.TracerBack, av.VisualDir, (float)av.VisualLength, (float)av.TracerWidth);
+                            else if (av.ConsumableDef.Const.TracerMode != ConsumableConstants.Texture.Resize)
+                                MyTransparentGeometry.AddLineBillboard(av.ConsumableDef.Const.TracerTextures[av.TextureIdx], color, av.TracerBack, av.VisualDir, (float)av.VisualLength, (float)av.TracerWidth);
                             else {
                                 
-                                var seg = av.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+                                var seg = av.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation;
                                 var stepPos = av.TracerBack;
-                                var segTextureCnt = av.AmmoDef.Const.SegmentTextures.Length;
-                                var gapTextureCnt = av.AmmoDef.Const.TracerTextures.Length;
+                                var segTextureCnt = av.ConsumableDef.Const.SegmentTextures.Length;
+                                var gapTextureCnt = av.ConsumableDef.Const.TracerTextures.Length;
                                 var segStepLen = seg.SegmentLength / segTextureCnt;
                                 var gapStepLen = seg.SegmentGap / gapTextureCnt;
                                 var gapEnabled = gapStepLen > 0;
@@ -234,7 +234,7 @@ namespace WeaponCore.Support
                                     var notLast = travel + rawLen < av.VisualLength;
                                     var len = notLast ? rawLen : av.VisualLength - travel;
                                     var clampStep = !gap ? MathHelperD.Clamp((int)((len / segStepLen) + 0.5) - 1, 0, segTextureCnt - 1) : MathHelperD.Clamp((int)((len / gapStepLen) + 0.5) - 1, 0, gapTextureCnt - 1);
-                                    var material = !gap ? av.AmmoDef.Const.SegmentTextures[(int)clampStep] : av.AmmoDef.Const.TracerTextures[(int)clampStep];
+                                    var material = !gap ? av.ConsumableDef.Const.SegmentTextures[(int)clampStep] : av.ConsumableDef.Const.TracerTextures[(int)clampStep];
 
                                     MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.VisualDir, (float)len, (float)width);
                                     if (!notLast)
@@ -268,7 +268,7 @@ namespace WeaponCore.Support
                             Vector3 dir = (toBeam - fromBeam);
                             var length = dir.Length();
                             var normDir = dir / length;
-                            MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, fromBeam, normDir, length, (float)av.TracerWidth);
+                            MyTransparentGeometry.AddLineBillboard(av.ConsumableDef.Const.TracerTextures[0], color, fromBeam, normDir, length, (float)av.TracerWidth);
 
                             if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
                         }
@@ -289,8 +289,8 @@ namespace WeaponCore.Support
 
                 if (av.Trail != AvShot.TrailState.Off)
                 {
-                    var steps = av.AmmoDef.AmmoGraphics.Lines.Trail.DecayTime;
-                    var widthScaler = !av.AmmoDef.AmmoGraphics.Lines.Trail.UseColorFade;
+                    var steps = av.ConsumableDef.AmmoGraphics.Lines.Trail.DecayTime;
+                    var widthScaler = !av.ConsumableDef.AmmoGraphics.Lines.Trail.UseColorFade;
                     var remove = false;
                     for (int j = glowCnt - 1; j >= 0; j--)
                     {
@@ -302,13 +302,13 @@ namespace WeaponCore.Support
                         if (av.OnScreen != AvShot.Screen.None)
                         {
                             var reduction = (av.GlowShrinkSize * glow.Step);
-                            var width = widthScaler ? (av.AmmoDef.Const.TrailWidth - reduction) * av.TrailScaler : av.AmmoDef.Const.TrailWidth * av.TrailScaler;
-                            var color = av.AmmoDef.AmmoGraphics.Lines.Trail.Color;
+                            var width = widthScaler ? (av.ConsumableDef.Const.TrailWidth - reduction) * av.TrailScaler : av.ConsumableDef.Const.TrailWidth * av.TrailScaler;
+                            var color = av.ConsumableDef.AmmoGraphics.Lines.Trail.Color;
 
                             if (!widthScaler)
                                 color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
                             
-                            MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TrailTextures[0], color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
+                            MyTransparentGeometry.AddLineBillboard(av.ConsumableDef.Const.TrailTextures[0], color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
                         }
 
                         if (++glow.Step >= steps)
@@ -336,10 +336,10 @@ namespace WeaponCore.Support
             var s = av.TracerShrinks.Dequeue();
             if (av.LastTick != Session.Tick)
             {
-                if (!av.AmmoDef.Const.OffsetEffect) {
+                if (!av.ConsumableDef.Const.OffsetEffect) {
 
                     if (av.OnScreen != AvShot.Screen.None)
-                        MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], s.Color, s.NewFront, av.VisualDir, s.Length, s.Thickness);
+                        MyTransparentGeometry.AddLineBillboard(av.ConsumableDef.Const.TracerTextures[0], s.Color, s.NewFront, av.VisualDir, s.Length, s.Thickness);
                 }
                 else if (av.OnScreen != AvShot.Screen.None)
                     av.DrawLineOffsetEffect(s.NewFront, -av.Direction, s.Length, s.Thickness, s.Color);

@@ -5,21 +5,21 @@ using VRageMath;
 using WeaponCore.Support;
 using System.Collections.Generic;
 using Sandbox.ModAPI;
-using static WeaponCore.Support.WeaponComponent.Start;
-using static WeaponCore.Support.WeaponComponent.BlockType;
+using static WeaponCore.Support.CoreComponent.Start;
+using static WeaponCore.Support.CoreComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
-    public class MyWeaponPlatform
+    public class CorePlatform
     {
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
         internal Weapon[] Weapons = new Weapon[1];
-        internal WeaponStructure Structure;
-        internal WeaponComponent Comp;
+        internal CoreStructure Structure;
+        internal CoreComponent Comp;
         internal PlatformState State;
 
         internal enum PlatformState
@@ -33,7 +33,7 @@ namespace WeaponCore.Platform
             Incomplete
         }
 
-        internal void Setup(WeaponComponent comp)
+        internal void Setup(CoreComponent comp)
         {
             if (!comp.Session.WeaponPlatforms.ContainsKey(comp.MyCube.BlockDefinition.Id))
             {
@@ -56,7 +56,7 @@ namespace WeaponCore.Platform
             Comp = null;
         }
 
-        internal PlatformState Init(WeaponComponent comp)
+        internal PlatformState Init(CoreComponent comp)
         {
 
             if (comp.MyCube.MarkedForClose) 
@@ -103,7 +103,7 @@ namespace WeaponCore.Platform
             return GetParts(comp);
         }
 
-        private PlatformState GetParts(WeaponComponent comp)
+        private PlatformState GetParts(CoreComponent comp)
         {
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
                 _orderToCreate.Add(i);
@@ -119,7 +119,7 @@ namespace WeaponCore.Platform
             foreach (var i in _orderToCreate)
             {
                 var muzzlePartHash = Structure.MuzzlePartNames[i];
-                WeaponSystem system;
+                CoreSystem system;
                 if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system)) 
                     return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
 
@@ -173,7 +173,7 @@ namespace WeaponCore.Platform
             return State;
         }
 
-        private void CompileTurret(WeaponComponent comp, bool reset = false)
+        private void CompileTurret(CoreComponent comp, bool reset = false)
         {
             var c = 0;
             foreach (var m in Structure.WeaponSystems)
@@ -212,7 +212,7 @@ namespace WeaponCore.Platform
                     {
                         var azimuthPart = weapon.AzimuthPart.Entity;
                         var elevationPart = weapon.ElevationPart.Entity;
-                        if (azimuthPart != null && azimuthPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.ElevationOnly)
+                        if (azimuthPart != null && azimuthPartName != "None" && weapon.System.TurretMovement != CoreSystem.TurretType.ElevationOnly)
                         {
 
                             var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
@@ -254,7 +254,7 @@ namespace WeaponCore.Platform
 
                         }
 
-                        if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.AzimuthOnly)
+                        if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != CoreSystem.TurretType.AzimuthOnly)
                         {
                             var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
@@ -374,7 +374,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal void ResetTurret(WeaponComponent comp)
+        internal void ResetTurret(CoreComponent comp)
         {
             var c = 0;
             var registered = false;
@@ -524,7 +524,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal void ResetParts(WeaponComponent comp)
+        internal void ResetParts(CoreComponent comp)
         {
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
@@ -534,7 +534,7 @@ namespace WeaponCore.Platform
             comp.Status = Started;
         }
 
-        internal void RemoveParts(WeaponComponent comp)
+        internal void RemoveParts(CoreComponent comp)
         {
             foreach (var w in comp.Platform.Weapons)
             {
@@ -570,7 +570,7 @@ namespace WeaponCore.Platform
             }
         }
         
-        internal PlatformState PlatformCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
+        internal PlatformState PlatformCrash(CoreComponent comp, bool markInvalid, bool suppress, string message)
         {
             if (suppress)
                 comp.Session.SuppressWc = true;

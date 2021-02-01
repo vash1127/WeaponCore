@@ -16,7 +16,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDef animations, WeaponSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames, out Dictionary<EventTriggers, ParticleEvent[]> particleEvents)
+        internal void CreateAnimationSets(AnimationDef animations, CoreSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames, out Dictionary<EventTriggers, ParticleEvent[]> particleEvents)
         {
             weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
             particleEvents = new Dictionary<EventTriggers, ParticleEvent[]>();
@@ -89,7 +89,7 @@ namespace WeaponCore
             }  
         }
 
-        private void CompileAnimationSets(WeaponSystem system, PartAnimationSetDef[] wepAnimationSets, Dictionary<EventTriggers, HashSet<PartAnimation>> allAnimationSet, Dictionary<EventTriggers, uint> animationLengths, HashSet<string> animationIdLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, Matrix[]> weaponLinearMoveSet)
+        private void CompileAnimationSets(CoreSystem system, PartAnimationSetDef[] wepAnimationSets, Dictionary<EventTriggers, HashSet<PartAnimation>> allAnimationSet, Dictionary<EventTriggers, uint> animationLengths, HashSet<string> animationIdLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, Matrix[]> weaponLinearMoveSet)
         {
             
             foreach (var animationSet in wepAnimationSets) {
@@ -546,7 +546,7 @@ namespace WeaponCore
             return rate;
         }
 
-        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, RecursiveSubparts parts)
+        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(CoreSystem system, RecursiveSubparts parts)
         {
             if (!system.AnimationsInited)
             {
@@ -638,7 +638,7 @@ namespace WeaponCore
             return returnAnimations;
         }
 
-        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(WeaponSystem system, RecursiveSubparts parts)
+        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(CoreSystem system, RecursiveSubparts parts)
         {
             var particles = new Dictionary<EventTriggers, ParticleEvent[]>();
 

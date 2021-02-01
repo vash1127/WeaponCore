@@ -290,7 +290,7 @@ namespace WeaponCore
 
         private void ShowReloadIcon(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, double textOffset, bool reset)
         {
-            var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
+            var mustCharge = weapon.ActiveAmmoDef.ConsumableDef.Const.MustCharge;
             var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
             if (texture.Length > 0) {

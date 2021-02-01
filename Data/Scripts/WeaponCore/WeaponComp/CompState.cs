@@ -7,11 +7,11 @@ using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDe
 
 namespace WeaponCore.Support
 {
-    public partial class WeaponComponent
+    public partial class CoreComponent
     {
         internal void HealthCheck()
         {
-            if (Platform.State != MyWeaponPlatform.PlatformState.Ready || MyCube.MarkedForClose)
+            if (Platform.State != CorePlatform.PlatformState.Ready || MyCube.MarkedForClose)
                 return;
 
             switch (Status)
@@ -151,7 +151,7 @@ namespace WeaponCore.Support
 
         internal void DetectStateChanges()
         {
-            if (Platform.State != MyWeaponPlatform.PlatformState.Ready)
+            if (Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
             if (Session.Tick - Ai.LastDetectEvent > 59) {
@@ -197,7 +197,7 @@ namespace WeaponCore.Support
                 Ai.AwakeComps++;
         }
 
-        internal static void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
+        internal static void RequestSetValue(CoreComponent comp, string setting, int value, long playerId)
         {
             if (comp.Session.IsServer)
             {
@@ -209,7 +209,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal static void SetValue(WeaponComponent comp, string setting, int v, long playerId)
+        internal static void SetValue(CoreComponent comp, string setting, int v, long playerId)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var enabled = v > 0;
@@ -274,7 +274,7 @@ namespace WeaponCore.Support
         }
 
 
-        internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
+        internal static void ResetCompState(CoreComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var userControl = o.Control != GroupOverrides.ControlModes.Auto;
@@ -296,7 +296,7 @@ namespace WeaponCore.Support
                 ClearTargets(comp);
         }
 
-        private static void ClearTargets(WeaponComponent comp)
+        private static void ClearTargets(CoreComponent comp)
         {
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -316,7 +316,7 @@ namespace WeaponCore.Support
                 using (MyCube.Pin())
                 {
                     ent.OnClose -= SubpartClosed;
-                    if (!MyCube.MarkedForClose && Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                    if (!MyCube.MarkedForClose && Platform.State == CorePlatform.PlatformState.Ready)
                     {
                         Platform.ResetParts(this);
                         Status = Start.Started;
@@ -327,7 +327,7 @@ namespace WeaponCore.Support
                             w.Elevation = 0;
                             w.Elevation = 0;
 
-                            if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                            if (w.ActiveAmmoDef.ConsumableDef.Const.MustCharge)
                                 w.Reloading = false;
 
                             if (!FunctionalBlock.Enabled)

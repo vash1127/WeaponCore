@@ -82,7 +82,7 @@ namespace WeaponCore
                     GridAi gridAi;
                     if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                     {
-                        WeaponComponent comp;
+                        CoreComponent comp;
                         if (gridAi.WeaponBase.TryGetValue(cube, out comp))
                         {
                             GunnerBlackList = true;
@@ -119,7 +119,7 @@ namespace WeaponCore
                         GridAi gridAi;
                         if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))
                         {
-                            WeaponComponent comp;
+                            CoreComponent comp;
                             if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
                             {
                                 if (IsServer)
@@ -250,7 +250,7 @@ namespace WeaponCore
                                 {
                                     MyOrientedBoundingBoxD b;
                                     BoundingSphereD s;
-                                    WeaponComponent Comp = gridAi.Weapons[i];
+                                    CoreComponent Comp = gridAi.Weapons[i];
                                     MyOrientedBoundingBoxD blockBox;
                                     SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
 

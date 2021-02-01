@@ -80,7 +80,7 @@ namespace WeaponCore
             internal MyCubeBlock TargetBlock;
             internal DataReport MyData;
             internal DataReport RemoteData;
-            internal MyWeaponPlatform TmpPlatform;
+            internal CorePlatform TmpPlatform;
             internal string Report;
             internal uint RequestTime = 1800;
             internal uint LastRequestTick = uint.MaxValue - 7200;
@@ -489,12 +489,12 @@ namespace WeaponCore
 
             }
 
-            internal WeaponComponent GetComp()
+            internal CoreComponent GetComp()
             {
                 GridAi ai;
                 if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
                 {
-                    WeaponComponent comp;
+                    CoreComponent comp;
                     if (ai.WeaponBase.TryGetValue(TargetBlock, out comp))
                     {
                         return comp;
@@ -504,12 +504,12 @@ namespace WeaponCore
 
             }
 
-            internal MyWeaponPlatform GetPlatform()
+            internal CorePlatform GetPlatform()
             {
                 GridAi ai;
                 if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
                 {
-                    WeaponComponent comp;
+                    CoreComponent comp;
                     if (ai.WeaponBase.TryGetValue(TargetBlock, out comp))
                     {
                         return comp.Platform;
@@ -519,7 +519,7 @@ namespace WeaponCore
 
             }
 
-            internal bool TryGetValidPlatform(out MyWeaponPlatform platform)
+            internal bool TryGetValidPlatform(out CorePlatform platform)
             {
                 platform = GetPlatform();
                 return platform != null;
@@ -537,9 +537,9 @@ namespace WeaponCore
 
         internal class TerminalMonitor
         {
-            internal readonly Dictionary<WeaponComponent, long> ServerTerminalMaps = new Dictionary<WeaponComponent, long>();
+            internal readonly Dictionary<CoreComponent, long> ServerTerminalMaps = new Dictionary<CoreComponent, long>();
             internal Session Session;
-            internal WeaponComponent Comp;
+            internal CoreComponent Comp;
             internal int OriginalAiVersion;
             internal bool Active;
 
@@ -564,13 +564,13 @@ namespace WeaponCore
                 var nothingMarked = !Comp.MyCube.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose;
                 var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
-                var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+                var compReady = Comp.Platform.State == CorePlatform.PlatformState.Ready;
                 var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Data.Repo.ActiveTerminal || Session.IsClient && (Comp.Ai.Data.Repo.ActiveTerminal == 0 || Comp.Ai.Data.Repo.ActiveTerminal ==  Comp.MyCube.EntityId));
                 var isActive = (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
                 return isActive;
             }
 
-            internal void HandleInputUpdate(WeaponComponent comp)
+            internal void HandleInputUpdate(CoreComponent comp)
             {
                 if (Active && (Comp != comp || OriginalAiVersion !=  comp.Ai.Version))
                     Clean();
@@ -618,7 +618,7 @@ namespace WeaponCore
             }
 
 
-            internal void ServerUpdate(WeaponComponent comp)
+            internal void ServerUpdate(CoreComponent comp)
             {
                 long aTermId;
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
@@ -644,7 +644,7 @@ namespace WeaponCore
                     Session.SendAiData(comp.Ai);
             }
 
-            internal void ServerClean(WeaponComponent comp)
+            internal void ServerClean(CoreComponent comp)
             {
                 if (ServerTerminalMaps.ContainsKey(comp))
                 {
