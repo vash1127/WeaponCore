@@ -70,7 +70,7 @@ namespace WeaponCore.Api
         /// <summary>
         /// Only filled if giving true to <see cref="Load"/>.
         /// </summary>
-        public readonly List<WcApiDef.WeaponDefinition> WeaponDefinitions = new List<WcApiDef.WeaponDefinition>();
+        public readonly List<WcApiDef.PartDefinition> WeaponDefinitions = new List<WcApiDef.PartDefinition>();
 
         /// <summary>
         /// Ask WeaponCore to send the API methods.
@@ -169,7 +169,7 @@ namespace WeaponCore.Api
                 var byteArrays = new List<byte[]>();
                 GetAllWeaponDefinitions(byteArrays);
                 foreach (var byteArray in byteArrays)
-                    WeaponDefinitions.Add(MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
+                    WeaponDefinitions.Add(MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.PartDefinition>(byteArray));
             }
         }
 
@@ -302,7 +302,7 @@ namespace WeaponCore.Api
     public static class WcApiDef
     {
         [ProtoContract]
-        public struct WeaponDefinition
+        public struct PartDefinition
         {
             [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
             [ProtoMember(2)] internal TargetingDef Targeting;
@@ -324,7 +324,7 @@ namespace WeaponCore.Api
                 public struct MountPointDef
                 {
                     [ProtoMember(1)] internal string SubtypeId;
-                    [ProtoMember(2)] internal string AimPartId;
+                    [ProtoMember(2)] internal string AimPartId; // no longer used
                     [ProtoMember(3)] internal string MuzzlePartId;
                     [ProtoMember(4)] internal string AzimuthPartId;
                     [ProtoMember(5)] internal string ElevationPartId;
@@ -377,7 +377,7 @@ namespace WeaponCore.Api
             public struct AnimationDef
             {
                 [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
-                [ProtoMember(2)] internal WeaponEmissive[] Emissives;
+                [ProtoMember(2)] internal PartEmissive[] Emissives;
                 [ProtoMember(3)] internal string[] HeatingEmissiveParts;
                 [ProtoMember(4)] internal Dictionary<PartAnimationSetDef.EventTriggers, EventParticle[]> EventParticles;
 
@@ -393,7 +393,7 @@ namespace WeaponCore.Api
                         TurnOn,
                         TurnOff,
                         BurstReload,
-                        OutOfAmmo,
+                        NoMagsToLoad,
                         PreFire,
                         EmptyOnGameLoad,
                         StopFiring,
@@ -414,7 +414,7 @@ namespace WeaponCore.Api
                 }
 
                 [ProtoContract]
-                public struct WeaponEmissive
+                public struct PartEmissive
                 {
                     [ProtoMember(1)] internal string EmissiveName;
                     [ProtoMember(2)] internal string[] EmissivePartNames;
@@ -423,7 +423,6 @@ namespace WeaponCore.Api
                     [ProtoMember(5)] internal Vector4[] Colors;
                     [ProtoMember(6)] internal float[] IntensityRange;
                 }
-
                 [ProtoContract]
                 public struct EventParticle
                 {
@@ -434,7 +433,6 @@ namespace WeaponCore.Api
                     [ProtoMember(5)] internal uint LoopDelay;
                     [ProtoMember(6)] internal bool ForceStop;
                 }
-
                 [ProtoContract]
                 internal struct RelMove
                 {
@@ -492,7 +490,7 @@ namespace WeaponCore.Api
                     Advanced,
                 }
 
-                [ProtoMember(1)] internal string WeaponName;
+                [ProtoMember(1)] internal string PartName;
                 [ProtoMember(2)] internal int DelayCeaseFire;
                 [ProtoMember(3)] internal float DeviateShotAngle;
                 [ProtoMember(4)] internal double AimingTolerance;
@@ -506,20 +504,6 @@ namespace WeaponCore.Api
                 [ProtoMember(12)] internal OtherDef Other;
                 [ProtoMember(13)] internal bool AddToleranceToTracking;
                 [ProtoMember(14)] internal bool CanShootSubmerged;
-
-                [ProtoContract]
-                public struct UpgradeValues
-                {
-                    [ProtoMember(1)] internal string[] Ammo;
-                    [ProtoMember(2)] internal int RateOfFireMod;
-                    [ProtoMember(3)] internal int BarrelsPerShotMod;
-                    [ProtoMember(4)] internal int ReloadMod;
-                    [ProtoMember(5)] internal int MaxHeatMod;
-                    [ProtoMember(6)] internal int HeatSinkRateMod;
-                    [ProtoMember(7)] internal int ShotsInBurstMod;
-                    [ProtoMember(8)] internal int DelayAfterBurstMod;
-                    [ProtoMember(9)] internal int AmmoPriority;
-                }
 
                 [ProtoContract]
                 public struct LoadingDef
@@ -568,11 +552,12 @@ namespace WeaponCore.Api
                 [ProtoContract]
                 public struct HardwareDef
                 {
-                    public enum ArmorState
+                    public enum HardwareType
                     {
-                        IsWeapon,
+                        BlockWeapon,
                         Passive,
                         Active,
+                        Upgrade,
                     }
 
                     [ProtoMember(1)] internal float RotateRate;
@@ -584,7 +569,7 @@ namespace WeaponCore.Api
                     [ProtoMember(7)] internal int MaxElevation;
                     [ProtoMember(8)] internal int MinElevation;
                     [ProtoMember(9)] internal float InventorySize;
-                    [ProtoMember(10)] internal ArmorState Armor;
+                    [ProtoMember(10)] internal HardwareType Hardware;
                 }
 
                 [ProtoContract]
@@ -638,14 +623,14 @@ namespace WeaponCore.Api
                 [ProtoMember(12)] internal TrajectoryDef Trajectory;
                 [ProtoMember(13)] internal AreaDamageDef AreaEffect;
                 [ProtoMember(14)] internal BeamDef Beams;
-                [ProtoMember(15)] internal ShrapnelDef Shrapnel;
+                [ProtoMember(15)] internal FragmentDef Fragment;
                 [ProtoMember(16)] internal GraphicDef AmmoGraphics;
                 [ProtoMember(17)] internal AmmoAudioDef AmmoAudio;
                 [ProtoMember(18)] internal bool HardPointUsable;
-                [ProtoMember(19)] internal AmmoPatternDef Pattern;
+                [ProtoMember(19)] internal PatternDef Pattern;
                 [ProtoMember(20)] internal int EnergyMagazineSize;
                 [ProtoMember(21)] internal float DecayPerShot;
-                [ProtoMember(22)] internal AmmoEjectionDef Ejection;
+                [ProtoMember(22)] internal EjectionDef Ejection;
                 [ProtoMember(23)] internal bool IgnoreWater;
 
                 [ProtoContract]
@@ -843,7 +828,7 @@ namespace WeaponCore.Api
                 }
 
                 [ProtoContract]
-                public struct ShrapnelDef
+                public struct FragmentDef
                 {
                     [ProtoMember(1)] internal string AmmoRound;
                     [ProtoMember(2)] internal int Fragments;
@@ -855,9 +840,9 @@ namespace WeaponCore.Api
                 }
 
                 [ProtoContract]
-                public struct AmmoPatternDef
+                public struct PatternDef
                 {
-                    [ProtoMember(1)] internal string[] Ammos;
+                    [ProtoMember(1)] internal string[] Patterns;
                     [ProtoMember(2)] internal bool Enable;
                     [ProtoMember(3)] internal float TriggerChance;
                     [ProtoMember(4)] internal bool SkipParent;
@@ -868,7 +853,7 @@ namespace WeaponCore.Api
                 }
 
                 [ProtoContract]
-                public struct AmmoEjectionDef
+                public struct EjectionDef
                 {
                     public enum SpawnType
                     {
@@ -1087,6 +1072,20 @@ namespace WeaponCore.Api
                 [ProtoMember(5)] internal bool ApplyToShield;
                 [ProtoMember(6)] internal bool ShrinkByDistance;
             }
+        }
+
+
+        [ProtoContract]
+        public struct ArmorCompatibilityDef
+        {
+            internal enum ArmorType
+            {
+                Light,
+                Heavy,
+                NonArmor,
+            }
+            [ProtoMember(1)] internal string SubtypeId;
+            [ProtoMember(2)] internal ArmorType Kind;
         }
     }
 }

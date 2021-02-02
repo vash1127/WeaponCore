@@ -8,7 +8,7 @@ using WeaponCore.Support;
 using WeaponCore.Control;
 using WeaponCore.Platform;
 using static WeaponCore.Support.CoreComponent.TriggerActions;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore
 {
     public partial class Session
@@ -78,7 +78,7 @@ namespace WeaponCore
             {
                 ai.LastTerminal = block;
                 CoreComponent comp;
-                if (ai.UnitBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
+                if (ai.PartBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
                 {
                     TerminalMon.HandleInputUpdate(comp);
                     IMyTerminalControl wcRangeControl = null;
@@ -320,7 +320,7 @@ namespace WeaponCore
                     }
                     if (w.DrawingPower) w.StopPowerDraw();
 
-                    if (w.ActiveAmmoDef.ConsumableDef.Const.MustCharge)
+                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         w.Reloading = false;
                 }
                 else {

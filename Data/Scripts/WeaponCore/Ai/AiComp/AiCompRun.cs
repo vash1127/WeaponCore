@@ -10,7 +10,7 @@ using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.Ai;
 using static WeaponCore.Support.PartAnimation;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {

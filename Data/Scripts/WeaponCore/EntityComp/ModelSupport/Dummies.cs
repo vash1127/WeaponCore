@@ -16,8 +16,8 @@ namespace WeaponCore.Support
             get
             {
                 if (_entity?.Model == null) {
-                    if (_unit.System.Session.LocalVersion) Log.Line($"reset parts");
-                    _unit.Comp.Platform?.ResetParts(_unit.Comp);
+                    if (_part.System.Session.LocalVersion) Log.Line($"reset parts");
+                    _part.Comp.Platform?.ResetParts(_part.Comp);
                     if (_entity?.Model == null)
                         Log.Line($"Dummy Entity/Model null");
                 }
@@ -27,7 +27,7 @@ namespace WeaponCore.Support
             set
             {
                 if (value?.Model == null)
-                    Log.Line($"DummyModel null for weapon on set: {_unit.System.WeaponName}");
+                    Log.Line($"DummyModel null for weapon on set: {_part.System.WeaponName}");
                 _entity = value; 
 
             }
@@ -43,11 +43,11 @@ namespace WeaponCore.Support
         private readonly string[] _path;
         private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
         private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
-        private readonly Unit _unit;
+        private readonly Part _part;
         private MyEntity _entity;
-        public Dummy(MyEntity e, Unit w, params string[] path)
+        public Dummy(MyEntity e, Part w, params string[] path)
         {
-            _unit = w;
+            _part = w;
             Entity = e;
             _path = path;
         }

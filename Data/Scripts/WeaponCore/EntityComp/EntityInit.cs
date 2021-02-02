@@ -39,8 +39,8 @@ namespace WeaponCore.Support
                         weapon.ChangeActiveAmmoServer();
                     else weapon.ChangeActiveAmmoClient();
 
-                    if (weapon.ActiveAmmoDef.ConsumableDef == null || !weapon.ActiveAmmoDef.ConsumableDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
-                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.ConsumableDef == null}), I am crashing now Dave.");
+                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
+                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
                         return;
                     }
 
@@ -56,25 +56,25 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{CoreEntity.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
 
-        private void DpsAndHeatInit(Unit unit, out double maxTrajectory)
+        private void DpsAndHeatInit(Part part, out double maxTrajectory)
         {
-            MaxHeat += unit.System.MaxHeat;
+            MaxHeat += part.System.MaxHeat;
 
-            unit.RateOfFire = (int)(unit.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
-            unit.BarrelSpinRate = (int)(unit.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
-            HeatSinkRate += unit.HsRate;
+            part.RateOfFire = (int)(part.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
+            part.BarrelSpinRate = (int)(part.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
+            HeatSinkRate += part.HsRate;
 
-            if (unit.System.HasBarrelRotation) unit.UpdateBarrelRotation();
+            if (part.System.HasBarrelRotation) part.UpdateBarrelRotation();
 
-            if (unit.RateOfFire < 1)
-                unit.RateOfFire = 1;
+            if (part.RateOfFire < 1)
+                part.RateOfFire = 1;
 
-            unit.SetWeaponDps();
+            part.SetWeaponDps();
 
-            if (!unit.System.DesignatorWeapon)
+            if (!part.System.DesignatorWeapon)
             {
-                var patternSize = unit.ActiveAmmoDef.ConsumableDef.Const.AmmoPattern.Length;
-                foreach (var ammo in unit.ActiveAmmoDef.ConsumableDef.Const.AmmoPattern)
+                var patternSize = part.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
+                foreach (var ammo in part.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
                 {
                     PeakDps += ammo.Const.PeakDps / (float) patternSize;
                     EffectiveDps += ammo.Const.EffectiveDps / (float) patternSize;
@@ -86,10 +86,10 @@ namespace WeaponCore.Support
             }
 
             maxTrajectory = 0;
-            if (unit.ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory > maxTrajectory)
-                maxTrajectory = unit.ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory;
+            if (part.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
+                maxTrajectory = part.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
-            if (unit.System.TrackProjectile)
+            if (part.System.TrackProjectile)
                 Ai.PointDefense = true;
         }
 
@@ -146,8 +146,8 @@ namespace WeaponCore.Support
                     }
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
                     {
-                        if (w.System.AmmoTypes[j].ConsumableDef.Const.MagazineDef != null)
-                            CoreInventory.Constraint.Add(w.System.AmmoTypes[j].ConsumableDef.Const.MagazineDef.Id);
+                        if (w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef != null)
+                            CoreInventory.Constraint.Add(w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
                     }
                 }
                 CoreInventory.Refresh();

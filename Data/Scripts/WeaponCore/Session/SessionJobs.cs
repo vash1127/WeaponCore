@@ -12,7 +12,7 @@ using VRage.Game.Entity;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.Ai.Constructs;
-using static WeaponCore.Support.UnitDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.PartDefinition.TargetingDef.BlockTypes;
 namespace WeaponCore
 {
     public class GridMap
@@ -31,7 +31,7 @@ namespace WeaponCore
     internal struct DeferedTypeCleaning
     {
         internal uint RequestTick;
-        internal ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
+        internal ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
     }
 
     public partial class Session
@@ -212,7 +212,7 @@ namespace WeaponCore
                 newTypeMap[Power] = ConcurrentListPool.Get();
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
-                ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
+                ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
                 GridMap gridMap;
                 if (GridToInfoMap.TryGetValue(grid, out gridMap)) {
@@ -231,9 +231,9 @@ namespace WeaponCore
 
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
-                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && UnitPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && PartPlatforms.ContainsKey(fat.BlockDefinition.Id))
                             {
-                                if (!tStatus && fat is IMyGunBaseUser && !UnitPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                                if (!tStatus && fat is IMyGunBaseUser && !PartPlatforms.ContainsKey(fat.BlockDefinition.Id))
                                     tStatus = gridMap.Targeting.AllowScanning = true;
 
                                 newTypeMap[Offense].Add(fat);
@@ -253,7 +253,7 @@ namespace WeaponCore
                     gridMap.Trash = terminals == 0;
                     var gridBlocks = grid.BlocksCount;
                     if (gridBlocks > gridMap.MostBlocks) gridMap.MostBlocks = gridBlocks;
-                    ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
+                    ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap)) {
                         GridToBlockTypeMap[grid] = newTypeMap;
                         BlockTypeCleanUp.Enqueue(new DeferedTypeCleaning {Collection = oldTypeMap, RequestTick = Tick});

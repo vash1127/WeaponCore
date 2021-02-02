@@ -14,7 +14,7 @@ namespace WeaponCore.Support
         {
             if (add) {
 
-                if (UnitsIdx.ContainsKey(comp)) {
+                if (PartsIdx.ContainsKey(comp)) {
                     Log.Line($"CompAddFailed:<{comp.CoreEntity.EntityId}> - comp({comp.CoreEntity.DebugName}[{comp.SubtypeName}]) already existed in {TopEntity.DebugName}");
                     return;
                 }
@@ -22,37 +22,37 @@ namespace WeaponCore.Support
                 if (comp.HasArmor) {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.Armor != UnitDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
+                        if (w.System.Armor != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                          Armor.Add(w.Comp.Cube, w);
                     }
                     Session.ArmorCubes.Add(comp.Cube, comp);
                 }
-                UnitsIdx.Add(comp, Units.Count);
-                Units.Add(comp);
+                PartsIdx.Add(comp, Parts.Count);
+                Parts.Add(comp);
             }
             else {
 
                 int idx;
-                if (!UnitsIdx.TryGetValue(comp, out idx)) {
-                    Log.Line($"CompRemoveFailed: <{comp.CoreEntity.EntityId}> - {Units.Count}[{UnitsIdx.Count}]({UnitBase.Count}) - {Units.Contains(comp)}[{Units.Count}] - {Session.GridTargetingAIs[comp.TopEntity].UnitBase.ContainsKey(comp.CoreEntity)} - {Session.GridTargetingAIs[comp.TopEntity].UnitBase.Count} ");
+                if (!PartsIdx.TryGetValue(comp, out idx)) {
+                    Log.Line($"CompRemoveFailed: <{comp.CoreEntity.EntityId}> - {Parts.Count}[{PartsIdx.Count}]({PartBase.Count}) - {Parts.Contains(comp)}[{Parts.Count}] - {Session.GridTargetingAIs[comp.TopEntity].PartBase.ContainsKey(comp.CoreEntity)} - {Session.GridTargetingAIs[comp.TopEntity].PartBase.Count} ");
                     return;
                 }
 
                 if (comp.HasArmor) {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.Armor != UnitDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
+                        if (w.System.Armor != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                             Armor.Remove(w.Comp.Cube);
                     }
                     Session.ArmorCubes.Remove(comp.Cube);
                 }
 
-                Units.RemoveAtFast(idx);
-                if (idx < Units.Count)
-                    UnitsIdx[Units[idx]] = idx;
+                Parts.RemoveAtFast(idx);
+                if (idx < Parts.Count)
+                    PartsIdx[Parts[idx]] = idx;
 
                 //Session.IdToCompMap.Remove(comp.MyCube.EntityId);
-                UnitsIdx.Remove(comp);
+                PartsIdx.Remove(comp);
             }
         }
         
@@ -111,9 +111,9 @@ namespace WeaponCore.Support
 
         private void WeaponShootOff()
         {
-            for (int i = 0; i < Units.Count; i++) {
+            for (int i = 0; i < Parts.Count; i++) {
 
-                var comp = Units[i];
+                var comp = Parts[i];
                 for (int x = 0; x < comp.Platform.Weapons.Length; x++) {
                     var w = comp.Platform.Weapons[x];
                     w.StopReloadSound();
@@ -126,16 +126,16 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (Units.Count == 0) {
+                if (Parts.Count == 0) {
                     Log.Line($"no valid weapon in powerDist");
                     return;
                 }
 
                 GridCurrentPower = 0;
                 GridMaxPower = 0;
-                for (int i = -1, j = 0; i < Units.Count; i++, j++) {
+                for (int i = -1, j = 0; i < Parts.Count; i++, j++) {
 
-                    var powerBlock = j == 0 ? PowerBlock : Units[i].Cube;
+                    var powerBlock = j == 0 ? PowerBlock : Parts[i].Cube;
                     if (powerBlock == null || j == 0 && PowerDirty) continue;
 
                     using (powerBlock.Pin()) {
@@ -302,9 +302,9 @@ namespace WeaponCore.Support
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
-            Units.Clear();
-            UnitsIdx.Clear();
-            UnitBase.Clear();
+            Parts.Clear();
+            PartsIdx.Clear();
+            PartBase.Clear();
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
             NearByShieldsTmp.Clear();

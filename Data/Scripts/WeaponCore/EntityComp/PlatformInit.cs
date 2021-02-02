@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using Sandbox.ModAPI;
 using static WeaponCore.Support.CoreComponent.Start;
 using static WeaponCore.Support.CoreComponent.BlockType;
-using static WeaponCore.Platform.Unit;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Platform.Part;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -17,7 +17,7 @@ namespace WeaponCore.Platform
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
-        internal Unit[] Weapons = new Unit[1];
+        internal Part[] Weapons = new Part[1];
         internal CoreStructure Structure;
         internal CoreComponent Comp;
         internal PlatformState State;
@@ -36,12 +36,12 @@ namespace WeaponCore.Platform
         internal void Setup(CoreComponent comp)
         {
             var defId = comp.IsBlock ? comp.Cube.BlockDefinition.Id : comp.Rifle.DefinitionId;
-            if (!comp.Session.UnitPlatforms.ContainsKey(defId))
+            if (!comp.Session.PartPlatforms.ContainsKey(defId))
             {
                 PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) was not found in platform setup, I am crashing now Dave.");
                 return;
             }
-            Structure = comp.Session.UnitPlatforms[defId];
+            Structure = comp.Session.PartPlatforms[defId];
             Comp = comp;
 
             if (Weapons.Length != Structure.MuzzlePartNames.Length)
@@ -78,10 +78,10 @@ namespace WeaponCore.Platform
             }
 
             var blockDef = Comp.SubTypeId; 
-            if (!Comp.Ai.UnitCounter.ContainsKey(blockDef)) 
-                Comp.Ai.UnitCounter[blockDef] = Comp.Session.WeaponCountPool.Get();
+            if (!Comp.Ai.PartCounting.ContainsKey(blockDef)) 
+                Comp.Ai.PartCounting[blockDef] = Comp.Session.WeaponCountPool.Get();
 
-            var wCounter = comp.Ai.UnitCounter[blockDef];
+            var wCounter = comp.Ai.PartCounting[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
 
             if (newAi) {
@@ -91,7 +91,7 @@ namespace WeaponCore.Platform
                     Log.Line($"PlatFormInit and AI MarkedForClose: CubeMarked:{Comp.CoreEntity.MarkedForClose}");
             }
 
-            if (wCounter.Max == 0 || Comp.Ai.Construct.GetUnitCount(blockDef) + 1 <= wCounter.Max) {
+            if (wCounter.Max == 0 || Comp.Ai.Construct.GetPartCount(blockDef) + 1 <= wCounter.Max) {
                 wCounter.Current++;
                 Ai.Constructs.UpdateWeaponCounters(Comp.Ai);
                 State = PlatformState.Valid;
@@ -150,7 +150,7 @@ namespace WeaponCore.Platform
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
 
-                var weapon = Weapons[i] = new Unit(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
+                var weapon = Weapons[i] = new Part(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
                 
                 SetupUi(weapon);
 
@@ -158,8 +158,8 @@ namespace WeaponCore.Platform
                     comp.Debug = true;
 
                 if (weapon.System.Values.HardPoint.Ai.TurretController) {
-                    if (weapon.System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingUnit == null)
-                        comp.TrackingUnit = weapon;
+                    if (weapon.System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingPart == null)
+                        comp.TrackingPart = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                         RotationSound.Init(weapon.System.Values.HardPoint.Audio.HardPointRotationSound, false);
@@ -547,7 +547,7 @@ namespace WeaponCore.Platform
             comp.Status = Stopped;
         }
 
-        internal void SetupUi(Unit w)
+        internal void SetupUi(Part w)
         {
             var ui = w.System.Values.HardPoint.Ui;
             w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || ui.ToggleGuidance;

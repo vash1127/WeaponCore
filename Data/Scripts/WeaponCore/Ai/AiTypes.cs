@@ -21,7 +21,7 @@ namespace WeaponCore.Support
             internal int Version;
         }
 
-        internal class UnitCount
+        internal class PartCounter
         {
             internal int Current;
             internal int Max;
@@ -62,7 +62,7 @@ namespace WeaponCore.Support
             internal double OtherRangeSqr;
             internal bool SomethingInRange;
 
-            internal bool ValidTargetExists(Unit w)
+            internal bool ValidTargetExists(Part w)
             {
                 var comp = w.Comp;
                 var ai = comp.Ai;
@@ -107,13 +107,13 @@ namespace WeaponCore.Support
                 {
                     isGrid = true;
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
+                    ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
                     {
                         ConcurrentCachingList<MyCubeBlock> weaponBlocks;
-                        if (blockTypeMap.TryGetValue(UnitDefinition.TargetingDef.BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
+                        if (blockTypeMap.TryGetValue(PartDefinition.TargetingDef.BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
                             armed = true;
-                        else if (blockTypeMap.TryGetValue(UnitDefinition.TargetingDef.BlockTypes.Utility, out weaponBlocks) && weaponBlocks.Count > 0)
+                        else if (blockTypeMap.TryGetValue(PartDefinition.TargetingDef.BlockTypes.Utility, out weaponBlocks) && weaponBlocks.Count > 0)
                             armed = true;
                     }
                 }

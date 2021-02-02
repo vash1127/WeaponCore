@@ -5,13 +5,13 @@ using VRageMath;
 namespace WeaponCore.Support
 {
     [ProtoContract]
-    public struct UnitDefinition
+    public struct PartDefinition
     {
         [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
         [ProtoMember(2)] internal TargetingDef Targeting;
         [ProtoMember(3)] internal AnimationDef Animations;
         [ProtoMember(4)] internal HardPointDef HardPoint;
-        [ProtoMember(5)] internal ConsumableDef[] Ammos;
+        [ProtoMember(5)] internal AmmoDef[] Ammos;
         [ProtoMember(6)] internal string ModPath;
         [ProtoMember(7)] internal Dictionary<string, UpgradeValues[]> Upgrades;
 
@@ -80,7 +80,7 @@ namespace WeaponCore.Support
         public struct AnimationDef
         {
             [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
-            [ProtoMember(2)] internal UnitEmissive[] Emissives;
+            [ProtoMember(2)] internal PartEmissive[] Emissives;
             [ProtoMember(3)] internal string[] HeatingEmissiveParts;
             [ProtoMember(4)] internal Dictionary<PartAnimationSetDef.EventTriggers, EventParticle[]> EventParticles;
 
@@ -117,7 +117,7 @@ namespace WeaponCore.Support
             }
 
             [ProtoContract]
-            public struct UnitEmissive
+            public struct PartEmissive
             {
                 [ProtoMember(1)] internal string EmissiveName;
                 [ProtoMember(2)] internal string[] EmissivePartNames;
@@ -193,7 +193,7 @@ namespace WeaponCore.Support
                 Advanced,
             }
 
-            [ProtoMember(1)] internal string UnitName;
+            [ProtoMember(1)] internal string PartName;
             [ProtoMember(2)] internal int DelayCeaseFire;
             [ProtoMember(3)] internal float DeviateShotAngle;
             [ProtoMember(4)] internal double AimingTolerance;
@@ -310,7 +310,7 @@ namespace WeaponCore.Support
         }
 
         [ProtoContract]
-        public class ConsumableDef
+        public class AmmoDef
         {
             [ProtoMember(1)] internal string AmmoMagazine;
             [ProtoMember(2)] internal string AmmoRound;
@@ -547,7 +547,7 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct PatternDef
             {
-                [ProtoMember(1)] internal string[] Ammos;
+                [ProtoMember(1)] internal string[] Patterns;
                 [ProtoMember(2)] internal bool Enable;
                 [ProtoMember(3)] internal float TriggerChance;
                 [ProtoMember(4)] internal bool SkipParent;

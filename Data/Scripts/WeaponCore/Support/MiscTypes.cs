@@ -9,7 +9,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.UnitDefinition.TargetingDef;
+using static WeaponCore.Support.PartDefinition.TargetingDef;
 
 namespace WeaponCore.Support
 {
@@ -22,11 +22,11 @@ namespace WeaponCore.Support
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetChanged;
-        internal bool ParentIsUnit;
+        internal bool ParentIsPart;
         internal bool IsTargetStorage;
         internal bool ClientDirty;
         internal bool CoreIsCube;
-        internal Unit Unit;
+        internal Part Part;
         internal MyEntity CoreEntity;
         internal MyEntity CoreParent;
         internal MyEntity TargetEntity;
@@ -79,29 +79,29 @@ namespace WeaponCore.Support
             LostTracking,
         }
 
-        internal Target(Unit unit = null, bool main = false)
+        internal Target(Part part = null, bool main = false)
         {
-            ParentIsUnit = unit?.Comp?.CoreEntity != null;
-            CoreEntity = unit?.Comp?.CoreEntity;
-            CoreParent = unit?.Comp?.TopEntity;
-            CoreCube = unit?.Comp?.Cube;
+            ParentIsPart = part?.Comp?.CoreEntity != null;
+            CoreEntity = part?.Comp?.CoreEntity;
+            CoreParent = part?.Comp?.TopEntity;
+            CoreCube = part?.Comp?.Cube;
             CoreIsCube = CoreCube != null;
-            Unit = unit;
+            Part = part;
             IsTargetStorage = main;
         }
 
-        internal void PushTargetToClient(Unit unit)
+        internal void PushTargetToClient(Part part)
         {
-            if (!unit.System.Session.MpActive || unit.System.Session.IsClient)
+            if (!part.System.Session.MpActive || part.System.Session.IsClient)
                 return;
 
-            unit.TargetData.TargetPos = TargetPos;
-            unit.TargetData.WeaponId = unit.WeaponId;
-            unit.TargetData.EntityId = unit.Target.TargetId;
-            unit.System.Session.SendTargetChange(unit.Comp, unit.WeaponId);
+            part.TargetData.TargetPos = TargetPos;
+            part.TargetData.WeaponId = part.WeaponId;
+            part.TargetData.EntityId = part.Target.TargetId;
+            part.System.Session.SendTargetChange(part.Comp, part.WeaponId);
         }
 
-        internal void ClientUpdate(Unit w, TransferTarget tData)
+        internal void ClientUpdate(Part w, TransferTarget tData)
         {
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
@@ -161,7 +161,7 @@ namespace WeaponCore.Support
             StateChange(true, States.Acquired);
         }
 
-        internal void LockTarget(Unit w, MyEntity ent)
+        internal void LockTarget(Part w, MyEntity ent)
         {
             double rayDist;
             var targetPos = ent.PositionComp.WorldAABB.Center;
@@ -208,15 +208,15 @@ namespace WeaponCore.Support
             SetTargetId(setTarget, reason);
             TargetChanged = !HasTarget && setTarget || HasTarget && !setTarget;
 
-            if (TargetChanged && ParentIsUnit && IsTargetStorage) {
+            if (TargetChanged && ParentIsPart && IsTargetStorage) {
 
                 if (setTarget) {
-                    Unit.Comp.Ai.WeaponsTracking++;
-                    Unit.Comp.WeaponsTracking++;
+                    Part.Comp.Ai.WeaponsTracking++;
+                    Part.Comp.WeaponsTracking++;
                 }
                 else {
-                    Unit.Comp.Ai.WeaponsTracking--;
-                    Unit.Comp.WeaponsTracking--;
+                    Part.Comp.Ai.WeaponsTracking--;
+                    Part.Comp.WeaponsTracking--;
                 }
             }
             HasTarget = setTarget;

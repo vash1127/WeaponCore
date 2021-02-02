@@ -6,9 +6,9 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
-using static WeaponCore.Platform.Unit;
+using static WeaponCore.Platform.Part;
 using static WeaponCore.Session;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Support { 
     public class PartAnimation
     {

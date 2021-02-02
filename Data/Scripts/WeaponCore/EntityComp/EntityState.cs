@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -224,7 +224,7 @@ namespace WeaponCore.Support
                     o.MinSize = v;
                     break;
                 case "SubSystems":
-                    o.SubSystem = (UnitDefinition.TargetingDef.BlockTypes)v;
+                    o.SubSystem = (PartDefinition.TargetingDef.BlockTypes)v;
                     break;
                 case "MovementModes":
                     o.MoveMode = (GroupOverrides.MoveModes)v;
@@ -327,7 +327,7 @@ namespace WeaponCore.Support
                             w.Elevation = 0;
                             w.Elevation = 0;
 
-                            if (w.ActiveAmmoDef.ConsumableDef.Const.MustCharge)
+                            if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                                 w.Reloading = false;
 
                             if (!FunctionalBlock.Enabled)

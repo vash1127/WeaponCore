@@ -4,12 +4,12 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.CoreComponent;
 
 namespace WeaponCore.Platform
 {
-    public partial class Unit
+    public partial class Part
     {
         public void AimBarrel()
         {
@@ -300,12 +300,12 @@ namespace WeaponCore.Platform
 
             var newBase = 0f;
 
-            if (ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo)
-                newBase = ActiveAmmoDef.ConsumableDef.Const.BaseDamage * Comp.Data.Repo.Base.Set.DpsModifier;
+            if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Base.Set.DpsModifier;
             else
-                newBase = ActiveAmmoDef.ConsumableDef.Const.BaseDamage;
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
 
-            if (ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon)
+            if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
                 newBase *= Comp.Data.Repo.Base.Set.Overload;
 
             if (newBase < 0)
@@ -318,11 +318,11 @@ namespace WeaponCore.Platform
             UpdateShotEnergy();
             UpdateRequiredPower();
 
-            var multiplier = (ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo && ActiveAmmoDef.ConsumableDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.ConsumableDef.Const.BaseDamage : 1;
+            var multiplier = (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
 
             var dpsMulti = multiplier;
 
-            if (BaseDamage > ActiveAmmoDef.ConsumableDef.Const.BaseDamage)
+            if (BaseDamage > ActiveAmmoDef.AmmoDef.Const.BaseDamage)
                 multiplier *= multiplier;
 
             HeatPShot = System.HeatPerShot * multiplier;
@@ -334,10 +334,10 @@ namespace WeaponCore.Platform
             var oldDps = Dps;
             var oldMaxCharge = MaxCharge;
 
-            if (ActiveAmmoDef.ConsumableDef.Const.MustCharge)
-                MaxCharge = ActiveAmmoDef.ConsumableDef.Const.ChargSize * multiplier;
+            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * multiplier;
 
-            Dps = ActiveAmmoDef.ConsumableDef.Const.PeakDps * dpsMulti;
+            Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
 
             var newHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
 
@@ -372,7 +372,7 @@ namespace WeaponCore.Platform
                 UseablePower = RequiredPower;
 
             Comp.HeatPerSecond -= heatDif;
-            Comp.MaxRequiredPower -= ActiveAmmoDef.ConsumableDef.Const.MustCharge ? chargeDif : powerDif;
+            Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
             Comp.Ai.UpdatePowerSources = true;
         }
 

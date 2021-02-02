@@ -310,14 +310,14 @@ namespace WeaponCore
 
         private static readonly List<MyTerminalControlComboBoxItem> SubList = new List<MyTerminalControlComboBoxItem>()
         {
-            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)0}") },
-            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)1}") },
-            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)2}") },
-            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)3}") },
-            new MyTerminalControlComboBoxItem() { Key = 4, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)4}") },
-            new MyTerminalControlComboBoxItem() { Key = 5, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)5}") },
-            new MyTerminalControlComboBoxItem() { Key = 6, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)6}") },
-            new MyTerminalControlComboBoxItem() { Key = 7, Value = MyStringId.GetOrCompute($"{(UnitDefinition.TargetingDef.BlockTypes)7}") },
+            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)0}") },
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)2}") },
+            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)3}") },
+            new MyTerminalControlComboBoxItem() { Key = 4, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)4}") },
+            new MyTerminalControlComboBoxItem() { Key = 5, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)5}") },
+            new MyTerminalControlComboBoxItem() { Key = 6, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)6}") },
+            new MyTerminalControlComboBoxItem() { Key = 7, Value = MyStringId.GetOrCompute($"{(PartDefinition.TargetingDef.BlockTypes)7}") },
         };
 
         internal static long GetMovementMode(IMyTerminalBlock block)

@@ -6,43 +6,43 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Unit
+    public partial class Part
     {
         internal class ParallelRayCallBack
         {
-            internal Unit Unit;
+            internal Part Part;
 
-            internal ParallelRayCallBack(Unit unit)
+            internal ParallelRayCallBack(Part part)
             {
-                Unit = unit;
+                Part = part;
             }
 
             public void NormalShootRayCallBack(IHitInfo hitInfo)
             {
-                Unit.Casting = false;
-                var masterWeapon = Unit.TrackTarget ? Unit : Unit.Comp.TrackingUnit;
-                var ignoreTargets = Unit.Target.IsProjectile || Unit.Target.TargetEntity is IMyCharacter;
-                var trackingCheckPosition = Unit.GetScope.CachedPos;
+                Part.Casting = false;
+                var masterWeapon = Part.TrackTarget ? Part : Part.Comp.TrackingPart;
+                var ignoreTargets = Part.Target.IsProjectile || Part.Target.TargetEntity is IMyCharacter;
+                var trackingCheckPosition = Part.GetScope.CachedPos;
                 double rayDist = 0;
 
 
-                if (Unit.System.Session.DebugLos)
+                if (Part.System.Session.DebugLos)
                 {
                     var hitPos = hitInfo.Position;
                     if (rayDist <= 0) Vector3D.Distance(ref trackingCheckPosition, ref hitPos, out rayDist);
 
-                    Unit.System.Session.AddLosCheck(new Session.LosDebug { Unit = Unit, HitTick = Unit.System.Session.Tick, Line = new LineD(trackingCheckPosition, hitPos) });
+                    Part.System.Session.AddLosCheck(new Session.LosDebug { Part = Part, HitTick = Part.System.Session.Tick, Line = new LineD(trackingCheckPosition, hitPos) });
                 }
 
                 
-                if (Unit.Comp.Ai.ShieldNear)
+                if (Part.Comp.Ai.ShieldNear)
                 {
-                    var targetPos = Unit.Target.Projectile?.Position ?? Unit.Target.TargetEntity.PositionComp.WorldMatrixRef.Translation;
+                    var targetPos = Part.Target.Projectile?.Position ?? Part.Target.TargetEntity.PositionComp.WorldMatrixRef.Translation;
                     var targetDir = targetPos - trackingCheckPosition;
-                    if (Unit.HitFriendlyShield(trackingCheckPosition, targetPos, targetDir))
+                    if (Part.HitFriendlyShield(trackingCheckPosition, targetPos, targetDir))
                     {
-                        masterWeapon.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckFriendly);
-                        if (masterWeapon != Unit) Unit.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckFriendly);
+                        masterWeapon.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckFriendly);
+                        if (masterWeapon != Part) Part.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         return;
                     }
                 }
@@ -52,12 +52,12 @@ namespace WeaponCore.Platform
                 {
                     if (ignoreTargets)
                         return;
-                    masterWeapon.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckMiss);
-                    if (masterWeapon != Unit) Unit.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckMiss);
+                    masterWeapon.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckMiss);
+                    if (masterWeapon != Part) Part.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckMiss);
                     return;
                 }
 
-                var targetTopEnt = Unit.Target.TargetEntity?.GetTopMostParent();
+                var targetTopEnt = Part.Target.TargetEntity?.GetTopMostParent();
                 if (targetTopEnt == null)
                     return;
 
@@ -68,51 +68,51 @@ namespace WeaponCore.Platform
                 {
                     if (hitTopEnt is MyVoxelBase)
                     {
-                        masterWeapon.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckVoxel);
-                        if (masterWeapon != Unit) Unit.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckVoxel);
+                        masterWeapon.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckVoxel);
+                        if (masterWeapon != Part) Part.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckVoxel);
                         return;
                     }
 
                     if (topAsGrid == null)
                         return;
-                    if (Unit.Target.TargetEntity != null && Unit.Comp.IsBlock && (topAsGrid.IsSameConstructAs(Unit.Comp.Ai.GridEntity) || !topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0))
+                    if (Part.Target.TargetEntity != null && Part.Comp.IsBlock && (topAsGrid.IsSameConstructAs(Part.Comp.Ai.GridEntity) || !topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0))
                     {
-                        var hitPos = Unit.Target.TargetEntity.PositionComp.WorldAABB.Center;
+                        var hitPos = Part.Target.TargetEntity.PositionComp.WorldAABB.Center;
                         Vector3D pos; 
-                        if (CheckSelfHit(Unit, ref trackingCheckPosition, ref hitPos, out pos))
+                        if (CheckSelfHit(Part, ref trackingCheckPosition, ref hitPos, out pos))
                         {
-                            masterWeapon.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckSelfHit);
-                            if (masterWeapon != Unit) Unit.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                            masterWeapon.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                            if (masterWeapon != Part) Part.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                             return;
                         }
                         return;
                     }
-                    if (!Session.GridEnemy(Unit.Comp.Ai.AiOwner, topAsGrid))
+                    if (!Session.GridEnemy(Part.Comp.Ai.AiOwner, topAsGrid))
                     {
-                        masterWeapon.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckFriendly);
-                        if (masterWeapon != Unit) Unit.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckFriendly);
+                        masterWeapon.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckFriendly);
+                        if (masterWeapon != Part) Part.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         return;
                     }
                     return;
                 }
-                if (Unit.System.ClosestFirst && topAsGrid != null && topAsGrid == targetTopEnt)
+                if (Part.System.ClosestFirst && topAsGrid != null && topAsGrid == targetTopEnt)
                 {
                     var halfExtMin = topAsGrid.PositionComp.LocalAABB.HalfExtents.Min();
                     var minSize = topAsGrid.GridSizeR * 8;
                     var maxChange = halfExtMin > minSize ? halfExtMin : minSize;
-                    var targetPos = Unit.Target.TargetEntity.PositionComp.WorldAABB.Center;
+                    var targetPos = Part.Target.TargetEntity.PositionComp.WorldAABB.Center;
                     var weaponPos = trackingCheckPosition;
 
                     if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
                     var newHitShortDist = rayDist * (1 - hitInfo.Fraction);
                     var distanceToTarget = rayDist * hitInfo.Fraction;
 
-                    var shortDistExceed = newHitShortDist - Unit.Target.HitShortDist > maxChange;
-                    var escapeDistExceed = distanceToTarget - Unit.Target.OrigDistance > Unit.Target.OrigDistance;
+                    var shortDistExceed = newHitShortDist - Part.Target.HitShortDist > maxChange;
+                    var escapeDistExceed = distanceToTarget - Part.Target.OrigDistance > Part.Target.OrigDistance;
                     if (shortDistExceed || escapeDistExceed)
                     {
-                        masterWeapon.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckDistOffset);
-                        if (masterWeapon != Unit) Unit.Target.Reset(Unit.Comp.Session.Tick, Target.States.RayCheckDistOffset);
+                        masterWeapon.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckDistOffset);
+                        if (masterWeapon != Part) Part.Target.Reset(Part.Comp.Session.Tick, Target.States.RayCheckDistOffset);
                     }
                 }
             }
@@ -120,14 +120,14 @@ namespace WeaponCore.Platform
 
         internal class Muzzle
         {
-            internal Muzzle(Unit unit, int id, Session session)
+            internal Muzzle(Part part, int id, Session session)
             {
                 MuzzleId = id;
                 UniqueId = session.NewVoxelCache.Id;
-                Unit = unit;
+                Part = part;
             }
 
-            internal Unit Unit;
+            internal Part Part;
             internal Vector3D Position;
             internal Vector3D Direction;
             internal Vector3D DeviatedDir;
@@ -143,15 +143,15 @@ namespace WeaponCore.Platform
 
         internal class WeaponAcquire
         {
-            internal readonly Unit Unit;
+            internal readonly Part Part;
             internal uint CreatedTick;
             internal int SlotId;
             internal bool IsSleeping;
             internal bool Monitoring;
 
-            internal WeaponAcquire(Unit unit)
+            internal WeaponAcquire(Part part)
             {
-                Unit = unit;
+                Part = part;
             }
         }
 

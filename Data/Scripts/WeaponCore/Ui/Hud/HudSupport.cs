@@ -168,7 +168,7 @@ namespace WeaponCore
             _symbolWidth = _heatWidth + _padding;
         }
 
-        internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Unit> list)
+        internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Part> list)
         {
             int length = list.Count;
             int finalCount = 0;
@@ -215,7 +215,7 @@ namespace WeaponCore
                     swi.CachedHeatTexture.Persistant = true;
                     swi.CachedReloadTexture.Persistant = true;
                     swi.ReloadIndex = 0;
-                    swi.HighestValueUnit = w;
+                    swi.HighestValuePart = w;
                     swi.WeaponStack = 1;
                     finalList.Add(swi);
                 }
@@ -223,16 +223,16 @@ namespace WeaponCore
             }
 
 
-            Dictionary<int, List<Unit>> weaponTypes = new Dictionary<int, List<Unit>>();
+            Dictionary<int, List<Part>> weaponTypes = new Dictionary<int, List<Part>>();
             for (int i = 0; i < list.Count; i++) //sort list into groups of same weapon type
             {
                 var w = list[i];
 
                 if (!weaponTypes.ContainsKey(w.System.WeaponIdHash))
                 {
-                    List<Unit> tmp;
+                    List<Part> tmp;
                     if (!_weaponSortingListPool.TryDequeue(out tmp))
-                        tmp = new List<Unit>();
+                        tmp = new List<Part>();
 
                     weaponTypes[w.System.WeaponIdHash] = tmp;
                 }
@@ -248,15 +248,15 @@ namespace WeaponCore
 
                 if (weapons.Count > 1)
                 {
-                    List<List<Unit>> subLists;
-                    List<Unit> subList;
+                    List<List<Part>> subLists;
+                    List<Part> subList;
                     var last = weapons[0];
 
                     if (!_weaponSubListsPool.TryDequeue(out subLists))
-                        subLists = new List<List<Unit>>();
+                        subLists = new List<List<Part>>();
 
                     if (!_weaponSortingListPool.TryDequeue(out subList))
-                        subList = new List<Unit>();
+                        subList = new List<Part>();
 
                     for (int i = 0; i < weapons.Count; i++)
                     {
@@ -270,7 +270,7 @@ namespace WeaponCore
                             {
                                 subLists.Add(subList);
                                 if (!_weaponSortingListPool.TryDequeue(out subList))
-                                    subList = new List<Unit>();
+                                    subList = new List<Part>();
                             }
 
                             last = w;
@@ -303,7 +303,7 @@ namespace WeaponCore
                             swi.CachedHeatTexture.Persistant = true;
                             swi.CachedReloadTexture.Persistant = true;
                             swi.ReloadIndex = 0;
-                            swi.HighestValueUnit = subL[0];
+                            swi.HighestValuePart = subL[0];
                             swi.WeaponStack = subL.Count;
 
                             finalList.Add(swi);
@@ -335,7 +335,7 @@ namespace WeaponCore
                         swi.CachedReloadTexture.Persistant = true;
                         swi.ReloadIndex = 0;
 
-                        swi.HighestValueUnit = weapons[0];
+                        swi.HighestValuePart = weapons[0];
                         swi.WeaponStack = 1;
 
                     
@@ -369,7 +369,7 @@ namespace WeaponCore
             while (_weaponInfoListPool.TryDequeue(out removeList))
                 removeList.Clear();
 
-            List<List<Unit>> removeList1;
+            List<List<Part>> removeList1;
             while (_weaponSubListsPool.TryDequeue(out removeList1))
             {
                 for (int i = 0; i < removeList1.Count; i++)

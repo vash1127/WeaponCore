@@ -16,7 +16,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Unit;
+using static WeaponCore.Platform.Part;
 
 namespace WeaponCore
 {
@@ -62,7 +62,7 @@ namespace WeaponCore
 
         internal struct LosDebug
         {
-            internal Unit Unit;
+            internal Part Part;
             internal LineD Line;
             internal uint HitTick;
         }
@@ -115,7 +115,7 @@ namespace WeaponCore
                     return;
                 }
                 
-                if (!Session.GridTargetingAIs.TryGetValue(topMost, out ai) || !ai.UnitBase.ContainsKey(targetEntity))
+                if (!Session.GridTargetingAIs.TryGetValue(topMost, out ai) || !ai.PartBase.ContainsKey(targetEntity))
                     Log.Line($"Failed to generate user report, either grid does not have Weaponcore or this block this wc block is not initialized.");
                 
                 Log.Line($"Generate User Weapon Report");
@@ -301,11 +301,11 @@ namespace WeaponCore
                     {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
-                    {"WeaponBase", () => GetAi()?.UnitBase.Count.ToString() ?? string.Empty },
+                    {"WeaponBase", () => GetAi()?.PartBase.Count.ToString() ?? string.Empty },
                     {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty },
                     {"AiOwner", () => GetAi()?.AiOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
-                    {"BlockCount", () => GetAi()?.PartCount.ToString() ?? string.Empty },
+                    {"NumOfParts", () => GetAi()?.PartCount.ToString() ?? string.Empty },
                     {"WeaponsTracking", () => GetAi()?.WeaponsTracking.ToString() ?? string.Empty },
                     {"GridAvailablePower", () => GetAi()?.GridAvailablePower.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"MaxTargetingRange", () => GetAi()?.MaxTargetingRange.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
@@ -503,7 +503,7 @@ namespace WeaponCore
                 if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
-                    if (ai.UnitBase.TryGetValue(TargetEntity, out comp))
+                    if (ai.PartBase.TryGetValue(TargetEntity, out comp))
                     {
                         return comp;
                     }
@@ -518,7 +518,7 @@ namespace WeaponCore
                 if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
-                    if (ai.UnitBase.TryGetValue(TargetEntity, out comp))
+                    if (ai.PartBase.TryGetValue(TargetEntity, out comp))
                     {
                         return comp.Platform;
                     }
@@ -721,7 +721,7 @@ namespace WeaponCore
             {
                 foreach (var wa in MonitorState) {
 
-                    if (wa.Unit.Target.HasTarget) {
+                    if (wa.Part.Target.HasTarget) {
                         ToRemove.Add(wa);
                         continue;
                     }
@@ -752,7 +752,7 @@ namespace WeaponCore
             {
                 foreach (var wa in Asleep) {
 
-                    var remove = wa.Unit.Target.HasTarget || wa.Unit.Comp.IsAsleep || !wa.Unit.Comp.IsWorking || !wa.Unit.TrackTarget;
+                    var remove = wa.Part.Target.HasTarget || wa.Part.Comp.IsAsleep || !wa.Part.Comp.IsWorking || !wa.Part.TrackTarget;
 
                     if (remove) {
                         ToRemove.Add(wa);
@@ -798,10 +798,10 @@ namespace WeaponCore
                     for (int i = h; i < length; i += 1)
                     {
                         var tempValue = list[i];
-                        var temp = list[i].Unit.UniqueId;
+                        var temp = list[i].Part.UniqueId;
 
                         int j;
-                        for (j = i; j >= h && list[j - h].Unit.UniqueId > temp; j -= h)
+                        for (j = i; j >= h && list[j - h].Part.UniqueId > temp; j -= h)
                         {
                             list[j] = list[j - h];
                         }
@@ -847,12 +847,12 @@ namespace WeaponCore
 
         public class WeaponAmmoMoveRequest
         {
-            public Unit Unit;
+            public Part Part;
             public List<InventoryMags> Inventories = new List<InventoryMags>();
 
             public void Clean()
             {
-                Unit = null;
+                Part = null;
                 Inventories.Clear();
             }
         }

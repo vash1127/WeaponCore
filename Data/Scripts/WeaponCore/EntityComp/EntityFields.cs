@@ -44,7 +44,7 @@ namespace WeaponCore.Support
 
         internal InputStateData InputState;
         internal Ai Ai;
-        internal Unit TrackingUnit;
+        internal Part TrackingPart;
         internal CorePlatform Platform;
         internal MyEntity TopEntity;
         internal uint LastRayCastTick;

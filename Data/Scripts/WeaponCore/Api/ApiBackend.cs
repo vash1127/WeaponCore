@@ -394,7 +394,7 @@ namespace WeaponCore.Api
         // Non-PB Methods
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
-            foreach (var wepDef in _session.UnitDefinitions)
+            foreach (var wepDef in _session.PartDefinitions)
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 
@@ -454,7 +454,7 @@ namespace WeaponCore.Api
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
         {
             CoreStructure coreStructure;
-            if (_session.UnitPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure))
+            if (_session.PartPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure))
             {
                 foreach (var weaponSystem in coreStructure.WeaponSystems.Values)
                 {
@@ -663,7 +663,7 @@ namespace WeaponCore.Api
                 w.NewTarget.TargetEntity = (MyEntity) targetEnt;
 
                 Vector3D targetPos;
-                return Unit.TargetAligned(w, w.NewTarget, out targetPos);
+                return Part.TargetAligned(w, w.NewTarget, out targetPos);
             }
             return false;
         }
@@ -678,7 +678,7 @@ namespace WeaponCore.Api
                 w.NewTarget.TargetEntity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                var targetAligned = Unit.TargetAligned(w, w.NewTarget, out targetPos);
+                var targetAligned = Part.TargetAligned(w, w.NewTarget, out targetPos);
                 
                 return new MyTuple<bool, Vector3D?>(targetAligned, targetAligned ? targetPos : (Vector3D?)null);
             }
@@ -695,7 +695,7 @@ namespace WeaponCore.Api
                 var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
                 var targetAccel = topMost.Physics?.AngularAcceleration ?? Vector3.Zero;
                 Vector3D predictedPos;
-                return Unit.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
+                return Part.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
             }
             return false;
         }
@@ -709,7 +709,7 @@ namespace WeaponCore.Api
                 w.NewTarget.TargetEntity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                Unit.TargetAligned(w, w.NewTarget, out targetPos);
+                Part.TargetAligned(w, w.NewTarget, out targetPos);
                 return targetPos;
             }
             return null;
@@ -781,7 +781,7 @@ namespace WeaponCore.Api
         {
             CoreComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
-                return comp.Platform.Weapons[weaponId].ActiveAmmoDef.ConsumableDef.AmmoRound;
+                return comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoDef.AmmoRound;
 
             return null;
         }
@@ -795,7 +795,7 @@ namespace WeaponCore.Api
                 for (int i = 0; i < w.System.AmmoTypes.Length; i++)
                 {
                     var ammoType = w.System.AmmoTypes[i];
-                    if (ammoType.AmmoName == ammoTypeStr && ammoType.ConsumableDef.Const.IsTurretSelectable)
+                    if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         if (comp.Session.IsServer) {
                             w.Ammo.AmmoTypeId = i;
@@ -848,7 +848,7 @@ namespace WeaponCore.Api
         {
             Projectile p;
             if (_session.MonitoredProjectiles.TryGetValue(projectileId, out p))
-                return new MyTuple<Vector3D, Vector3D, float, float, long, string>(p.Position, p.Info.Direction, p.Info.BaseDamagePool, p.Info.BaseHealthPool, p.Info.Target.TargetId, p.Info.ConsumableDef.AmmoRound);
+                return new MyTuple<Vector3D, Vector3D, float, float, long, string>(p.Position, p.Info.Direction, p.Info.BaseDamagePool, p.Info.BaseHealthPool, p.Info.Target.TargetId, p.Info.AmmoDef.AmmoRound);
 
             return new MyTuple<Vector3D, Vector3D, float, float, long, string>();
         }

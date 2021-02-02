@@ -183,7 +183,7 @@ namespace WeaponCore
             else Log.Line($"SendAiData should never be called on Client");
         }
 
-        internal void SendWeaponAmmoData(Unit w)
+        internal void SendWeaponAmmoData(Part w)
         {
             if (IsServer) {
 
@@ -324,7 +324,7 @@ namespace WeaponCore
             else Log.Line($"SendCompState should never be called on Client");
         }
 
-        internal void SendWeaponReload(Unit w)
+        internal void SendWeaponReload(Part w)
         {
             if (IsServer) {
 
@@ -859,7 +859,7 @@ namespace WeaponCore
             else Log.Line($"SendPlayerControlRequest should never be called on Server");
         }
 
-        internal void SendQueuedShot(Unit w)
+        internal void SendQueuedShot(Part w)
         {
             if (IsServer)
             {
@@ -880,7 +880,7 @@ namespace WeaponCore
             else Log.Line($"SendAmmoCycleRequest should never be called on Client");
         }
 
-        internal void SendAmmoCycleRequest(Unit w, int newAmmoId)
+        internal void SendAmmoCycleRequest(Part w, int newAmmoId)
         {
             if (IsClient)
             {

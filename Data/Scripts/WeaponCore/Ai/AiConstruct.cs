@@ -132,7 +132,7 @@ namespace WeaponCore.Support
         public class Constructs
         {
             internal readonly HashSet<MyDefinitionId> RecentItems = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
-            internal readonly HashSet<Unit> OutOfAmmoWeapons = new HashSet<Unit>();
+            internal readonly HashSet<Part> OutOfAmmoWeapons = new HashSet<Part>();
             internal readonly List<Ai> RefreshedAis = new List<Ai>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
             internal readonly Focus Focus = new Focus();
@@ -287,7 +287,7 @@ namespace WeaponCore.Support
                     checkAi.Construct.Counter.Clear();
 
                     for (int x = 0; x < cAi.Construct.RefreshedAis.Count; x++) {
-                        foreach (var wc in cAi.Construct.RefreshedAis[x].UnitCounter)
+                        foreach (var wc in cAi.Construct.RefreshedAis[x].PartCounting)
                             checkAi.Construct.AddWeaponCount(wc.Key, wc.Value.Current);
                     }
                 }
@@ -300,7 +300,7 @@ namespace WeaponCore.Support
                 else Counter[weaponHash] += incrementBy;
             }
 
-            internal int GetUnitCount(MyStringHash weaponHash)
+            internal int GetPartCount(MyStringHash weaponHash)
             {
                 int value;
                 return Counter.TryGetValue(weaponHash, out value) ? value : 0;
@@ -581,7 +581,7 @@ namespace WeaponCore.Support
             ai.Construct.UpdateConstruct(Ai.Constructs.UpdateType.Focus, ChangeDetected(ai));
         }
 
-        internal bool FocusInRange(Unit w)
+        internal bool FocusInRange(Part w)
         {
             var fd = w.Comp.Ai.Construct.Data.Repo.FocusData;
 

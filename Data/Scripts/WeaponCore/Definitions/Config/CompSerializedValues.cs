@@ -5,7 +5,7 @@ using VRage;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.TargetingDef;
+using static WeaponCore.Support.PartDefinition.TargetingDef;
 using static WeaponCore.Support.CoreComponent;
 using static WeaponCore.WeaponStateValues;
 
@@ -67,7 +67,7 @@ namespace WeaponCore
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(Unit w, AmmoValues sync)
+        public void Sync(Part w, AmmoValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -155,7 +155,7 @@ namespace WeaponCore
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
 
-        public void Sync(Unit w, WeaponReloadValues sync)
+        public void Sync(Part w, WeaponReloadValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -295,7 +295,7 @@ namespace WeaponCore
         [ProtoMember(4)] public int WeaponId;
         [ProtoMember(5)] public WeaponRandomGenerator WeaponRandom; // save
 
-        internal void SyncTarget(Unit w)
+        internal void SyncTarget(Part w)
         {
             if (Revision > w.TargetData.Revision)
             {
@@ -314,7 +314,7 @@ namespace WeaponCore
             //else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
         }
 
-        public void WeaponInit(Unit w)
+        public void WeaponInit(Part w)
         {
             WeaponRandom.Init(w.UniqueId);
 
@@ -326,7 +326,7 @@ namespace WeaponCore
             rand.AcquireRandom = new Random(rand.CurrentSeed);
         }
 
-        public void WeaponRefreshClient(Unit w)
+        public void WeaponRefreshClient(Part w)
         {
             try
             {

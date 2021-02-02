@@ -5,7 +5,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.Ai;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -141,10 +141,10 @@ namespace WeaponCore.Support
                         Entity.NeedsWorldMatrix = true;
 
                         // ReInit Counters
-                        if (!Ai.UnitCounter.ContainsKey(SubTypeId)) // Need to account for reinit case
-                            Ai.UnitCounter[SubTypeId] = Session.WeaponCountPool.Get();
+                        if (!Ai.PartCounting.ContainsKey(SubTypeId)) // Need to account for reinit case
+                            Ai.PartCounting[SubTypeId] = Session.WeaponCountPool.Get();
 
-                        var wCounter = Ai.UnitCounter[SubTypeId];
+                        var wCounter = Ai.PartCounting[SubTypeId];
                         wCounter.Max = Platform.Structure.GridWeaponCap;
 
                         wCounter.Current++;
@@ -171,7 +171,7 @@ namespace WeaponCore.Support
             try {
 
                 if (Ai.MarkedForClose)
-                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{SubtypeName} - grid:{TopEntity.DebugName} - CubeMarked:{CoreEntity.MarkedForClose} - GridMarked:{TopEntity.MarkedForClose} - GridMatch:{TopEntity == Ai.TopEntity} - AiContainsMe:{Ai.UnitBase.ContainsKey(CoreEntity)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(TopEntity)}[{Ai.Session.GridTargetingAIs.ContainsKey(TopEntity)}]");
+                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{SubtypeName} - grid:{TopEntity.DebugName} - CubeMarked:{CoreEntity.MarkedForClose} - GridMarked:{TopEntity.MarkedForClose} - GridMatch:{TopEntity == Ai.TopEntity} - AiContainsMe:{Ai.PartBase.ContainsKey(CoreEntity)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(TopEntity)}[{Ai.Session.GridTargetingAIs.ContainsKey(TopEntity)}]");
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
                 if (IsBlock && !Ai.GridInit) {
@@ -202,8 +202,8 @@ namespace WeaponCore.Support
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
 
-                    if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.ConsumableDef.Const.MagazineSize)
-                        weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.ConsumableDef.Const.MagazineSize;
+                    if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                        weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                     if (Session.IsServer && weapon.TrackTarget)
                         Session.AcqManager.Monitor(weapon.Acquire);
@@ -219,7 +219,7 @@ namespace WeaponCore.Support
                 Ai.EffectiveDps += EffectiveDps;
 
 
-                if (!Ai.UnitBase.TryAdd(CoreEntity, this))
+                if (!Ai.PartBase.TryAdd(CoreEntity, this))
                     Log.Line($"failed to add cube to gridAi");
 
                 Ai.CompChange(true, this);

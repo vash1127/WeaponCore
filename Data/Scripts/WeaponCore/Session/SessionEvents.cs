@@ -32,8 +32,8 @@ namespace WeaponCore
                 var upgrade = entity as IMyUpgradeModule;
                 if (sorter != null || turret != null || controllableGun != null || rifle != null || upgrade != null)
                 {
-                    var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || UnitPlatforms.ContainsKey(cube.BlockDefinition.Id));
-                    var rifleType = !cubeType && rifle != null && UnitPlatforms.ContainsKey(rifle.DefinitionId);
+                    var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || PartPlatforms.ContainsKey(cube.BlockDefinition.Id));
+                    var rifleType = !cubeType && rifle != null && PartPlatforms.ContainsKey(rifle.DefinitionId);
                     var validType = cubeType || rifleType;
                     if (!validType) return;
 
@@ -215,7 +215,7 @@ namespace WeaponCore
             if (topMost != null && GridTargetingAIs.TryGetValue(topMost, out ai)) {
 
                 CoreComponent comp;
-                if (ai.UnitBase.TryGetValue(lastEnt, out comp))
+                if (ai.PartBase.TryGetValue(lastEnt, out comp))
                     comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
             }
         }

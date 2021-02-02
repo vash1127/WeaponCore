@@ -11,9 +11,9 @@ namespace WeaponCore.Support
 
     public static class GridIntersection
     {
-        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyEntity unit = null, Ai ai = null)
+        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyEntity part = null, Ai ai = null)
         {
-            var weaponBlock = unit as MyCubeBlock;
+            var weaponBlock = part as MyCubeBlock;
 
             var start = grid.WorldToGridInteger(worldStart);
             var end = grid.WorldToGridInteger(worldEnd);
@@ -46,7 +46,7 @@ namespace WeaponCore.Support
                         var obb = new MyOrientedBoundingBoxD(box, gridMatrix);
 
                         Vector3D? ignoreHit;
-                        if (obb.Intersects(ref ray) != null && BresenhamGridIntersection(sub, ref worldStart, ref worldEnd, out ignoreHit, unit))
+                        if (obb.Intersects(ref ray) != null && BresenhamGridIntersection(sub, ref worldStart, ref worldEnd, out ignoreHit, part))
                             return true;
                     }
                 }

@@ -9,8 +9,8 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef;
-using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef;
+using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef;
 
 namespace WeaponCore.Projectiles
 {
@@ -116,9 +116,9 @@ namespace WeaponCore.Projectiles
             AccelDir = Info.Direction;
             var cameraStart = Info.System.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Info.Origin, out DistanceFromCameraSqr);
-            GenerateShrapnel = Info.ConsumableDef.Const.ShrapnelId > -1;
-            var probability = Info.ConsumableDef.AmmoGraphics.VisualProbability;
-            EnableAv = !Info.ConsumableDef.Const.VirtualBeams && !Info.System.Session.DedicatedServer && DistanceFromCameraSqr <= Info.System.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+            GenerateShrapnel = Info.AmmoDef.Const.ShrapnelId > -1;
+            var probability = Info.AmmoDef.AmmoGraphics.VisualProbability;
+            EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.System.Session.DedicatedServer && DistanceFromCameraSqr <= Info.System.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
             LastHitEntVel = null;
@@ -149,10 +149,10 @@ namespace WeaponCore.Projectiles
 
 
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
-            Guidance = Info.ConsumableDef.Trajectory.Guidance;
-            DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.ConsumableDef.Const.IsBeamWeapon && Info.EnableGuidance;
+            Guidance = Info.AmmoDef.Trajectory.Guidance;
+            DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
-            FeelsGravity = Info.ConsumableDef.Const.FeelsGravity;
+            FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             Info.MyPlanet = Info.Ai.MyPlanet;
             if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache)) {
@@ -169,7 +169,7 @@ namespace WeaponCore.Projectiles
 
             if (Guidance == GuidanceType.Smart && DynamicGuidance) {
                 SmartsOn = true;
-                MaxChaseTime = Info.ConsumableDef.Const.MaxChaseTime;
+                MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
                 SmartSlot = Info.WeaponRng.ClientProjectileRandom.Next(10);
                 Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
@@ -188,10 +188,10 @@ namespace WeaponCore.Projectiles
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = !Vector3D.IsZero(OriginTargetPos);
 
-            if (SmartsOn && Info.ConsumableDef.Const.TargetOffSet && (LockedTarget || Info.Target.IsFakeTarget))
+            if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && (LockedTarget || Info.Target.IsFakeTarget))
             {
                 OffSetTarget();
-                OffsetSqr = Info.ConsumableDef.Trajectory.Smarts.Inaccuracy * Info.ConsumableDef.Trajectory.Smarts.Inaccuracy;
+                OffsetSqr = Info.AmmoDef.Trajectory.Smarts.Inaccuracy * Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
             }
             else
             {
@@ -200,11 +200,11 @@ namespace WeaponCore.Projectiles
             }
             PrevTargetOffset = Vector3D.Zero;
 
-            var targetSpeed = (float)(!Info.ConsumableDef.Const.IsBeamWeapon ? Info.ConsumableDef.Trajectory.DesiredSpeed : Info.MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-            if (Info.ConsumableDef.Const.SpeedVariance && !Info.ConsumableDef.Const.IsBeamWeapon)
+            var targetSpeed = (float)(!Info.AmmoDef.Const.IsBeamWeapon ? Info.AmmoDef.Trajectory.DesiredSpeed : Info.MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+            if (Info.AmmoDef.Const.SpeedVariance && !Info.AmmoDef.Const.IsBeamWeapon)
             {
-                var min = Info.ConsumableDef.Trajectory.SpeedVariance.Start;
-                var max = Info.ConsumableDef.Trajectory.SpeedVariance.End;
+                var min = Info.AmmoDef.Trajectory.SpeedVariance.Start;
+                var max = Info.AmmoDef.Trajectory.SpeedVariance.End;
                 var speedVariance = (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
                 Info.WeaponRng.ClientProjectileCurrentCounter++;
                 DesiredSpeed = targetSpeed + speedVariance;
@@ -212,10 +212,10 @@ namespace WeaponCore.Projectiles
             else DesiredSpeed = targetSpeed;
 
             float variance = 0;
-            if (Info.ConsumableDef.Const.RangeVariance)
+            if (Info.AmmoDef.Const.RangeVariance)
             {
-                var min = Info.ConsumableDef.Trajectory.RangeVariance.Start;
-                var max = Info.ConsumableDef.Trajectory.RangeVariance.End;
+                var min = Info.AmmoDef.Trajectory.RangeVariance.Start;
+                var max = Info.AmmoDef.Trajectory.RangeVariance.End;
                 variance = (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
                 Info.MaxTrajectory -= variance;
                 Info.WeaponRng.ClientProjectileCurrentCounter++;
@@ -225,15 +225,15 @@ namespace WeaponCore.Projectiles
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
-            Info.BaseHealthPool = Info.ConsumableDef.Health;
-            Info.BaseEwarPool = Info.ConsumableDef.Health;
-            Info.TracerLength = Info.ConsumableDef.Const.TracerLength <= Info.MaxTrajectory ? Info.ConsumableDef.Const.TracerLength : Info.MaxTrajectory;
+            Info.BaseHealthPool = Info.AmmoDef.Health;
+            Info.BaseEwarPool = Info.AmmoDef.Health;
+            Info.TracerLength = Info.AmmoDef.Const.TracerLength <= Info.MaxTrajectory ? Info.AmmoDef.Const.TracerLength : Info.MaxTrajectory;
 
             MaxTrajectorySqr = Info.MaxTrajectory * Info.MaxTrajectory;
 
             if (!Info.IsShrapnel) StartSpeed = Info.ShooterVel;
 
-            MoveToAndActivate = LockedTarget && !Info.ConsumableDef.Const.IsBeamWeapon && Guidance == GuidanceType.TravelTo;
+            MoveToAndActivate = LockedTarget && !Info.AmmoDef.Const.IsBeamWeapon && Guidance == GuidanceType.TravelTo;
 
             if (MoveToAndActivate)
             {
@@ -248,7 +248,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = Info.ConsumableDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget && !Info.LockOnFireState;
+            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget && !Info.LockOnFireState;
             if (PickTarget || LockedTarget) NewTargets++;
 
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
@@ -262,7 +262,7 @@ namespace WeaponCore.Projectiles
 
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
-            var accelPerSec = Info.ConsumableDef.Trajectory.AccelPerSec;
+            var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             AccelInMetersPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
             var desiredSpeed = (AccelDir * DesiredSpeed);
@@ -286,23 +286,23 @@ namespace WeaponCore.Projectiles
             InitalStep = !Info.IsShrapnel && ConstantSpeed ? desiredSpeed * StepConst : Velocity * StepConst;
 
             TravelMagnitude = Velocity * StepConst;
-            FieldTime = Info.ConsumableDef.Const.Ewar || Info.ConsumableDef.Const.IsMine ? Info.ConsumableDef.Trajectory.FieldTime : 0;
-            State = !Info.ConsumableDef.Const.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
+            FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
+            State = !Info.AmmoDef.Const.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
 
             if (EnableAv)
             {
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed, ref AccelDir);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr); //Pool initted sounds per Projectile type... this is expensive
-                if (Info.ConsumableDef.Const.HitParticle && !Info.ConsumableDef.Const.IsBeamWeapon || Info.ConsumableDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.ConsumableDef.AreaEffect.Explosions.NoVisuals && Info.ConsumableDef.Const.AreaEffectSize > 0 && Info.ConsumableDef.Const.AreaEffectDamage > 0)
+                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.Const.AreaEffectSize > 0 && Info.AmmoDef.Const.AreaEffectDamage > 0)
                 {
-                    var hitPlayChance = Info.ConsumableDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
+                    var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
                     Info.AvShot.HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
                 }
-                Info.AvShot.FakeExplosion = Info.AvShot.HitParticleActive && Info.ConsumableDef.Const.AreaEffect == AreaEffectType.Explosive && Info.ConsumableDef.AmmoGraphics.Particles.Hit.Name == string.Empty;
+                Info.AvShot.FakeExplosion = Info.AvShot.HitParticleActive && Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && Info.AmmoDef.AmmoGraphics.Particles.Hit.Name == string.Empty;
             }
 
-            if (!Info.ConsumableDef.Const.PrimeModel && !Info.ConsumableDef.Const.TriggerModel) ModelState = EntityState.None;
+            if (!Info.AmmoDef.Const.PrimeModel && !Info.AmmoDef.Const.TriggerModel) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
@@ -311,8 +311,8 @@ namespace WeaponCore.Projectiles
 
                     double triggerModelSize = 0;
                     double primeModelSize = 0;
-                    if (Info.ConsumableDef.Const.TriggerModel) triggerModelSize = Info.AvShot.TriggerEntity.PositionComp.WorldVolume.Radius;
-                    if (Info.ConsumableDef.Const.PrimeModel) primeModelSize = Info.AvShot.PrimeEntity.PositionComp.WorldVolume.Radius;
+                    if (Info.AmmoDef.Const.TriggerModel) triggerModelSize = Info.AvShot.TriggerEntity.PositionComp.WorldVolume.Radius;
+                    if (Info.AmmoDef.Const.PrimeModel) primeModelSize = Info.AvShot.PrimeEntity.PositionComp.WorldVolume.Radius;
                     var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
 
                     Info.AvShot.ModelSphereCurrent.Radius = largestSize * 2;
@@ -321,7 +321,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                LineOrNotModel = Info.ConsumableDef.Const.DrawLine || ModelState == EntityState.None && Info.ConsumableDef.Const.AmmoParticle;
+                LineOrNotModel = Info.AmmoDef.Const.DrawLine || ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle;
                 Info.AvShot.ModelOnly = !LineOrNotModel && ModelState == EntityState.Exists;
             }
         }
@@ -346,7 +346,7 @@ namespace WeaponCore.Projectiles
 
         internal void CheckForNearVoxel(uint steps)
         {
-            var possiblePos = BoundingBoxD.CreateFromSphere(new BoundingSphereD(Position, ((MaxSpeed) * (steps + 1) * StepConst) + Info.ConsumableDef.Const.CollisionSize));
+            var possiblePos = BoundingBoxD.CreateFromSphere(new BoundingSphereD(Position, ((MaxSpeed) * (steps + 1) * StepConst) + Info.AmmoDef.Const.CollisionSize));
             if (MyGamePruningStructure.AnyVoxelMapInBox(ref possiblePos))
             {
                 PruneQuery = MyEntityQueryType.Both;
@@ -362,7 +362,7 @@ namespace WeaponCore.Projectiles
 
         internal bool NewTarget()
         {
-            var giveUp = HadTarget && ++NewTargets > Info.ConsumableDef.Const.MaxTargets && Info.ConsumableDef.Const.MaxTargets != 0;
+            var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
             if (giveUp || !Ai.ReacquireTarget(this)) {
@@ -420,11 +420,11 @@ namespace WeaponCore.Projectiles
             if (Guidance == GuidanceType.DetectSmart) {
 
                 SmartsOn = true;
-                MaxChaseTime = Info.ConsumableDef.Const.MaxChaseTime;
+                MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
 
-                if (SmartsOn && Info.ConsumableDef.Const.TargetOffSet && LockedTarget) {
+                if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && LockedTarget) {
                     OffSetTarget();
-                    OffsetSqr = Info.ConsumableDef.Trajectory.Smarts.Inaccuracy * Info.ConsumableDef.Trajectory.Smarts.Inaccuracy;
+                    OffsetSqr = Info.AmmoDef.Trajectory.Smarts.Inaccuracy * Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
                 }
                 else {
                     TargetOffSet = Vector3D.Zero;
@@ -438,9 +438,9 @@ namespace WeaponCore.Projectiles
         internal void TriggerMine(bool startTimer)
         {
             DistanceToTravelSqr = double.MinValue;
-            if (Info.ConsumableDef.Const.Ewar) {
+            if (Info.AmmoDef.Const.Ewar) {
                 Info.AvShot.Triggered = true;
-                if (startTimer) FieldTime = Info.ConsumableDef.Trajectory.Mines.FieldTime;
+                if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
             }
             else if (startTimer) FieldTime = 0;
             MineTriggered = true;
@@ -449,12 +449,12 @@ namespace WeaponCore.Projectiles
         internal void RunSmart()
         {
             Vector3D newVel;
-            if (DeltaVelocityPerTick <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.ConsumableDef.Const.SmartsDelayDistSqr) {
+            if (DeltaVelocityPerTick <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {
 
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime && HadTarget;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.TargetEntity != null && !Info.Target.TargetEntity.MarkedForClose;
-                var isZombie = Info.ConsumableDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && (ZombieLifeTime + SmartSlot) % 30 == 0;
+                var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && (ZombieLifeTime + SmartSlot) % 30 == 0;
                 var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && (Info.Age + SmartSlot) % 30 == 0;
 
                 if ((PickTarget && (Info.Age + SmartSlot) % 30 == 0 || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget) {
@@ -470,7 +470,7 @@ namespace WeaponCore.Projectiles
                     else if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
                     else if (Info.Target.TargetEntity != null) targetPos = Info.Target.TargetEntity.PositionComp.WorldAABB.Center;
 
-                    if (Info.ConsumableDef.Const.TargetOffSet && WasTracking) 
+                    if (Info.AmmoDef.Const.TargetOffSet && WasTracking) 
                     {
                         if (Info.Age - LastOffsetTime > 300) {
                             double dist;
@@ -493,12 +493,12 @@ namespace WeaponCore.Projectiles
                     if (fake) tVel = Info.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
-                    if (Info.ConsumableDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.ConsumableDef.Const.SmartsDelayDistSqr) {
+                    if (Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {
 
                         if (WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0) || !WasTracking) {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
-                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.ConsumableDef.Const.TargetLossDegree)) {
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree)) {
                                 if (WasTracking)
                                     PickTarget = true;
                             }
@@ -511,10 +511,10 @@ namespace WeaponCore.Projectiles
                 }
                 else {
 
-                    var roam = Info.ConsumableDef.Trajectory.Smarts.Roam;
+                    var roam = Info.AmmoDef.Trajectory.Smarts.Roam;
                     PrevTargetPos = roam ? PredictedTargetPos : Position + (Info.Direction * Info.MaxTrajectory);
 
-                    if (ZombieLifeTime++ > Info.ConsumableDef.Const.TargetLossTime && !Info.ConsumableDef.Trajectory.Smarts.KeepAliveAfterTargetLoss && (Info.ConsumableDef.Trajectory.Smarts.NoTargetExpire || HadTarget)) {
+                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && !Info.AmmoDef.Trajectory.Smarts.KeepAliveAfterTargetLoss && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget)) {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
                         EarlyEnd = true;
                     }
@@ -534,13 +534,13 @@ namespace WeaponCore.Projectiles
 
                 var missileToTarget = Vector3D.Normalize(PrevTargetPos - Position);
                 var relativeVelocity = PrevTargetVel - Velocity;
-                var normalMissileAcceleration = (relativeVelocity - (relativeVelocity.Dot(missileToTarget) * missileToTarget)) * Info.ConsumableDef.Trajectory.Smarts.Aggressiveness;
+                var normalMissileAcceleration = (relativeVelocity - (relativeVelocity.Dot(missileToTarget) * missileToTarget)) * Info.AmmoDef.Trajectory.Smarts.Aggressiveness;
 
                 Vector3D commandedAccel;
                 if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel = (missileToTarget * AccelInMetersPerSec);
                 else {
 
-                    var maxLateralThrust = AccelInMetersPerSec * Math.Min(1, Math.Max(0, Info.ConsumableDef.Const.MaxLateralThrust));
+                    var maxLateralThrust = AccelInMetersPerSec * Math.Min(1, Math.Max(0, Info.AmmoDef.Const.MaxLateralThrust));
                     if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust) {
                         Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
                         normalMissileAcceleration *= maxLateralThrust;
@@ -562,7 +562,7 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (Info.ConsumableDef.Const.Pulse && !Info.EwarAreaPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.ConsumableDef.Const.IsMine)
+            if (Info.AmmoDef.Const.Pulse && !Info.EwarAreaPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.AmmoDef.Const.IsMine)
             {
                 Info.EwarAreaPulse = true;
                 Velocity = Vector3D.Zero;
@@ -571,8 +571,8 @@ namespace WeaponCore.Projectiles
 
             if (Info.EwarAreaPulse)
             {
-                var areaSize = Info.ConsumableDef.Const.AreaEffectSize;
-                var maxSteps = Info.ConsumableDef.Const.PulseGrowTime;
+                var areaSize = Info.AmmoDef.Const.AreaEffectSize;
+                var maxSteps = Info.AmmoDef.Const.PulseGrowTime;
                 if (Info.TriggerGrowthSteps < areaSize)
                 {
                     var expansionPerTick = areaSize / maxSteps;
@@ -598,25 +598,25 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (!Info.ConsumableDef.Const.Pulse || Info.ConsumableDef.Const.Pulse && Info.Age % Info.ConsumableDef.Const.PulseInterval == 0)
+            if (!Info.AmmoDef.Const.Pulse || Info.AmmoDef.Const.Pulse && Info.Age % Info.AmmoDef.Const.PulseInterval == 0)
                 EwarEffects();
             else Info.EwarActive = false;
         }
 
         internal void EwarEffects()
         {
-            switch (Info.ConsumableDef.Const.AreaEffect)
+            switch (Info.AmmoDef.Const.AreaEffect)
             {
                 case AreaEffectType.AntiSmart:
-                    var eWarSphere = new BoundingSphereD(Position, Info.ConsumableDef.Const.AreaEffectSize);
+                    var eWarSphere = new BoundingSphereD(Position, Info.AmmoDef.Const.AreaEffectSize);
                     DynTrees.GetAllProjectilesInSphere(Info.System.Session, ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
                         if (Info.Ai.IsGrid && netted.Info.Ai.IsGrid && Info.Ai.GridEntity.IsSameConstructAs(netted.Info.Ai.GridEntity) || netted.Info.Target.IsProjectile) continue;
-                        if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                        if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         {
-                            Info.BaseEwarPool -= Info.ConsumableDef.Const.AreaEffectDamage;
+                            Info.BaseEwarPool -= Info.AmmoDef.Const.AreaEffectDamage;
                             if (Info.BaseEwarPool <= 0)
                             {
                                 Info.EwarActive = true;
@@ -631,39 +631,39 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     return;
                 case AreaEffectType.PushField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.ConsumableDef.Const.Pulse || Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                     {
                         Info.EwarActive = true;
                     }
@@ -675,7 +675,7 @@ namespace WeaponCore.Projectiles
 
         internal void SeekEnemy()
         {
-            var mineInfo = Info.ConsumableDef.Trajectory.Mines;
+            var mineInfo = Info.AmmoDef.Trajectory.Mines;
             var detectRadius = mineInfo.DetectRadius;
             var deCloakRadius = mineInfo.DeCloakRadius;
 
@@ -707,7 +707,7 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     var entSphere = ent.PositionComp.WorldVolume;
-                    entSphere.Radius += Info.ConsumableDef.Const.CollisionSize;
+                    entSphere.Radius += Info.AmmoDef.Const.CollisionSize;
                     var dist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref Position, ref entSphere);
                     if (dist >= minDist) continue;
                     minDist = dist;
@@ -724,7 +724,7 @@ namespace WeaponCore.Projectiles
             else if (Info.Target.TargetEntity != null && !Info.Target.TargetEntity.MarkedForClose)
             {
                 var entSphere = Info.Target.TargetEntity.PositionComp.WorldVolume;
-                entSphere.Radius += Info.ConsumableDef.Const.CollisionSize;
+                entSphere.Radius += Info.AmmoDef.Const.CollisionSize;
                 minDist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref Position, ref entSphere);
             }
             else
@@ -732,10 +732,10 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv) {
                 if (Info.AvShot.Cloaked && minDist <= deCloakRadius) Info.AvShot.Cloaked = false;
-                else if (Info.AvShot.ConsumableDef.Trajectory.Mines.Cloak && !Info.AvShot.Cloaked && minDist > deCloakRadius) Info.AvShot.Cloaked = true;
+                else if (Info.AvShot.AmmoDef.Trajectory.Mines.Cloak && !Info.AvShot.Cloaked && minDist > deCloakRadius) Info.AvShot.Cloaked = true;
             }
 
-            if (minDist <= Info.ConsumableDef.Const.CollisionSize) activate = true;
+            if (minDist <= Info.AmmoDef.Const.CollisionSize) activate = true;
             if (minDist <= detectRadius) inRange = true;
             if (MineActivated)
             {
@@ -758,7 +758,7 @@ namespace WeaponCore.Projectiles
 
             Info.WeaponRng.TurretCurrentCounter += 2;
 
-            var offsetAmount = roam ? 100 : Info.ConsumableDef.Trajectory.Smarts.Inaccuracy;
+            var offsetAmount = roam ? 100 : Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
             Vector3D randomDirection;
             Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
             PrevTargetOffset = TargetOffSet;
@@ -772,7 +772,7 @@ namespace WeaponCore.Projectiles
             if (State == ProjectileState.Destroy)
             {
                 Info.Hit = new Hit { Block = null, Entity = null, SurfaceHit = Position, LastHit = Position, HitVelocity = Info.InPlanetGravity ? Velocity * 0.33f : Velocity, HitTick = Info.System.Session.Tick };
-                if (EnableAv || Info.ConsumableDef.Const.VirtualBeams)
+                if (EnableAv || Info.AmmoDef.Const.VirtualBeams)
                 {
                     Info.AvShot.ForceHitParticle = true;
                     Info.AvShot.Hit = Info.Hit;
@@ -798,7 +798,7 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose()
         {
-            if (GenerateShrapnel && Info.Age >= Info.ConsumableDef.Const.MinArmingTime)
+            if (GenerateShrapnel && Info.Age >= Info.AmmoDef.Const.MinArmingTime)
                 SpawnShrapnel();
 
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
@@ -812,8 +812,8 @@ namespace WeaponCore.Projectiles
 
             State = ProjectileState.Dead;
 
-            var detInfo = Info.ConsumableDef.AreaEffect.Detonation;
-            var afInfo = Info.ConsumableDef.AreaEffect;
+            var detInfo = Info.AmmoDef.AreaEffect.Detonation;
+            var afInfo = Info.AmmoDef.AreaEffect;
             var detExp = !afInfo.Explosions.NoVisuals && (afInfo.AreaEffect == AreaEffectType.Explosive || afInfo.AreaEffect == AreaEffectType.Radiant && afInfo.Explosions.CustomParticle != string.Empty) && detInfo.DetonateOnEnd && (!detInfo.ArmOnlyOnHit || Info.ObjectsHit > 0);
 
             if (EnableAv)
@@ -824,7 +824,7 @@ namespace WeaponCore.Projectiles
                     Info.System.Session.Av.AvShotPool.Return(Info.AvShot);
                 else Info.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = detExp };
             }
-            else if (Info.ConsumableDef.Const.VirtualBeams)
+            else if (Info.AmmoDef.Const.VirtualBeams)
             {
                 for (int i = 0; i < VrPros.Count; i++)
                 {

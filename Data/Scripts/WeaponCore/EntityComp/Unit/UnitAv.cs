@@ -4,10 +4,10 @@ using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
 {
-    public partial class Unit
+    public partial class Part
     {
         public void PlayEmissives(PartAnimation animation)
         {

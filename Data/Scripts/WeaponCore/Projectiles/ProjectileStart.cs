@@ -3,7 +3,7 @@ using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.NewProjectile;
-using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
 
 namespace WeaponCore.Projectiles
 {
@@ -14,8 +14,8 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < NewProjectiles.Count; i++)
             {
                 var gen = NewProjectiles[i];
-                var u = gen.Muzzle.Unit;
-                var a = gen.ConsumableDef;
+                var u = gen.Muzzle.Part;
+                var a = gen.AmmoDef;
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
@@ -23,14 +23,14 @@ namespace WeaponCore.Projectiles
                 u.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
-                var targetable = u.ActiveAmmoDef.ConsumableDef.Health > 0 && !u.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon;
+                var targetable = u.ActiveAmmoDef.AmmoDef.Health > 0 && !u.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
                 p.Info.System = u.System;
                 p.Info.Ai = u.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
-                p.Info.ConsumableDef = a;
+                p.Info.AmmoDef = a;
                 p.Info.Overrides = u.Comp.Data.Repo.Base.Set.Overrides;
                 p.Info.Target.TargetEntity = t != Kind.Client ? u.Target.TargetEntity : gen.TargetEnt;
                 p.Info.Target.Projectile = u.Target.Projectile;
@@ -44,7 +44,7 @@ namespace WeaponCore.Projectiles
                 p.Info.DummyTarget = u.Comp.Data.Repo.Base.State.TrackingReticle ? u.Comp.Session.PlayerDummyTargets[u.Comp.Data.Repo.Base.State.PlayerId] : null;
 
                 p.Info.WeaponId = u.WeaponId;
-                p.Info.BaseDamagePool = a == u.ActiveAmmoDef.ConsumableDef ? u.BaseDamage : a.BaseDamage;
+                p.Info.BaseDamagePool = a == u.ActiveAmmoDef.AmmoDef ? u.BaseDamage : a.BaseDamage;
                 p.Info.EnableGuidance = u.Comp.Data.Repo.Base.Set.Guidance;
                 p.Info.WeaponCache = u.WeaponCache;
                 p.Info.WeaponRng = u.TargetData.WeaponRandom;
@@ -152,8 +152,8 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Session.FragmentsNeedingEntities.Count; i++)
             {
                 var frag = Session.FragmentsNeedingEntities[i];
-                if (frag.ConsumableDef.Const.PrimeModel && frag.PrimeEntity == null) frag.PrimeEntity = frag.ConsumableDef.Const.PrimeEntityPool.Get();
-                if (frag.ConsumableDef.Const.TriggerModel && frag.TriggerEntity == null) frag.TriggerEntity = Session.TriggerEntityPool.Get();
+                if (frag.AmmoDef.Const.PrimeModel && frag.PrimeEntity == null) frag.PrimeEntity = frag.AmmoDef.Const.PrimeEntityPool.Get();
+                if (frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) frag.TriggerEntity = Session.TriggerEntityPool.Get();
             }
             Session.FragmentsNeedingEntities.Clear();
         }
@@ -167,7 +167,7 @@ namespace WeaponCore.Projectiles
                 {
 
                     var targetAi = p.Info.Ai.TargetAis[t];
-                    var addProjectile = p.Info.ConsumableDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
+                    var addProjectile = p.Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                     if (!addProjectile && targetAi.PointDefense)
                     {
                         if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.TopEntity.PositionComp.WorldMatrixRef.Translation) < 0)
@@ -182,7 +182,7 @@ namespace WeaponCore.Projectiles
                             {
                                 var deltaPos = targetSphere.Center - p.Info.Origin;
                                 var deltaVel = targetAi.GridVel - p.Info.Ai.GridVel;
-                                var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, p.Info.ConsumableDef.Const.DesiredProjectileSpeed);
+                                var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, p.Info.AmmoDef.Const.DesiredProjectileSpeed);
                                 var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
                                 targetSphere.Center = predictedPos;
                             }

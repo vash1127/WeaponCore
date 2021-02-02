@@ -4,10 +4,10 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
 {
-    public partial class Unit
+    public partial class Part
     {
 
         internal void PositionChanged(MyPositionComponentBase pComp)
@@ -57,7 +57,7 @@ namespace WeaponCore.Platform
 
         internal void UpdateRequiredPower()
         {
-            if (ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || ActiveAmmoDef.ConsumableDef.Const.IsHybrid)
+            if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid)
             {
                 var rofPerSecond = RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND;
                 RequiredPower = ((ShotEnergyCost * (rofPerSecond * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
@@ -68,8 +68,8 @@ namespace WeaponCore.Platform
 
         internal void UpdateShotEnergy()
         {
-            var ewar = (int)ActiveAmmoDef.ConsumableDef.AreaEffect.AreaEffect > 3;
-            ShotEnergyCost = ewar ? ActiveAmmoDef.ConsumableDef.EnergyCost * ActiveAmmoDef.ConsumableDef.Const.AreaEffectDamage : ActiveAmmoDef.ConsumableDef.EnergyCost * BaseDamage;
+            var ewar = (int)ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffect > 3;
+            ShotEnergyCost = ewar ? ActiveAmmoDef.AmmoDef.EnergyCost * ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage : ActiveAmmoDef.AmmoDef.EnergyCost * BaseDamage;
         }
 
         internal void UpdateBarrelRotation()
@@ -104,7 +104,7 @@ namespace WeaponCore.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if ((ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || ActiveAmmoDef.ConsumableDef.Const.IsHybrid) && !ActiveAmmoDef.ConsumableDef.Const.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
+                if ((ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
                     DrawPower();
             }
             IsShooting = true;
@@ -126,7 +126,7 @@ namespace WeaponCore.Platform
                 EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                 Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
 
-                if (!ActiveAmmoDef.ConsumableDef.Const.MustCharge && (ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || ActiveAmmoDef.ConsumableDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
+                if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
                     StopPowerDraw();
 
             }
@@ -178,7 +178,7 @@ namespace WeaponCore.Platform
 
         internal double GetMaxWeaponRange()
         {
-            var ammoMax = ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory;
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
             return Math.Min(hardPointMax, ammoMax);
         }
@@ -186,7 +186,7 @@ namespace WeaponCore.Platform
         internal void UpdateWeaponRange()
         {
             var range = Comp.Data.Repo.Base.Set.Range < 0 ? double.MaxValue : Comp.Data.Repo.Base.Set.Range; 
-            var ammoMax = ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory;
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
             var weaponRange = Math.Min(hardPointMax, ammoMax);
             MaxTargetDistance = Math.Min(range, weaponRange);
@@ -211,7 +211,7 @@ namespace WeaponCore.Platform
 
         internal void RayCallBackClean()
         {
-            RayCallBack.Unit = null;
+            RayCallBack.Part = null;
             RayCallBack = null;
         }
 

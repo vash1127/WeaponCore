@@ -7,72 +7,72 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.HardPointDef;
-using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.PartDefinition.HardPointDef;
+using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Platform
 {
-    public partial class Unit
+    public partial class Part
     {
-        internal static bool CanShootTarget(Unit unit, ref Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos, bool checkSelfHit = false, MyEntity target = null)
+        internal static bool CanShootTarget(Part part, ref Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos, bool checkSelfHit = false, MyEntity target = null)
         {
-            var prediction = unit.System.Values.HardPoint.AimLeadingPrediction;
-            var trackingWeapon = unit.TurretMode ? unit : unit.Comp.TrackingUnit;
+            var prediction = part.System.Values.HardPoint.AimLeadingPrediction;
+            var trackingWeapon = part.TurretMode ? part : part.Comp.TrackingPart;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
             var validEstimate = true;
-            if (prediction != Prediction.Off && !unit.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && unit.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0)
-                targetPos = TrajectoryEstimation(unit, targetCenter, targetLinVel, targetAccel, out validEstimate);
+            if (prediction != Prediction.Off && !part.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && part.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
+                targetPos = TrajectoryEstimation(part, targetCenter, targetLinVel, targetAccel, out validEstimate);
             else
                 targetPos = targetCenter;
-            var targetDir = targetPos - unit.MyPivotPos;
+            var targetDir = targetPos - part.MyPivotPos;
 
             double rangeToTarget;
-            Vector3D.DistanceSquared(ref targetPos, ref unit.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref part.MyPivotPos, out rangeToTarget);
 
-            var inRange = rangeToTarget <= unit.MaxTargetDistanceSqr && rangeToTarget >= unit.MinTargetDistanceSqr;
+            var inRange = rangeToTarget <= part.MaxTargetDistanceSqr && rangeToTarget >= part.MinTargetDistanceSqr;
 
             bool canTrack;
             bool isTracking;
 
-            if (unit == trackingWeapon)
-                canTrack = validEstimate && MathFuncs.WeaponLookAt(unit, ref targetDir, rangeToTarget, false, true, out isTracking);
+            if (part == trackingWeapon)
+                canTrack = validEstimate && MathFuncs.WeaponLookAt(part, ref targetDir, rangeToTarget, false, true, out isTracking);
             else
-                canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref unit.MyPivotFwd, ref targetDir, unit.AimingTolerance);
+                canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref part.MyPivotFwd, ref targetDir, part.AimingTolerance);
 
             bool selfHit = false;
-            unit.LastHitInfo = null;
-            if (checkSelfHit && target != null && unit.Comp.IsBlock) {
+            part.LastHitInfo = null;
+            if (checkSelfHit && target != null && part.Comp.IsBlock) {
 
-                var testLine = new LineD(targetPos, unit.BarrelOrigin);
-                var predictedMuzzlePos = testLine.To + (-testLine.Direction * unit.MuzzleDistToBarrelCenter);
-                var ai = unit.Comp.Ai;
+                var testLine = new LineD(targetPos, part.BarrelOrigin);
+                var predictedMuzzlePos = testLine.To + (-testLine.Direction * part.MuzzleDistToBarrelCenter);
+                var ai = part.Comp.Ai;
                 var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.TopEntity.PositionComp.WorldMatrixNormalizedInv) * ai.GridEntity.GridSizeR);
 
                 MyCube cube;
                 var noCubeAtPosition = !ai.GridEntity.TryGetCube(localPredictedPos, out cube);
-                if (noCubeAtPosition || cube.CubeBlock == unit.Comp.Cube.SlimBlock) {
+                if (noCubeAtPosition || cube.CubeBlock == part.Comp.Cube.SlimBlock) {
 
                     var noCubeInLine = !ai.GridEntity.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
-                    var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == unit.Comp.Cube.Position;
+                    var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == part.Comp.Cube.Position;
 
                     if (noCubesInLineOrHitSelf) {
 
-                        unit.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out unit.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
+                        part.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out part.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
                         
-                        if (unit.LastHitInfo != null && unit.LastHitInfo.HitEntity == ai.TopEntity)
+                        if (part.LastHitInfo != null && part.LastHitInfo.HitEntity == ai.TopEntity)
                             selfHit = true;
                     }
                 }
                 else selfHit = true;
             }
 
-            return !selfHit && (inRange && canTrack || unit.Comp.Data.Repo.Base.State.TrackingReticle);
+            return !selfHit && (inRange && canTrack || part.Comp.Data.Repo.Base.State.TrackingReticle);
         }
 
-        internal static bool CheckSelfHit(Unit w, ref Vector3D targetPos, ref Vector3D testPos, out Vector3D predictedMuzzlePos)
+        internal static bool CheckSelfHit(Part w, ref Vector3D targetPos, ref Vector3D testPos, out Vector3D predictedMuzzlePos)
         {
 
             var testLine = new LineD(targetPos, testPos);
@@ -101,10 +101,10 @@ namespace WeaponCore.Platform
         }
 
 
-        internal static bool CanShootTargetObb(Unit unit, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
+        internal static bool CanShootTargetObb(Part part, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {
-            var prediction = unit.System.Values.HardPoint.AimLeadingPrediction;
-            var trackingWeapon = unit.TurretMode ? unit : unit.Comp.TrackingUnit;
+            var prediction = part.System.Values.HardPoint.AimLeadingPrediction;
+            var trackingWeapon = part.TurretMode ? part : part.Comp.TrackingPart;
 
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
@@ -113,61 +113,61 @@ namespace WeaponCore.Platform
             var obb = new MyOrientedBoundingBoxD(box, entity.PositionComp.WorldMatrixRef);
 
             var validEstimate = true;
-            if (prediction != Prediction.Off && !unit.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && unit.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0)
-                targetPos = TrajectoryEstimation(unit, obb.Center, targetLinVel, targetAccel, out validEstimate);
+            if (prediction != Prediction.Off && !part.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && part.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
+                targetPos = TrajectoryEstimation(part, obb.Center, targetLinVel, targetAccel, out validEstimate);
             else
                 targetPos = obb.Center;
 
             obb.Center = targetPos;
-            unit.TargetBox = obb;
+            part.TargetBox = obb;
 
             var obbAbsMax = obb.HalfExtent.AbsMax();
-            var maxRangeSqr = obbAbsMax + unit.MaxTargetDistance;
-            var minRangeSqr = obbAbsMax + unit.MinTargetDistance;
+            var maxRangeSqr = obbAbsMax + part.MaxTargetDistance;
+            var minRangeSqr = obbAbsMax + part.MinTargetDistance;
 
             maxRangeSqr *= maxRangeSqr;
             minRangeSqr *= minRangeSqr;
             double rangeToTarget;
-            Vector3D.DistanceSquared(ref targetPos, ref unit.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref part.MyPivotPos, out rangeToTarget);
 
             bool canTrack = false;
             if (validEstimate && rangeToTarget <= maxRangeSqr && rangeToTarget >= minRangeSqr)
             {
-                var targetDir = targetPos - unit.MyPivotPos;
-                if (unit == trackingWeapon)
+                var targetDir = targetPos - part.MyPivotPos;
+                if (part == trackingWeapon)
                 {
                     double checkAzimuth;
                     double checkElevation;
 
-                    MathFuncs.GetRotationAngles(ref targetDir, ref unit.WeaponConstMatrix, out checkAzimuth, out checkElevation);
+                    MathFuncs.GetRotationAngles(ref targetDir, ref part.WeaponConstMatrix, out checkAzimuth, out checkElevation);
 
-                    var azConstraint = Math.Min(unit.MaxAzToleranceRadians, Math.Max(unit.MinAzToleranceRadians, checkAzimuth));
-                    var elConstraint = Math.Min(unit.MaxElToleranceRadians, Math.Max(unit.MinElToleranceRadians, checkElevation));
+                    var azConstraint = Math.Min(part.MaxAzToleranceRadians, Math.Max(part.MinAzToleranceRadians, checkAzimuth));
+                    var elConstraint = Math.Min(part.MaxElToleranceRadians, Math.Max(part.MinElToleranceRadians, checkElevation));
 
                     Vector3D constraintVector;
                     Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out constraintVector);
-                    Vector3D.Rotate(ref constraintVector, ref unit.WeaponConstMatrix, out constraintVector);
+                    Vector3D.Rotate(ref constraintVector, ref part.WeaponConstMatrix, out constraintVector);
 
-                    var testRay = new RayD(ref unit.MyPivotPos, ref constraintVector);
+                    var testRay = new RayD(ref part.MyPivotPos, ref constraintVector);
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
-                    if (unit.Comp.Debug)
-                        unit.LimitLine = new LineD(unit.MyPivotPos, unit.MyPivotPos + (constraintVector * unit.ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory));
+                    if (part.Comp.Debug)
+                        part.LimitLine = new LineD(part.MyPivotPos, part.MyPivotPos + (constraintVector * part.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
                 }
                 else
-                    canTrack = MathFuncs.IsDotProductWithinTolerance(ref unit.MyPivotFwd, ref targetDir, unit.AimingTolerance);
+                    canTrack = MathFuncs.IsDotProductWithinTolerance(ref part.MyPivotFwd, ref targetDir, part.AimingTolerance);
             }
             return canTrack;
         }
 
-        internal static bool TargetAligned(Unit unit, Target target, out Vector3D targetPos)
+        internal static bool TargetAligned(Part part, Target target, out Vector3D targetPos)
         {
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
             Vector3D targetCenter;
 
-            if (unit.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].Position;
+            if (part.Comp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -176,13 +176,13 @@ namespace WeaponCore.Platform
                 targetCenter = Vector3D.Zero;
 
             var validEstimate = true;
-            if (unit.System.Prediction != Prediction.Off && (!unit.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && unit.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0))
+            if (part.System.Prediction != Prediction.Off && (!part.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && part.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
 
-                if (unit.Comp.Data.Repo.Base.State.TrackingReticle)
+                if (part.Comp.Data.Repo.Base.State.TrackingReticle)
                 {
-                    targetLinVel = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
+                    targetLinVel = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
+                    targetAccel = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
                 }
                 else
                 {
@@ -202,37 +202,37 @@ namespace WeaponCore.Platform
                 }
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-                targetPos = TrajectoryEstimation(unit, targetCenter, targetLinVel, targetAccel, out validEstimate);
+                targetPos = TrajectoryEstimation(part, targetCenter, targetLinVel, targetAccel, out validEstimate);
             }
             else
                 targetPos = targetCenter;
 
-            var targetDir = targetPos - unit.MyPivotPos;
+            var targetDir = targetPos - part.MyPivotPos;
 
             double rangeToTarget;
-            Vector3D.DistanceSquared(ref targetPos, ref unit.MyPivotPos, out rangeToTarget);
-            var inRange = rangeToTarget <= unit.MaxTargetDistanceSqr && rangeToTarget >= unit.MinTargetDistanceSqr;
+            Vector3D.DistanceSquared(ref targetPos, ref part.MyPivotPos, out rangeToTarget);
+            var inRange = rangeToTarget <= part.MaxTargetDistanceSqr && rangeToTarget >= part.MinTargetDistanceSqr;
 
-            var isAligned = validEstimate && (inRange || unit.Comp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref unit.MyPivotFwd, ref targetDir, unit.AimingTolerance);
+            var isAligned = validEstimate && (inRange || part.Comp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref part.MyPivotFwd, ref targetDir, part.AimingTolerance);
 
-            unit.Target.TargetPos = targetPos;
-            unit.Target.IsAligned = isAligned;
+            part.Target.TargetPos = targetPos;
+            part.Target.IsAligned = isAligned;
             return isAligned;
         }
 
-        internal static Vector3D TargetCenter(Unit unit)
+        internal static Vector3D TargetCenter(Part part)
         {
             var targetCenter = Vector3D.Zero;
-            if (unit.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].Position;
-            else if (unit.Target.IsProjectile)
-                targetCenter = unit.Target.Projectile?.Position ?? Vector3D.Zero;
-            else if (!unit.Target.IsFakeTarget)
-                targetCenter = unit.Target.TargetEntity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
+            if (part.Comp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].Position;
+            else if (part.Target.IsProjectile)
+                targetCenter = part.Target.Projectile?.Position ?? Vector3D.Zero;
+            else if (!part.Target.IsFakeTarget)
+                targetCenter = part.Target.TargetEntity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
             return targetCenter;
         }
 
-        internal static bool TrackingTarget(Unit unit, Target target, out bool targetLock)
+        internal static bool TrackingTarget(Part part, Target target, out bool targetLock)
         {
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
@@ -240,8 +240,8 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
             targetLock = false;
 
-            if (unit.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].Position;
+            if (part.Comp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -250,11 +250,11 @@ namespace WeaponCore.Platform
                 targetCenter = Vector3D.Zero;
 
             var validEstimate = true;
-            if (unit.System.Prediction != Prediction.Off && !unit.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && unit.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0) {
+            if (part.System.Prediction != Prediction.Off && !part.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && part.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
-                if (unit.Comp.Data.Repo.Base.State.TrackingReticle) {
-                    targetLinVel = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = unit.Comp.Session.PlayerDummyTargets[unit.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
+                if (part.Comp.Data.Repo.Base.State.TrackingReticle) {
+                    targetLinVel = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
+                    targetAccel = part.Comp.Session.PlayerDummyTargets[part.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
                 }
                 else {
                     var cube = target.TargetEntity as MyCubeBlock;
@@ -271,59 +271,59 @@ namespace WeaponCore.Platform
                 }
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-                targetPos = TrajectoryEstimation(unit, targetCenter, targetLinVel, targetAccel, out validEstimate);
+                targetPos = TrajectoryEstimation(part, targetCenter, targetLinVel, targetAccel, out validEstimate);
             }
             else
                 targetPos = targetCenter;
 
-            unit.Target.TargetPos = targetPos;
+            part.Target.TargetPos = targetPos;
 
             double rangeToTargetSqr;
-            Vector3D.DistanceSquared(ref targetPos, ref unit.MyPivotPos, out rangeToTargetSqr);
+            Vector3D.DistanceSquared(ref targetPos, ref part.MyPivotPos, out rangeToTargetSqr);
 
-            var targetDir = targetPos - unit.MyPivotPos;
-            var readyToTrack = validEstimate && !unit.Comp.ResettingSubparts && (unit.Comp.Data.Repo.Base.State.TrackingReticle || rangeToTargetSqr <= unit.MaxTargetDistanceSqr && rangeToTargetSqr >= unit.MinTargetDistanceSqr);
+            var targetDir = targetPos - part.MyPivotPos;
+            var readyToTrack = validEstimate && !part.Comp.ResettingSubparts && (part.Comp.Data.Repo.Base.State.TrackingReticle || rangeToTargetSqr <= part.MaxTargetDistanceSqr && rangeToTargetSqr >= part.MinTargetDistanceSqr);
             
             var locked = true;
             var isTracking = false;
-            if (readyToTrack && unit.Comp.Data.Repo.Base.State.Control != CompStateValues.ControlMode.Camera) {
+            if (readyToTrack && part.Comp.Data.Repo.Base.State.Control != CompStateValues.ControlMode.Camera) {
 
-                if (MathFuncs.WeaponLookAt(unit, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
+                if (MathFuncs.WeaponLookAt(part, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
 
-                    unit.ReturingHome = false;
+                    part.ReturingHome = false;
                     locked = false;
-                    unit.AimBarrel();
+                    part.AimBarrel();
                 }
             }
             
-            unit.Rotating = !locked;
+            part.Rotating = !locked;
 
-            if (unit.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
+            if (part.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
                 return isTracking;
 
             var isAligned = false;
 
             if (isTracking)
-                isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref unit.MyPivotFwd, ref targetDir, unit.AimingTolerance);
+                isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref part.MyPivotFwd, ref targetDir, part.AimingTolerance);
 
-            var wasAligned = unit.Target.IsAligned;
-            unit.Target.IsAligned = isAligned;
+            var wasAligned = part.Target.IsAligned;
+            part.Target.IsAligned = isAligned;
             var alignedChange = wasAligned != isAligned;
-            if (unit.System.DesignatorWeapon && unit.System.Session.IsServer && alignedChange) { 
-                for (int i = 0; i < unit.Comp.Platform.Weapons.Length; i++) {
-                    var w = unit.Comp.Platform.Weapons[i];
+            if (part.System.DesignatorWeapon && part.System.Session.IsServer && alignedChange) { 
+                for (int i = 0; i < part.Comp.Platform.Weapons.Length; i++) {
+                    var w = part.Comp.Platform.Weapons[i];
                     if (isAligned && !w.System.DesignatorWeapon)
-                        w.Target.Reset(unit.System.Session.Tick, Target.States.Designator);
+                        w.Target.Reset(part.System.Session.Tick, Target.States.Designator);
                     else if (!isAligned && w.System.DesignatorWeapon)
-                        w.Target.Reset(unit.System.Session.Tick, Target.States.Designator);
+                        w.Target.Reset(part.System.Session.Tick, Target.States.Designator);
                 }
             }
 
-            targetLock = isTracking && unit.Target.IsAligned;
+            targetLock = isTracking && part.Target.IsAligned;
 
-            var rayCheckTest = !unit.Comp.Session.IsClient && targetLock && (unit.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || unit.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && unit.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance != GuidanceType.Smart && (!unit.Casting && unit.Comp.Session.Tick - unit.Comp.LastRayCastTick > 29 || unit.System.Values.HardPoint.Other.MuzzleCheck && unit.Comp.Session.Tick - unit.LastMuzzleCheck > 29);
+            var rayCheckTest = !part.Comp.Session.IsClient && targetLock && (part.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || part.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && part.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!part.Casting && part.Comp.Session.Tick - part.Comp.LastRayCastTick > 29 || part.System.Values.HardPoint.Other.MuzzleCheck && part.Comp.Session.Tick - part.LastMuzzleCheck > 29);
             
-            if (rayCheckTest && !unit.RayCheckTest())
+            if (rayCheckTest && !part.RayCheckTest())
                 return false;
             
             return isTracking;
@@ -512,34 +512,34 @@ namespace WeaponCore.Platform
             //Log.CleanLine($"simId:{iterator} - ct:{closestTime} - pOffset:{perpendicularAimOffset} - aimPos:{aimPoint} - sPos:{shooterPos} - tPos:{targetPos} - g:{gravity}");
         }
         */
-        internal static Vector3D TrajectoryEstimation(Unit unit, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
+        internal static Vector3D TrajectoryEstimation(Part part, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
         {
             valid = true;
-            var ai = unit.Comp.Ai;
+            var ai = part.Comp.Ai;
             var session = ai.Session;
-            var ammoDef = unit.ActiveAmmoDef.ConsumableDef;
+            var ammoDef = part.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick) {
                 ai.GridVel = ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
                 ai.IsStatic = ai.TopEntity.Physics?.IsStatic ?? false;
                 ai.VelocityUpdateTick = session.Tick;
             }
 
-            if (ammoDef.Const.FeelsGravity && session.Tick - unit.GravityTick > 119) {
-                unit.GravityTick = session.Tick;
+            if (ammoDef.Const.FeelsGravity && session.Tick - part.GravityTick > 119) {
+                part.GravityTick = session.Tick;
                 float interference;
-                unit.GravityPoint = session.Physics.CalculateNaturalGravityAt(unit.MyPivotPos, out interference);
+                part.GravityPoint = session.Physics.CalculateNaturalGravityAt(part.MyPivotPos, out interference);
             }
 
-            var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(unit.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
-            var targetMaxSpeed = unit.Comp.Session.MaxEntitySpeed;
-            var shooterPos = unit.MyPivotPos;
+            var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(part.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
+            var targetMaxSpeed = part.Comp.Session.MaxEntitySpeed;
+            var shooterPos = part.MyPivotPos;
 
-            var shooterVel = (Vector3D)unit.Comp.Ai.GridVel;
+            var shooterVel = (Vector3D)part.Comp.Ai.GridVel;
             var projectileMaxSpeed = ammoDef.Const.DesiredProjectileSpeed;
             var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
-            var gravity = unit.GravityPoint;
-            var basic = unit.System.Prediction != Prediction.Advanced;
+            var gravity = part.GravityPoint;
+            var basic = part.System.Prediction != Prediction.Advanced;
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
             Vector3D deltaPosNorm;
@@ -575,7 +575,7 @@ namespace WeaponCore.Platform
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             double shooterVelScaleFactor = 1;
             bool projectileAccelerates = projectileAccMag > 1e-6;
-            bool hasGravity = gravityMultiplier > 1e-6 && !MyUtils.IsZero(unit.GravityPoint);
+            bool hasGravity = gravityMultiplier > 1e-6 && !MyUtils.IsZero(part.GravityPoint);
 
             if (!basic && projectileAccelerates)
                 shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
@@ -652,12 +652,12 @@ namespace WeaponCore.Platform
             return estimatedImpactPoint + perpendicularAimOffset + gravityOffset;
         }
         
-        internal static Vector3D Old1TrajectoryEstimation(Unit unit, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
+        internal static Vector3D Old1TrajectoryEstimation(Part part, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
         {
             valid = true;
-            var ai = unit.Comp.Ai;
+            var ai = part.Comp.Ai;
             var session = ai.Session;
-            var ammoDef = unit.ActiveAmmoDef.ConsumableDef;
+            var ammoDef = part.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick)
             {
                 ai.GridVel = ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
@@ -665,23 +665,23 @@ namespace WeaponCore.Platform
                 ai.VelocityUpdateTick = session.Tick;
             }
 
-            if (ammoDef.Const.FeelsGravity && session.Tick - unit.GravityTick > 119)
+            if (ammoDef.Const.FeelsGravity && session.Tick - part.GravityTick > 119)
             {
-                unit.GravityTick = session.Tick;
+                part.GravityTick = session.Tick;
                 float interference;
-                unit.GravityPoint = session.Physics.CalculateNaturalGravityAt(unit.MyPivotPos, out interference);
+                part.GravityPoint = session.Physics.CalculateNaturalGravityAt(part.MyPivotPos, out interference);
             }
 
-            var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(unit.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
-            var targetMaxSpeed = unit.Comp.Session.MaxEntitySpeed;
-            var shooterPos = unit.MyPivotPos;
+            var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(part.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
+            var targetMaxSpeed = part.Comp.Session.MaxEntitySpeed;
+            var shooterPos = part.MyPivotPos;
             
-            var shooterVel = (Vector3D)unit.Comp.Ai.GridVel;
+            var shooterVel = (Vector3D)part.Comp.Ai.GridVel;
             var projectileMaxSpeed = ammoDef.Const.DesiredProjectileSpeed;
             var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
-            var gravity = unit.GravityPoint;
-            var basic = unit.System.Prediction != Prediction.Advanced;
+            var gravity = part.GravityPoint;
+            var basic = part.System.Prediction != Prediction.Advanced;
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
             Vector3D deltaPosNorm;
@@ -822,15 +822,15 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
 
-            if (ActiveAmmoDef.ConsumableDef.Const.FeelsGravity && Comp.Ai.Session.Tick - GravityTick > 119)
+            if (ActiveAmmoDef.AmmoDef.Const.FeelsGravity && Comp.Ai.Session.Tick - GravityTick > 119)
             {
                 GravityTick = Comp.Ai.Session.Tick;
                 float interference;
                 GravityPoint = System.Session.Physics.CalculateNaturalGravityAt(MyPivotPos, out interference);
             }
-            var gravityMultiplier = ActiveAmmoDef.ConsumableDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.ConsumableDef.Trajectory.GravityMultiplier : 0f;
+            var gravityMultiplier = ActiveAmmoDef.AmmoDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.AmmoDef.Trajectory.GravityMultiplier : 0f;
 
-            var predictedPos = Old2TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.ConsumableDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.ConsumableDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
+            var predictedPos = Old2TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
 
             return predictedPos;
         }
@@ -1027,7 +1027,7 @@ namespace WeaponCore.Platform
             }
             
             var tick = Comp.Session.Tick;
-            var masterWeapon = TrackTarget || Comp.TrackingUnit == null ? this : Comp.TrackingUnit;
+            var masterWeapon = TrackTarget || Comp.TrackingPart == null ? this : Comp.TrackingPart;
             
             if (System.Values.HardPoint.Other.MuzzleCheck)
             {
@@ -1105,7 +1105,7 @@ namespace WeaponCore.Platform
             }
 
             Water water = null;
-            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.ConsumableDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
+            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
             {
                 var waterSphere = new BoundingSphereD(Comp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
                 if (waterSphere.Contains(targetPos) != ContainmentType.Disjoint)
@@ -1125,7 +1125,7 @@ namespace WeaponCore.Platform
         public void ManualShootRayCallBack(IHitInfo hitInfo)
         {
             Casting = false;
-            var masterWeapon = TrackTarget ? this : Comp.TrackingUnit;
+            var masterWeapon = TrackTarget ? this : Comp.TrackingPart;
 
             var grid = hitInfo.HitEntity as MyCubeGrid;
             if (grid != null)

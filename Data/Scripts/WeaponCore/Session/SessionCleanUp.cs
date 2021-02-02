@@ -140,7 +140,7 @@ namespace WeaponCore
             
             DirtyGridsTmp.Clear();
 
-            foreach (var structure in UnitPlatforms.Values)
+            foreach (var structure in PartPlatforms.Values)
             {
                 foreach (var system in structure.WeaponSystems)
                 {
@@ -150,20 +150,20 @@ namespace WeaponCore
                     system.Value.RotatePairs.Clear();
                     system.Value.ReloadPairs.Clear();
                     foreach (var ammo in system.Value.AmmoTypes) {
-                        ammo.ConsumableDef.Const.PrimeEntityPool?.Clean();
-                        ammo.ConsumableDef.Const.HitDefaultSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitVoxelSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitShieldSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitFloatingSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitPlayerSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.TravelSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.CustomSoundPairs.Clear();
+                        ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
+                        ammo.AmmoDef.Const.HitDefaultSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitVoxelSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitShieldSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitFloatingSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitPlayerSoundPairs.Clear();
+                        ammo.AmmoDef.Const.TravelSoundPairs.Clear();
+                        ammo.AmmoDef.Const.CustomSoundPairs.Clear();
                     }
                 }
 
                 structure.WeaponSystems.Clear();
             }
-            UnitPlatforms.Clear();
+            PartPlatforms.Clear();
 
             foreach (var gridToMap in GridToBlockTypeMap)
             {
@@ -204,8 +204,8 @@ namespace WeaponCore
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
-            _subTypeIdToUnitDefs.Clear();
-            UnitDefinitions.Clear();
+            _subTypeIdToPartDefs.Clear();
+            PartDefinitions.Clear();
             SlimsSortedList.Clear();
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
@@ -278,7 +278,7 @@ namespace WeaponCore
             Api = null;
             ApiServer = null;
             Reporter = null;
-            UnitDefinitions = null;
+            PartDefinitions = null;
             AnimationsToProcess = null;
             ProjectileTree.Clear();
             ProjectileTree = null;

@@ -11,8 +11,8 @@ using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.Ai;
-using static WeaponCore.Support.UnitDefinition.TargetingDef;
-using static WeaponCore.Support.UnitDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.PartDefinition.TargetingDef;
+using static WeaponCore.Support.PartDefinition.TargetingDef.BlockTypes;
 using static WeaponCore.CompStateValues;
 namespace WeaponCore
 {
@@ -83,7 +83,7 @@ namespace WeaponCore
                     if (topEntity != null && GridTargetingAIs.TryGetValue(topEntity, out ai))
                     {
                         CoreComponent comp;
-                        if (ai.UnitBase.TryGetValue(ControlledEntity, out comp))
+                        if (ai.PartBase.TryGetValue(ControlledEntity, out comp))
                         {
                             GunnerBlackList = true;
                             if (IsServer)
@@ -120,7 +120,7 @@ namespace WeaponCore
                         if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out ai))
                         {
                             CoreComponent comp;
-                            if (ai.UnitBase.TryGetValue(oldCube, out comp))
+                            if (ai.PartBase.TryGetValue(oldCube, out comp))
                             {
                                 if (IsServer)
                                 {
@@ -175,10 +175,10 @@ namespace WeaponCore
                         for (int j = 0; j < fatBlocks.Count; j++) {
                             
                             var block = fatBlocks[j];
-                            if (block.IsFunctional && UnitPlatforms.ContainsKey(block.BlockDefinition.Id)) {
+                            if (block.IsFunctional && PartPlatforms.ContainsKey(block.BlockDefinition.Id)) {
 
                                 Ai ai;
-                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out ai) || !ai.UnitBase.ContainsKey(block)) 
+                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out ai) || !ai.PartBase.ContainsKey(block)) 
                                     _uninitializedBlocks.Add(block);
                             }
                         }
@@ -215,10 +215,10 @@ namespace WeaponCore
                     if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
                     {
                         var subtypeIdHash = MyCubeBuilder.Static.CurrentBlockDefinition.Id.SubtypeId;
-                        UnitCount unitCount;
-                        if (ai.UnitCounter.TryGetValue(subtypeIdHash, out unitCount))
+                        PartCounter partCounter;
+                        if (ai.PartCounting.TryGetValue(subtypeIdHash, out partCounter))
                         {
-                            if (unitCount.Max > 0 && ai.Construct.GetUnitCount(subtypeIdHash) >= unitCount.Max)
+                            if (partCounter.Max > 0 && ai.Construct.GetPartCount(subtypeIdHash) >= partCounter.Max)
                             {
                                 MyCubeBuilder.Static.NotifyPlacementUnable();
                                 MyCubeBuilder.Static.Deactivate();
@@ -231,7 +231,7 @@ namespace WeaponCore
                             MyOrientedBoundingBoxD restrictedBox;
                             MyOrientedBoundingBoxD buildBox = MyCubeBuilder.Static.GetBuildBoundingBox();
                             BoundingSphereD restrictedSphere;
-                            if (IsUnitAreaRestricted(subtypeIdHash, buildBox, grid, 0, null, out restrictedBox, out restrictedSphere))
+                            if (IsPartAreaRestricted(subtypeIdHash, buildBox, grid, 0, null, out restrictedBox, out restrictedSphere))
                             {
                                 DsDebugDraw.DrawBox(buildBox, _uninitializedColor);
                             }
@@ -246,9 +246,9 @@ namespace WeaponCore
                                 {
                                     DsDebugDraw.DrawSphere(restrictedSphere, _restrictionAreaColor);
                                 }
-                                for (int i = 0; i < ai.Units.Count; i++)
+                                for (int i = 0; i < ai.Parts.Count; i++)
                                 {
-                                    var comp = ai.Units[i];
+                                    var comp = ai.Parts[i];
 
                                     if (comp.IsBlock)
                                     {

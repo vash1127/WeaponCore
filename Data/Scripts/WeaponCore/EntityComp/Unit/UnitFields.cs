@@ -7,12 +7,12 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.UnitDefinition.HardPointDef.HardwareDef;
+using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.PartDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore.Platform
 {
-    public partial class Unit
+    public partial class Part
     {
         internal int NextMuzzle;
         internal volatile bool Casting;
@@ -218,7 +218,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || ActiveAmmoDef.ConsumableDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
                 var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;
@@ -241,7 +241,7 @@ namespace WeaponCore.Platform
             internal ChangeType Change;
         }
 
-        internal Unit(MyEntity entity, CoreSystem system, int weaponId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
+        internal Part(MyEntity entity, CoreSystem system, int weaponId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
 
             System = system;
@@ -272,7 +272,7 @@ namespace WeaponCore.Platform
             bool hitParticle = false;
             foreach (var ammoType in System.AmmoTypes)
             {
-                var c = ammoType.ConsumableDef.Const;
+                var c = ammoType.AmmoDef.Const;
                 if (c.EnergyAmmo) CanUseEnergyAmmo = true;
                 if (c.IsHybrid) CanUseHybridAmmo = true;
                 if (c.MustCharge) CanUseChargeAmmo = true;
@@ -351,10 +351,10 @@ namespace WeaponCore.Platform
             AimingTolerance = Math.Cos(toleranceInRadians);
 
             if (Comp.Platform.Structure.PrimaryWeapon ==  weaponId)
-                comp.TrackingUnit = this;
+                comp.TrackingPart = this;
 
             if (IsTurret && !TrackTarget)
-                Target = comp.TrackingUnit.Target;
+                Target = comp.TrackingPart.Target;
             else Target = new Target(this, true);
 
             _numOfBarrels = System.Barrels.Length;

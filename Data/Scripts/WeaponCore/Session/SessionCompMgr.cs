@@ -36,7 +36,7 @@ namespace WeaponCore
             MyOrientedBoundingBoxD blockBox;
             SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
 
-            if (IsUnitAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.CoreEntity.EntityId, ai, out b, out s)) {
+            if (IsPartAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.CoreEntity.EntityId, ai, out b, out s)) {
 
                 if (!DedicatedServer) {
 

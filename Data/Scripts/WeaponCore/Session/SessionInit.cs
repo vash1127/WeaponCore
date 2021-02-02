@@ -11,7 +11,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Settings;
 using WeaponCore.Support;
-using static WeaponCore.Support.UnitDefinition.HardPointDef.HardwareDef.HardwareType;
+using static WeaponCore.Support.PartDefinition.HardPointDef.HardwareDef.HardwareType;
 namespace WeaponCore
 {
     public partial class Session
@@ -113,7 +113,7 @@ namespace WeaponCore
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
 
-            foreach (var x in UnitDefinitions)
+            foreach (var x in PartDefinitions)
             {
                 foreach (var ammo in x.Ammos)
                 {
@@ -148,16 +148,16 @@ namespace WeaponCore
                     }
                 }
             }
-            foreach (var unitDef in UnitDefinitions)
+            foreach (var partDef in PartDefinitions)
             {
-                foreach (var mount in unitDef.Assignments.MountPoints)
+                foreach (var mount in partDef.Assignments.MountPoints)
                 {
                     var subTypeId = mount.SubtypeId;
                     var muzzlePartId = mount.MuzzlePartId;
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = unitDef.HardPoint.UnitName, Item2 = azimuthPartId, Item3 = elevationPartId};
+                    var extraInfo = new MyTuple<string, string, string> { Item1 = partDef.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId};
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
@@ -165,12 +165,12 @@ namespace WeaponCore
                         {
                             [muzzlePartId] = extraInfo
                         };
-                        _subTypeIdToUnitDefs[subTypeId] = new List<UnitDefinition> {unitDef};
+                        _subTypeIdToPartDefs[subTypeId] = new List<PartDefinition> {partDef};
                     }
                     else
                     {
                         _turretDefinitions[subTypeId][muzzlePartId] = extraInfo;
-                        _subTypeIdToUnitDefs[subTypeId].Add(unitDef);
+                        _subTypeIdToPartDefs[subTypeId].Add(partDef);
                     }
                 }
             }
@@ -190,21 +190,21 @@ namespace WeaponCore
                     AreaRestrictions[subTypeIdHash] = areaRestriction;
                 }
 
-                var units = _subTypeIdToUnitDefs[tDef.Key];
+                var parts = _subTypeIdToPartDefs[tDef.Key];
                 var hasTurret = false;
                 var hasArmor = false;
                 var hasUpgrade = false;
                 var firstWeapon = true;
                 string modPath = null;
-                foreach (var unitDef in units)
+                foreach (var partDef in parts)
                 {
                     try {
-                        modPath = unitDef.ModPath;
-                        if (unitDef.HardPoint.Ai.TurretAttached)
+                        modPath = partDef.ModPath;
+                        if (partDef.HardPoint.Ai.TurretAttached)
                             hasTurret = true;
 
-                        var isUpgrade = unitDef.HardPoint.HardWare.Hardware == Upgrade;
-                        var isArmor = unitDef.HardPoint.HardWare.Hardware != BlockWeapon && !isUpgrade;
+                        var isUpgrade = partDef.HardPoint.HardWare.Hardware == Upgrade;
+                        var isArmor = partDef.HardPoint.HardWare.Hardware != BlockWeapon && !isUpgrade;
                         
                         if (isArmor) {
                             DamageHandler = true;
@@ -218,24 +218,24 @@ namespace WeaponCore
                             var matchingDef = def.Id.SubtypeName == tDef.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(tDef.Key), out defid) && defid == def.Id);
                             if (matchingDef)
                             {
-                                if (unitDef.HardPoint.Other.RestrictionRadius > 0)
+                                if (partDef.HardPoint.Other.RestrictionRadius > 0)
                                 {
-                                    if (unitDef.HardPoint.Other.CheckForAnyWeapon && !areaRestriction.CheckForAnyWeapon)
+                                    if (partDef.HardPoint.Other.CheckForAnyWeapon && !areaRestriction.CheckForAnyWeapon)
                                     {
                                         areaRestriction.CheckForAnyWeapon = true;
                                     }
-                                    if (unitDef.HardPoint.Other.CheckInflatedBox)
+                                    if (partDef.HardPoint.Other.CheckInflatedBox)
                                     {
-                                        if (areaRestriction.RestrictionBoxInflation < unitDef.HardPoint.Other.RestrictionRadius)
+                                        if (areaRestriction.RestrictionBoxInflation < partDef.HardPoint.Other.RestrictionRadius)
                                         {
-                                            areaRestriction.RestrictionBoxInflation = unitDef.HardPoint.Other.RestrictionRadius;
+                                            areaRestriction.RestrictionBoxInflation = partDef.HardPoint.Other.RestrictionRadius;
                                         }
                                     }
                                     else
                                     {
-                                        if (areaRestriction.RestrictionRadius < unitDef.HardPoint.Other.RestrictionRadius)
+                                        if (areaRestriction.RestrictionRadius < partDef.HardPoint.Other.RestrictionRadius)
                                         {
-                                            areaRestriction.RestrictionRadius = unitDef.HardPoint.Other.RestrictionRadius;
+                                            areaRestriction.RestrictionRadius = partDef.HardPoint.Other.RestrictionRadius;
                                         }
                                     }
                                 }
@@ -243,9 +243,9 @@ namespace WeaponCore
                                 WeaponCoreDefs[tDef.Key] = def.Id;
                                 var designator = false;
 
-                                for (int i = 0; i < unitDef.Assignments.MountPoints.Length; i++)
+                                for (int i = 0; i < partDef.Assignments.MountPoints.Length; i++)
                                 {
-                                    if (unitDef.Assignments.MountPoints[i].MuzzlePartId == "Designator")
+                                    if (partDef.Assignments.MountPoints[i].MuzzlePartId == "Designator")
                                     {
                                         designator = true;
                                         break;
@@ -261,7 +261,7 @@ namespace WeaponCore
                                         if (firstWeapon)
                                             wepBlockDef.InventoryMaxVolume = 0;
 
-                                        wepBlockDef.InventoryMaxVolume += unitDef.HardPoint.HardWare.InventorySize;
+                                        wepBlockDef.InventoryMaxVolume += partDef.HardPoint.HardWare.InventorySize;
 
                                         var weaponCsDef = MyDefinitionManager.Static.GetWeaponDefinition(wepBlockDef.WeaponDefinitionId);
 
@@ -269,33 +269,33 @@ namespace WeaponCore
                                         {
                                             Log.Line($"WeaponAmmoData is null, check the Ammo definition for {tDef.Key}");
                                         }
-                                        weaponCsDef.WeaponAmmoDatas[0].RateOfFire = unitDef.HardPoint.Loading.RateOfFire;
+                                        weaponCsDef.WeaponAmmoDatas[0].RateOfFire = partDef.HardPoint.Loading.RateOfFire;
 
-                                        weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = unitDef.HardPoint.Loading.ShotsInBurst;
+                                        weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = partDef.HardPoint.Loading.ShotsInBurst;
                                     }
                                     else if (def is MyConveyorSorterDefinition)
                                     {
                                         if (firstWeapon)
                                             ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
 
-                                        var size = Math.Pow(unitDef.HardPoint.HardWare.InventorySize, 1d / 3d);
+                                        var size = Math.Pow(partDef.HardPoint.HardWare.InventorySize, 1d / 3d);
 
                                         ((MyConveyorSorterDefinition)def).InventorySize += new Vector3(size, size, size);
                                     }
 
                                     firstWeapon = false;
 
-                                    for (int i = 0; i < unitDef.Assignments.MountPoints.Length; i++)
+                                    for (int i = 0; i < partDef.Assignments.MountPoints.Length; i++)
                                     {
 
-                                        var az = !string.IsNullOrEmpty(unitDef.Assignments.MountPoints[i].AzimuthPartId) ? unitDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
-                                        var el = !string.IsNullOrEmpty(unitDef.Assignments.MountPoints[i].ElevationPartId) ? unitDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
+                                        var az = !string.IsNullOrEmpty(partDef.Assignments.MountPoints[i].AzimuthPartId) ? partDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
+                                        var el = !string.IsNullOrEmpty(partDef.Assignments.MountPoints[i].ElevationPartId) ? partDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
 
                                         if (def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(az) || VanillaSubpartNames.Contains(el)))
                                         {
 
                                             var gunDef = (MyLargeTurretBaseDefinition)def;
-                                            var blockDefs = unitDef.HardPoint.HardWare;
+                                            var blockDefs = partDef.HardPoint.HardWare;
                                             gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
                                             gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
                                             gunDef.MinElevationDegrees = blockDefs.MinElevation;
@@ -309,9 +309,9 @@ namespace WeaponCore
                                         var cubeDef = def as MyCubeBlockDefinition;
                                         if (cubeDef != null)
                                         {
-                                            for (int x = 0; x < unitDef.Assignments.MountPoints.Length; x++)
+                                            for (int x = 0; x < partDef.Assignments.MountPoints.Length; x++)
                                             {
-                                                var mp = unitDef.Assignments.MountPoints[x];
+                                                var mp = partDef.Assignments.MountPoints[x];
                                                 if (mp.SubtypeId == def.Id.SubtypeName)
                                                 {
                                                     cubeDef.GeneralDamageMultiplier = mp.DurabilityMod > 0 ? mp.DurabilityMod : cubeDef.CubeSize == MyCubeSize.Large ? 0.25f : 0.05f;
@@ -327,7 +327,7 @@ namespace WeaponCore
                     }
                     catch (Exception e)
                     {
-                        Log.Line($"Failed to load {unitDef.HardPoint.UnitName}");
+                        Log.Line($"Failed to load {partDef.HardPoint.PartName}");
                     }
                 }
 
@@ -345,7 +345,7 @@ namespace WeaponCore
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-                UnitPlatforms[defId] = new CoreStructure(this, tDef, units, modPath);
+                PartPlatforms[defId] = new CoreStructure(this, tDef, parts, modPath);
             }
 
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;

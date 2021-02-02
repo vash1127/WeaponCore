@@ -363,7 +363,7 @@ namespace WeaponCore
 
             Projectiles.NewProjectiles.Add(new NewProjectile
             {
-                ConsumableDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].ConsumableDef,
+                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef,
                 Muzzle = weapon.Muzzles[hitPacket.MuzzleId],
                 TargetEnt = targetEnt,
                 Origin = origin,

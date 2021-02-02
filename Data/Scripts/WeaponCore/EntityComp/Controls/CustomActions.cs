@@ -264,7 +264,7 @@ namespace WeaponCore.Control
 
                 while (!(currActive.Equals(currDef)))
                 {
-                    if (currDef.ConsumableDef.Const.IsTurretSelectable)
+                    if (currDef.AmmoDef.Const.IsTurretSelectable)
                     {
                         change = true;
                         break;
@@ -433,7 +433,7 @@ namespace WeaponCore.Control
             var comp = blk.Components.Get<CoreComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.AmmoSelectionWeaponIds.Count == 0) return;
             var w = comp.Platform.Weapons[comp.AmmoSelectionWeaponIds[0]];
-            sb.Append(w.ActiveAmmoDef.ConsumableDef.AmmoRound);
+            sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
         }
         #endregion
     }

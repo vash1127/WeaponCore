@@ -122,7 +122,7 @@ namespace WeaponCore
 
         internal void AddLosCheck(LosDebug debug)
         {
-            if (!WeaponLosDebugActive.Add(debug.Unit))
+            if (!WeaponLosDebugActive.Add(debug.Part))
                 return;
             
             LosDebugList.Add(debug);
@@ -138,7 +138,7 @@ namespace WeaponCore
                 if (Tick - info.HitTick > 1200)
                 {
                     LosDebugList.RemoveAtFast(i);
-                    WeaponLosDebugActive.Remove(info.Unit);
+                    WeaponLosDebugActive.Remove(info.Part);
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace WeaponCore
 
                             foreach (var gridAi in GridTargetingAIs.Values) {
 
-                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Units.Count > 0 && ((IMyTerminalBlock)gridAi.Units[0].CoreEntity).HasPlayerAccess(playerId)) {
+                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Parts.Count > 0 && ((IMyTerminalBlock)gridAi.Parts[0].CoreEntity).HasPlayerAccess(playerId)) {
 
                                     if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.AiOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
                                         isAdmin = true;
@@ -475,7 +475,7 @@ namespace WeaponCore
                         if (toolbarItem != null)
                         {
                             var defId = (MyDefinitionId)toolbarItem.defId;
-                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || UnitPlatforms.ContainsKey(defId))
+                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || PartPlatforms.ContainsKey(defId))
                             {
                                 var index = ob.Toolbar.Slots[i].Index;
                                 var item = ob.Toolbar.Slots[i].Item;
@@ -530,7 +530,7 @@ namespace WeaponCore
             var removeDefs = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
             var keepDefs = new HashSet<string>();
 
-            foreach (var weaponDef in UnitDefinitions)
+            foreach (var weaponDef in PartDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)
                 {
@@ -609,7 +609,7 @@ namespace WeaponCore
             return radius;
         }
 
-        public void WeaponDebug(Unit w)
+        public void WeaponDebug(Part w)
         {
             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Red, 0.05f);
             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Blue, 0.05f);
@@ -653,7 +653,7 @@ namespace WeaponCore
             return false;
         }
 
-        internal void NewThreatLogging(Unit u)
+        internal void NewThreatLogging(Part u)
         {
             try
             {
@@ -708,7 +708,7 @@ namespace WeaponCore
             }
         }
 
-        public bool IsUnitAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, Ai newAi, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
+        public bool IsPartAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, Ai newAi, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
             _tmpNearByBlocks.Clear();
             Ai ai;

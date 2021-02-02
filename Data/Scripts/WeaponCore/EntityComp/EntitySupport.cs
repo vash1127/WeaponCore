@@ -34,13 +34,13 @@ namespace WeaponCore.Support
                     Ai.OptimalDps -= PeakDps;
                     Ai.EffectiveDps -= EffectiveDps;
 
-                    UnitCount wCount;
-                    if (Ai.UnitCounter.TryGetValue(SubTypeId, out wCount)) {
+                    PartCounter wCount;
+                    if (Ai.PartCounting.TryGetValue(SubTypeId, out wCount)) {
                         wCount.Current--;
                         Constructs.UpdateWeaponCounters(Ai);
                         if (wCount.Current == 0)
                         {
-                            Ai.UnitCounter.Remove(SubTypeId);
+                            Ai.PartCounting.Remove(SubTypeId);
                             Session.WeaponCountPool.Return(wCount);
                         }
                     }
@@ -51,7 +51,7 @@ namespace WeaponCore.Support
                     
                     Ai testAi;
                     CoreComponent comp;
-                    if (Ai.UnitBase.TryRemove(CoreEntity, out comp)) {
+                    if (Ai.PartBase.TryRemove(CoreEntity, out comp)) {
                         if (Platform.State == CorePlatform.PlatformState.Ready) {
 
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
@@ -67,7 +67,7 @@ namespace WeaponCore.Support
                     }
                     else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.GridTargetingAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai}");
 
-                    if (Ai.UnitBase.Count == 0) {
+                    if (Ai.PartBase.Count == 0) {
                         Ai ai;
                         Session.GridTargetingAIs.TryRemove(Ai.TopEntity, out ai);
                     }
@@ -90,7 +90,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)  {
                 var w = comp.Platform.Weapons[i];
 
-                if (w.ActiveAmmoDef.ConsumableDef.Const.MustCharge) continue;
+                if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
                 w.UpdateRof();
             }
@@ -104,7 +104,7 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
-                if (!change && (!w.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon || w.ActiveAmmoDef.ConsumableDef.Const.MustCharge)) continue;
+                if (!change && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                 comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
             }
         }

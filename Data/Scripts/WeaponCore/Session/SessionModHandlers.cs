@@ -16,13 +16,13 @@ namespace WeaponCore
             {
                 var message = o as byte[];
                 if (message == null) return;
-                var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<UnitDefinition[]>(message);
+                var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<PartDefinition[]>(message);
                 if (slaveDefArray != null)
                 {
                     var subTypes = new HashSet<string>();
                     foreach (var wepDef in slaveDefArray)
                     {
-                        UnitDefinitions.Add(wepDef);
+                        PartDefinitions.Add(wepDef);
 
                         for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                             subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
