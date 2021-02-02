@@ -22,7 +22,7 @@ namespace WeaponCore
                     var subTypes = new HashSet<string>();
                     foreach (var wepDef in slaveDefArray)
                     {
-                        WeaponDefinitions.Add(wepDef);
+                        UnitDefinitions.Add(wepDef);
 
                         for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                             subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
@@ -48,31 +48,6 @@ namespace WeaponCore
                 }
             }
             catch (Exception ex) { MyLog.Default.WriteLine($"Exception in Handler: {ex}"); }
-        }
-        public void ArmorHandler(object o)
-        {
-            try
-            {
-                var message = o as byte[];
-                if (message == null) return;
-                var armorCompatDefArray = MyAPIGateway.Utilities.SerializeFromBinary<ArmorCompatibilityDef[]>(message);
-                if (armorCompatDefArray != null)
-                {
-                    foreach (var armorDef in armorCompatDefArray)
-                    {
-                        if (armorDef.Kind == ArmorCompatibilityDef.ArmorType.Heavy)
-                        {
-                            CustomArmorSubtypes.Add(MyStringHash.GetOrCompute(armorDef.SubtypeId));
-                            CustomHeavyArmorSubtypes.Add(MyStringHash.GetOrCompute(armorDef.SubtypeId));
-                        }
-                        else if (armorDef.Kind == ArmorCompatibilityDef.ArmorType.Light)
-                        {
-                            CustomArmorSubtypes.Add(MyStringHash.GetOrCompute(armorDef.SubtypeId));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex) { MyLog.Default.WriteLine($"Exception in ArmorHandler: {ex}"); }
         }
     }
 }

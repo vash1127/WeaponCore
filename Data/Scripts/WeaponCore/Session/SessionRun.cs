@@ -316,7 +316,6 @@ namespace WeaponCore
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Gui.GuiControlRemoved += MenuClosed;
 
-                MyAPIGateway.Utilities.RegisterMessageHandler(7773, ArmorHandler);
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
 

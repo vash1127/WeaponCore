@@ -394,7 +394,7 @@ namespace WeaponCore.Api
         // Non-PB Methods
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
-            foreach (var wepDef in _session.WeaponDefinitions)
+            foreach (var wepDef in _session.UnitDefinitions)
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 

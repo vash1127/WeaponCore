@@ -329,7 +329,7 @@ namespace WeaponCore.Platform
                     HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
-            if (System.Armor != ArmorState.IsWeapon)
+            if (System.Armor != HardwareType.BlockWeapon)
                 Comp.HasArmor = true;
 
             WeaponId = weaponId;

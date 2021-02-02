@@ -204,8 +204,8 @@ namespace WeaponCore
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
-            _subTypeIdToWeaponDefs.Clear();
-            WeaponDefinitions.Clear();
+            _subTypeIdToUnitDefs.Clear();
+            UnitDefinitions.Clear();
             SlimsSortedList.Clear();
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
@@ -278,7 +278,7 @@ namespace WeaponCore
             Api = null;
             ApiServer = null;
             Reporter = null;
-            WeaponDefinitions = null;
+            UnitDefinitions = null;
             AnimationsToProcess = null;
             ProjectileTree.Clear();
             ProjectileTree = null;

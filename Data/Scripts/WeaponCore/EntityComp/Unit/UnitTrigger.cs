@@ -395,7 +395,7 @@ namespace WeaponCore.Platform
         {
             var eInfo = Ejector.Info;
             var ejectDef = ActiveAmmoDef.ConsumableDef.Ejection;
-            if (ejectDef.Type == UnitDefinition.ConsumableDef.AmmoEjectionDef.SpawnType.Item)
+            if (ejectDef.Type == UnitDefinition.ConsumableDef.EjectionDef.SpawnType.Item)
             {
                 var delay = (uint)ejectDef.CompDef.Delay;
                 if (delay <= 0)

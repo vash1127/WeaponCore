@@ -530,7 +530,7 @@ namespace WeaponCore
             var removeDefs = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
             var keepDefs = new HashSet<string>();
 
-            foreach (var weaponDef in WeaponDefinitions)
+            foreach (var weaponDef in UnitDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)
                 {
@@ -690,7 +690,7 @@ namespace WeaponCore
             if (!AreaRestrictions.ContainsKey(subtype))
                 return;
 
-            WeaponAreaRestriction restriction = AreaRestrictions[subtype];
+            AreaRestriction restriction = AreaRestrictions[subtype];
             if (restriction.RestrictionBoxInflation < 0.1 && restriction.RestrictionRadius < 0.1)
                 return;
 

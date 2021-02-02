@@ -22,7 +22,7 @@ namespace WeaponCore.Support
                 if (comp.HasArmor) {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.Armor != UnitDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
+                        if (w.System.Armor != UnitDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                          Armor.Add(w.Comp.Cube, w);
                     }
                     Session.ArmorCubes.Add(comp.Cube, comp);
@@ -41,7 +41,7 @@ namespace WeaponCore.Support
                 if (comp.HasArmor) {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.Armor != UnitDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
+                        if (w.System.Armor != UnitDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                             Armor.Remove(w.Comp.Cube);
                     }
                     Session.ArmorCubes.Remove(comp.Cube);

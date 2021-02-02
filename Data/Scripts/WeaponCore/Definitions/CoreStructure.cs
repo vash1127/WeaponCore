@@ -55,7 +55,7 @@ namespace WeaponCore.Support
         public readonly Prediction Prediction;
         public readonly TurretType TurretMovement;
         public readonly FiringSoundState FiringSound;
-        public readonly HardwareDef.ArmorState Armor;
+        public readonly HardwareDef.HardwareType Armor;
 
         public readonly string WeaponName;
         public readonly string AltScopeName;
@@ -168,7 +168,7 @@ namespace WeaponCore.Support
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
             SuppressFire = Values.HardPoint.Ai.SuppressFire;
-            Armor = Values.HardPoint.HardWare.Armor;
+            Armor = Values.HardPoint.HardWare.Hardware;
             HasEjector = !string.IsNullOrEmpty(Values.Assignments.Ejector);
             AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
             HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
@@ -556,12 +556,12 @@ namespace WeaponCore.Support
 
             if (!string.IsNullOrEmpty(ammo.EjectionDefinitionId.SubtypeId.String))
             {
-                var itemEffect = ammo.ConsumableDef.Ejection.Type == ConsumableDef.AmmoEjectionDef.SpawnType.Item;
+                var itemEffect = ammo.ConsumableDef.Ejection.Type == ConsumableDef.EjectionDef.SpawnType.Item;
                 if (itemEffect) 
                     EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Component>(ammo.EjectionDefinitionId.SubtypeId.String) };
                 HasEjectEffect = itemEffect && EjectItem.Content != null;
             }
-            else if (ammo.ConsumableDef.Ejection.Type == ConsumableDef.AmmoEjectionDef.SpawnType.Particle && !string.IsNullOrEmpty(ammo.ConsumableDef.AmmoGraphics.Particles.Eject.Name))
+            else if (ammo.ConsumableDef.Ejection.Type == ConsumableDef.EjectionDef.SpawnType.Particle && !string.IsNullOrEmpty(ammo.ConsumableDef.AmmoGraphics.Particles.Eject.Name))
                 HasEjectEffect = true;
 
             if (AmmoItem.Content != null && !session.AmmoItems.ContainsKey(AmmoItem.ItemId)) 
@@ -574,7 +574,7 @@ namespace WeaponCore.Support
                 if (ammoType.Trajectory.Guidance != None)
                     guidedAmmo = true;
 
-                if (ammoType.AmmoRound.Equals(ammo.ConsumableDef.Shrapnel.AmmoRound))
+                if (ammoType.AmmoRound.Equals(ammo.ConsumableDef.Fragment.AmmoRound))
                     ShrapnelId = i;
             }
 
@@ -916,7 +916,7 @@ namespace WeaponCore.Support
             if (hasShrapnel)
             {
                 var sAmmo = wDef.Ammos[ShrapnelId];
-                var fragments = a.Shrapnel.Fragments;
+                var fragments = a.Fragment.Fragments;
                 baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
                 areaDps += (GetAreaDmg(sAmmo) * fragments) * shotsPerSec;
                 detDps += (GetDetDmg(sAmmo) * fragments) * shotsPerSec;
@@ -1189,7 +1189,7 @@ namespace WeaponCore.Support
                 var typeName = w.Value.Item1;
                 var weaponDef = new UnitDefinition();
                 foreach (var weapon in wDefList)
-                    if (weapon.HardPoint.WeaponName == typeName) weaponDef = weapon;
+                    if (weapon.HardPoint.UnitName == typeName) weaponDef = weapon;
 
                 var cap = weaponDef.HardPoint.Other.GridWeaponCap;
                 if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
@@ -1204,8 +1204,8 @@ namespace WeaponCore.Support
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
                     var ammo = weaponDef.Ammos[i];
-                    if (!shrapnelNames.Contains(ammo.Shrapnel.AmmoRound) && !string.IsNullOrEmpty(ammo.Shrapnel.AmmoRound))
-                        shrapnelNames.Add(ammo.Shrapnel.AmmoRound);
+                    if (!shrapnelNames.Contains(ammo.Fragment.AmmoRound) && !string.IsNullOrEmpty(ammo.Fragment.AmmoRound))
+                        shrapnelNames.Add(ammo.Fragment.AmmoRound);
                 }
                     
 
@@ -1222,7 +1222,7 @@ namespace WeaponCore.Support
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine)
                             ammoDefId = def.Id;
 
-                        if (ammo.Ejection.Type == ConsumableDef.AmmoEjectionDef.SpawnType.Item && !string.IsNullOrEmpty(ammo.Ejection.CompDef.ItemName) && def.Id.SubtypeId.String == ammo.Ejection.CompDef.ItemName)
+                        if (ammo.Ejection.Type == ConsumableDef.EjectionDef.SpawnType.Item && !string.IsNullOrEmpty(ammo.Ejection.CompDef.ItemName) && def.Id.SubtypeId.String == ammo.Ejection.CompDef.ItemName)
                             ejectionDefId = def.Id;
                     }
 

@@ -27,7 +27,7 @@ namespace WeaponCore.Support
             public struct MountPointDef
             {
                 [ProtoMember(1)] internal string SubtypeId;
-                [ProtoMember(2)] internal string AimPartId;
+                [ProtoMember(2)] internal string AimPartId; // no longer used
                 [ProtoMember(3)] internal string MuzzlePartId;
                 [ProtoMember(4)] internal string AzimuthPartId;
                 [ProtoMember(5)] internal string ElevationPartId;
@@ -80,7 +80,7 @@ namespace WeaponCore.Support
         public struct AnimationDef
         {
             [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
-            [ProtoMember(2)] internal WeaponEmissive[] Emissives;
+            [ProtoMember(2)] internal UnitEmissive[] Emissives;
             [ProtoMember(3)] internal string[] HeatingEmissiveParts;
             [ProtoMember(4)] internal Dictionary<PartAnimationSetDef.EventTriggers, EventParticle[]> EventParticles;
 
@@ -117,7 +117,7 @@ namespace WeaponCore.Support
             }
 
             [ProtoContract]
-            public struct WeaponEmissive
+            public struct UnitEmissive
             {
                 [ProtoMember(1)] internal string EmissiveName;
                 [ProtoMember(2)] internal string[] EmissivePartNames;
@@ -193,7 +193,7 @@ namespace WeaponCore.Support
                 Advanced,
             }
 
-            [ProtoMember(1)] internal string WeaponName;
+            [ProtoMember(1)] internal string UnitName;
             [ProtoMember(2)] internal int DelayCeaseFire;
             [ProtoMember(3)] internal float DeviateShotAngle;
             [ProtoMember(4)] internal double AimingTolerance;
@@ -255,11 +255,12 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct HardwareDef
             {
-                public enum ArmorState
+                public enum HardwareType
                 {
-                    IsWeapon,
+                    BlockWeapon,
                     Passive,
                     Active,
+                    Upgrade,
                 }
 
                 [ProtoMember(1)] internal float RotateRate;
@@ -271,7 +272,7 @@ namespace WeaponCore.Support
                 [ProtoMember(7)] internal int MaxElevation;
                 [ProtoMember(8)] internal int MinElevation;
                 [ProtoMember(9)] internal float InventorySize;
-                [ProtoMember(10)] internal ArmorState Armor;
+                [ProtoMember(10)] internal HardwareType Hardware;
             }
 
             [ProtoContract]
@@ -325,14 +326,14 @@ namespace WeaponCore.Support
             [ProtoMember(12)] internal TrajectoryDef Trajectory;
             [ProtoMember(13)] internal AreaDamageDef AreaEffect;
             [ProtoMember(14)] internal BeamDef Beams;
-            [ProtoMember(15)] internal ShrapnelDef Shrapnel;
+            [ProtoMember(15)] internal FragmentDef Fragment;
             [ProtoMember(16)] internal GraphicDef AmmoGraphics;
             [ProtoMember(17)] internal AmmoAudioDef AmmoAudio;
             [ProtoMember(18)] internal bool HardPointUsable;
-            [ProtoMember(19)] internal AmmoPatternDef Pattern;
+            [ProtoMember(19)] internal PatternDef Pattern;
             [ProtoMember(20)] internal int EnergyMagazineSize;
             [ProtoMember(21)] internal float DecayPerShot;
-            [ProtoMember(22)] internal AmmoEjectionDef Ejection;
+            [ProtoMember(22)] internal EjectionDef Ejection;
             [ProtoMember(23)] internal bool IgnoreWater;
 
             internal ConsumableConstants Const;
@@ -532,7 +533,7 @@ namespace WeaponCore.Support
             }
 
             [ProtoContract]
-            public struct ShrapnelDef
+            public struct FragmentDef
             {
                 [ProtoMember(1)] internal string AmmoRound;
                 [ProtoMember(2)] internal int Fragments;
@@ -544,7 +545,7 @@ namespace WeaponCore.Support
             }
 
             [ProtoContract]
-            public struct AmmoPatternDef
+            public struct PatternDef
             {
                 [ProtoMember(1)] internal string[] Ammos;
                 [ProtoMember(2)] internal bool Enable;
@@ -557,7 +558,7 @@ namespace WeaponCore.Support
             }
 
             [ProtoContract]
-            public struct AmmoEjectionDef
+            public struct EjectionDef
             {
                 public enum SpawnType
                 {

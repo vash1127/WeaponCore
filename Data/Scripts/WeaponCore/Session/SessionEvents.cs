@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.ObjectBuilders;
-using VRage.Utils;
-using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.Ai;
-using static WeaponCore.Support.UnitDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore
 {
@@ -36,8 +29,8 @@ namespace WeaponCore
                 var turret = entity as IMyLargeTurretBase;
                 var controllableGun = entity as IMyUserControllableGun;
                 var rifle = entity as IMyAutomaticRifleGun;
-
-                if (sorter != null || turret != null || controllableGun != null || rifle != null)
+                var upgrade = entity as IMyUpgradeModule;
+                if (sorter != null || turret != null || controllableGun != null || rifle != null || upgrade != null)
                 {
                     var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || UnitPlatforms.ContainsKey(cube.BlockDefinition.Id));
                     var rifleType = !cubeType && rifle != null && UnitPlatforms.ContainsKey(rifle.DefinitionId);
@@ -65,6 +58,16 @@ namespace WeaponCore
                         else if (!FixedGunControls && controllableGun is IMySmallGatlingGun) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
                             FixedGunControls = true;
+                        }
+                        else if (!ArmorControls && sorter != null && WeaponCoreArmorBlockDefs.Contains(cube.BlockDefinition.Id))
+                        {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
+                            ArmorControls = true;
+                        }
+                        else  if (!UpgradeControls && sorter != null && WeaponCoreUpgradeBlockDefs.Contains(cube.BlockDefinition.Id))
+                        {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyUpgradeModule>(this));
+                            UpgradeControls = true;
                         }
                     }
                     InitComp(entity);

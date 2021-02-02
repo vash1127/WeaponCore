@@ -48,6 +48,8 @@ namespace WeaponCore
         internal volatile bool FixedMissileControls;
         internal volatile bool FixedMissileReloadControls;
         internal volatile bool FixedGunControls;
+        internal volatile bool ArmorControls;
+        internal volatile bool UpgradeControls;
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;
         internal volatile uint LastDeform;
@@ -120,7 +122,7 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
-        internal readonly Dictionary<MyStringHash, WeaponAreaRestriction> AreaRestrictions = new Dictionary<MyStringHash, WeaponAreaRestriction>(MyStringHash.Comparer);
+        internal readonly Dictionary<MyStringHash, AreaRestriction> AreaRestrictions = new Dictionary<MyStringHash, AreaRestriction>(MyStringHash.Comparer);
         internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>() {[-1] = new InputStateData()};
         internal readonly Dictionary<long, FakeTarget> PlayerDummyTargets = new Dictionary<long, FakeTarget>() { [-1] = new FakeTarget() };
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
@@ -163,6 +165,10 @@ namespace WeaponCore
         internal readonly List<Unit> HomingWeapons = new List<Unit>(128);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
+        internal readonly List<MyDefinitionId> WeaponCoreArmorBlockDefs = new List<MyDefinitionId>();
+        internal readonly List<MyDefinitionId> WeaponCoreUpgradeBlockDefs = new List<MyDefinitionId>();
+        internal readonly List<MyDefinitionId> WeaponCoreRifleDefs = new List<MyDefinitionId>();
+
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);
         internal readonly List<Unit> ShootingWeapons = new List<Unit>(128);
@@ -198,7 +204,7 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
         private readonly Dictionary<IMySlimBlock, float> _slimHealthClient = new Dictionary<IMySlimBlock, float>();
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
-        private readonly Dictionary<string, List<UnitDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<UnitDefinition>>();
+        private readonly Dictionary<string, List<UnitDefinition>> _subTypeIdToUnitDefs = new Dictionary<string, List<UnitDefinition>>();
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
@@ -209,7 +215,7 @@ namespace WeaponCore
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
 
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
-        internal List<UnitDefinition> WeaponDefinitions = new List<UnitDefinition>();
+        internal List<UnitDefinition> UnitDefinitions = new List<UnitDefinition>();
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal Color[] HeatEmissives;

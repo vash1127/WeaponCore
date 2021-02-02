@@ -878,7 +878,7 @@ namespace WeaponCore
             }
         }
 
-        public class WeaponAreaRestriction
+        public class AreaRestriction
         {
             public double RestrictionRadius = 0;
             public double RestrictionBoxInflation = 0;

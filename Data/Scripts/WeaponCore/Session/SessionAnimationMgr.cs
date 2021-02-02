@@ -25,7 +25,7 @@ namespace WeaponCore
             animationLengths = new Dictionary<EventTriggers, uint>();
             weaponLinearMoveSet = new Dictionary<string, Matrix[]>();
 
-            var emissiveLookup = new Dictionary<string, WeaponEmissive>();
+            var emissiveLookup = new Dictionary<string, UnitEmissive>();
 
             CompileHeating(animations, emissiveLookup, out heatingSubpartNames);
 
@@ -40,7 +40,7 @@ namespace WeaponCore
             FinalizeAnimationSets(allAnimationSet, weaponAnimationSets);
         }
         
-        private void CompileHeating(AnimationDef animations, Dictionary<string, WeaponEmissive> emissiveLookup, out string[] heatingSubpartNames)
+        private void CompileHeating(AnimationDef animations, Dictionary<string, UnitEmissive> emissiveLookup, out string[] heatingSubpartNames)
         {
             if (animations.HeatingEmissiveParts != null && animations.HeatingEmissiveParts.Length > 0)
                 heatingSubpartNames = animations.HeatingEmissiveParts;
@@ -89,7 +89,7 @@ namespace WeaponCore
             }  
         }
 
-        private void CompileAnimationSets(CoreSystem system, PartAnimationSetDef[] wepAnimationSets, Dictionary<EventTriggers, HashSet<PartAnimation>> allAnimationSet, Dictionary<EventTriggers, uint> animationLengths, HashSet<string> animationIdLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, Matrix[]> weaponLinearMoveSet)
+        private void CompileAnimationSets(CoreSystem system, PartAnimationSetDef[] wepAnimationSets, Dictionary<EventTriggers, HashSet<PartAnimation>> allAnimationSet, Dictionary<EventTriggers, uint> animationLengths, HashSet<string> animationIdLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<string, UnitEmissive> emissiveLookup, Dictionary<string, Matrix[]> weaponLinearMoveSet)
         {
             
             foreach (var animationSet in wepAnimationSets) {
@@ -144,7 +144,7 @@ namespace WeaponCore
             }
         }
         
-        private void CompileAnimationMoves(KeyValuePair<EventTriggers, RelMove[]> moves, Dictionary<string, WeaponEmissive> emissiveLookup, PartAnimationSetDef animationSet, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<EventTriggers, uint> animationLengths, string id, out List<Matrix> moveSet, out List<Matrix> rotationSet, out List<Matrix> rotCenterSet, out List<string> rotCenterNameSet, out List<string> emissiveIdSet, out List<int[]> moveIndexer, out List<int> currentEmissivePart)
+        private void CompileAnimationMoves(KeyValuePair<EventTriggers, RelMove[]> moves, Dictionary<string, UnitEmissive> emissiveLookup, PartAnimationSetDef animationSet, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<EventTriggers, uint> animationLengths, string id, out List<Matrix> moveSet, out List<Matrix> rotationSet, out List<Matrix> rotCenterSet, out List<string> rotCenterNameSet, out List<string> emissiveIdSet, out List<int[]> moveIndexer, out List<int> currentEmissivePart)
         {
             moveSet = new List<Matrix>();
             rotationSet = new List<Matrix>();
@@ -197,7 +197,7 @@ namespace WeaponCore
                 animationLengths[moves.Key] = totalPlayLength;
         }
 
-        private void Expo(RelMove move, double[][] tmpDirVec, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, double distance, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
+        private void Expo(RelMove move, double[][] tmpDirVec, Dictionary<string, UnitEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, double distance, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
         {
             var traveled = 0d;
             var rate = 0d;
@@ -253,7 +253,7 @@ namespace WeaponCore
 
                 moveSet.Add(matrix);
 
-                WeaponEmissive emissive;
+                UnitEmissive emissive;
                 if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                     CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                 else {
@@ -274,7 +274,7 @@ namespace WeaponCore
         }
 
 
-        private void Absolute(RelMove move, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, List<Matrix> rotCenterSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive)
+        private void Absolute(RelMove move, Dictionary<string, UnitEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, List<Matrix> rotCenterSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive)
         {
             moveSet.Add(Matrix.Zero);
             rotationSet.Add(Matrix.Zero);
@@ -296,7 +296,7 @@ namespace WeaponCore
                         break;
                 }
 
-                WeaponEmissive emissive;
+                UnitEmissive emissive;
                 if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive)) {
 
                     float progress;
@@ -318,7 +318,7 @@ namespace WeaponCore
             }
         }
         
-        private void NonLinear(RelMove move, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
+        private void NonLinear(RelMove move, Dictionary<string, UnitEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
         {
             moveSet.Add(Matrix.Zero);
             MatrixD rotation = MatrixD.Zero;
@@ -410,7 +410,7 @@ namespace WeaponCore
                 if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
                     progress = 1;
 
-                WeaponEmissive emissive;
+                UnitEmissive emissive;
                 if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                     CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)progress, ref weaponEmissivesSet, ref currentEmissivePart);
                 else
@@ -427,7 +427,7 @@ namespace WeaponCore
             }
         }
         
-        private void Linear(RelMove move, double[][] tmpDirVec, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, double distance, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
+        private void Linear(RelMove move, double[][] tmpDirVec, Dictionary<string, UnitEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, double distance, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
         {
             var distancePerTick = distance / move.TicksToMove;
             var vectorCount = 0;
@@ -469,7 +469,7 @@ namespace WeaponCore
                 else
                     progress = (float)j / (move.TicksToMove - 1);
 
-                WeaponEmissive emissive;
+                UnitEmissive emissive;
                 if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                     CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                 else {
@@ -782,7 +782,7 @@ namespace WeaponCore
                 rotationSet.Add(Matrix.Zero);
         }
 
-        internal void CreateEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, EmissiveState> allEmissivesSet, ref List<int> currentEmissivePart)
+        internal void CreateEmissiveStep(UnitEmissive emissive, string id, float progress, ref Dictionary<string, EmissiveState> allEmissivesSet, ref List<int> currentEmissivePart)
         {
             var setColor = (Color)emissive.Colors[0];
             if (emissive.Colors.Length > 1)

@@ -386,7 +386,7 @@ namespace WeaponCore.Support
         internal List<Fragment> Sharpnel = new List<Fragment>();
         internal void Init(Projectile p, MyConcurrentPool<Fragment> fragPool)
         {
-            for (int i = 0; i < p.Info.ConsumableDef.Shrapnel.Fragments; i++)
+            for (int i = 0; i < p.Info.ConsumableDef.Fragment.Fragments; i++)
             {
                 var frag = fragPool.Get();
                 frag.System = p.Info.System;
@@ -408,12 +408,12 @@ namespace WeaponCore.Support
                 frag.DeadSphere = p.DeadSphere;
                 frag.LockOnFireState = p.Info.LockOnFireState;
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
-                var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.ConsumableDef.Shrapnel.Degrees, 0, 360));
+                var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.ConsumableDef.Fragment.Degrees, 0, 360));
                 posValue *= 0.5f;
                 var randomFloat1 = (float)(frag.WeaponRng.TurretRandom.NextDouble() * posValue);
                 var randomFloat2 = (float)(frag.WeaponRng.TurretRandom.NextDouble() * MathHelper.TwoPi);
                 frag.WeaponRng.TurretCurrentCounter += 2;
-                var mutli = p.Info.ConsumableDef.Shrapnel.Reverse ? -1 : 1;
+                var mutli = p.Info.ConsumableDef.Fragment.Reverse ? -1 : 1;
 
                 var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(
                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),

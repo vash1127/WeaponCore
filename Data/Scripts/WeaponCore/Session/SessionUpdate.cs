@@ -155,7 +155,7 @@ namespace WeaponCore
                             HudUi.WeaponsToDisplay.Add(w);
                         }
 
-                        if (w.System.Armor != ArmorState.IsWeapon)
+                        if (w.System.Armor != HardwareType.BlockWeapon)
                             continue;
 
                         if (w.Target.ClientDirty)
