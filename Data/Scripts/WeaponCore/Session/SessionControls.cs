@@ -7,8 +7,8 @@ using Sandbox.ModAPI.Interfaces.Terminal;
 using WeaponCore.Support;
 using WeaponCore.Control;
 using WeaponCore.Platform;
-using static WeaponCore.Support.CoreComponent.ShootActions;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.CoreComponent.TriggerActions;
+using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore
 {
     public partial class Session
@@ -73,12 +73,12 @@ namespace WeaponCore
             LastTerminal = block;
 
             var cube = (MyCubeBlock)block;
-            GridAi gridAi;
-            if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+            Ai ai;
+            if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out ai))
             {
-                gridAi.LastTerminal = block;
+                ai.LastTerminal = block;
                 CoreComponent comp;
-                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
+                if (ai.UnitBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
                 {
                     TerminalMon.HandleInputUpdate(comp);
                     IMyTerminalControl wcRangeControl = null;
@@ -137,7 +137,7 @@ namespace WeaponCore
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(TriggerOnce, comp.Session.DedicatedServer ? 0 : -1);
                     };
                     session.AlteredActions.Add(a);
                 }
@@ -152,7 +152,7 @@ namespace WeaponCore
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -163,7 +163,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -180,8 +180,8 @@ namespace WeaponCore
                             if (comp == null) oldAction(blk);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction != ShootOn)
-                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOn)
+                            comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -193,7 +193,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -210,8 +210,8 @@ namespace WeaponCore
                             if (comp == null)  oldAction(blk);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction != ShootOff)
-                            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOff)
+                            comp.RequestShootUpdate(TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -222,7 +222,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");

@@ -8,9 +8,9 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
-using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.UnitDefinition;
+using static WeaponCore.Support.UnitDefinition.AnimationDef;
+using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
 {

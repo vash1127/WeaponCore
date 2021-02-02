@@ -14,8 +14,8 @@ using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.HitEntity.Type;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef.AreaEffectType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.DamageScaleDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.DamageScaleDef;
 using static WeaponCore.Support.DeferedVoxels;
 namespace WeaponCore.Projectiles
 {
@@ -45,7 +45,8 @@ namespace WeaponCore.Projectiles
                 var entityCollection = p.UseEntityCache ? p.Info.Ai.NearByEntityCache : p.MyEntityList;
                 var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
-                var myGrid = p.Info.Target.FiringCube.CubeGrid;
+                var coreCube = p.Info.Target.CoreCube;
+                var coreIsCube = p.Info.Target.CoreIsCube;
                 
                 Water water = null;
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
@@ -56,7 +57,7 @@ namespace WeaponCore.Projectiles
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
 
                     var grid = ent as MyCubeGrid;
-                    var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
+                    var entIsSelf = grid != null && coreIsCube && (grid == coreCube.CubeGrid || coreCube.CubeGrid.IsSameConstructAs(grid));
 
                     if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
 
@@ -115,7 +116,7 @@ namespace WeaponCore.Projectiles
                     if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.ConsumableDef.Const.AreaEffect == DotField || p.Info.ConsumableDef.Const.AreaEffect == EmpField))) {
 
                         shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
-                        if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
+                        if (shieldInfo != null && coreIsCube && !coreCube.CubeGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
                             if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
 
                                 p.EntitiesNear = true;
@@ -247,7 +248,7 @@ namespace WeaponCore.Projectiles
                             if (entIsSelf) {
                                 if (!p.Info.ConsumableDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2) {
                                     MyCube cube;
-                                    if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock)) {
+                                    if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.CoreCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.CoreCube.SlimBlock)) {
                                         HitEntityPool.Return(hitEntity);
                                         continue;
                                     }
@@ -263,7 +264,7 @@ namespace WeaponCore.Projectiles
                                         IHitInfo hitInfo;
                                         p.Info.System.Session.Physics.CastRay(forwardPos, p.Beam.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
                                         var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-                                        if (hitGrid == null || !myGrid.IsSameConstructAs(hitGrid)) {
+                                        if (hitGrid == null || coreIsCube && !coreCube.CubeGrid.IsSameConstructAs(hitGrid)) {
                                             HitEntityPool.Return(hitEntity);
                                             continue;
                                         }
@@ -623,7 +624,7 @@ namespace WeaponCore.Projectiles
 
                                 var firstBlock = grid.GetCubeBlock(hitEnt.Vector3ICache[j]) as IMySlimBlock;
                                 MatrixD transform = grid.WorldMatrix;
-                                if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.Info.Target.FiringCube.SlimBlock) {
+                                if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.Info.Target.CoreCube?.SlimBlock) {
 
                                     hitEnt.Blocks.Add(firstBlock);
                                     if (closestBlockFound) continue;
@@ -707,7 +708,7 @@ namespace WeaponCore.Projectiles
         }
 
         //TODO: In order to fix SphereShapes collisions with grids, this needs to be adjusted to take into account the Beam of the projectile
-        internal static void GetAndSortBlocksInSphere(WeaponDefinition.ConsumableDef consumableDef, CoreSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
+        internal static void GetAndSortBlocksInSphere(UnitDefinition.ConsumableDef consumableDef, CoreSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;

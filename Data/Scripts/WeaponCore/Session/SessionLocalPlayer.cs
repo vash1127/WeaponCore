@@ -10,9 +10,9 @@ using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.Ai;
+using static WeaponCore.Support.UnitDefinition.TargetingDef;
+using static WeaponCore.Support.UnitDefinition.TargetingDef.BlockTypes;
 using static WeaponCore.CompStateValues;
 namespace WeaponCore
 {
@@ -78,12 +78,12 @@ namespace WeaponCore
 
                 if (ControlledEntity is IMyGunBaseUser && !(lastControlledEnt is IMyGunBaseUser))
                 {
-                    var cube = (MyCubeBlock)ControlledEntity;
-                    GridAi gridAi;
-                    if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                    var topEntity = ControlledEntity.GetTopMostParent();
+                    Ai ai;
+                    if (topEntity != null && GridTargetingAIs.TryGetValue(topEntity, out ai))
                     {
                         CoreComponent comp;
-                        if (gridAi.WeaponBase.TryGetValue(cube, out comp))
+                        if (ai.UnitBase.TryGetValue(ControlledEntity, out comp))
                         {
                             GunnerBlackList = true;
                             if (IsServer)
@@ -116,11 +116,11 @@ namespace WeaponCore
                         var controlStringMenu = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
-                        GridAi gridAi;
-                        if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))
+                        Ai ai;
+                        if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out ai))
                         {
                             CoreComponent comp;
-                            if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
+                            if (ai.UnitBase.TryGetValue(oldCube, out comp))
                             {
                                 if (IsServer)
                                 {
@@ -175,10 +175,10 @@ namespace WeaponCore
                         for (int j = 0; j < fatBlocks.Count; j++) {
                             
                             var block = fatBlocks[j];
-                            if (block.IsFunctional && WeaponPlatforms.ContainsKey(block.BlockDefinition.Id)) {
+                            if (block.IsFunctional && UnitPlatforms.ContainsKey(block.BlockDefinition.Id)) {
 
-                                GridAi gridAi;
-                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.WeaponBase.ContainsKey(block)) 
+                                Ai ai;
+                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out ai) || !ai.UnitBase.ContainsKey(block)) 
                                     _uninitializedBlocks.Add(block);
                             }
                         }
@@ -209,16 +209,16 @@ namespace WeaponCore
             {
                 var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
                 var grid = hit.HitEntity as MyCubeGrid;
-                GridAi gridAi;
-                if (grid != null && GridToMasterAi.TryGetValue(grid, out gridAi))
+                Ai ai;
+                if (grid != null && GridToMasterAi.TryGetValue(grid, out ai))
                 {
                     if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
                     {
                         var subtypeIdHash = MyCubeBuilder.Static.CurrentBlockDefinition.Id.SubtypeId;
-                        WeaponCount weaponCount;
-                        if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
+                        UnitCount unitCount;
+                        if (ai.UnitCounter.TryGetValue(subtypeIdHash, out unitCount))
                         {
-                            if (weaponCount.Max > 0 && gridAi.Construct.GetWeaponCount(subtypeIdHash) >= weaponCount.Max)
+                            if (unitCount.Max > 0 && ai.Construct.GetUnitCount(subtypeIdHash) >= unitCount.Max)
                             {
                                 MyCubeBuilder.Static.NotifyPlacementUnable();
                                 MyCubeBuilder.Static.Deactivate();
@@ -226,12 +226,12 @@ namespace WeaponCore
                             }
                         }
 
-                        if (WeaponAreaRestrictions.ContainsKey(subtypeIdHash))
+                        if (AreaRestrictions.ContainsKey(subtypeIdHash))
                         {
                             MyOrientedBoundingBoxD restrictedBox;
                             MyOrientedBoundingBoxD buildBox = MyCubeBuilder.Static.GetBuildBoundingBox();
                             BoundingSphereD restrictedSphere;
-                            if (IsWeaponAreaRestricted(subtypeIdHash, buildBox, grid, 0, null, out restrictedBox, out restrictedSphere))
+                            if (IsUnitAreaRestricted(subtypeIdHash, buildBox, grid, 0, null, out restrictedBox, out restrictedSphere))
                             {
                                 DsDebugDraw.DrawBox(buildBox, _uninitializedColor);
                             }
@@ -246,23 +246,27 @@ namespace WeaponCore
                                 {
                                     DsDebugDraw.DrawSphere(restrictedSphere, _restrictionAreaColor);
                                 }
-                                for (int i = 0; i < gridAi.Weapons.Count; i++)
+                                for (int i = 0; i < ai.Units.Count; i++)
                                 {
-                                    MyOrientedBoundingBoxD b;
-                                    BoundingSphereD s;
-                                    CoreComponent Comp = gridAi.Weapons[i];
-                                    MyOrientedBoundingBoxD blockBox;
-                                    SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
+                                    var comp = ai.Units[i];
 
-                                    CalculateRestrictedShapes(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, out b, out s);
-                                    
-                                    if (s.Radius > 0)
+                                    if (comp.IsBlock)
                                     {
-                                        DsDebugDraw.DrawSphere(s, _restrictionAreaColor);
-                                    }
-                                    if (b.HalfExtent.AbsMax() > 0)
-                                    {
-                                        DsDebugDraw.DrawBox(b, _restrictionAreaColor);
+                                        MyOrientedBoundingBoxD blockBox;
+                                        SUtils.GetBlockOrientedBoundingBox(comp.Cube, out blockBox);
+
+                                        BoundingSphereD s;
+                                        MyOrientedBoundingBoxD b;
+                                        CalculateRestrictedShapes(comp.SubTypeId, blockBox, out b, out s);
+
+                                        if (s.Radius > 0)
+                                        {
+                                            DsDebugDraw.DrawSphere(s, _restrictionAreaColor);
+                                        }
+                                        if (b.HalfExtent.AbsMax() > 0)
+                                        {
+                                            DsDebugDraw.DrawBox(b, _restrictionAreaColor);
+                                        }
                                     }
                                 }
                             }
@@ -333,7 +337,7 @@ namespace WeaponCore
             }
         }
 
-        internal bool CheckTarget(GridAi ai)
+        internal bool CheckTarget(Ai ai)
         {
             if (!ai.Construct.Focus.ClientIsFocused(ai)) return false;
 
@@ -346,16 +350,16 @@ namespace WeaponCore
             return ai.Construct.Data.Repo.FocusData.HasFocus;
         }
 
-        internal void SetTarget(MyEntity entity, GridAi ai, Dictionary<MyEntity, float> masterTargets)
+        internal void SetTarget(MyEntity entity, Ai newAi, Dictionary<MyEntity, float> masterTargets)
         {
             
-            TrackingAi = ai;
-            ai.Construct.Focus.RequestAddFocus(entity, ai);
+            TrackingAi = newAi;
+            newAi.Construct.Focus.RequestAddFocus(entity, newAi);
 
-            GridAi gridAi;
+            Ai ai;
             TargetArmed = false;
             var grid = entity as MyCubeGrid;
-            if (grid != null && GridToMasterAi.TryGetValue(grid, out gridAi))
+            if (grid != null && GridToMasterAi.TryGetValue(grid, out ai))
             {
                 TargetArmed = true;
             }

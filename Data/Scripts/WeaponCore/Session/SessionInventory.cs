@@ -32,7 +32,7 @@ namespace WeaponCore
                         if (InventoryItems.TryGetValue(inventory, out phyItemList))
                             phyItemList.AddRange(items);
                         else if (logged++ == 0)
-                            Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
+                            Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.TopEntity.DebugName} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
                     }
                 }
             }
@@ -58,13 +58,13 @@ namespace WeaponCore
                         newItem.Amount = (int)item.Amount;
                         newItem.Content = item.Content;
                         newItem.DefId = item.Content.GetId();
-                        AmmoThreadItemList[inventoryItems.Key].Add(newItem);
+                        ConsumableItemList[inventoryItems.Key].Add(newItem);
                     }
                 }
                 inventoryItems.Value.Clear();
             }
 
-            foreach (var blockInventoryItems in BlockInventoryItems) {
+            foreach (var blockInventoryItems in CoreInventoryItems) {
                 
                 foreach (var itemList in blockInventoryItems.Value) {
                     
@@ -73,13 +73,13 @@ namespace WeaponCore
                     newItem.Amount = itemList.Value.Amount;
                     newItem.Content = itemList.Value.Content;
                     newItem.DefId = itemList.Value.Content.GetId();
-                    AmmoThreadItemList[blockInventoryItems.Key].Add(newItem);
+                    ConsumableItemList[blockInventoryItems.Key].Add(newItem);
                 }
             }
 
             AmmoPull();
 
-            foreach (var itemList in AmmoThreadItemList) {
+            foreach (var itemList in ConsumableItemList) {
                 
                 for (int i = 0; i < itemList.Value.Count; i++)
                     BetterInventoryItems.Return(itemList.Value[i]);
@@ -94,10 +94,10 @@ namespace WeaponCore
             {
                 foreach (var weapon in WeaponToPullAmmo) { 
 
-                    using (weapon.Comp.Ai?.MyGrid.Pin())
-                    using (weapon.Comp.MyCube.Pin()) {
+                    using (weapon.Comp.Ai?.TopEntity.Pin())
+                    using (weapon.Comp.CoreEntity.Pin()) {
 
-                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        if (weapon.Comp.CoreEntity.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.TopEntity.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             InvPullClean.Add(weapon);
                             continue;
                         }
@@ -109,14 +109,14 @@ namespace WeaponCore
                         magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
 
                         var ammoPullRequests = InventoryMoveRequestPool.Get();
-                        ammoPullRequests.Weapon = weapon;
+                        ammoPullRequests.Unit = weapon;
                         var magsAdded = 0;
                         var logged = 0;
 
                         foreach (var inventory in weapon.Comp.Ai.InventoryMonitor.Values) {
 
                             MyConcurrentList<BetterInventoryItem> items;
-                            if (AmmoThreadItemList.TryGetValue(inventory, out items)) {
+                            if (ConsumableItemList.TryGetValue(inventory, out items)) {
                                 
                                 for (int l = items.Count - 1; l >= 0; l--) {
                                     
@@ -125,7 +125,7 @@ namespace WeaponCore
 
                                     var magsAvailable = item.Amount;
 
-                                    if (magsAvailable > 0 && magsNeeded > 0 && ((IMyInventory)inventory).CanTransferItemTo(weapon.Comp.BlockInventory, defId)) {
+                                    if (magsAvailable > 0 && magsNeeded > 0 && ((IMyInventory)inventory).CanTransferItemTo(weapon.Comp.CoreInventory, defId)) {
                                         
                                         if (magsAvailable >= magsNeeded) {
                                             
@@ -153,7 +153,7 @@ namespace WeaponCore
                                 }
                             }
                             else if (logged++ == 0) 
-                                Log.Line($"[Inventory invalid in AmmoPull] Weapon:{weapon.Comp.MyCube.BlockDefinition.Id.SubtypeName}  - blockMarked:{weapon.Comp.MyCube.MarkedForClose} - aiMarked:{weapon.Comp.Ai.MarkedForClose} - cTick:{Tick - weapon.Comp.Ai.AiCloseTick} - mTick:{Tick - weapon.Comp.Ai.AiMarkedTick} - sTick:{Tick - weapon.Comp.Ai.CreatedTick}");
+                                Log.Line($"[Inventory invalid in AmmoPull] Weapon:{weapon.Comp.SubtypeName}  - blockMarked:{weapon.Comp.CoreEntity.MarkedForClose} - aiMarked:{weapon.Comp.Ai.MarkedForClose} - cTick:{Tick - weapon.Comp.Ai.AiCloseTick} - mTick:{Tick - weapon.Comp.Ai.AiMarkedTick} - sTick:{Tick - weapon.Comp.Ai.CreatedTick}");
                         }
 
                         if (ammoPullRequests.Inventories.Count > 0)
@@ -187,7 +187,7 @@ namespace WeaponCore
             for (int i = 0; i < AmmoToPullQueue.Count; i++) {
                 
                 var weaponAmmoToPull = AmmoToPullQueue[i];
-                var weapon = weaponAmmoToPull.Weapon;
+                var weapon = weaponAmmoToPull.Unit;
                 var inventoriesToPull = weaponAmmoToPull.Inventories;
                 
                 if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
@@ -201,13 +201,13 @@ namespace WeaponCore
                     var amt = mag.Amount;
                     var item = mag.Item;
                     
-                    if (weapon.Comp.BlockInventory.ItemsCanBeAdded(amt, weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoItem) && mag.Inventory.ItemsCanBeRemoved(amt, item.Item)) {
+                    if (weapon.Comp.CoreInventory.ItemsCanBeAdded(amt, weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoItem) && mag.Inventory.ItemsCanBeRemoved(amt, item.Item)) {
                         mag.Inventory.RemoveItems(item.Item.ItemId, amt);
-                        weapon.Comp.BlockInventory.Add(weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoItem, amt);
+                        weapon.Comp.CoreInventory.Add(weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoItem, amt);
                     }
                 }
 
-                weapon.Ammo.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                weapon.Ammo.CurrentMags = weapon.Comp.CoreInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
 
                 InventoryMoveRequestPool.Return(weaponAmmoToPull);
             }

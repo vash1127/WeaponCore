@@ -33,21 +33,21 @@ namespace WeaponCore
             
             foreach (var comp in CompsToStart)
                 if (comp?.Platform != null)
-                    CloseComps(comp.MyCube);
+                    CloseComps(comp.CoreEntity);
 
             foreach (var readd in CompReAdds)
             {
                 if (!readd.Ai.Closed) readd.Ai.AiForceClose();
                 if (readd.Comp?.Platform != null)
                 {
-                    CloseComps(readd.Comp.MyCube);
+                    CloseComps(readd.Comp.CoreEntity);
                 }
             }
 
             foreach (var comp in CompsDelayed)
             {
                 if (comp?.Platform != null)
-                    CloseComps(comp.MyCube);
+                    CloseComps(comp.CoreEntity);
             }
 
             foreach (var gridAi in DelayedAiClean)
@@ -140,7 +140,7 @@ namespace WeaponCore
             
             DirtyGridsTmp.Clear();
 
-            foreach (var structure in WeaponPlatforms.Values)
+            foreach (var structure in UnitPlatforms.Values)
             {
                 foreach (var system in structure.WeaponSystems)
                 {
@@ -163,7 +163,7 @@ namespace WeaponCore
 
                 structure.WeaponSystems.Clear();
             }
-            WeaponPlatforms.Clear();
+            UnitPlatforms.Clear();
 
             foreach (var gridToMap in GridToBlockTypeMap)
             {
@@ -237,7 +237,7 @@ namespace WeaponCore
             PacketObjPool.Clean();
 
             InventoryMoveRequestPool.Clean();
-            WeaponCoreBlockDefs.Clear();
+            WeaponCoreDefs.Clear();
             VanillaIds.Clear();
             VanillaCoreIds.Clear();
             WeaponCoreFixedBlockDefs.Clear();

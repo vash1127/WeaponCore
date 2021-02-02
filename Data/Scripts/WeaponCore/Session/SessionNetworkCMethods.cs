@@ -2,7 +2,7 @@
 using Sandbox.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi;
+using static WeaponCore.Support.Ai;
 namespace WeaponCore
 {
     public partial class Session
@@ -56,7 +56,7 @@ namespace WeaponCore
             var cgPacket = (ConstructPacket)packet;
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
-            GridAi ai;
+            Ai ai;
             if (GridToMasterAi.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
@@ -84,7 +84,7 @@ namespace WeaponCore
             var fociPacket = (ConstructFociPacket)packet;
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
-            GridAi ai;
+            Ai ai;
             if (GridToMasterAi.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
@@ -110,7 +110,7 @@ namespace WeaponCore
             var aiSyncPacket = (AiDataPacket)packet;
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
-            GridAi ai;
+            Ai ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
@@ -237,7 +237,7 @@ namespace WeaponCore
             var targetPacket = (FakeTargetPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
-            GridAi ai;
+            Ai ai;
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId) {
@@ -274,12 +274,13 @@ namespace WeaponCore
             var packet = data.Packet;
             var mousePacket = (InputPacket)packet;
             if (mousePacket.Data == null) return Error(data, Msg("Data"));
-            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-            if (cube == null) return Error(data, Msg($"CubeId: {packet.EntityId}"));
+            var entity = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var topEntity = entity?.GetTopMostParent();
+            if (topEntity == null) return Error(data, Msg($"entityId: {packet.EntityId}"));
 
-            GridAi ai;
+            Ai ai;
             long playerId;
-            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (GridToMasterAi.TryGetValue(topEntity, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;

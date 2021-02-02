@@ -12,37 +12,41 @@ using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
+using static WeaponCore.Support.Ai;
+using static WeaponCore.Support.UnitDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore
 {
     public partial class Session
     {
-        internal void OnEntityCreate(MyEntity myEntity)
+        internal void OnEntityCreate(MyEntity entity)
         {
             try
             {
                 if (!Inited) lock (InitObj) Init();
-                var grid = myEntity as MyCubeGrid;
+                var grid = entity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
-                if (!PbApiInited && myEntity is IMyProgrammableBlock) PbActivate = true;
+                if (!PbApiInited && entity is IMyProgrammableBlock) PbActivate = true;
 
-                var placer = myEntity as IMyBlockPlacerBase;
+                var placer = entity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
-                var cube = myEntity as MyCubeBlock;
-                var sorter = cube as MyConveyorSorter;
-                var turret = cube as IMyLargeTurretBase;
-                var controllableGun = cube as IMyUserControllableGun;
+                var cube = entity as MyCubeBlock;
+                var sorter = entity as MyConveyorSorter;
+                var turret = entity as IMyLargeTurretBase;
+                var controllableGun = entity as IMyUserControllableGun;
+                var rifle = entity as IMyAutomaticRifleGun;
 
-                if (sorter != null || turret != null || controllableGun != null)
+                if (sorter != null || turret != null || controllableGun != null || rifle != null)
                 {
-                    if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id)) return;
+                    var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || UnitPlatforms.ContainsKey(cube.BlockDefinition.Id));
+                    var rifleType = !cubeType && rifle != null && UnitPlatforms.ContainsKey(rifle.DefinitionId);
+                    var validType = cubeType || rifleType;
+                    if (!validType) return;
 
                     lock (InitObj)
                     {
-                        if (!SorterControls && myEntity is MyConveyorSorter) {
+                        if (!SorterControls && entity is MyConveyorSorter) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
                             SorterControls = true;
                         }
@@ -63,7 +67,7 @@ namespace WeaponCore
                             FixedGunControls = true;
                         }
                     }
-                    InitComp(cube);
+                    InitComp(entity);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
@@ -179,7 +183,7 @@ namespace WeaponCore
             try
             {
                 InMenu = true;
-                GridAi ai;
+                Ai ai;
                 if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
                     //Send updates?
                 }
@@ -193,7 +197,7 @@ namespace WeaponCore
             {
                 InMenu = false;
                 HudUi.NeedsUpdate = true;
-                GridAi ai;
+                Ai ai;
                 if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
                     //Send updates?
                 }
@@ -203,25 +207,25 @@ namespace WeaponCore
 
         private void PlayerControlAcquired(MyEntity lastEnt)
         {
-            var cube = lastEnt as MyCubeBlock;
-            GridAi gridAi;
-            if (cube != null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi)) {
+            var topMost = lastEnt.GetTopMostParent();
+            Ai ai;
+            if (topMost != null && GridTargetingAIs.TryGetValue(topMost, out ai)) {
 
                 CoreComponent comp;
-                if (gridAi.WeaponBase.TryGetValue(cube, out comp))
-                    comp.RequestShootUpdate(CoreComponent.ShootActions.ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                if (ai.UnitBase.TryGetValue(lastEnt, out comp))
+                    comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
             }
         }
 
         private void PlayerControlNotify(MyEntity entity)
         {
-            var cube = entity as MyCubeBlock;
-            GridAi gridAi;
-            if (cube != null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+            var topMost = entity.GetTopMostParent();
+            Ai ai;
+            if (topMost != null && GridTargetingAIs.TryGetValue(topMost, out ai))
             {
-                if (HandlesInput && gridAi.AiOwner == 0)
+                if (HandlesInput && ai.AiOwner == 0)
                 {
-                    MyAPIGateway.Utilities.ShowNotification($"Ai computer is not owned, take ownership of grid weapons! - current ownerId is: {gridAi.AiOwner}", 10000);
+                    MyAPIGateway.Utilities.ShowNotification($"Ai computer is not owned, take ownership of grid weapons! - current ownerId is: {ai.AiOwner}", 10000);
                 }
             }
         }

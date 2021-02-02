@@ -9,8 +9,8 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef;
 
 namespace WeaponCore.Projectiles
 {
@@ -106,7 +106,7 @@ namespace WeaponCore.Projectiles
         internal readonly List<MyEntity> MyEntityList = new List<MyEntity>();
         internal readonly List<ProInfo> VrPros = new List<ProInfo>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
-        internal readonly List<GridAi> Watchers = new List<GridAi>();
+        internal readonly List<Ai> Watchers = new List<Ai>();
         internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
 
         #region Start
@@ -156,7 +156,7 @@ namespace WeaponCore.Projectiles
 
             Info.MyPlanet = Info.Ai.MyPlanet;
             if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache)) {
-                Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.FiringCube?.MarkedForClose}, setting to default cache:");
+                Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.CoreEntity?.MarkedForClose}, setting to default cache:");
                 Info.VoxelCache = Info.System.Session.VoxelCaches[ulong.MaxValue];
             }
             if (Info.MyPlanet != null)
@@ -184,7 +184,7 @@ namespace WeaponCore.Projectiles
                 OriginTargetPos = Info.Target.Projectile.Position;
                 Info.Target.Projectile.Seekers.Add(this);
             }
-            else if (Info.Target.Entity != null) OriginTargetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
+            else if (Info.Target.TargetEntity != null) OriginTargetPos = Info.Target.TargetEntity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = !Vector3D.IsZero(OriginTargetPos);
 
@@ -365,8 +365,8 @@ namespace WeaponCore.Projectiles
             var giveUp = HadTarget && ++NewTargets > Info.ConsumableDef.Const.MaxTargets && Info.ConsumableDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
-            if (giveUp || !GridAi.ReacquireTarget(this)) {
-                Info.Target.Entity = null;
+            if (giveUp || !Ai.ReacquireTarget(this)) {
+                Info.Target.TargetEntity = null;
                 if (Info.Target.IsProjectile) UnAssignProjectile(true);
                 return false;
             }
@@ -383,7 +383,7 @@ namespace WeaponCore.Projectiles
 
         internal void ActivateMine()
         {
-            var ent = Info.Target.Entity;
+            var ent = Info.Target.TargetEntity;
             MineActivated = true;
             AtMaxRange = false;
             var targetPos = ent.PositionComp.WorldAABB.Center;
@@ -453,7 +453,7 @@ namespace WeaponCore.Projectiles
 
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime && HadTarget;
-                var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
+                var validTarget = fake || Info.Target.IsProjectile || Info.Target.TargetEntity != null && !Info.Target.TargetEntity.MarkedForClose;
                 var isZombie = Info.ConsumableDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && (ZombieLifeTime + SmartSlot) % 30 == 0;
                 var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && (Info.Age + SmartSlot) % 30 == 0;
 
@@ -468,7 +468,7 @@ namespace WeaponCore.Projectiles
                     if (fake)
                         targetPos = Info.DummyTarget.Position;
                     else if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
-                    else if (Info.Target.Entity != null) targetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
+                    else if (Info.Target.TargetEntity != null) targetPos = Info.Target.TargetEntity.PositionComp.WorldAABB.Center;
 
                     if (Info.ConsumableDef.Const.TargetOffSet && WasTracking) 
                     {
@@ -483,7 +483,7 @@ namespace WeaponCore.Projectiles
 
                     PredictedTargetPos = targetPos;
 
-                    var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
+                    var physics = Info.Target.TargetEntity?.Physics ?? Info.Target.TargetEntity?.Parent?.Physics;
                     if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
                         PrevTargetPos = PredictedTargetPos;
                     else
@@ -613,7 +613,7 @@ namespace WeaponCore.Projectiles
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
-                        if (netted.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
+                        if (Info.Ai.IsGrid && netted.Info.Ai.IsGrid && Info.Ai.GridEntity.IsSameConstructAs(netted.Info.Ai.GridEntity) || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.ConsumableDef.Const.PulseChance || !Info.ConsumableDef.Const.Pulse)
                         {
                             Info.BaseEwarPool -= Info.ConsumableDef.Const.AreaEffectDamage;
@@ -718,12 +718,12 @@ namespace WeaponCore.Projectiles
                 if (closestEnt != null)
                 {
                     ForceNewTarget();
-                    Info.Target.Entity = closestEnt;
+                    Info.Target.TargetEntity = closestEnt;
                 }
             }
-            else if (Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose)
+            else if (Info.Target.TargetEntity != null && !Info.Target.TargetEntity.MarkedForClose)
             {
-                var entSphere = Info.Target.Entity.PositionComp.WorldVolume;
+                var entSphere = Info.Target.TargetEntity.PositionComp.WorldVolume;
                 entSphere.Radius += Info.ConsumableDef.Const.CollisionSize;
                 minDist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref Position, ref entSphere);
             }
@@ -747,7 +747,7 @@ namespace WeaponCore.Projectiles
             if (activate)
             {
                 TriggerMine(false);
-                MyEntityList.Add(Info.Target.Entity);
+                MyEntityList.Add(Info.Target.TargetEntity);
             }
         }
 

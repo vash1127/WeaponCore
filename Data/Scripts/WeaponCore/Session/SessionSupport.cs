@@ -122,7 +122,7 @@ namespace WeaponCore
 
         internal void AddLosCheck(LosDebug debug)
         {
-            if (!WeaponLosDebugActive.Add(debug.Weapon))
+            if (!WeaponLosDebugActive.Add(debug.Unit))
                 return;
             
             LosDebugList.Add(debug);
@@ -138,7 +138,7 @@ namespace WeaponCore
                 if (Tick - info.HitTick > 1200)
                 {
                     LosDebugList.RemoveAtFast(i);
-                    WeaponLosDebugActive.Remove(info.Weapon);
+                    WeaponLosDebugActive.Remove(info.Unit);
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace WeaponCore
 
                             foreach (var gridAi in GridTargetingAIs.Values) {
 
-                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Weapons.Count > 0 && ((IMyTerminalBlock)gridAi.Weapons[0].MyCube).HasPlayerAccess(playerId)) {
+                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Units.Count > 0 && ((IMyTerminalBlock)gridAi.Units[0].CoreEntity).HasPlayerAccess(playerId)) {
 
                                     if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.AiOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
                                         isAdmin = true;
@@ -328,7 +328,7 @@ namespace WeaponCore
             {
                 var w = HomingWeapons[i];
                 var comp = w.Comp;
-                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.IsWorking) {
+                if (w.Comp.Ai == null || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.IsWorking) {
                     HomingWeapons.RemoveAtFast(i);
                     continue;
                 }
@@ -475,7 +475,7 @@ namespace WeaponCore
                         if (toolbarItem != null)
                         {
                             var defId = (MyDefinitionId)toolbarItem.defId;
-                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId))
+                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || UnitPlatforms.ContainsKey(defId))
                             {
                                 var index = ob.Toolbar.Slots[i].Index;
                                 var item = ob.Toolbar.Slots[i].Item;
@@ -609,7 +609,7 @@ namespace WeaponCore
             return radius;
         }
 
-        public void WeaponDebug(Weapon w)
+        public void WeaponDebug(Unit w)
         {
             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Red, 0.05f);
             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Blue, 0.05f);
@@ -653,29 +653,30 @@ namespace WeaponCore
             return false;
         }
 
-        internal void NewThreatLogging(Weapon w)
+        internal void NewThreatLogging(Unit u)
         {
             try
             {
-                var topmost = w.Target.Entity.GetTopMostParent();
-                GridAi.TargetInfo info;
-                if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
+                var topmost = u.Target.TargetEntity.GetTopMostParent();
+                var ownerId = u.Comp.IsBlock ? u.Comp.Cube.OwnerId : u.Comp.GunBase.OwnerId;
+                Ai.TargetInfo info;
+                if (topmost != null && u.Comp.Ai.PreviousTargets.Add(topmost) && u.Comp.Ai.Targets.TryGetValue(topmost, out info))
                 {
                     IMyPlayer weaponOwner;
-                    Players.TryGetValue(w.Comp.MyCube.OwnerId, out weaponOwner);
-                    var wOwner = weaponOwner != null && !string.IsNullOrEmpty(weaponOwner.DisplayName) ? $"{weaponOwner.DisplayName}({w.Comp.MyCube.OwnerId})" : $"{w.Comp.MyCube.OwnerId}";
-                    var weaponFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.Comp.MyCube.OwnerId);
+                    Players.TryGetValue(ownerId, out weaponOwner);
+                    var wOwner = weaponOwner != null && !string.IsNullOrEmpty(weaponOwner.DisplayName) ? $"{weaponOwner.DisplayName}({ownerId})" : $"{ownerId}";
+                    var weaponFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(ownerId);
                     var wFaction = weaponFaction != null && !string.IsNullOrEmpty(weaponFaction.Name) ? $"{weaponFaction.Name}({weaponFaction.FactionId})" : $"NA";
 
                     IMyPlayer aiOwner;
-                    Players.TryGetValue(w.Comp.Ai.AiOwner, out aiOwner);
-                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({w.Comp.Ai.AiOwner})" : $"{w.Comp.Ai.AiOwner}";
-                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.Comp.Ai.AiOwner);
+                    Players.TryGetValue(u.Comp.Ai.AiOwner, out aiOwner);
+                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({u.Comp.Ai.AiOwner})" : $"{u.Comp.Ai.AiOwner}";
+                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(u.Comp.Ai.AiOwner);
                     var aFaction = aiFaction != null && !string.IsNullOrEmpty(aiFaction.Name) ? $"{aiFaction.Name}({aiFaction.FactionId})" : $"NA";
 
-                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {w.Comp.Ai.MyGrid.DebugName}" +
-                             $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
-                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
+                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {u.Comp.Ai.TopEntity.DebugName}" +
+                             $"Attacking Weapon:{u.System.WeaponName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{u.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{u.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{u.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
+                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{u.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
                 }
             }
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }
@@ -686,10 +687,10 @@ namespace WeaponCore
             restrictedSphere = new BoundingSphereD();
             restrictedBox = new MyOrientedBoundingBoxD();
 
-            if (!WeaponAreaRestrictions.ContainsKey(subtype))
+            if (!AreaRestrictions.ContainsKey(subtype))
                 return;
 
-            WeaponAreaRestriction restriction = WeaponAreaRestrictions[subtype];
+            WeaponAreaRestriction restriction = AreaRestrictions[subtype];
             if (restriction.RestrictionBoxInflation < 0.1 && restriction.RestrictionRadius < 0.1)
                 return;
 
@@ -707,11 +708,11 @@ namespace WeaponCore
             }
         }
 
-        public bool IsWeaponAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, GridAi gridAi, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
+        public bool IsUnitAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, Ai newAi, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
             _tmpNearByBlocks.Clear();
-            GridAi ai;
-            if (gridAi == null)
+            Ai ai;
+            if (newAi == null)
             {
                 if (!GridToMasterAi.ContainsKey(myGrid))
                 {
@@ -722,7 +723,7 @@ namespace WeaponCore
                 ai = GridToMasterAi[myGrid];
             } else
             {
-                ai = gridAi;
+                ai = newAi;
             }
 
             CalculateRestrictedShapes(subtype, cubeBoundingBox, out restrictedBox, out restrictedSphere);
@@ -730,7 +731,7 @@ namespace WeaponCore
             if (queryRadius < 0.01)
                 return false;
             
-            var restriction = WeaponAreaRestrictions[subtype];
+            var restriction = AreaRestrictions[subtype];
             var checkBox = restriction.RestrictionBoxInflation > 0;
             var checkSphere = restriction.RestrictionRadius > 0;
             var querySphere = new BoundingSphereD(cubeBoundingBox.Center, queryRadius);
@@ -746,7 +747,7 @@ namespace WeaponCore
             for (int l = 0; l < _tmpNearByBlocks.Count; l++) {
 
                 var cube = _tmpNearByBlocks[l] as MyCubeBlock;
-                if (cube == null || cube.EntityId == ignoredEntity || !WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeId.String))
+                if (cube == null || cube.EntityId == ignoredEntity || !WeaponCoreDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeId.String))
                     continue;
 
                 if (!restriction.CheckForAnyWeapon && cube.BlockDefinition.Id.SubtypeId != subtype)

@@ -5,7 +5,7 @@ using VRage;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.UnitDefinition.TargetingDef;
 using static WeaponCore.Support.CoreComponent;
 using static WeaponCore.WeaponStateValues;
 
@@ -25,8 +25,8 @@ namespace WeaponCore
             //Base.State.Control = CompStateValues.ControlMode.None;
             //Base.State.PlayerId = -1;
             Base.State.TrackingReticle = false;
-            if (Base.State.TerminalAction == ShootActions.ShootOnce) 
-                Base.State.TerminalAction = ShootActions.ShootOff;
+            if (Base.State.TerminalAction == TriggerActions.TriggerOnce) 
+                Base.State.TerminalAction = TriggerActions.TriggerOff;
             for (int i = 0; i < Ammos.Length; i++)
             {
                 var ws = Base.State.Weapons[i];
@@ -36,8 +36,8 @@ namespace WeaponCore
                 wa.AmmoCycleId = 0;
                 ws.Heat = 0;
                 ws.Overheated = false;
-                if (ws.Action == ShootActions.ShootOnce)
-                    ws.Action = ShootActions.ShootOff;
+                if (ws.Action == TriggerActions.TriggerOnce)
+                    ws.Action = TriggerActions.TriggerOff;
                 wr.StartId = 0;
             }
             ResetCompBaseRevisions();
@@ -67,7 +67,7 @@ namespace WeaponCore
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(Weapon w, AmmoValues sync)
+        public void Sync(Unit w, AmmoValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -155,7 +155,7 @@ namespace WeaponCore
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
 
-        public void Sync(Weapon w, WeaponReloadValues sync)
+        public void Sync(Unit w, WeaponReloadValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -228,7 +228,7 @@ namespace WeaponCore
         [ProtoMember(3)] public bool TrackingReticle; //don't save
         [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
-        [ProtoMember(6)] public ShootActions TerminalAction;
+        [ProtoMember(6)] public TriggerActions TerminalAction;
 
         public void Sync(CoreComponent comp, CompStateValues sync, Caller caller)
         {
@@ -245,7 +245,7 @@ namespace WeaponCore
             //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
-        public void TerminalActionSetter(CoreComponent comp, ShootActions action, bool syncWeapons = false, bool updateWeapons = true)
+        public void TerminalActionSetter(CoreComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
         {
             TerminalAction = action;
             
@@ -265,7 +265,7 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public float Heat; // don't save
         [ProtoMember(2)] public bool Overheated; //don't save
-        [ProtoMember(3), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+        [ProtoMember(3), DefaultValue(TriggerActions.TriggerOff)] public TriggerActions Action = TriggerActions.TriggerOff; // save
 
         public void Sync(WeaponStateValues sync)
         {
@@ -274,10 +274,10 @@ namespace WeaponCore
             Action = sync.Action;
         }
 
-        public void WeaponMode(CoreComponent comp, ShootActions action, bool resetTerminalAction = true, bool syncCompState = true)
+        public void WeaponMode(CoreComponent comp, TriggerActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
-                comp.Data.Repo.Base.State.TerminalAction = ShootActions.ShootOff;
+                comp.Data.Repo.Base.State.TerminalAction = TriggerActions.TriggerOff;
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)
@@ -295,7 +295,7 @@ namespace WeaponCore
         [ProtoMember(4)] public int WeaponId;
         [ProtoMember(5)] public WeaponRandomGenerator WeaponRandom; // save
 
-        internal void SyncTarget(Weapon w)
+        internal void SyncTarget(Unit w)
         {
             if (Revision > w.TargetData.Revision)
             {
@@ -314,7 +314,7 @@ namespace WeaponCore
             //else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
         }
 
-        public void WeaponInit(Weapon w)
+        public void WeaponInit(Unit w)
         {
             WeaponRandom.Init(w.UniqueId);
 
@@ -326,7 +326,7 @@ namespace WeaponCore
             rand.AcquireRandom = new Random(rand.CurrentSeed);
         }
 
-        public void WeaponRefreshClient(Weapon w)
+        public void WeaponRefreshClient(Unit w)
         {
             try
             {

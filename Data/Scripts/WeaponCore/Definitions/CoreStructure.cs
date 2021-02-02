@@ -13,12 +13,12 @@ using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using static WeaponCore.Support.PartAnimation;
-using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.WeaponDefinition.HardPointDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef.GuidanceType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.ShapeDef.Shapes;
+using static WeaponCore.Support.UnitDefinition;
+using static WeaponCore.Support.UnitDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.UnitDefinition.HardPointDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef.GuidanceType;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.ShapeDef.Shapes;
 namespace WeaponCore.Support
 {
     internal class CoreSystem
@@ -37,7 +37,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash MuzzlePartName;
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
-        public readonly WeaponDefinition Values;
+        public readonly UnitDefinition Values;
         public readonly ConsumableTypes[] AmmoTypes;
         public readonly Stack<MySoundPair> PreFirePairs = new Stack<MySoundPair>();
         public readonly Stack<MySoundPair> FirePerShotPairs = new Stack<MySoundPair>();
@@ -142,7 +142,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, ConsumableTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, UnitDefinition values, string weaponName, ConsumableTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -544,7 +544,7 @@ namespace WeaponCore.Support
         public readonly double HealthHitModifier;
         public readonly double VoxelHitModifier;
 
-        internal ConsumableConstants(CoreSystem.ConsumableTypes ammo, WeaponDefinition wDef, Session session, CoreSystem system, int ammoIndex)
+        internal ConsumableConstants(CoreSystem.ConsumableTypes ammo, UnitDefinition wDef, Session session, CoreSystem system, int ammoIndex)
         {
             AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
@@ -708,7 +708,7 @@ namespace WeaponCore.Support
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.ConsumableDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
-        private void ComputeAmmoPattern(CoreSystem.ConsumableTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out ConsumableDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
+        private void ComputeAmmoPattern(CoreSystem.ConsumableTypes ammo, UnitDefinition wDef, bool guidedAmmo, out ConsumableDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
         {
             var pattern = ammo.ConsumableDef.Pattern;
             var indexPos = 0;
@@ -748,7 +748,7 @@ namespace WeaponCore.Support
             guidedDetected = guidedAmmo;
         }
 
-        internal void GetParticleInfo(CoreSystem.ConsumableTypes ammo, WeaponDefinition wDef, Session session)
+        internal void GetParticleInfo(CoreSystem.ConsumableTypes ammo, UnitDefinition wDef, Session session)
         {
             var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
             var comparer = new Session.HackEqualityComparer();
@@ -775,7 +775,7 @@ namespace WeaponCore.Support
         }
 
         private int mexLogLevel = 0;
-        private void GetPeakDps(CoreSystem.ConsumableTypes ammoDef, CoreSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        private void GetPeakDps(CoreSystem.ConsumableTypes ammoDef, CoreSystem system, UnitDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
             var a = ammoDef.ConsumableDef;
@@ -998,7 +998,7 @@ namespace WeaponCore.Support
         }
 
 
-        private MyConcurrentPool<MyEntity> Models(ConsumableDef consumableDef, WeaponDefinition wDef, out bool primeModel, out bool triggerModel, out string primeModelPath)
+        private MyConcurrentPool<MyEntity> Models(ConsumableDef consumableDef, UnitDefinition wDef, out bool primeModel, out bool triggerModel, out string primeModelPath)
         {
             if (consumableDef.AreaEffect.AreaEffect > (AreaEffectType)3 && IsField) triggerModel = true;
             else triggerModel = false;
@@ -1068,7 +1068,7 @@ namespace WeaponCore.Support
             voxelHitModifer = consumableDef.DamageScales.VoxelHitModifier > 0 ? consumableDef.DamageScales.VoxelHitModifier : 1;
         }
 
-        private void Energy(CoreSystem.ConsumableTypes ammoPair, CoreSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
+        private void Energy(CoreSystem.ConsumableTypes ammoPair, CoreSystem system, UnitDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
@@ -1165,7 +1165,7 @@ namespace WeaponCore.Support
         public readonly string ModPath;
         public readonly Session Session;
 
-        public CoreStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
+        public CoreStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<UnitDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
@@ -1187,7 +1187,7 @@ namespace WeaponCore.Support
                 muzzlePartNames[weaponId] = myMuzzleNameHash;
 
                 var typeName = w.Value.Item1;
-                var weaponDef = new WeaponDefinition();
+                var weaponDef = new UnitDefinition();
                 foreach (var weapon in wDefList)
                     if (weapon.HardPoint.WeaponName == typeName) weaponDef = weapon;
 

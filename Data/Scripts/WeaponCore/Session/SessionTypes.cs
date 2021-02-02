@@ -8,6 +8,7 @@ using Havok;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -15,7 +16,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
+using static WeaponCore.Platform.Unit;
 
 namespace WeaponCore
 {
@@ -61,7 +62,7 @@ namespace WeaponCore
 
         internal struct LosDebug
         {
-            internal Weapon Weapon;
+            internal Unit Unit;
             internal LineD Line;
             internal uint HitTick;
         }
@@ -77,7 +78,8 @@ namespace WeaponCore
 
             internal Session Session;
             internal bool Generating;
-            internal MyCubeBlock TargetBlock;
+            internal MyEntity TargetEntity;
+            internal MyEntity TargetTopEntity;
             internal DataReport MyData;
             internal DataReport RemoteData;
             internal CorePlatform TmpPlatform;
@@ -101,24 +103,30 @@ namespace WeaponCore
                 AllDicts.Add("Weapon", WeaponFields);
             }
 
-            internal void GenerateReport(MyCubeBlock targetBlock)
+            internal void GenerateReport(MyEntity targetEntity)
             {
-                GridAi ai;
-                if (Generating || Session.Tick - LastRequestTick < RequestTime) {
+                var topMost = targetEntity.GetTopMostParent();
+                var cube = targetEntity as MyCubeBlock;
+                var rifle = targetEntity as IMyAutomaticRifleGun;
+                var subName = cube != null ? cube.BlockDefinition.Id.SubtypeName : rifle != null ? rifle.DefinitionId.SubtypeName : "Unknown";
+                   
+                Ai ai;
+                if (Generating || Session.Tick - LastRequestTick < RequestTime || topMost == null) {
                     return;
                 }
                 
-                if (!Session.GridTargetingAIs.TryGetValue(targetBlock.CubeGrid, out ai) || !ai.WeaponBase.ContainsKey(targetBlock))
+                if (!Session.GridTargetingAIs.TryGetValue(topMost, out ai) || !ai.UnitBase.ContainsKey(targetEntity))
                     Log.Line($"Failed to generate user report, either grid does not have Weaponcore or this block this wc block is not initialized.");
                 
                 Log.Line($"Generate User Weapon Report");
                 Generating = true;
                 LastRequestTick = Session.Tick;
-                TargetBlock = targetBlock;
+                TargetEntity = targetEntity;
+                TargetTopEntity = topMost;
                 MyData = new DataReport();
 
                 if (!Session.DedicatedServer)
-                    MyAPIGateway.Utilities.ShowNotification($"Generating a error report for WC Block: {TargetBlock.BlockDefinition.Id.SubtypeName} - with id: {TargetBlock.EntityId}", 7000, "Red");
+                    MyAPIGateway.Utilities.ShowNotification($"Generating a error report for WC Block: {subName} - with id: {TargetEntity.EntityId}", 7000, "Red");
 
                 if (Session.IsServer) {
 
@@ -135,10 +143,10 @@ namespace WeaponCore
                 Session.FutureEvents.Schedule(CompleteReport, null, 300);
             }
 
-            internal DataReport PullData(MyCubeBlock targetBlock)
+            internal DataReport PullData(MyEntity targetEntity)
             {
                 MyData = new DataReport();
-                TargetBlock = targetBlock;
+                TargetEntity = targetEntity;
 
                 Compile();
                 
@@ -192,7 +200,7 @@ namespace WeaponCore
                     {
                         SenderId = Session.MultiplayerId,
                         PType = PacketType.ProblemReport,
-                        EntityId = TargetBlock.EntityId,
+                        EntityId = TargetEntity.EntityId,
                         Type = ProblemReportPacket.RequestType.RequestServerReport,
                     });
                 }
@@ -272,8 +280,8 @@ namespace WeaponCore
             {
                 var sessionFields = new Dictionary<string, Func<string>>
                 {
-                    {"HasGridMap", () => (GetComp() != null && Session.GridToInfoMap.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
-                    {"HasGridAi", () => (GetComp() != null && Session.GridTargetingAIs.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
+                    {"HasGridMap", () => (GetComp() != null && Session.GridToInfoMap.ContainsKey(GetComp().TopEntity)).ToString()},
+                    {"HasGridAi", () => (GetComp() != null && Session.GridTargetingAIs.ContainsKey(GetComp().TopEntity)).ToString()},
                 };
 
                 return sessionFields;
@@ -284,7 +292,7 @@ namespace WeaponCore
                 var aiFields = new Dictionary<string, Func<string>>
                 {
                     {"Version", () => GetAi()?.Version.ToString() ?? string.Empty },
-                    {"RootAiId", () => GetAi()?.Construct.RootAi?.MyGrid.EntityId.ToString() ?? string.Empty },
+                    {"RootAiId", () => GetAi()?.Construct.RootAi?.TopEntity.EntityId.ToString() ?? string.Empty },
                     {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
@@ -293,11 +301,11 @@ namespace WeaponCore
                     {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
-                    {"WeaponBase", () => GetAi()?.WeaponBase.Count.ToString() ?? string.Empty },
+                    {"WeaponBase", () => GetAi()?.UnitBase.Count.ToString() ?? string.Empty },
                     {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty },
                     {"AiOwner", () => GetAi()?.AiOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
-                    {"BlockCount", () => GetAi()?.BlockCount.ToString() ?? string.Empty },
+                    {"BlockCount", () => GetAi()?.PartCount.ToString() ?? string.Empty },
                     {"WeaponsTracking", () => GetAi()?.WeaponsTracking.ToString() ?? string.Empty },
                     {"GridAvailablePower", () => GetAi()?.GridAvailablePower.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"MaxTargetingRange", () => GetAi()?.MaxTargetingRange.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
@@ -311,11 +319,11 @@ namespace WeaponCore
                 var compFields = new Dictionary<string, Func<string>>
                 {
                     {"IsAsleep", () => GetComp()?.IsAsleep.ToString() ?? string.Empty },
-                    {"GridId", () => GetComp()?.MyCube.CubeGrid.EntityId.ToString() ?? string.Empty },
+                    {"GridId", () => GetComp()?.TopEntity.EntityId.ToString() ?? string.Empty },
                     {"BaseType", () => GetComp()?.BaseType.ToString() ?? string.Empty },
-                    {"AiGridMatchCubeGrid", () => (GetComp()?.Ai?.MyGrid == GetComp()?.MyCube.CubeGrid).ToString() ?? string.Empty },
+                    {"AiGridMatchCubeGrid", () => (GetComp()?.Ai?.TopEntity == GetComp()?.TopEntity).ToString() ?? string.Empty },
                     {"IsWorking", () => GetComp()?.IsWorking.ToString() ?? string.Empty },
-                    {"cubeIsWorking", () => GetComp()?.MyCube.IsWorking.ToString() ?? string.Empty },
+                    {"entityIsWorking", () => GetComp()?.FakeIsWorking.ToString() ?? string.Empty },
                     {"MaxTargetDistance", () => GetComp()?.MaxTargetDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
                     {"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
@@ -389,7 +397,7 @@ namespace WeaponCore
                     },
                     {"TargetIsEntity", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.Entity != null}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.TargetEntity != null}"); }
                     },
                     {"TargetEntityId", () => {
                             var message = string.Empty;
@@ -478,10 +486,10 @@ namespace WeaponCore
             }
 
 
-            internal GridAi GetAi()
+            internal Ai GetAi()
             {
-                GridAi ai;
-                if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
+                Ai ai;
+                if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     return ai;
                 }
@@ -491,11 +499,11 @@ namespace WeaponCore
 
             internal CoreComponent GetComp()
             {
-                GridAi ai;
-                if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
+                Ai ai;
+                if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
-                    if (ai.WeaponBase.TryGetValue(TargetBlock, out comp))
+                    if (ai.UnitBase.TryGetValue(TargetEntity, out comp))
                     {
                         return comp;
                     }
@@ -506,11 +514,11 @@ namespace WeaponCore
 
             internal CorePlatform GetPlatform()
             {
-                GridAi ai;
-                if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
+                Ai ai;
+                if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
-                    if (ai.WeaponBase.TryGetValue(TargetBlock, out comp))
+                    if (ai.UnitBase.TryGetValue(TargetEntity, out comp))
                     {
                         return comp.Platform;
                     }
@@ -529,7 +537,7 @@ namespace WeaponCore
             {
                 MyData = null;
                 RemoteData = null;
-                TargetBlock = null;
+                TargetEntity = null;
                 Generating = false;
                 Log.Line("Clean");
             }
@@ -550,7 +558,7 @@ namespace WeaponCore
             internal void Monitor()
             {
                 if (IsActive()) {
-                    if (Session.Tick20)
+                    if (Comp.IsBlock && Session.Tick20)
                         Comp.TerminalRefresh();
                 }
                 else if (Active)
@@ -561,11 +569,11 @@ namespace WeaponCore
                 if (Comp?.Ai == null) return false;
 
                 var sameVersion = Comp.Ai.Version == OriginalAiVersion;
-                var nothingMarked = !Comp.MyCube.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose;
-                var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
+                var nothingMarked = !Comp.CoreEntity.MarkedForClose && !Comp.Ai.TopEntity.MarkedForClose && !Comp.Ai.TopEntity.MarkedForClose;
+                var sameGrid = Comp.TopEntity == Comp.Ai.TopEntity;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
                 var compReady = Comp.Platform.State == CorePlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Data.Repo.ActiveTerminal || Session.IsClient && (Comp.Ai.Data.Repo.ActiveTerminal == 0 || Comp.Ai.Data.Repo.ActiveTerminal ==  Comp.MyCube.EntityId));
+                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Data.Repo.ActiveTerminal || Session.IsClient && (Comp.Ai.Data.Repo.ActiveTerminal == 0 || Comp.Ai.Data.Repo.ActiveTerminal ==  Comp.CoreEntity.EntityId));
                 var isActive = (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
                 return isActive;
             }
@@ -575,7 +583,7 @@ namespace WeaponCore
                 if (Active && (Comp != comp || OriginalAiVersion !=  comp.Ai.Version))
                     Clean();
 
-                Session.LastTerminal = (IMyTerminalBlock)comp.MyCube;
+                Session.LastTerminal = (IMyTerminalBlock)comp.CoreEntity;
 
                 Comp = comp;
 
@@ -602,7 +610,7 @@ namespace WeaponCore
                         {
                             SenderId = Session.MultiplayerId,
                             PType = PacketType.TerminalMonitor,
-                            EntityId = Comp.MyCube.EntityId,
+                            EntityId = Comp.CoreEntity.EntityId,
                             State = TerminalMonitorPacket.Change.Clean,
                             MId = ++mIds[(int)PacketType.TerminalMonitor],
                         });
@@ -622,20 +630,20 @@ namespace WeaponCore
             {
                 long aTermId;
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
-                    ServerTerminalMaps[comp] = comp.MyCube.EntityId;
+                    ServerTerminalMaps[comp] = comp.CoreEntity.EntityId;
                     //if (!Session.LocalVersion) Log.Line($"ServerUpdate added Id");
                 }
                 else {
 
-                    var cube = MyEntities.GetEntityByIdOrDefault(aTermId) as MyCubeBlock;
-                    if (cube != null && cube.CubeGrid.EntityId != comp.Ai.MyGrid.EntityId)
+                    var entity = MyEntities.GetEntityByIdOrDefault(aTermId);
+                    if (entity != null && entity.GetTopMostParent()?.EntityId != comp.Ai.TopEntity.EntityId)
                     {
                         ServerTerminalMaps[comp] = 0;
                         //if (!Session.LocalVersion) Log.Line($"ServerUpdate reset Id");
                     }
                 }
 
-                comp.Ai.Data.Repo.ActiveTerminal = comp.MyCube.EntityId;
+                comp.Ai.Data.Repo.ActiveTerminal = comp.CoreEntity.EntityId;
 
                 if (comp.IsAsleep)
                     comp.WakeupComp();
@@ -713,7 +721,7 @@ namespace WeaponCore
             {
                 foreach (var wa in MonitorState) {
 
-                    if (wa.Weapon.Target.HasTarget) {
+                    if (wa.Unit.Target.HasTarget) {
                         ToRemove.Add(wa);
                         continue;
                     }
@@ -744,7 +752,7 @@ namespace WeaponCore
             {
                 foreach (var wa in Asleep) {
 
-                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.TrackTarget;
+                    var remove = wa.Unit.Target.HasTarget || wa.Unit.Comp.IsAsleep || !wa.Unit.Comp.IsWorking || !wa.Unit.TrackTarget;
 
                     if (remove) {
                         ToRemove.Add(wa);
@@ -790,10 +798,10 @@ namespace WeaponCore
                     for (int i = h; i < length; i += 1)
                     {
                         var tempValue = list[i];
-                        var temp = list[i].Weapon.UniqueId;
+                        var temp = list[i].Unit.UniqueId;
 
                         int j;
-                        for (j = i; j >= h && list[j - h].Weapon.UniqueId > temp; j -= h)
+                        for (j = i; j >= h && list[j - h].Unit.UniqueId > temp; j -= h)
                         {
                             list[j] = list[j - h];
                         }
@@ -839,12 +847,12 @@ namespace WeaponCore
 
         public class WeaponAmmoMoveRequest
         {
-            public Weapon Weapon;
+            public Unit Unit;
             public List<InventoryMags> Inventories = new List<InventoryMags>();
 
             public void Clean()
             {
-                Weapon = null;
+                Unit = null;
                 Inventories.Clear();
             }
         }

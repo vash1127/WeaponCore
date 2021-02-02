@@ -13,10 +13,10 @@ using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Settings;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.DamageScaleDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.DamageScaleDef;
 using static WeaponCore.Support.CoreSystem.TurretType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef.GuidanceType;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef.GuidanceType;
 using static WeaponCore.Settings.CoreSettings.ServerSettings;
 using VRage.Utils;
 
@@ -51,7 +51,7 @@ namespace WeaponCore
                 var canDamage = !MpActive || !IsClient && (!fixedFire || (p.Info.IsFiringPlayer || p.Info.ClientSent));
 
                 if (IsClient && p.Info.IsFiringPlayer && fixedFire)  {
-                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Info.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.ConsumableDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
+                    SendFixedGunHitEvent(p.Info.Target.CoreEntity, p.Info.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.ConsumableDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
                     p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                 }
 
@@ -166,7 +166,7 @@ namespace WeaponCore
                 }
             }
             var applyToShield = info.ConsumableDef.AmmoGraphics.ShieldHitDraw && (!info.ConsumableDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.ConsumableDef.Const.HitParticle);
-            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, applyToShield);
+            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.CoreEntity.EntityId, (float)scaledDamage, (float)detonateDamage, energy, applyToShield);
            
             if (hit.HasValue) {
 
@@ -205,7 +205,7 @@ namespace WeaponCore
                 hitEnt.Blocks?.Clear();
                 return;
             }
-            if (t.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.ConsumableDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsSameConstructAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            if (t.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.ConsumableDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.IsGrid && t.Ai.GridEntity.IsSameConstructAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
             {
                 t.BaseDamagePool = 0;
                 return;
@@ -223,8 +223,8 @@ namespace WeaponCore
             var detonateOnEnd = t.ConsumableDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.ConsumableDef.AreaEffect.Detonation.MinArmingTime;
             var detonateDmg = t.ConsumableDef.Const.DetonationDamage;
             var shieldBypass = t.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
-            var attackerId = shieldBypass ? grid.EntityId : t.Target.FiringCube.EntityId;
-            var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
+            var attackerId = shieldBypass ? grid.EntityId : t.Target.CoreEntity.EntityId;
+            var attacker = shieldBypass ? (MyEntity)grid : t.Target.CoreEntity;
             
             var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.ConsumableDef.Const.AreaEffectDamage : 0;
             var hitMass = t.ConsumableDef.Mass;
@@ -528,7 +528,7 @@ namespace WeaponCore
             var shieldByPass = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var sync = MpActive && IsServer;
 
-            var attackerId = info.Target.FiringCube.EntityId;
+            var attackerId = info.Target.CoreEntity.EntityId;
 
             var objHp = destObj.Integrity;
             var integrityCheck = info.ConsumableDef.DamageScales.MaxIntegrity > 0;
@@ -682,7 +682,7 @@ namespace WeaponCore
                     if (dRadius < 1.5) dRadius = 1.5f;
 
                     if (canDamage)
-                        SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.FiringCube, destObj, info.ConsumableDef, true);
+                        SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.CoreEntity, destObj, info.ConsumableDef, true);
                 }
             }
         }

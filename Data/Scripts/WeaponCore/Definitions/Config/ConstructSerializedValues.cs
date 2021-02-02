@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi;
+using static WeaponCore.Support.Ai;
 namespace WeaponCore
 {
     [ProtoContract]
@@ -34,7 +34,7 @@ namespace WeaponCore
         [ProtoMember(6)] public LockModes[] Locked;
 
 
-        public void Sync(GridAi ai, FocusData sync, bool localCall = false)
+        public void Sync(Ai ai, FocusData sync, bool localCall = false)
         {
             if (ai.Session.IsServer || sync.Revision > Revision)
             {

@@ -12,7 +12,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
-using static WeaponCore.Support.CoreComponent.ShootActions;
+using static WeaponCore.Support.CoreComponent.TriggerActions;
 using static WeaponCore.Platform.CorePlatform.PlatformState;
 using IMyTerminalBlock = Sandbox.ModAPI.IMyTerminalBlock;
 
@@ -255,8 +255,8 @@ namespace WeaponCore.Api
             var type = MyDetectedEntityType.Unknown;
             var name = string.Empty;
 
-            GridAi ai;
-            GridAi.TargetInfo info = null;
+            Ai ai;
+            Ai.TargetInfo info = null;
 
             if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
                 relation = info.EntInfo.Relationship;
@@ -400,7 +400,7 @@ namespace WeaponCore.Api
 
         private void GetCoreWeapons(ICollection<MyDefinitionId> collection)
         {
-            foreach (var def in _session.WeaponCoreBlockDefs.Values)
+            foreach (var def in _session.WeaponCoreDefs.Values)
                 collection.Add(def);
         }
 
@@ -454,7 +454,7 @@ namespace WeaponCore.Api
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
         {
             CoreStructure coreStructure;
-            if (_session.WeaponPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure))
+            if (_session.UnitPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure))
             {
                 foreach (var weaponSystem in coreStructure.WeaponSystems.Values)
                 {
@@ -470,12 +470,12 @@ namespace WeaponCore.Api
         private MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim)
         {
             var grid = victim.GetTopMostParent() as MyCubeGrid;
-            GridAi gridAi;
+            Ai ai;
             MyTuple<bool, int, int> tuple;
-            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
             {
-                var count = gridAi.LiveProjectile.Count;
-                tuple = count > 0 ? new MyTuple<bool, int, int>(true, count, (int) (_session.Tick - gridAi.LiveProjectileTick)) : new MyTuple<bool, int, int>(false, 0, -1);
+                var count = ai.LiveProjectile.Count;
+                tuple = count > 0 ? new MyTuple<bool, int, int>(true, count, (int) (_session.Tick - ai.LiveProjectileTick)) : new MyTuple<bool, int, int>(false, 0, -1);
             }
             else tuple = new MyTuple<bool, int, int>(false, 0, -1);
             return tuple;
@@ -484,12 +484,12 @@ namespace WeaponCore.Api
         private void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection)
         {
             var grid = shooter.GetTopMostParent() as MyCubeGrid;
-            GridAi gridAi;
-            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+            Ai ai;
+            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
             {
-                for (int i = 0; i < gridAi.SortedTargets.Count; i++)
+                for (int i = 0; i < ai.SortedTargets.Count; i++)
                 {
-                    var targetInfo = gridAi.SortedTargets[i];
+                    var targetInfo = ai.SortedTargets[i];
                     collection.Add(new MyTuple<IMyEntity, float>(targetInfo.Target, targetInfo.OffenseRating));
                 }
             }
@@ -501,7 +501,7 @@ namespace WeaponCore.Api
 
             if (shootingGrid != null)
             {
-                GridAi ai;
+                Ai ai;
                 if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
                     return MyEntities.GetEntityById(ai.Construct.Data.Repo.FocusData.Target[priority]);
             }
@@ -514,7 +514,7 @@ namespace WeaponCore.Api
 
             if (shootingGrid != null)
             {
-                GridAi ai;
+                Ai ai;
                 if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
                 {
                     if (!ai.Session.IsServer)
@@ -537,7 +537,7 @@ namespace WeaponCore.Api
                     return new MyTuple<bool, bool, bool, IMyEntity>(true, false, true, null);
                 if (weapon.Target.IsProjectile)
                     return new MyTuple<bool, bool, bool, IMyEntity>(true, true, false, null);
-                return new MyTuple<bool, bool, bool, IMyEntity>(weapon.Target.Entity != null, false, false, weapon.Target.Entity);
+                return new MyTuple<bool, bool, bool, IMyEntity>(weapon.Target.TargetEntity != null, false, false, weapon.Target.TargetEntity);
             }
 
             return new MyTuple<bool, bool, bool, IMyEntity>(false, false, false, null);
@@ -548,7 +548,7 @@ namespace WeaponCore.Api
         {
             CoreComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
-                GridAi.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
+                Ai.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
         }
 
         private static void FireWeaponOnce(IMyTerminalBlock weaponBlock, bool allWeapons = true, int weaponId = 0)
@@ -562,7 +562,7 @@ namespace WeaponCore.Api
                     if (!allWeapons && i != weaponId) continue;
                     
                     foundWeapon = true;
-                    comp.Platform.Weapons[i].State.WeaponMode(comp, ShootOnce);
+                    comp.Platform.Weapons[i].State.WeaponMode(comp, TriggerOnce);
                 }
 
                 if (foundWeapon)  {
@@ -583,15 +583,15 @@ namespace WeaponCore.Api
 
                     var w = comp.Platform.Weapons[i];
 
-                    if (!on && w.State.Action == ShootOn)
+                    if (!on && w.State.Action == TriggerOn)
                     {
-                        w.State.WeaponMode(comp, ShootOff);
+                        w.State.WeaponMode(comp, TriggerOff);
                         w.StopShooting();
                     }
-                    else if (on && w.State.Action != ShootOff)
-                        w.State.WeaponMode(comp, ShootOn);
+                    else if (on && w.State.Action != TriggerOff)
+                        w.State.WeaponMode(comp, TriggerOn);
                     else if (on)
-                        w.State.WeaponMode(comp, ShootOn);
+                        w.State.WeaponMode(comp, TriggerOn);
                 }
             }
         }
@@ -660,10 +660,10 @@ namespace WeaponCore.Api
             {
                 var w = comp.Platform.Weapons[weaponId];
 
-                w.NewTarget.Entity = (MyEntity) targetEnt;
+                w.NewTarget.TargetEntity = (MyEntity) targetEnt;
 
                 Vector3D targetPos;
-                return Weapon.TargetAligned(w, w.NewTarget, out targetPos);
+                return Unit.TargetAligned(w, w.NewTarget, out targetPos);
             }
             return false;
         }
@@ -675,10 +675,10 @@ namespace WeaponCore.Api
             {
                 var w = comp.Platform.Weapons[weaponId];
 
-                w.NewTarget.Entity = (MyEntity)targetEnt;
+                w.NewTarget.TargetEntity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                var targetAligned = Weapon.TargetAligned(w, w.NewTarget, out targetPos);
+                var targetAligned = Unit.TargetAligned(w, w.NewTarget, out targetPos);
                 
                 return new MyTuple<bool, Vector3D?>(targetAligned, targetAligned ? targetPos : (Vector3D?)null);
             }
@@ -695,7 +695,7 @@ namespace WeaponCore.Api
                 var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
                 var targetAccel = topMost.Physics?.AngularAcceleration ?? Vector3.Zero;
                 Vector3D predictedPos;
-                return Weapon.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
+                return Unit.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
             }
             return false;
         }
@@ -706,10 +706,10 @@ namespace WeaponCore.Api
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
-                w.NewTarget.Entity = (MyEntity)targetEnt;
+                w.NewTarget.TargetEntity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                Weapon.TargetAligned(w, w.NewTarget, out targetPos);
+                Unit.TargetAligned(w, w.NewTarget, out targetPos);
                 return targetPos;
             }
             return null;
@@ -770,9 +770,9 @@ namespace WeaponCore.Api
             else
             {
                 var grid = entity.GetTopMostParent() as MyCubeGrid;
-                GridAi gridAi;
-                if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
-                    return gridAi.OptimalDps;
+                Ai ai;
+                if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
+                    return ai.OptimalDps;
             }
             return 0f;
         }
@@ -856,9 +856,9 @@ namespace WeaponCore.Api
         private float GetConstructEffectiveDps(IMyEntity entity)
         {
             var grid = entity.GetTopMostParent() as MyCubeGrid;
-            GridAi gridAi;
-            if (grid != null && _session.GridToMasterAi.TryGetValue(grid, out gridAi))
-                return gridAi.EffectiveDps;
+            Ai ai;
+            if (grid != null && _session.GridToMasterAi.TryGetValue(grid, out ai))
+                return ai.EffectiveDps;
 
             return 0;
         }
@@ -871,7 +871,7 @@ namespace WeaponCore.Api
                 
                 var ai = comp.Ai;
                 
-                GridAi.TargetInfo targetInfo;
+                Ai.TargetInfo targetInfo;
                 if (ai.Targets.TryGetValue((MyEntity)targetEntity, out targetInfo)) {
                     var marked = targetInfo.Target?.MarkedForClose;
                     if (!marked.HasValue || marked.Value)
@@ -918,7 +918,7 @@ namespace WeaponCore.Api
         private MyTuple<bool, bool> IsInRange(IMyEntity entity)
         {
             var grid = entity?.GetTopMostParent() as MyCubeGrid;
-            GridAi ai;
+            Ai ai;
             if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
             {
                 return new MyTuple<bool, bool>(ai.TargetingInfo.ThreatInRange, ai.TargetingInfo.OtherInRange);

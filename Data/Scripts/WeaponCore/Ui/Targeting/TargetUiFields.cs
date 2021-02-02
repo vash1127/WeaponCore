@@ -31,8 +31,8 @@ namespace WeaponCore
         private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
-        private readonly Dictionary<MyEntity, GridAi.TargetInfo> _toPruneMasterDict = new Dictionary<MyEntity, GridAi.TargetInfo>(64);
-        private readonly List<GridAi.TargetInfo> _toSortMasterList = new List<GridAi.TargetInfo>(64);
+        private readonly Dictionary<MyEntity, Ai.TargetInfo> _toPruneMasterDict = new Dictionary<MyEntity, Ai.TargetInfo>(64);
+        private readonly List<Ai.TargetInfo> _toSortMasterList = new List<Ai.TargetInfo>(64);
         private readonly List<MyEntity> _sortedMasterList = new List<MyEntity>(64);
         private readonly Dictionary<MyEntity, float> _masterTargets = new Dictionary<MyEntity, float>(64);
         private readonly Session _session;

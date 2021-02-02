@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.CoreComponent.Start;
-using static WeaponCore.Support.CoreComponent.ShootActions;
-using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
+using static WeaponCore.Support.CoreComponent.TriggerActions;
+using static WeaponCore.Support.UnitDefinition.HardPointDef.HardwareDef;
 using static WeaponCore.CompStateValues;
 namespace WeaponCore
 {
@@ -23,11 +23,10 @@ namespace WeaponCore
                 ai.MyProjectiles = 0;
                 ai.ProInMinCacheRange = 0;
                 ai.AccelChecked = false;
-                
-                if (ai.MarkedForClose || !ai.GridInit || ai.MyGrid == null || ai.Construct.RootAi == null || ai.MyGrid.MarkedForClose)
+                if (ai.MarkedForClose || !ai.GridInit || ai.TopEntity == null || ai.Construct.RootAi == null || ai.TopEntity.MarkedForClose)
                     continue;
                 
-                ai.Concealed = ((uint)ai.MyGrid.Flags & 4) > 0;
+                ai.Concealed = ((uint)ai.TopEntity.Flags & 4) > 0;
                 if (ai.Concealed)
                     continue;
 
@@ -42,7 +41,7 @@ namespace WeaponCore
                 var enemyProjectiles = ai.LiveProjectile.Count > 0;
                 ai.CheckProjectiles = Tick - ai.NewProjectileTick <= 1;
 
-                if (ai.UpdatePowerSources || !ai.HadPower && ai.MyGrid.IsPowered || ai.HasPower && !ai.MyGrid.IsPowered || Tick10)
+                if (ai.IsGrid && (ai.UpdatePowerSources || !ai.HadPower && ai.GridEntity.IsPowered || ai.HasPower && !ai.GridEntity.IsPowered || Tick10))
                     ai.UpdateGridPower();
 
                 if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
@@ -56,19 +55,18 @@ namespace WeaponCore
                         ai.Construct.RootAi.Construct.CheckEmptyWeapons();
                 }
 
-
                 ///
                 /// Comp update section
                 ///
-                for (int i = 0; i < ai.Weapons.Count; i++) {
+                for (int i = 0; i < ai.Units.Count; i++) {
 
-                    var comp = ai.Weapons[i];
+                    var comp = ai.Units[i];
                     if (comp.Status != Started)
                         comp.HealthCheck();
 
                     if (ai.DbUpdated || !comp.UpdatedState) 
                         comp.DetectStateChanges();
-                    if (comp.Platform.State != CorePlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose || comp.IsDisabled) 
+                    if (comp.Platform.State != CorePlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.CoreEntity.MarkedForClose || comp.IsDisabled) 
                         continue;
 
                     if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
@@ -94,6 +92,7 @@ namespace WeaponCore
                         comp.InputState = DefaultInputStateData;
                     var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
                     var canManualShoot = !ai.SuppressMouseShoot && !comp.InputState.InMenu;
+
                     ///
                     /// Weapon update section
                     ///
@@ -115,10 +114,10 @@ namespace WeaponCore
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
 
-                        if (!ai.HadPower && w.ActiveAmmoDef.ConsumableDef.Const.MustCharge && w.State.Action != ShootOff) {
+                        if (!ai.HadPower && w.ActiveAmmoDef.ConsumableDef.Const.MustCharge && w.State.Action != TriggerOff) {
 
                             if (IsServer) {
-                                w.State.WeaponMode(comp, ShootOff);
+                                w.State.WeaponMode(comp, TriggerOff);
                                 w.Ammo.CurrentAmmo = 0;
                             }
 
@@ -172,15 +171,15 @@ namespace WeaponCore
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
                             if (!IsClient && noAmmo)
                                 w.Target.Reset(Tick, States.Expired);
-                            else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.Base.State.PlayerId].LastUpdateTick > 120))
+                            else if (!IsClient && w.Target.TargetEntity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.Base.State.PlayerId].LastUpdateTick > 120))
                                 w.Target.Reset(Tick, States.Expired, !trackReticle);
-                            else if (!IsClient && w.Target.Entity != null && (comp.UserControlled && !w.System.SuppressFire || w.Target.Entity.MarkedForClose))
+                            else if (!IsClient && w.Target.TargetEntity != null && (comp.UserControlled && !w.System.SuppressFire || w.Target.TargetEntity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);
                             else if (!IsClient && w.Target.Projectile != null && (!ai.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                 w.Target.Reset(Tick, States.Expired);
                             else if (w.AiEnabled) {
 
-                                if (!Weapon.TrackingTarget(w, w.Target, out targetLock) && !IsClient && w.Target.ExpiredTick != Tick)
+                                if (!Unit.TrackingTarget(w, w.Target, out targetLock) && !IsClient && w.Target.ExpiredTick != Tick)
                                     w.Target.Reset(Tick, States.LostTracking, !trackReticle && (w.Target.CurrentState != States.RayCheckFailed && !w.Target.HasTarget));
                             }
                             else {
@@ -190,15 +189,15 @@ namespace WeaponCore
 
                                     if (!w.TrackTarget && !IsClient) {
 
-                                        if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
+                                        if ((comp.TrackingUnit.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingUnit.Target.TargetEntity != w.Target.TargetEntity || comp.TrackingUnit.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                             w.Target.Reset(Tick, States.Expired);
                                         else
                                             targetLock = true;
                                     }
-                                    else if (!Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
+                                    else if (!Unit.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                         w.Target.Reset(Tick, States.Expired);
                                 }
-                                else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
+                                else if (w.TrackTarget && !Unit.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
@@ -211,7 +210,7 @@ namespace WeaponCore
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
-                        var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == ShootClick));
+                        var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == TriggerClick));
                         if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
@@ -224,7 +223,7 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         ///
 
-                        if (w.TurretMode && !w.IsHome && !w.ReturingHome && !w.Target.HasTarget && Tick - w.Target.ResetTick > 239 && !comp.UserControlled && w.State.Action == ShootOff)
+                        if (w.TurretMode && !w.IsHome && !w.ReturingHome && !w.Target.HasTarget && Tick - w.Target.ResetTick > 239 && !comp.UserControlled && w.State.Action == TriggerOff)
                             w.ScheduleWeaponHome();
 
                         ///
@@ -235,8 +234,8 @@ namespace WeaponCore
                         var reloading = w.ActiveAmmoDef.ConsumableDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
-                        var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
-                        var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && comp.InputState.MouseButtonLeft;
+                        var validShootStates = fakeTarget || w.State.Action == TriggerOn || w.AiShooting && w.State.Action == TriggerOff;
+                        var manualShot = (compManualMode || w.State.Action == TriggerClick) && canManualShoot && comp.InputState.MouseButtonLeft;
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
@@ -244,7 +243,7 @@ namespace WeaponCore
 
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
-                            if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))
+                            if (w.ShootOnce && IsServer && (shotReady || w.State.Action != TriggerOnce))
                                 w.ShootOnce = false;
 
                             if (MpActive && HandlesInput && !ManualShot)
@@ -301,7 +300,7 @@ namespace WeaponCore
                 var w = ChargingWeapons[i];
                 var comp = w.Comp;
                 var ai = comp.Ai;
-                if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking  || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                if (ai == null || ai.TopEntity.MarkedForClose || ai.Concealed || !ai.HasPower || comp.CoreEntity.MarkedForClose || !comp.IsWorking  || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                     
                     if (w.DrawingPower)
                         w.StopPowerDraw();
@@ -392,7 +391,7 @@ namespace WeaponCore
             {
                 var w = AcquireTargets[i];
                 var comp = w.Comp;
-                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking  || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
+                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.TopEntity.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking  || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
                     
                     w.AcquiringTarget = false;
                     AcquireTargets.RemoveAtFast(i);
@@ -411,13 +410,13 @@ namespace WeaponCore
 
                     if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
 
-                        if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
+                        if (comp.TrackingUnit != null && comp.TrackingUnit.System.DesignatorWeapon && comp.TrackingUnit != w && comp.TrackingUnit.Target.HasTarget) {
 
-                            var topMost = comp.TrackingWeapon.Target.Entity?.GetTopMostParent();
-                            GridAi.AcquireTarget(w, false, topMost);
+                            var topMost = comp.TrackingUnit.Target.TargetEntity?.GetTopMostParent();
+                            Ai.AcquireTarget(w, false, topMost);
                         }
                         else
-                            GridAi.AcquireTarget(w, w.Comp.Ai.TargetResetTick == Tick);
+                            Ai.AcquireTarget(w, w.Comp.Ai.TargetResetTick == Tick);
                     }
 
                     if (w.Target.HasTarget || !(comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange)) {
@@ -436,51 +435,51 @@ namespace WeaponCore
         {
             for (int i = ShootingWeapons.Count - 1; i >= 0; i--) {
 
-                var w = ShootingWeapons[i];
-                var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != CorePlatform.PlatformState.Ready;
-                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance == WeaponDefinition.ConsumableDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
-                var quickSkip = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot;
+                var u = ShootingWeapons[i];
+                var invalidWeapon = u.Comp.CoreEntity.MarkedForClose || u.Comp.Ai == null || u.Comp.Ai.Concealed || u.Comp.Ai.TopEntity.MarkedForClose || u.Comp.Platform.State != CorePlatform.PlatformState.Ready;
+                var smartTimer = !u.AiEnabled && u.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance == UnitDefinition.ConsumableDef.TrajectoryDef.GuidanceType.Smart && Tick - u.LastSmartLosCheck > 180;
+                var quickSkip = invalidWeapon || u.Comp.IsBlock && smartTimer && !u.SmartLos() || u.PauseShoot;
                 if (quickSkip) continue;
 
-                if (!w.Comp.UnlimitedPower) {
+                if (!u.Comp.UnlimitedPower) {
 
                     //TODO add logic for power priority
-                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || w.ActiveAmmoDef.ConsumableDef.Const.IsHybrid) && !w.ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
+                    if (!u.System.DesignatorWeapon && u.Comp.Ai.OverPowered && (u.ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || u.ActiveAmmoDef.ConsumableDef.Const.IsHybrid) && !u.ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
 
-                        if (w.ChargeDelayTicks == 0) {
-                            var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
-                            w.OldUseablePower = w.UseablePower;
-                            w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
+                        if (u.ChargeDelayTicks == 0) {
+                            var percUseable = u.RequiredPower / u.Comp.Ai.RequestedWeaponsDraw;
+                            u.OldUseablePower = u.UseablePower;
+                            u.UseablePower = (u.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                            if (w.DrawingPower)
-                                w.DrawPower(true);
+                            if (u.DrawingPower)
+                                u.DrawPower(true);
                             else
-                                w.DrawPower();
+                                u.DrawPower();
 
-                            w.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
-                            w.Charging = true;
+                            u.ChargeDelayTicks = (uint)(((u.RequiredPower - u.UseablePower) / u.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                            u.ChargeUntilTick = Tick + u.ChargeDelayTicks;
+                            u.Charging = true;
                         }
-                        else if (w.ChargeUntilTick <= Tick) {
-                            w.Charging = false;
-                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
+                        else if (u.ChargeUntilTick <= Tick) {
+                            u.Charging = false;
+                            u.ChargeUntilTick = Tick + u.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.ActiveAmmoDef.ConsumableDef.Const.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
-                        w.OldUseablePower = w.UseablePower;
-                        w.UseablePower = w.RequiredPower;
-                        w.DrawPower(true);
-                        w.ChargeDelayTicks = 0;
-                        w.Charging = false;
-                        w.ResetPower = false;
+                    else if (!u.ActiveAmmoDef.ConsumableDef.Const.MustCharge && (u.Charging || u.ChargeDelayTicks > 0 || u.ResetPower)) {
+                        u.OldUseablePower = u.UseablePower;
+                        u.UseablePower = u.RequiredPower;
+                        u.DrawPower(true);
+                        u.ChargeDelayTicks = 0;
+                        u.Charging = false;
+                        u.ResetPower = false;
                     }
 
-                    if (w.Charging)
+                    if (u.Charging)
                         continue;
 
                 }
 
-                w.Shoot();
+                u.Shoot();
             }
             ShootingWeapons.Clear();
         }

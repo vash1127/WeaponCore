@@ -510,7 +510,7 @@ namespace WeaponCore
     [ProtoContract]
     public class ShootStatePacket : Packet
     {
-        [ProtoMember(1)] internal ShootActions Action = ShootActions.ShootOff;
+        [ProtoMember(1)] internal TriggerActions Action = TriggerActions.TriggerOff;
         [ProtoMember(2), DefaultValue(-1)] internal long PlayerId = -1;
 
         public ShootStatePacket() { }
@@ -518,7 +518,7 @@ namespace WeaponCore
         public override void CleanUp()
         {
             base.CleanUp();
-            Action = ShootActions.ShootOff;
+            Action = TriggerActions.TriggerOff;
             PlayerId = -1;
         }
     }

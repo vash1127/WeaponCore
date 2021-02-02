@@ -3,7 +3,7 @@ using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.NewProjectile;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.TrajectoryDef;
 
 namespace WeaponCore.Projectiles
 {
@@ -14,47 +14,50 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < NewProjectiles.Count; i++)
             {
                 var gen = NewProjectiles[i];
-                var w = gen.Muzzle.Weapon;
+                var u = gen.Muzzle.Unit;
                 var a = gen.ConsumableDef;
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
-                w.ClientStaticShot = false;
+                var firingPlayer =  u.Comp.Data.Repo.Base.State.PlayerId == u.Comp.Session.PlayerId || u.ClientStaticShot;
+                u.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
-                var targetable = w.ActiveAmmoDef.ConsumableDef.Health > 0 && !w.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon;
+                var targetable = u.ActiveAmmoDef.ConsumableDef.Health > 0 && !u.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
-                p.Info.System = w.System;
-                p.Info.Ai = w.Comp.Ai;
+                p.Info.System = u.System;
+                p.Info.Ai = u.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.ConsumableDef = a;
-                p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
-                p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
-                p.Info.Target.Projectile = w.Target.Projectile;
-                p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
-                p.Info.Target.FiringCube = w.Comp.MyCube;
+                p.Info.Overrides = u.Comp.Data.Repo.Base.Set.Overrides;
+                p.Info.Target.TargetEntity = t != Kind.Client ? u.Target.TargetEntity : gen.TargetEnt;
+                p.Info.Target.Projectile = u.Target.Projectile;
+                p.Info.Target.IsProjectile = u.Target.Projectile != null;
+                p.Info.Target.IsFakeTarget = u.Comp.Data.Repo.Base.State.TrackingReticle;
+                p.Info.Target.CoreEntity = u.Comp.CoreEntity;
+                p.Info.Target.CoreCube = u.Comp.Cube;
+                p.Info.Target.CoreParent = u.Comp.TopEntity;
+                p.Info.Target.CoreIsCube = u.Comp.Cube != null;
 
-                p.Info.DummyTarget = w.Comp.Data.Repo.Base.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
+                p.Info.DummyTarget = u.Comp.Data.Repo.Base.State.TrackingReticle ? u.Comp.Session.PlayerDummyTargets[u.Comp.Data.Repo.Base.State.PlayerId] : null;
 
-                p.Info.WeaponId = w.WeaponId;
-                p.Info.BaseDamagePool = a == w.ActiveAmmoDef.ConsumableDef ? w.BaseDamage : a.BaseDamage;
-                p.Info.EnableGuidance = w.Comp.Data.Repo.Base.Set.Guidance;
-                p.Info.WeaponCache = w.WeaponCache;
-                p.Info.WeaponRng = w.TargetData.WeaponRandom;
-                p.Info.LockOnFireState = w.LockOnFireState;
-                p.Info.ShooterVel = w.Comp.Ai.GridVel;
+                p.Info.WeaponId = u.WeaponId;
+                p.Info.BaseDamagePool = a == u.ActiveAmmoDef.ConsumableDef ? u.BaseDamage : a.BaseDamage;
+                p.Info.EnableGuidance = u.Comp.Data.Repo.Base.Set.Guidance;
+                p.Info.WeaponCache = u.WeaponCache;
+                p.Info.WeaponRng = u.TargetData.WeaponRandom;
+                p.Info.LockOnFireState = u.LockOnFireState;
+                p.Info.ShooterVel = u.Comp.Ai.GridVel;
 
-                p.Info.OriginUp = t != Kind.Client ? w.MyPivotUp : gen.OriginUp;
-                p.Info.MaxTrajectory = t != Kind.Client ? a.Const.MaxTrajectoryGrows && w.FireCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * w.FireCounter : a.Const.MaxTrajectory : gen.MaxTrajectory;
+                p.Info.OriginUp = t != Kind.Client ? u.MyPivotUp : gen.OriginUp;
+                p.Info.MaxTrajectory = t != Kind.Client ? a.Const.MaxTrajectoryGrows && u.FireCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * u.FireCounter : a.Const.MaxTrajectory : gen.MaxTrajectory;
                 p.Info.MuzzleId = t != Kind.Virtual ? muzzle.MuzzleId : -1;
                 p.Info.UniqueMuzzleId = muzzle.UniqueId;
                 p.Info.WeaponCache.VirutalId = t != Kind.Virtual ? -1 : p.Info.WeaponCache.VirutalId;
-                p.Info.Origin = t != Kind.Client ? t != Kind.Virtual ? muzzle.Position : w.MyPivotPos : gen.Origin;
-                p.Info.Direction = t != Kind.Client ? t != Kind.Virtual ? gen.Direction : w.MyPivotFwd : gen.Direction;
+                p.Info.Origin = t != Kind.Client ? t != Kind.Virtual ? muzzle.Position : u.MyPivotPos : gen.Origin;
+                p.Info.Direction = t != Kind.Client ? t != Kind.Virtual ? gen.Direction : u.MyPivotFwd : gen.Direction;
                 if (t == Kind.Client) p.Velocity = gen.Velocity;
 
                 float shotFade;
@@ -62,24 +65,24 @@ namespace WeaponCore.Projectiles
                 {
                     if (patternCycle > a.AmmoGraphics.Lines.Tracer.VisualFadeStart)
                         shotFade = MathHelper.Clamp(((patternCycle - a.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * a.Const.ShotFadeStep, 0, 1);
-                    else if (w.System.DelayCeaseFire && w.CeaseFireDelayTick != Session.Tick)
-                        shotFade = MathHelper.Clamp(((Session.Tick - w.CeaseFireDelayTick) - a.AmmoGraphics.Lines.Tracer.VisualFadeStart) * a.Const.ShotFadeStep, 0, 1);
+                    else if (u.System.DelayCeaseFire && u.CeaseFireDelayTick != Session.Tick)
+                        shotFade = MathHelper.Clamp(((Session.Tick - u.CeaseFireDelayTick) - a.AmmoGraphics.Lines.Tracer.VisualFadeStart) * a.Const.ShotFadeStep, 0, 1);
                     else shotFade = 0;
                 }
                 else shotFade = 0;
                 p.Info.ShotFade = shotFade;
-                p.PredictedTargetPos = w.Target.TargetPos;
-                p.DeadSphere.Center = w.MyPivotPos;
-                p.DeadSphere.Radius = w.Comp.Ai.MyGrid.GridSizeHalf + 0.1;
+                p.PredictedTargetPos = u.Target.TargetPos;
+                p.DeadSphere.Center = u.MyPivotPos;
+                p.DeadSphere.Radius = u.Comp.Ai.DeadSphereRadius;
 
-                if (a.Const.FeelsGravity && w.System.Session.Tick - w.GravityTick > 60)
+                if (a.Const.FeelsGravity && u.System.Session.Tick - u.GravityTick > 60)
                 {
-                    w.GravityTick = w.System.Session.Tick;
+                    u.GravityTick = u.System.Session.Tick;
                     float interference;
-                    w.GravityPoint = Session.Physics.CalculateNaturalGravityAt(p.Position, out interference);
+                    u.GravityPoint = Session.Physics.CalculateNaturalGravityAt(p.Position, out interference);
                 }
 
-                p.Gravity = w.GravityPoint;
+                p.Gravity = u.GravityPoint;
 
                 if (t != Kind.Virtual)
                 {
@@ -113,11 +116,11 @@ namespace WeaponCore.Projectiles
                 Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
 
-                p.Info.Monitors = w.Monitors;
+                p.Info.Monitors = u.Monitors;
                 if (p.Info.Monitors?.Count > 0) {
                     Session.MonitoredProjectiles[p.Info.Id] = p;
                     for (int j = 0; j < p.Info.Monitors.Count; j++)
-                        p.Info.Monitors[j].Invoke(w.Comp.MyCube.EntityId, w.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
+                        p.Info.Monitors[j].Invoke(u.Comp.CoreEntity.EntityId, u.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
 
             }
@@ -167,10 +170,10 @@ namespace WeaponCore.Projectiles
                     var addProjectile = p.Info.ConsumableDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                     if (!addProjectile && targetAi.PointDefense)
                     {
-                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrixRef.Translation) < 0)
+                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.TopEntity.PositionComp.WorldMatrixRef.Translation) < 0)
                         {
 
-                            var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
+                            var targetSphere = targetAi.TopEntity.PositionComp.WorldVolume;
                             targetSphere.Radius *= 3;
                             var testRay = new RayD(p.Info.Origin, p.Info.Direction);
                             var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;

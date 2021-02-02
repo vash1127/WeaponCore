@@ -16,7 +16,7 @@ namespace WeaponCore.Support
     internal class AvShot
     {
         internal CoreSystem System;
-        internal WeaponDefinition.ConsumableDef ConsumableDef;
+        internal UnitDefinition.ConsumableDef ConsumableDef;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
         internal MySoundPair FireSound;
@@ -28,7 +28,7 @@ namespace WeaponCore.Support
         internal List<Vector3D> Offsets = new List<Vector3D>(64);
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect FieldEffect;
-        internal MyCubeBlock FiringBlock;
+        internal MyEntity CoreEntity;
         internal CoreSystem.FiringSoundState FiringSoundState;
         internal bool Offset;
         internal bool AmmoSound;
@@ -179,7 +179,7 @@ namespace WeaponCore.Support
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-            FiringBlock = info.Target.FiringCube;
+            CoreEntity = info.Target.CoreEntity;
             MaxTrajectory = info.MaxTrajectory;
             ShotFade = info.ShotFade;
             FireCounter = info.FireCounter;
@@ -865,7 +865,7 @@ namespace WeaponCore.Support
                 FireEmitter = System.Session.Av.FireEmitters.Count > 0 ? System.Session.Av.FireEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
 
                 FireEmitter.CanPlayLoopSounds = true;
-                FireEmitter.Entity = FiringBlock;
+                FireEmitter.Entity = CoreEntity;
                 FireSound = System.FirePerShotPairs.Count > 0 ? System.FirePerShotPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
 
                 FireEmitter.SetPosition(Origin);
@@ -1118,7 +1118,7 @@ namespace WeaponCore.Support
             TextureLastUpdate = 0;
             //
 
-            FiringBlock = null;
+            CoreEntity = null;
             PrimeEntity = null;
             TriggerEntity = null;
             ConsumableDef = null;

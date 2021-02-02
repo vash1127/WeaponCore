@@ -5,7 +5,7 @@ using VRageMath;
 namespace WeaponCore.Support
 {
     [ProtoContract]
-    public struct WeaponDefinition
+    public struct UnitDefinition
     {
         [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
         [ProtoMember(2)] internal TargetingDef Targeting;

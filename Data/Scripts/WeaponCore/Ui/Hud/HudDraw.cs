@@ -213,7 +213,7 @@ namespace WeaponCore
 
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
-                var weapon = stackedInfo.HighestValueWeapon;
+                var weapon = stackedInfo.HighestValueUnit;
                 var name = weapon.System.WeaponName + ": ";
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
@@ -263,13 +263,13 @@ namespace WeaponCore
 
         }
 
-        private void HasHeat(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, bool reset)
+        private void HasHeat(Unit unit, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, bool reset)
         {
             int heatBarIndex;
-            if (weapon.State.Overheated)
+            if (unit.State.Overheated)
                 heatBarIndex = _heatBarTexture.Length - 1;
             else
-                heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
+                heatBarIndex = (int)MathHelper.Clamp(unit.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
 
             stackedInfo.CachedHeatTexture.Material = _heatBarTexture[heatBarIndex].Material;
             stackedInfo.CachedHeatTexture.Color = Color.Transparent;
@@ -288,15 +288,15 @@ namespace WeaponCore
             _textureAddList.Add(stackedInfo.CachedHeatTexture);
         }
 
-        private void ShowReloadIcon(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, double textOffset, bool reset)
+        private void ShowReloadIcon(Unit unit, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, double textOffset, bool reset)
         {
-            var mustCharge = weapon.ActiveAmmoDef.ConsumableDef.Const.MustCharge;
+            var mustCharge = unit.ActiveAmmoDef.ConsumableDef.Const.MustCharge;
             var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
             if (texture.Length > 0) {
 
                 if (mustCharge)
-                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.Ammo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
+                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, unit.Ammo.CurrentCharge / unit.MaxCharge)), 0, texture.Length - 1);
 
                 stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                 stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;

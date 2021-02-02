@@ -346,9 +346,9 @@ namespace WeaponCore
                                     sendPacket = true;
                                 }
                                 else  {
-                                    GridAi rootAi;
+                                    Ai rootAi;
                                     var grid = packetInfo.Entity.GetTopMostParent() as MyCubeGrid;
-                                    if (grid != null && GridToMasterAi.TryGetValue(grid, out rootAi) && PlayerEntityIdInRange[p.SteamUserId].Contains(rootAi.MyGrid.EntityId))
+                                    if (grid != null && GridToMasterAi.TryGetValue(grid, out rootAi) && PlayerEntityIdInRange[p.SteamUserId].Contains(rootAi.TopEntity.EntityId))
                                         sendPacket = true;
                                 }
                             }

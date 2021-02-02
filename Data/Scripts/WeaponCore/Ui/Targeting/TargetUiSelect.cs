@@ -87,7 +87,7 @@ namespace WeaponCore
 
                 var hitGrid = closestEnt as MyCubeGrid;
 
-                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid)) {
+                if (ai.IsGrid && hitGrid != null && hitGrid.IsSameConstructAs(ai.GridEntity)) {
                     rayHitSelf = true;
                     rayOnlyHitSelf = true;
                     continue;
@@ -183,7 +183,7 @@ namespace WeaponCore
             return _endIdx >= 0;
         }
 
-        internal void BuildMasterCollections(GridAi ai)
+        internal void BuildMasterCollections(Ai ai)
         {
             _masterTargets.Clear();
             for (int i = 0; i < ai.Construct.RefreshedAis.Count; i++)  {

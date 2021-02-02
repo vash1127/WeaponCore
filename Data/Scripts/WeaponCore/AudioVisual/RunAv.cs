@@ -369,7 +369,7 @@ namespace WeaponCore.Support
             for (int i = AvBarrels1.Count - 1; i >= 0; i--) {
 
                 var avBarrel = AvBarrels1[i];
-                var weapon = avBarrel.Weapon;
+                var weapon = avBarrel.Unit;
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
                 var bAv = weapon.System.Values.HardPoint.Graphics.Barrel1;
@@ -379,7 +379,7 @@ namespace WeaponCore.Support
                 if (effectExists && avBarrel.EndTick == 0 && weapon.StopBarrelAvTick >= Session.Tick)
                     avBarrel.EndTick = (uint)bAv.Extras.MaxDuration + Session.Tick;
 
-                var somethingEnded = avBarrel.EndTick != 0 && avBarrel.EndTick <= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+                var somethingEnded = avBarrel.EndTick != 0 && avBarrel.EndTick <= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.CoreEntity.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
                 var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
@@ -396,8 +396,8 @@ namespace WeaponCore.Support
 
                 if (weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick) {
 
-                    weapon.Comp.Ai.GridVel = weapon.Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
+                    weapon.Comp.Ai.GridVel = weapon.Comp.Ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
+                    weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.TopEntity.Physics?.IsStatic ?? false;
                     weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
                 }
                 var info = weapon.Dummies[muzzle.MuzzleId].Info;
@@ -444,7 +444,7 @@ namespace WeaponCore.Support
         {
             for (int i = AvBarrels2.Count - 1; i >= 0; i--) {
                 var avBarrel = AvBarrels2[i];
-                var weapon = avBarrel.Weapon;
+                var weapon = avBarrel.Unit;
                 var muzzle = avBarrel.Muzzle;
                 try
                 {
@@ -456,7 +456,7 @@ namespace WeaponCore.Support
                     if (effectExists && avBarrel.EndTick == 0 && weapon.StopBarrelAvTick >= Session.Tick)
                         avBarrel.EndTick = (uint)bAv.Extras.MaxDuration + Session.Tick;
 
-                    var somethingEnded = avBarrel.EndTick != 0 && avBarrel.EndTick <= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+                    var somethingEnded = avBarrel.EndTick != 0 && avBarrel.EndTick <= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.CoreEntity.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
                     var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
                     if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
@@ -474,8 +474,8 @@ namespace WeaponCore.Support
 
                     if (weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick)  {
 
-                        weapon.Comp.Ai.GridVel = weapon.Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                        weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
+                        weapon.Comp.Ai.GridVel = weapon.Comp.Ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
+                        weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.TopEntity.Physics?.IsStatic ?? false;
                         weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
                     }
 
@@ -525,14 +525,14 @@ namespace WeaponCore.Support
 
     internal class AvBarrel
     {
-        internal Weapon Weapon;
-        internal Weapon.Muzzle Muzzle;
+        internal Unit Unit;
+        internal Unit.Muzzle Muzzle;
         internal uint StartTick;
         internal uint EndTick;
 
         internal void Clean()
         {
-            Weapon = null;
+            Unit = null;
             Muzzle = null;
             StartTick = 0;
             EndTick = 0;

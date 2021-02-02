@@ -10,11 +10,11 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef.AreaEffectType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.DamageScaleDef;
+using static WeaponCore.Support.UnitDefinition;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.UnitDefinition.ConsumableDef.DamageScaleDef;
 using static WeaponCore.Projectiles.Projectiles;
 
 namespace WeaponCore
@@ -84,7 +84,7 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid?.Physics == null || grid.MarkedForClose) return;
 
-            var attackerId = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            var attackerId = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.CoreEntity.EntityId;
             GetAndSortBlocksInSphere(info.ConsumableDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
 
             var depletable = info.ConsumableDef.AreaEffect.EwarFields.Depletable;
@@ -105,7 +105,7 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaEffectType, GridEffect> effects;
-            var attackerId = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            var attackerId = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.CoreEntity.EntityId;
             if (_gridEffects.TryGetValue(grid, out effects))
             {
                 GridEffect gridEffect;
@@ -358,7 +358,7 @@ namespace WeaponCore
 
 
         private readonly List<IMySlimBlock> _tmpEffectCubes = new List<IMySlimBlock>();
-        internal static void GetCubesForEffect(GridAi ai, MyCubeGrid grid, Vector3D hitPos, AreaEffectType effectType, List<IMySlimBlock> cubes)
+        internal static void GetCubesForEffect(Ai ai, MyCubeGrid grid, Vector3D hitPos, AreaEffectType effectType, List<IMySlimBlock> cubes)
         {
             var fats = QueryBlockCaches(ai, grid, effectType);
             if (fats == null) return;
@@ -373,7 +373,7 @@ namespace WeaponCore
             });
         }
 
-        private static ConcurrentCachingList<MyCubeBlock> QueryBlockCaches(GridAi ai, MyCubeGrid targetGrid, AreaEffectType effectType)
+        private static ConcurrentCachingList<MyCubeBlock> QueryBlockCaches(Ai ai, MyCubeGrid targetGrid, AreaEffectType effectType)
         {
             ConcurrentDictionary<TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
             if (!ai.Session.GridToBlockTypeMap.TryGetValue(targetGrid, out blockTypeMap)) return null;
@@ -438,7 +438,7 @@ namespace WeaponCore
     {
         internal Vector3D HitPos;
         internal CoreSystem System;
-        internal GridAi Ai;
+        internal Ai Ai;
         internal ConsumableDef ConsumableDef;
         internal long AttackerId;
         internal float Damage;

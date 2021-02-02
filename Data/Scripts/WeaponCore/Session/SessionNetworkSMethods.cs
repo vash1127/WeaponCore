@@ -45,24 +45,24 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var dPacket = (BoolUpdatePacket)packet;
-            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+            var entity = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var topEntity = entity?.GetTopMostParent();
+            if (topEntity == null) return Error(data, Msg("TopEntity"));
 
-            if (cube == null) return Error(data, Msg("Cube"));
-
-            GridAi ai;
+            Ai ai;
             long playerId = 0;
-            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (GridToMasterAi.TryGetValue(topEntity, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
                 uint[] mIds;
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
+                    ai.Construct.UpdateConstructsPlayers(entity, playerId, dPacket.Data);
                     data.Report.PacketValid = true;
                 }
                 else Log.Line($"ServerActiveControlUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
             }
-            else Log.Line($"ServerActiveControlUpdate: ai:{ai != null} - targetingAi:{GridTargetingAIs.ContainsKey(cube.CubeGrid)} - masterAi:{GridToMasterAi.ContainsKey(cube.CubeGrid)} - IdToComp:{IdToCompMap.ContainsKey(cube.EntityId)} - {cube.BlockDefinition.Id.SubtypeName} - playerId:{playerId}({packet.SenderId}) - marked:{cube.MarkedForClose}({cube.CubeGrid.MarkedForClose}) - active:{dPacket.Data}");
+            else Log.Line($"ServerActiveControlUpdate: ai:{ai != null} - targetingAi:{GridTargetingAIs.ContainsKey(topEntity)} - masterAi:{GridToMasterAi.ContainsKey(topEntity)} - IdToComp:{IdToCompMap.ContainsKey(entity.EntityId)} - playerId:{playerId}({packet.SenderId}) - marked:{entity.MarkedForClose}({topEntity.MarkedForClose}) - active:{dPacket.Data}");
 
             return true;
         }
@@ -82,27 +82,27 @@ namespace WeaponCore
                 {
                     case PacketType.RequestSetRof:
                         {
-                            WepUi.RequestSetRof(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            WepUi.RequestSetRof(comp.CoreEntity as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
                             break;
                         }
                     case PacketType.RequestSetRange:
                         {
-                            WepUi.RequestSetRange(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            WepUi.RequestSetRange(comp.CoreEntity as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
                             break;
                         }
                     case PacketType.RequestSetDps:
                         {
-                            WepUi.RequestSetDps(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            WepUi.RequestSetDps(comp.CoreEntity as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
                             break;
                         }
                     case PacketType.RequestSetGuidance:
                         {
-                            WepUi.RequestSetGuidance(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                            WepUi.RequestSetGuidance(comp.CoreEntity as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
                             break;
                         }
                     case PacketType.RequestSetOverload:
                         {
-                            WepUi.RequestSetOverload(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                            WepUi.RequestSetOverload(comp.CoreEntity as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
                             break;
                         }
                 }
@@ -123,7 +123,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
 
-            GridAi ai;
+            Ai ai;
             long playerId;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
@@ -286,7 +286,7 @@ namespace WeaponCore
 
             if (myGrid == null) return Error(data, Msg("Grid"));
 
-            GridAi ai;
+            Ai ai;
             uint[] mIds;
             if (GridToMasterAi.TryGetValue(myGrid, out ai) && PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
                 mIds[(int)packet.PType] = packet.MId;
@@ -416,10 +416,10 @@ namespace WeaponCore
         {
             var packet = data.Packet;
 
-            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-            if (cube == null) return Error(data, Msg("Cube"));
+            var entity = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            if (entity == null) return Error(data, Msg("Cube"));
 
-            var reportData = ProblemRep.PullData(cube);
+            var reportData = ProblemRep.PullData(entity);
             if (reportData == null) return Error(data, Msg("RequestReport"));
 
             ProblemRep.NetworkTransfer(false, packet.SenderId, reportData);

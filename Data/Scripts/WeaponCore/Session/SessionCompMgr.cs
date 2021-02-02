@@ -17,34 +17,35 @@ namespace WeaponCore
         public struct CompReAdd
         {
             public CoreComponent Comp;
-            public GridAi Ai;
+            public Ai Ai;
             public int AiVersion;
             public uint AddTick;
         }
 
         private bool CompRestricted(CoreComponent comp)
         {
-            var grid = comp.MyCube?.CubeGrid;
+            var cube = comp.Cube;
+            var grid = cube.CubeGrid;
 
-            GridAi ai;
+            Ai ai;
             if (grid == null || !GridTargetingAIs.TryGetValue(grid, out ai))
                 return false;
 
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
-            SUtils.GetBlockOrientedBoundingBox(comp.MyCube, out blockBox);
+            SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
 
-            if (IsWeaponAreaRestricted(comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.MyCube.EntityId, ai, out b, out s)) {
+            if (IsUnitAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.CoreEntity.EntityId, ai, out b, out s)) {
 
                 if (!DedicatedServer) {
 
-                    if (comp.MyCube.OwnerId == PlayerId)
-                        MyAPIGateway.Utilities.ShowNotification($"Block {comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
+                    if (cube.OwnerId == PlayerId)
+                        MyAPIGateway.Utilities.ShowNotification($"Block {comp.CoreEntity.DisplayNameText} was placed too close to another gun", 10000);
                 }
 
                 if (IsServer)
-                    comp.MyCube.CubeGrid.RemoveBlock(comp.MyCube.SlimBlock);
+                    cube.CubeGrid.RemoveBlock(cube.SlimBlock);
                 return true;
             }
 
@@ -55,51 +56,49 @@ namespace WeaponCore
         {
             for (int i = 0; i < CompsToStart.Count; i++) {
 
-                var weaponComp = CompsToStart[i];
-                if (weaponComp.MyCube.CubeGrid.IsPreview || CompRestricted(weaponComp)) {
+                var comp = CompsToStart[i];
+                if (comp.IsBlock && comp.Cube.CubeGrid.IsPreview || CompRestricted(comp)) {
 
-                    PlatFormPool.Return(weaponComp.Platform);
-                    weaponComp.Platform = null;
-                    CompsToStart.Remove(weaponComp);
+                    PlatFormPool.Return(comp.Platform);
+                    comp.Platform = null;
+                    CompsToStart.Remove(comp);
                     continue;
                 }
 
-                if (weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose && weaponComp.MyCube.BlockDefinition.HasPhysics)
+                if (comp.IsBlock && (comp.Cube.CubeGrid.Physics == null && !comp.Cube.CubeGrid.MarkedForClose && comp.Cube.BlockDefinition.HasPhysics))
                     continue;
 
                 QuickDisableGunsCheck = true;
-                if (weaponComp.Platform.State == CorePlatform.PlatformState.Fresh) {
+                if (comp.Platform.State == CorePlatform.PlatformState.Fresh) {
 
-                    if (weaponComp.MyCube.MarkedForClose) {
-                        CompsToStart.Remove(weaponComp);
+                    if (comp.CoreEntity.MarkedForClose) {
+                        CompsToStart.Remove(comp);
                         continue;
                     }
 
-                    if (!GridToInfoMap.ContainsKey(weaponComp.MyCube.CubeGrid))
+                    if (!GridToInfoMap.ContainsKey(comp.TopEntity))
                         continue;
 
-                    IdToCompMap[weaponComp.MyCube.EntityId] = weaponComp;
-                    weaponComp.MyCube.Components.Add(weaponComp);
-                    CompsToStart.Remove(weaponComp);
+                    IdToCompMap[comp.CoreEntity.EntityId] = comp;
+                    comp.CoreEntity.Components.Add(comp);
+                    CompsToStart.Remove(comp);
                 }
                 else {
                     Log.Line($"comp didn't match CompsToStart condition, removing");
-                    CompsToStart.Remove(weaponComp);
+                    CompsToStart.Remove(comp);
                 }
             }
             CompsToStart.ApplyRemovals();
         }
 
-        private void InitComp(MyCubeBlock cube, bool thread = true)
+        private void InitComp(MyEntity entity, bool thread = true)
         {
-            using (cube.Pin())
+            using (entity.Pin())
             {
-                if (cube.MarkedForClose)
+                if (entity.MarkedForClose)
                     return;
 
-                var blockDef = ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) ? VanillaIds[cube.BlockDefinition.Id] : cube.BlockDefinition.Id.SubtypeId;
-                
-                var weaponComp = new CoreComponent(this, cube, blockDef);
+                var weaponComp = new CoreComponent(this, entity);
 
                 CompsToStart.Add(weaponComp);
                 if (thread) CompsToStart.ApplyAdditions();
@@ -118,7 +117,7 @@ namespace WeaponCore
                     continue;
                 }
 
-                if (!GridToInfoMap.ContainsKey(reAdd.Comp.MyCube.CubeGrid))
+                if (!GridToInfoMap.ContainsKey(reAdd.Comp.TopEntity))
                     continue;
 
                 if (reAdd.Comp.Ai != null && reAdd.Comp.Entity != null) 
@@ -133,14 +132,14 @@ namespace WeaponCore
             for (int i = CompsDelayed.Count - 1; i >= 0; i--)
             {
                 var delayed = CompsDelayed[i];
-                if (forceRemove || delayed.Entity == null || delayed.Platform == null || delayed.MyCube.MarkedForClose || delayed.Platform.State != CorePlatform.PlatformState.Delay)
+                if (forceRemove || delayed.Entity == null || delayed.Platform == null || delayed.CoreEntity.MarkedForClose || delayed.Platform.State != CorePlatform.PlatformState.Delay)
                 {
                     if (delayed.Platform != null && delayed.Platform.State != CorePlatform.PlatformState.Delay)
-                        Log.Line($"[DelayedComps skip due to platform != Delay] marked:{delayed.MyCube.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
+                        Log.Line($"[DelayedComps skip due to platform != Delay] marked:{delayed.CoreEntity.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
 
                     CompsDelayed.RemoveAtFast(i);
                 }
-                else if (delayed.MyCube.IsFunctional)
+                else if (delayed.Cube.IsFunctional)
                 {
                     delayed.PlatformInit();
                     CompsDelayed.RemoveAtFast(i);
@@ -160,17 +159,17 @@ namespace WeaponCore
             DelayedAiClean.ApplyRemovals();
         }
 
-        internal void CloseComps(MyEntity ent)
+        internal void CloseComps(MyEntity entity)
         {
             try
             {
-                var cube = (MyCubeBlock)ent;
-                cube.OnClose -= CloseComps;
-                if (cube.CubeGrid.IsPreview)
+                entity.OnClose -= CloseComps;
+                var cube = entity as MyCubeBlock;
+                if (cube != null && cube.CubeGrid.IsPreview)
                     return;
 
                 CoreComponent comp;
-                if (!cube.Components.TryGet(out comp)) return;
+                if (!entity.Components.TryGet(out comp)) return;
 
                 for (int i = 0; i < comp.Monitors.Length; i++) {
                     comp.Monitors[i].Clear();
@@ -209,7 +208,8 @@ namespace WeaponCore
                     RequiredInputFunc = null,
                 };
 
-                comp.MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), sinkInfo);
+                if (comp.IsBlock) 
+                    comp.Cube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), sinkInfo);
             }
             catch (Exception ex) { Log.Line($"Exception in DelayedCompClose: {ex}"); }
         }

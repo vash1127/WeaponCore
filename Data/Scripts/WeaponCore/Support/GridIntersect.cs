@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.Game.Entities;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -10,8 +11,10 @@ namespace WeaponCore.Support
 
     public static class GridIntersection
     {
-        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyCubeBlock weapon = null, GridAi ai = null)
+        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyEntity unit = null, Ai ai = null)
         {
+            var weaponBlock = unit as MyCubeBlock;
+
             var start = grid.WorldToGridInteger(worldStart);
             var end = grid.WorldToGridInteger(worldEnd);
             Vector3I delta = end - start;
@@ -19,7 +22,6 @@ namespace WeaponCore.Support
             delta *= step;
             int max = delta.AbsMax();
             hitPos = null;
-
             var gMinX = grid.Min.X;
             var gMinY = grid.Min.Y;
             var gMinZ = grid.Min.Z;
@@ -30,7 +32,7 @@ namespace WeaponCore.Support
             {
                 var dir = (worldEnd - worldStart);
                 var ray = new RayD(ref worldStart, ref dir);
-                var gridMatrix = ai.MyGrid.PositionComp.WorldMatrixRef;
+                var gridMatrix = ai.TopEntity.PositionComp.WorldMatrixRef;
 
                 foreach (var sub in ai.SubGrids)
                 {
@@ -40,11 +42,11 @@ namespace WeaponCore.Support
                     {
                         //var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
                         //var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                        var box = ai.MyGrid.PositionComp.LocalAABB;
+                        var box = ai.TopEntity.PositionComp.LocalAABB;
                         var obb = new MyOrientedBoundingBoxD(box, gridMatrix);
 
                         Vector3D? ignoreHit;
-                        if (obb.Intersects(ref ray) != null && BresenhamGridIntersection(sub, ref worldStart, ref worldEnd, out ignoreHit, weapon))
+                        if (obb.Intersects(ref ray) != null && BresenhamGridIntersection(sub, ref worldStart, ref worldEnd, out ignoreHit, unit))
                             return true;
                     }
                 }
@@ -74,7 +76,7 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
+                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weaponBlock?.SlimBlock)
                     {
                         return true;
                     }
@@ -105,7 +107,7 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
+                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weaponBlock?.SlimBlock)
                     {
                         return true;
                     }
@@ -136,7 +138,7 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
+                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weaponBlock?.SlimBlock)
                     {
                         return true;
                     }

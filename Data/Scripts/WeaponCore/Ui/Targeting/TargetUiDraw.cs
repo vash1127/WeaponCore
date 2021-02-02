@@ -244,7 +244,7 @@ namespace WeaponCore
 
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
                     smallGrid = !largeGrid;
-                    GridAi targetAi;
+                    Ai targetAi;
                     GridMap gridMap;
                     if (s.GridToMasterAi.TryGetValue(grid, out targetAi))
                         partCount = targetAi.Construct.BlockCount;
@@ -257,7 +257,7 @@ namespace WeaponCore
                 var targetDir = Vector3D.Normalize(targetVel);
                 var targetRevDir = -targetDir;
                 var targetPos = target.PositionComp.WorldAABB.Center;
-                var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
+                var myPos = ai.TopEntity.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
                 if ((size6.LargeGrid && largeGrid || !size6.LargeGrid && smallGrid) && partCount > size6.BlockCount) ai.TargetState[i].Size = 6;
@@ -276,8 +276,8 @@ namespace WeaponCore
                 else if (retreat) ai.TargetState[i].Engagement = 1;
                 else ai.TargetState[i].Engagement = 2;
 
-                var distanceFromCenters = Vector3D.Distance(ai.MyGrid.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
-                distanceFromCenters -= ai.MyGrid.PositionComp.LocalVolume.Radius;
+                var distanceFromCenters = Vector3D.Distance(ai.TopEntity.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
+                distanceFromCenters -= ai.TopEntity.PositionComp.LocalVolume.Radius;
                 distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
                 distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
 
@@ -344,7 +344,7 @@ namespace WeaponCore
                     int shieldBonus = 0;
                     if (s.ShieldApiLoaded)
                     {
-                        var myShieldInfo = s.SApi.GetShieldInfo(ai.MyGrid);
+                        var myShieldInfo = s.SApi.GetShieldInfo(ai.TopEntity);
                         if (shieldInfo.Item1 && myShieldInfo.Item1)
                             shieldBonus = shieldInfo.Item5 > myShieldInfo.Item5 ? 1 : -1;
                         else if (shieldInfo.Item1) shieldBonus = 1;

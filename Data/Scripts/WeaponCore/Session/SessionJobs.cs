@@ -11,8 +11,8 @@ using VRage.Game;
 using VRage.Game.Entity;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi.Constructs;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.Ai.Constructs;
+using static WeaponCore.Support.UnitDefinition.TargetingDef.BlockTypes;
 namespace WeaponCore
 {
     public class GridMap
@@ -31,7 +31,7 @@ namespace WeaponCore
     internal struct DeferedTypeCleaning
     {
         internal uint RequestTick;
-        internal ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
+        internal ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
     }
 
     public partial class Session
@@ -72,7 +72,7 @@ namespace WeaponCore
                     using (db.Ai.DbLock.AcquireExclusiveUsing())
                     {
                         var ai = db.Ai;
-                        if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version) {
+                        if (ai.TopEntity.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version) {
                             ai.ScanInProgress = false;
                             continue;
                         }
@@ -97,13 +97,13 @@ namespace WeaponCore
                             if (ent.Physics == null) continue;
 
                             var grid = ent as MyCubeGrid;
-                            GridAi targetAi = null;
+                            Ai targetAi = null;
 
                             if (grid != null)
                                 GridTargetingAIs.TryGetValue(grid, out targetAi);
 
                             var targetInfo = TargetInfoPool.Get();
-                            targetInfo.Init(ref detectInfo, ai.MyGrid, ai, targetAi);
+                            targetInfo.Init(ref detectInfo, ai, targetAi);
 
                             ai.SortedTargets.Add(targetInfo);
                             ai.Targets[ent] = targetInfo;
@@ -152,7 +152,7 @@ namespace WeaponCore
                         ai.MyStaticInfo();
 
                         ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
-                        ai.BlockCount = ai.MyGrid.BlocksCount;
+                        ai.PartCount = ai.IsGrid ? ai.GridEntity.BlocksCount : 1;
                         ai.NearByEntities = ai.NearByEntitiesTmp;
 
                         if (!ai.TargetingInfo.ThreatInRange && ai.LiveProjectile.Count > 0)
@@ -212,7 +212,7 @@ namespace WeaponCore
                 newTypeMap[Power] = ConcurrentListPool.Get();
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
-                ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
+                ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
                 GridMap gridMap;
                 if (GridToInfoMap.TryGetValue(grid, out gridMap)) {
@@ -231,9 +231,9 @@ namespace WeaponCore
 
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
-                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && UnitPlatforms.ContainsKey(fat.BlockDefinition.Id))
                             {
-                                if (!tStatus && fat is IMyGunBaseUser && !WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                                if (!tStatus && fat is IMyGunBaseUser && !UnitPlatforms.ContainsKey(fat.BlockDefinition.Id))
                                     tStatus = gridMap.Targeting.AllowScanning = true;
 
                                 newTypeMap[Offense].Add(fat);
@@ -253,7 +253,7 @@ namespace WeaponCore
                     gridMap.Trash = terminals == 0;
                     var gridBlocks = grid.BlocksCount;
                     if (gridBlocks > gridMap.MostBlocks) gridMap.MostBlocks = gridBlocks;
-                    ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
+                    ConcurrentDictionary<UnitDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap)) {
                         GridToBlockTypeMap[grid] = newTypeMap;
                         BlockTypeCleanUp.Enqueue(new DeferedTypeCleaning {Collection = oldTypeMap, RequestTick = Tick});

@@ -9,7 +9,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.UnitDefinition.TargetingDef;
 
 namespace WeaponCore.Support
 {
@@ -22,12 +22,15 @@ namespace WeaponCore.Support
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetChanged;
-        internal bool ParentIsWeapon;
+        internal bool ParentIsUnit;
         internal bool IsTargetStorage;
         internal bool ClientDirty;
-        internal Weapon Weapon;
-        internal MyCubeBlock FiringCube;
-        internal MyEntity Entity;
+        internal bool CoreIsCube;
+        internal Unit Unit;
+        internal MyEntity CoreEntity;
+        internal MyEntity CoreParent;
+        internal MyEntity TargetEntity;
+        internal MyCubeBlock CoreCube;
         internal Projectile Projectile;
         internal int[] TargetDeck = new int[0];
         internal int[] BlockDeck = new int[0];
@@ -76,31 +79,34 @@ namespace WeaponCore.Support
             LostTracking,
         }
 
-        internal Target(Weapon weapon = null, bool main = false)
+        internal Target(Unit unit = null, bool main = false)
         {
-            ParentIsWeapon = weapon?.Comp?.MyCube != null;
-            FiringCube = weapon?.Comp?.MyCube;
-            Weapon = weapon;
+            ParentIsUnit = unit?.Comp?.CoreEntity != null;
+            CoreEntity = unit?.Comp?.CoreEntity;
+            CoreParent = unit?.Comp?.TopEntity;
+            CoreCube = unit?.Comp?.Cube;
+            CoreIsCube = CoreCube != null;
+            Unit = unit;
             IsTargetStorage = main;
         }
 
-        internal void PushTargetToClient(Weapon weapon)
+        internal void PushTargetToClient(Unit unit)
         {
-            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
+            if (!unit.System.Session.MpActive || unit.System.Session.IsClient)
                 return;
 
-            weapon.TargetData.TargetPos = TargetPos;
-            weapon.TargetData.WeaponId = weapon.WeaponId;
-            weapon.TargetData.EntityId = weapon.Target.TargetId;
-            weapon.System.Session.SendTargetChange(weapon.Comp, weapon.WeaponId);
+            unit.TargetData.TargetPos = TargetPos;
+            unit.TargetData.WeaponId = unit.WeaponId;
+            unit.TargetData.EntityId = unit.Target.TargetId;
+            unit.System.Session.SendTargetChange(unit.Comp, unit.WeaponId);
         }
 
-        internal void ClientUpdate(Weapon w, TransferTarget tData)
+        internal void ClientUpdate(Unit w, TransferTarget tData)
         {
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
             {
-                Entity = targetEntity;
+                TargetEntity = targetEntity;
                 
                 if (tData.EntityId == 0)
                     w.Target.Reset(w.System.Session.Tick, States.ServerReset);
@@ -109,10 +115,10 @@ namespace WeaponCore.Support
                     
                     if (w.Target.IsProjectile) {
 
-                        GridAi.TargetType targetType;
-                        GridAi.AcquireProjectile(w, out targetType);
+                        Ai.TargetType targetType;
+                        Ai.AcquireProjectile(w, out targetType);
 
-                        if (targetType == GridAi.TargetType.None) {
+                        if (targetType == Ai.TargetType.None) {
                             if (w.NewTarget.CurrentState != States.NoTargetsSeen)
                                 w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
                             if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
@@ -129,7 +135,7 @@ namespace WeaponCore.Support
 
         internal void TransferTo(Target target, uint expireTick)
         {
-            target.Entity = Entity;
+            target.TargetEntity = TargetEntity;
             target.Projectile = Projectile;
             target.IsProjectile = target.Projectile != null;
             target.IsFakeTarget = IsFakeTarget;
@@ -144,7 +150,7 @@ namespace WeaponCore.Support
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
         {
-            Entity = ent;
+            TargetEntity = ent;
             Projectile = projectile;
             IsProjectile = projectile != null;
             IsFakeTarget = isFakeTarget;
@@ -155,7 +161,7 @@ namespace WeaponCore.Support
             StateChange(true, States.Acquired);
         }
 
-        internal void LockTarget(Weapon w, MyEntity ent)
+        internal void LockTarget(Unit w, MyEntity ent)
         {
             double rayDist;
             var targetPos = ent.PositionComp.WorldAABB.Center;
@@ -179,7 +185,7 @@ namespace WeaponCore.Support
 
         internal void Reset(uint expiredTick, States reason, bool expire = true)
         {
-            Entity = null;
+            TargetEntity = null;
             IsProjectile = false;
             IsFakeTarget = false;
             IsAligned = false;
@@ -202,15 +208,15 @@ namespace WeaponCore.Support
             SetTargetId(setTarget, reason);
             TargetChanged = !HasTarget && setTarget || HasTarget && !setTarget;
 
-            if (TargetChanged && ParentIsWeapon && IsTargetStorage) {
+            if (TargetChanged && ParentIsUnit && IsTargetStorage) {
 
                 if (setTarget) {
-                    Weapon.Comp.Ai.WeaponsTracking++;
-                    Weapon.Comp.WeaponsTracking++;
+                    Unit.Comp.Ai.WeaponsTracking++;
+                    Unit.Comp.WeaponsTracking++;
                 }
                 else {
-                    Weapon.Comp.Ai.WeaponsTracking--;
-                    Weapon.Comp.WeaponsTracking--;
+                    Unit.Comp.Ai.WeaponsTracking--;
+                    Unit.Comp.WeaponsTracking--;
                 }
             }
             HasTarget = setTarget;
@@ -224,8 +230,8 @@ namespace WeaponCore.Support
                 TargetId = -1;
             else if (IsFakeTarget)
                 TargetId = -2;
-            else if (Entity != null)
-                TargetId = Entity.EntityId;
+            else if (TargetEntity != null)
+                TargetId = TargetEntity.EntityId;
             else TargetId = 0;
         }
     }
@@ -255,7 +261,6 @@ namespace WeaponCore.Support
         public bool Triggered;
         public uint PlayTick;
         public MyParticleEffect Effect;
-        public MyCubeBlock BaseBlock;
 
         public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, float maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop, params string[] muzzleNames)
         {

@@ -108,7 +108,6 @@ namespace WeaponCore
             Log.Init("net", this, false);
             Log.Init("report", this, false);
             Log.Init("combat", this, false);
-
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
@@ -168,7 +167,7 @@ namespace WeaponCore
                         {
                             [muzzlePartId] = extraInfo
                         };
-                        _subTypeIdToWeaponDefs[subTypeId] = new List<WeaponDefinition> {weaponDef};
+                        _subTypeIdToWeaponDefs[subTypeId] = new List<UnitDefinition> {weaponDef};
                     }
                     else
                     {
@@ -184,13 +183,13 @@ namespace WeaponCore
                 SubTypeIdHashMap[tDef.Key] = subTypeIdHash;
 
                 WeaponAreaRestriction areaRestriction;
-                if (this.WeaponAreaRestrictions.ContainsKey(subTypeIdHash))
+                if (this.AreaRestrictions.ContainsKey(subTypeIdHash))
                 {
-                    areaRestriction = this.WeaponAreaRestrictions[subTypeIdHash];
+                    areaRestriction = this.AreaRestrictions[subTypeIdHash];
                 } else
                 {
                     areaRestriction = new WeaponAreaRestriction();
-                    WeaponAreaRestrictions[subTypeIdHash] = areaRestriction;
+                    AreaRestrictions[subTypeIdHash] = areaRestriction;
                 }
 
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];
@@ -204,7 +203,7 @@ namespace WeaponCore
                         if (wepDef.HardPoint.Ai.TurretAttached)
                             hasTurret = true;
 
-                        if (wepDef.HardPoint.HardWare.Armor != WeaponDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
+                        if (wepDef.HardPoint.HardWare.Armor != UnitDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
                             DamageHandler = true;
 
                         foreach (var def in AllDefinitions) {
@@ -234,7 +233,7 @@ namespace WeaponCore
                                     }
                                 }
 
-                                WeaponCoreBlockDefs[tDef.Key] = def.Id;
+                                WeaponCoreDefs[tDef.Key] = def.Id;
                                 var designator = false;
 
                                 for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
@@ -326,14 +325,14 @@ namespace WeaponCore
                 }
 
                 MyDefinitionId defId;
-                if (WeaponCoreBlockDefs.TryGetValue(tDef.Key, out defId))
+                if (WeaponCoreDefs.TryGetValue(tDef.Key, out defId))
                 {
                     if (hasTurret)
                         WeaponCoreTurretBlockDefs.Add(defId);
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-                WeaponPlatforms[defId] = new CoreStructure(this, tDef, weapons, modPath);
+                UnitPlatforms[defId] = new CoreStructure(this, tDef, weapons, modPath);
             }
 
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
