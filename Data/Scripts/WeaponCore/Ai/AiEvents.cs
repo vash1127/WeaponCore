@@ -183,7 +183,7 @@ namespace WeaponCore.Support
                     Construct.RootAi?.Construct.RecentItems.Add(itemDef);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName} - BlockMarked:{((MyEntity)inventory?.Entity)?.MarkedForClose} - aiMarked:{MarkedForClose} - gridMatch:{TopEntity == ((MyEntity)inventory?.Entity)?.CubeGrid} - Session:{Session != null} - item:{item.Content?.SubtypeName} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName} - BlockMarked:{((MyEntity)inventory?.Entity)?.MarkedForClose} - aiMarked:{MarkedForClose} - Session:{Session != null} - item:{item.Content?.SubtypeName} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
         }
 
         internal void GridClose(MyEntity myEntity)
