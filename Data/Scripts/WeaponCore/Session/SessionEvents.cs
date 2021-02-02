@@ -20,7 +20,6 @@ namespace WeaponCore
                 var grid = entity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
                 if (!PbApiInited && entity is IMyProgrammableBlock) PbActivate = true;
-
                 var placer = entity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
