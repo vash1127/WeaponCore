@@ -27,7 +27,7 @@ namespace WeaponCore.Support
             set
             {
                 if (value?.Model == null)
-                    Log.Line($"DummyModel null for weapon on set: {_part.System.WeaponName}");
+                    Log.Line($"DummyModel null for weapon on set: {_part.System.PartName}");
                 _entity = value; 
 
             }

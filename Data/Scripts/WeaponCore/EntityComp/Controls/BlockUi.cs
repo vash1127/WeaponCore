@@ -137,7 +137,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
 
             var maxTrajectory = 0f;
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            for (int i = 0; i < comp.Platform.Weapons.Count; i++)
             {
                 var curMax = comp.Platform.Weapons[i].GetMaxWeaponRange();
                 if (curMax > maxTrajectory)

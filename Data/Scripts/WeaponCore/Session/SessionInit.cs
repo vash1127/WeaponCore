@@ -115,49 +115,52 @@ namespace WeaponCore
 
             foreach (var x in PartDefinitions)
             {
-                foreach (var ammo in x.Ammos)
+                if (x.HardPoint.HardWare.Type == BlockWeapon || x.HardPoint.HardWare.Type == HandWeapon)
                 {
-                    var ae = ammo.AreaEffect;
-                    var areaRadius = ae.Base.Radius > 0 ? ae.Base.Radius : ae.AreaEffectRadius;
-                    var detonateRadius = ae.Detonation.DetonationRadius;
-                    var fragments = ammo.Fragment.Fragments > 0 ? ammo.Fragment.Fragments : 1;
-                    if (areaRadius > 0)
+                    foreach (var ammo in x.Ammos)
                     {
-                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius, true)))
-                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius, true));
-                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, true)))
-                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius / fragments, true));
+                        var ae = ammo.AreaEffect;
+                        var areaRadius = ae.Base.Radius > 0 ? ae.Base.Radius : ae.AreaEffectRadius;
+                        var detonateRadius = ae.Detonation.DetonationRadius;
+                        var fragments = ammo.Fragment.Fragments > 0 ? ammo.Fragment.Fragments : 1;
+                        if (areaRadius > 0)
+                        {
+                            if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius, true)))
+                                GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius, true));
+                            if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, true)))
+                                GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius / fragments, true));
 
-                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius, false)))
-                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius, false));
-                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, false)))
-                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius / fragments, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius / fragments, false));
 
-                    }
-                    if (detonateRadius > 0)
-                    {
-                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius, true)))
-                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius, true));
-                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, true)))
-                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius / fragments, true));
+                        }
+                        if (detonateRadius > 0)
+                        {
+                            if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius, true)))
+                                GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius, true));
+                            if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, true)))
+                                GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius / fragments, true));
 
-                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius, false)))
-                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius, false));
-                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, false)))
-                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius, false));
+                            if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, false)))
+                                GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
+                        }
                     }
                 }
             }
-            foreach (var partDef in PartDefinitions)
+            foreach (var x in PartDefinitions)
             {
-                foreach (var mount in partDef.Assignments.MountPoints)
+                foreach (var mount in x.Assignments.MountPoints)
                 {
                     var subTypeId = mount.SubtypeId;
                     var muzzlePartId = mount.MuzzlePartId;
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = partDef.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId};
+                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId };
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
@@ -165,12 +168,12 @@ namespace WeaponCore
                         {
                             [muzzlePartId] = extraInfo
                         };
-                        _subTypeIdToPartDefs[subTypeId] = new List<PartDefinition> {partDef};
+                        _subTypeIdToPartDefs[subTypeId] = new List<PartDefinition> { x };
                     }
                     else
                     {
                         _turretDefinitions[subTypeId][muzzlePartId] = extraInfo;
-                        _subTypeIdToPartDefs[subTypeId].Add(partDef);
+                        _subTypeIdToPartDefs[subTypeId].Add(x);
                     }
                 }
             }
@@ -191,9 +194,12 @@ namespace WeaponCore
                 }
 
                 var parts = _subTypeIdToPartDefs[tDef.Key];
-                var hasTurret = false;
-                var hasArmor = false;
-                var hasUpgrade = false;
+                var isTurret = false;
+                var isArmor = false;
+                var isUpgrade = false;
+                var isWeapon = false;
+                var isRifle = false;
+                var isPhantom = false;
                 var firstWeapon = true;
                 string modPath = null;
                 foreach (var partDef in parts)
@@ -201,18 +207,25 @@ namespace WeaponCore
                     try {
                         modPath = partDef.ModPath;
                         if (partDef.HardPoint.Ai.TurretAttached)
-                            hasTurret = true;
+                            isTurret = true;
 
-                        var isUpgrade = partDef.HardPoint.HardWare.Hardware == Upgrade;
-                        var isArmor = partDef.HardPoint.HardWare.Hardware != BlockWeapon && !isUpgrade;
-                        
-                        if (isArmor) {
-                            DamageHandler = true;
-                            hasArmor = true;
+                        if (partDef.HardPoint.HardWare.Type == BlockWeapon || partDef.HardPoint.HardWare.Type == HandWeapon)
+                        {
+                            isWeapon = true;
+                            if (partDef.HardPoint.HardWare.Type == HandWeapon)
+                                isRifle = true;
                         }
-                        else if (isUpgrade)
-                            hasUpgrade = true;
 
+                        if (partDef.HardPoint.HardWare.Type == Upgrade)
+                            isUpgrade = true;
+
+                        if (partDef.HardPoint.HardWare.Type == Phantom)
+                            isPhantom = true;
+
+                        if (isUpgrade && !isWeapon && !isPhantom) {
+                            DamageHandler = true;
+                            isArmor = true;
+                        }
                         foreach (var def in AllDefinitions) {
                             MyDefinitionId defid;
                             var matchingDef = def.Id.SubtypeName == tDef.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(tDef.Key), out defid) && defid == def.Id);
@@ -334,16 +347,23 @@ namespace WeaponCore
                 MyDefinitionId defId;
                 if (WeaponCoreDefs.TryGetValue(tDef.Key, out defId))
                 {
-                    if (hasUpgrade)
-                        WeaponCoreTurretBlockDefs.Add(defId);
-                    if (hasTurret)
-                        WeaponCoreTurretBlockDefs.Add(defId);
-                    else if (hasUpgrade)
+                    if (isWeapon)
+                    {
+                        if (isTurret)
+                            WeaponCoreTurretBlockDefs.Add(defId);
+                        else
+                            WeaponCoreFixedBlockDefs.Add(defId);
+                    }
+                    else if (isUpgrade)
+                    {
                         WeaponCoreUpgradeBlockDefs.Add(defId);
-                    else if (hasArmor)
+                    }
+                    else if (isArmor)
                         WeaponCoreArmorBlockDefs.Add(defId);
-                    else
-                        WeaponCoreFixedBlockDefs.Add(defId);
+                    else if (isPhantom)
+                        WeaponCorePhantomDefs.Add(defId);
+                    else if (isRifle)
+                        WeaponCoreRifleDefs.Add(defId);
                 }
                 PartPlatforms[defId] = new CoreStructure(this, tDef, parts, modPath);
             }

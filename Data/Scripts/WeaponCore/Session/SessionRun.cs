@@ -97,7 +97,6 @@ namespace WeaponCore
                 if (HomingWeapons.Count > 0)
                     UpdateHomingWeapons();
 
-
                 if (MpActive) {
                     if (PacketsToClient.Count > 0 || PrunedPacketsToClient.Count > 0)
                         ProccessServerPacketsForClients();

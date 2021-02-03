@@ -5,9 +5,9 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Phantom : Part
+    public partial class Phantoms : Part
     {
-        internal Phantom()
+        internal Phantoms()
         {
         }
     }

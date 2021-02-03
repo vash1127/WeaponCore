@@ -96,7 +96,7 @@ namespace WeaponCore
                     ///
                     /// Weapon update section
                     ///
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
+                    for (int j = 0; j < comp.Platform.Weapons.Count; j++) {
 
                         var w = comp.Platform.Weapons[j];
                         if (w.PartReadyTick > Tick) {

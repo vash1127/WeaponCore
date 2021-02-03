@@ -19,8 +19,8 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.HasArmor) {
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                if (comp.BaseType == CoreComponent.CompType.Armor) {
+                    for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                         var w = comp.Platform.Weapons[i];
                         if (w.System.Armor != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                          Armor.Add(w.Comp.Cube, w);
@@ -38,8 +38,8 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.HasArmor) {
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                if (comp.BaseType == CoreComponent.CompType.Armor) {
+                    for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                         var w = comp.Platform.Weapons[i];
                         if (w.System.Armor != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                             Armor.Remove(w.Comp.Cube);
@@ -114,7 +114,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < Parts.Count; i++) {
 
                 var comp = Parts[i];
-                for (int x = 0; x < comp.Platform.Weapons.Length; x++) {
+                for (int x = 0; x < comp.Platform.Weapons.Count; x++) {
                     var w = comp.Platform.Weapons[x];
                     w.StopReloadSound();
                     w.StopShooting();

@@ -57,7 +57,7 @@ namespace WeaponCore.Support
         public readonly FiringSoundState FiringSound;
         public readonly HardwareDef.HardwareType Armor;
 
-        public readonly string WeaponName;
+        public readonly string PartName;
         public readonly string AltScopeName;
         public readonly string AltEjectorName;
         public readonly string[] Barrels;
@@ -142,7 +142,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, PartDefinition values, string weaponName, ConsumableTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, PartDefinition values, string partName, ConsumableTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -154,7 +154,7 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponIdHash = weaponIdHash;
             WeaponId = weaponId;
-            WeaponName = weaponName;
+            PartName = partName;
             AmmoTypes = weaponAmmoTypes;
             MaxAmmoVolume = Values.HardPoint.HardWare.InventorySize;
             FullAmmoVolume = MaxAmmoVolume * 0.75f;
@@ -168,7 +168,7 @@ namespace WeaponCore.Support
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
             SuppressFire = Values.HardPoint.Ai.SuppressFire;
-            Armor = Values.HardPoint.HardWare.Hardware;
+            Armor = Values.HardPoint.HardWare.Type;
             HasEjector = !string.IsNullOrEmpty(Values.Assignments.Ejector);
             AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
             HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
@@ -784,7 +784,7 @@ namespace WeaponCore.Support
 
 
             if (mexLogLevel >= 1) Log.Line($"-----");
-            if (mexLogLevel >= 1) Log.Line($"Name = {s.WeaponName}"); //a.EnergyMagazineSize
+            if (mexLogLevel >= 1) Log.Line($"Name = {s.PartName}"); //a.EnergyMagazineSize
             if (mexLogLevel >= 2) Log.Line($"EnergyMag = {a.EnergyMagazineSize}");
 
             var baselineRange = 1000;
@@ -890,7 +890,7 @@ namespace WeaponCore.Support
 
                     if ((mexLogLevel >= 1))
                     {
-                        Log.Line($"Name = {s.WeaponName}");
+                        Log.Line($"Name = {s.PartName}");
                         Log.Line($"HeatPerShot = {l.HeatPerShot}");
                         Log.Line($"HeatGenPerSec = {heatGenPerSec}");
 

@@ -4,6 +4,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Sandbox.Game.Weapons;
 using Sandbox.ModAPI.Weapons;
 using VRage.Game;
@@ -18,14 +19,14 @@ namespace WeaponCore.Support
     public partial class CoreComponent
     {
         internal bool InventoryInited;
-        internal BlockType BaseType;
+        internal CompType BaseType;
 
         internal readonly MyEntity CoreEntity;
 
         internal readonly IMySlimBlock Slim;
         internal readonly IMyTerminalBlock TerminalBlock;
         internal readonly IMyFunctionalBlock FunctionalBlock;
-        internal readonly IMyLargeTurretBase TurretBase;
+        internal readonly IMyLargeTurretBase VanillaTurretBase;
         internal readonly IMyAutomaticRifleGun Rifle;
         internal readonly IMyHandheldGunObject<MyGunBase> GunBase;
         internal readonly MyCubeBlock Cube;
@@ -93,11 +94,11 @@ namespace WeaponCore.Support
         internal bool UnlimitedPower;
         internal bool Registered;
         internal bool ResettingSubparts;
-        internal bool HasArmor;
         internal bool UiEnabled;
         internal bool ShootSubmerged;
         internal bool HasTracking;
         internal bool UnexpectedMag;
+        internal bool IsWeapon;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -112,13 +113,14 @@ namespace WeaponCore.Support
             ReInit,
         }
 
-        internal enum BlockType
+        internal enum CompType
         {
-            Turret,
-            Fixed,
-            Sorter,
+            VanillaTurret,
+            VanillaFixed,
+            SorterWeapon,
             Armor,
             Upgrade,
+            Phantom,
             Rifle,
         }
 
@@ -136,22 +138,7 @@ namespace WeaponCore.Support
         {
             Session = session;
             CoreEntity = coreEntity;
-
-            var turret = CoreEntity as IMyLargeTurretBase;
-            if (turret != null)
-            {
-                TurretBase = turret;
-                TurretBase.EnableIdleRotation = false;
-                BaseType = BlockType.Turret;
-            }
-            else if (CoreEntity is IMyConveyorSorter)
-                BaseType = BlockType.Sorter;
-            else if (CoreEntity is IMyAutomaticRifleGun)
-                BaseType = BlockType.Rifle;
-            else
-                BaseType = BlockType.Fixed;
-
-            IsBlock = BaseType != BlockType.Rifle;
+            IsBlock = coreEntity is MyCubeBlock;
 
             if (IsBlock) {
 
@@ -164,30 +151,61 @@ namespace WeaponCore.Support
 
                 TerminalBlock = coreEntity as IMyTerminalBlock;
                 FunctionalBlock = coreEntity as IMyFunctionalBlock;
-            }
-            else {
 
+                var turret = CoreEntity as IMyLargeTurretBase;
+                if (turret != null)
+                {
+
+                    VanillaTurretBase = turret;
+                    VanillaTurretBase.EnableIdleRotation = false;
+                    BaseType = CompType.VanillaTurret;
+                    IsWeapon = true;
+                }
+                else if (CoreEntity is IMyConveyorSorter)
+                {
+
+                    if (Session.WeaponCoreArmorBlockDefs.Contains(Cube.BlockDefinition.Id))
+                        BaseType = CompType.Armor;
+                    else if (Session.WeaponCoreUpgradeBlockDefs.Contains(Cube.BlockDefinition.Id))
+                        BaseType = CompType.Upgrade;
+                    else {
+
+                        IsWeapon = true;
+                        BaseType = CompType.SorterWeapon;
+                    }
+                }
+                else {
+                    IsWeapon = true;
+                    BaseType = CompType.VanillaFixed;
+                }
+
+            }
+            else if (CoreEntity is IMyAutomaticRifleGun) {
+                
+                IsWeapon = true;
                 Rifle = (IMyAutomaticRifleGun)CoreEntity;
                 GunBase = (IMyHandheldGunObject<MyGunBase>)CoreEntity;
                 TopEntity = Rifle.Owner;
                 SubtypeName = Rifle.DefinitionId.SubtypeName;
                 SubTypeId = Rifle.DefinitionId.SubtypeId;
                 MaxIntegrity = 1;
+                BaseType = CompType.Rifle;
             }
+            else 
+                BaseType = CompType.Phantom;
 
             CoreInventory = (MyInventory)CoreEntity.GetInventoryBase();
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
 
-            Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Weapons.Length];
+            Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Structure.MuzzlePartNames.Length];
             for (int i = 0; i < Monitors.Length; i++)
                 Monitors[i] = new List<Action<long, int, ulong, long, Vector3D, bool>>();
 
             Data = new CompData(this);
 
             CoreEntity.OnClose += Session.CloseComps;
-
         }        
     }
 }

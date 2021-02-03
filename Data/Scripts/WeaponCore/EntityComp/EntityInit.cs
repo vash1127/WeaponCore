@@ -31,7 +31,7 @@ namespace WeaponCore.Support
                     Data.Repo.ResetToFreshLoadState();
 
                 var maxTrajectory = 0f;
-                for (int i = 0; i < Platform.Weapons.Length; i++) {
+                for (int i = 0; i < Platform.Weapons.Count; i++) {
 
                     var weapon = Platform.Weapons[i];
 
@@ -40,7 +40,7 @@ namespace WeaponCore.Support
                     else weapon.ChangeActiveAmmoClient();
 
                     if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
-                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
+                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.PartName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
                         return;
                     }
 
@@ -136,7 +136,7 @@ namespace WeaponCore.Support
                     CoreInventory.Constraint.UpdateIcon();
                 }
 
-                for (int i = 0; i < Platform.Weapons.Length; i++) {
+                for (int i = 0; i < Platform.Weapons.Count; i++) {
                     var w = Platform.Weapons[i];
 
                     if (w == null)

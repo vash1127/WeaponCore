@@ -6,7 +6,7 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 using static WeaponCore.Support.CoreComponent.Start;
-using static WeaponCore.Support.CoreComponent.BlockType;
+using static WeaponCore.Support.CoreComponent.CompType;
 using static WeaponCore.Platform.Part;
 using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -17,10 +17,10 @@ namespace WeaponCore.Platform
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
-        internal Weapon[] Weapons = new Weapon[1];
-        internal Armor[] Armors = new Armor[1];
-        internal Upgrade[] Upgrades = new Upgrade[1];
-        internal Phantom[] Phantoms = new Phantom[1];
+        internal List<Weapon> Weapons = new List<Weapon>();
+        internal List<Armor> Armors = new List<Armor>();
+        internal List<Upgrades> Upgrades = new List<Upgrades>();
+        internal List<Phantoms> Phantoms = new List<Phantoms>();
         internal CoreStructure Structure;
         internal CoreComponent Comp;
         internal PlatformState State;
@@ -47,17 +47,15 @@ namespace WeaponCore.Platform
             Structure = comp.Session.PartPlatforms[defId];
             Comp = comp;
 
-            if (Weapons.Length != Structure.MuzzlePartNames.Length)
-                Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
+
         }
 
         internal void Clean()
         {
-            for (int i = 0; i < Weapons.Length; i++) Weapons[i] = null;
-            for (int i = 0; i < Armors.Length; i++) Armors[i] = null;
-            for (int i = 0; i < Upgrades.Length; i++) Upgrades[i] = null;
-            for (int i = 0; i < Phantoms.Length; i++) Phantoms[i] = null;
-
+            Weapons.Clear();
+            Armors.Clear();
+            Upgrades.Clear();
+            Phantoms.Clear();
             Parts.Clean(null);
             Structure = null;
             State = PlatformState.Fresh;
@@ -121,49 +119,63 @@ namespace WeaponCore.Platform
                 _orderToCreate[tmpPos] = _orderToCreate[0];
                 _orderToCreate[0] = tmpPos;
             }
-
             Parts.CheckSubparts();
-
-            foreach (var i in _orderToCreate)
+            if (Comp.IsWeapon)
             {
-                var muzzlePartHash = Structure.MuzzlePartNames[i];
-                CoreSystem system;
-                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system)) 
-                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid weapon system, I am crashing now Dave.");
+                foreach (var i in _orderToCreate)
+                {
+                    var muzzlePartHash = Structure.MuzzlePartNames[i];
+                    CoreSystem system;
+                    if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system))
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid weapon system, I am crashing now Dave.");
 
-                var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
+                    var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
-                MyEntity muzzlePartEntity;
-                if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity)) {
-                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid barrelPart, I am crashing now Dave.");
+                    MyEntity muzzlePartEntity;
+                    if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
+                    {
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid barrelPart, I am crashing now Dave.");
+                    }
+                    foreach (var part in Parts.NameToEntity)
+                    {
+                        part.Value.OnClose += comp.SubpartClosed;
+                        break;
+                    }
+
+                    //compatability with old configs of converted turrets
+                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
+                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
+
+                    MyEntity azimuthPart = null;
+                    if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Weapon: {system.PartName} Invalid azimuthPart, I am crashing now Dave.");
+
+                    MyEntity elevationPart = null;
+                    if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid elevationPart, I am crashing now Dave.");
+
+                    azimuthPart.NeedsWorldMatrix = true;
+                    elevationPart.NeedsWorldMatrix = true;
+
+                    Weapons.Add(new Weapon(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName));
+
                 }
-                foreach (var part in Parts.NameToEntity) {
-                    part.Value.OnClose += comp.SubpartClosed;
-                    break;
-                }
+                _orderToCreate.Clear();
 
-                //compatability with old configs of converted turrets
-                var azimuthPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
-                var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
-
-                MyEntity azimuthPart = null;
-                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart)) 
-                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
-
-                MyEntity elevationPart = null;
-                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart)) 
-                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid elevationPart, I am crashing now Dave.");
-
-                azimuthPart.NeedsWorldMatrix = true;
-                elevationPart.NeedsWorldMatrix = true;
-
-                Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
-
+                CompileTurret(comp);
             }
-            _orderToCreate.Clear();
-
-            CompileTurret(comp);
-
+            else if (Comp.BaseType == Upgrade)
+            {
+                Upgrades.Add(new Upgrades());
+            }
+            else if (Comp.BaseType == CoreComponent.CompType.Armor)
+            {
+                Armors.Add(new Armor());
+            }
+            else if (Comp.BaseType == Phantom)
+            {
+                Phantoms.Add(new Phantoms());
+            }
             State = PlatformState.Inited;
 
             return State;
@@ -177,8 +189,8 @@ namespace WeaponCore.Platform
                 MyEntity muzzlePart = null;
                 if (Parts.NameToEntity.TryGetValue(m.Key.String, out muzzlePart) || m.Value.DesignatorWeapon)
                 {
-                    var azimuthPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
+                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
+                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
                     var weapon = Weapons[c];
 
                     var muzzlePartName  = m.Key.String;
@@ -385,8 +397,8 @@ namespace WeaponCore.Platform
                         registered = true;
                     }
 
-                    var azimuthPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
+                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
+                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
                     var weapon = Weapons[c];
                     MyEntity azimuthPartEntity;
                     if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))

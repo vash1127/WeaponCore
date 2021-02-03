@@ -37,12 +37,12 @@ namespace WeaponCore.Platform
             else {
                 if (ElevationTick == Comp.Session.Tick)
                 {
-                    Comp.TurretBase.Elevation = (float)Elevation;
+                    Comp.VanillaTurretBase.Elevation = (float)Elevation;
                 }
 
                 if (AzimuthTick == Comp.Session.Tick)
                 {
-                    Comp.TurretBase.Azimuth = (float)Azimuth;
+                    Comp.VanillaTurretBase.Azimuth = (float)Azimuth;
                 }
             }
         }
@@ -75,9 +75,9 @@ namespace WeaponCore.Platform
                     return;
                 }
 
-                if (Comp.BaseType == BlockType.Turret && Comp.TurretBase != null) {
-                    Azimuth = Comp.TurretBase.Azimuth;
-                    Elevation = Comp.TurretBase.Elevation;
+                if (Comp.BaseType == CompType.VanillaTurret && Comp.VanillaTurretBase != null) {
+                    Azimuth = Comp.VanillaTurretBase.Azimuth;
+                    Elevation = Comp.VanillaTurretBase.Elevation;
                 }
 
                 var azStep = System.AzStep;

@@ -98,9 +98,9 @@ namespace WeaponCore
                 if (entity.MarkedForClose)
                     return;
 
-                var weaponComp = new CoreComponent(this, entity);
+                var comp = new CoreComponent(this, entity);
 
-                CompsToStart.Add(weaponComp);
+                CompsToStart.Add(comp);
                 if (thread) CompsToStart.ApplyAdditions();
             }
         }

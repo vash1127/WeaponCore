@@ -310,7 +310,7 @@ namespace WeaponCore.Platform
             weapon.Target.IsAligned = isAligned;
             var alignedChange = wasAligned != isAligned;
             if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer && alignedChange) { 
-                for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++) {
+                for (int i = 0; i < weapon.Comp.Platform.Weapons.Count; i++) {
                     var w = weapon.Comp.Platform.Weapons[i];
 
                     if (isAligned && !w.System.DesignatorWeapon)

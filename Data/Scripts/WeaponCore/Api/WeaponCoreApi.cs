@@ -555,9 +555,12 @@ namespace WeaponCore.Api
                     public enum HardwareType
                     {
                         BlockWeapon,
-                        Passive,
-                        Active,
+                        HandWeapon,
+                        PassiveArmor,
+                        ActiveArmor,
+                        RegenArmor,
                         Upgrade,
+                        Phantom,
                     }
 
                     [ProtoMember(1)] internal float RotateRate;
@@ -569,7 +572,7 @@ namespace WeaponCore.Api
                     [ProtoMember(7)] internal int MaxElevation;
                     [ProtoMember(8)] internal int MinElevation;
                     [ProtoMember(9)] internal float InventorySize;
-                    [ProtoMember(10)] internal HardwareType Hardware;
+                    [ProtoMember(10)] internal HardwareType Type;
                 }
 
                 [ProtoContract]

@@ -214,7 +214,7 @@ namespace WeaponCore
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
                 var weapon = stackedInfo.HighestValuePart;
-                var name = weapon.System.WeaponName + ": ";
+                var name = weapon.System.PartName + ": ";
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;

@@ -54,7 +54,7 @@ namespace WeaponCore.Support
                     if (Ai.PartBase.TryRemove(CoreEntity, out comp)) {
                         if (Platform.State == CorePlatform.PlatformState.Ready) {
 
-                            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                            for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                                 var w = comp.Platform.Weapons[i];
                                 w.StopShooting();
                                 w.WeaponCache.HitEntity.Clean();
@@ -87,7 +87,7 @@ namespace WeaponCore.Support
 
         internal static void SetRof(CoreComponent comp)
         {
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)  {
+            for (int i = 0; i < comp.Platform.Weapons.Count; i++)  {
                 var w = comp.Platform.Weapons[i];
 
                 if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
@@ -102,7 +102,7 @@ namespace WeaponCore.Support
         {
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+            for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                 var w = comp.Platform.Weapons[i];
                 if (!change && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                 comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
@@ -145,19 +145,19 @@ namespace WeaponCore.Support
                     {
                         if (w.HitEffects?[i] != null)
                         {
-                            Log.Line($"[Clean CompHitPartice] Weapon:{w.System.WeaponName} - Particle:{w.HitEffects[i].GetName()}");
+                            Log.Line($"[Clean CompHitPartice] Weapon:{w.System.PartName} - Particle:{w.HitEffects[i].GetName()}");
                             w.HitEffects[i].Stop();
                             w.HitEffects[i] = null;
                         }
                         if (w.BarrelEffects1?[i] != null)
                         {
-                            Log.Line($"[Clean BarrelEffects1] Weapon:{w.System.WeaponName} - Particle:{w.BarrelEffects1[i].GetName()}");
+                            Log.Line($"[Clean BarrelEffects1] Weapon:{w.System.PartName} - Particle:{w.BarrelEffects1[i].GetName()}");
                             w.BarrelEffects1[i].Stop();
                             w.BarrelEffects1[i] = null;
                         }
                         if (w.BarrelEffects2?[i] != null)
                         {
-                            Log.Line($"[Clean BarrelEffects2] Weapon:{w.System.WeaponName} - Particle:{ w.BarrelEffects2[i].GetName()}");
+                            Log.Line($"[Clean BarrelEffects2] Weapon:{w.System.PartName} - Particle:{ w.BarrelEffects2[i].GetName()}");
                             w.BarrelEffects2[i].Stop();
                             w.BarrelEffects2[i] = null;
                         }

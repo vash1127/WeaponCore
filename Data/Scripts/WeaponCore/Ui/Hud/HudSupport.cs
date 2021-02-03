@@ -200,7 +200,7 @@ namespace WeaponCore
                 for(int i = 0; i < list.Count; i++)
                 {
                     var w = list[i];
-                    if (w.System.WeaponName.Length > _currentLargestName) _currentLargestName = w.System.WeaponName.Length;
+                    if (w.System.PartName.Length > _currentLargestName) _currentLargestName = w.System.PartName.Length;
 
                     StackedWeaponInfo swi;
                     if (!_weaponStackedInfoPool.TryDequeue(out swi))
@@ -243,7 +243,7 @@ namespace WeaponCore
             foreach (var weaponType in weaponTypes)
             {
                 var weapons = weaponType.Value;
-                if (weapons[0].System.WeaponName.Length > _currentLargestName) _currentLargestName = weapons[0].System.WeaponName.Length;
+                if (weapons[0].System.PartName.Length > _currentLargestName) _currentLargestName = weapons[0].System.PartName.Length;
 
 
                 if (weapons.Count > 1)

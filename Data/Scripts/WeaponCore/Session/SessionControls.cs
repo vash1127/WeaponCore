@@ -294,7 +294,7 @@ namespace WeaponCore
         {
             if (comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+            for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
 
                 var w = comp.Platform.Weapons[i];
                 if (w == null) continue;

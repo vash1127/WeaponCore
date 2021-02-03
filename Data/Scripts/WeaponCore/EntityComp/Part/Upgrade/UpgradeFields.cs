@@ -5,9 +5,9 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Upgrade : Part
+    public partial class Upgrades : Part
     {
-        internal Upgrade()
+        internal Upgrades()
         {
         }
     }

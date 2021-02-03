@@ -87,7 +87,7 @@ namespace WeaponCore.Support
                         PowerInit();
                     else Ai.AiOwner = GunBase.OwnerId;
 
-                    if (Platform.State == CorePlatform.PlatformState.Inited)
+                    if (IsWeapon && Platform.State == CorePlatform.PlatformState.Inited)
                         Platform.ResetParts(this);
 
                     Entity.NeedsWorldMatrix = true;
@@ -97,7 +97,7 @@ namespace WeaponCore.Support
 
                     Platform.State = CorePlatform.PlatformState.Ready;
 
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                    for (int i = 0; i < Platform.Weapons.Count; i++)
                     {
                         var weapon = Platform.Weapons[i];
                         weapon.UpdatePivotPos();
@@ -135,7 +135,7 @@ namespace WeaponCore.Support
 
                         Ai.FirstRun = true;
 
-                        if (Platform.State == CorePlatform.PlatformState.Inited)
+                        if (IsWeapon && Platform.State == CorePlatform.PlatformState.Inited)
                             Platform.ResetParts(this);
 
                         Entity.NeedsWorldMatrix = true;
@@ -191,7 +191,7 @@ namespace WeaponCore.Support
 
                 var maxTrajectory = 0d;
 
-                for (int i = 0; i < Platform.Weapons.Length; i++) {
+                for (int i = 0; i < Platform.Weapons.Count; i++) {
                     
                     var weapon = Platform.Weapons[i];
                     weapon.InitTracking();
@@ -228,10 +228,10 @@ namespace WeaponCore.Support
                 Ai.Construct.Refresh(Ai, Constructs.RefreshCaller.Init);
 
                 if (!FunctionalBlock.Enabled)
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                    for (int i = 0; i < Platform.Weapons.Count; i++)
                         Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
 
-                TurretBase?.SetTarget(Vector3D.MaxValue);
+                VanillaTurretBase?.SetTarget(Vector3D.MaxValue);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

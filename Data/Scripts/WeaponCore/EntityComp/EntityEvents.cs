@@ -113,7 +113,7 @@ namespace WeaponCore.Support
                     Session.BetterInventoryItems.Return(removedItem);
             }
             if (Session.IsServer && amount <= 0) {
-                for (int i = 0; i < Platform.Weapons.Length; i++)
+                for (int i = 0; i < Platform.Weapons.Count; i++)
                     Platform.Weapons[i].CheckInventorySystem = true;
             }
         }
@@ -155,7 +155,7 @@ namespace WeaponCore.Support
 
                 if (wasFunctional && !IsFunctional && Platform.State == PlatformState.Ready) {
 
-                    for (int i = 0; i < Platform.Weapons.Length; i++) {
+                    for (int i = 0; i < Platform.Weapons.Count; i++) {
 
                         var w = Platform.Weapons[i];
                         PartAnimation[] partArray;
@@ -220,7 +220,7 @@ namespace WeaponCore.Support
                 
                 stringBuilder.Append("\n\n==== Weapons ====");
 
-                var weaponCnt = Platform.Weapons.Length;
+                var weaponCnt = Platform.Weapons.Count;
                 for (int i = 0; i < weaponCnt; i++)
                 {
                     var w = Platform.Weapons[i];
@@ -235,7 +235,7 @@ namespace WeaponCore.Support
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
-                    stringBuilder.Append("\nName: " + w.System.WeaponName + shots + burst + "\nReloading: " + w.Reloading + endReturn);
+                    stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Reloading + endReturn);
 
                     string otherAmmo = null;
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
@@ -258,7 +258,7 @@ namespace WeaponCore.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
-                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {IsWorking}");
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.PartName} - Enabled: {IsWorking}");
                         stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");

@@ -20,7 +20,8 @@ namespace WeaponCore.Support
                     Startup();
                     break;
                 case Start.ReInit:
-                    Platform.ResetParts(this);
+                    if (IsWeapon) 
+                        Platform.ResetParts(this);
                     Status = Start.Started;
                     break;
             }
@@ -81,10 +82,10 @@ namespace WeaponCore.Support
         internal bool ShootOnceCheck(int weaponToCheck = -1)
         {
             var checkAllWeapons = weaponToCheck == -1;
-            var numOfWeapons = checkAllWeapons ? Platform.Weapons.Length : 1;
+            var numOfWeapons = checkAllWeapons ? Platform.Weapons.Count : 1;
             var loadedWeapons = 0;
 
-            for (int i = 0; i < Platform.Weapons.Length; i++) {
+            for (int i = 0; i < Platform.Weapons.Count; i++) {
                 var w = Platform.Weapons[i];
 
                 if (w.State.Overheated)
@@ -95,7 +96,7 @@ namespace WeaponCore.Support
             }
             if (numOfWeapons == loadedWeapons) {
 
-                for (int i = 0; i < Platform.Weapons.Length; i++)  {
+                for (int i = 0; i < Platform.Weapons.Count; i++)  {
 
                     var w = Platform.Weapons[i];
 
@@ -298,7 +299,7 @@ namespace WeaponCore.Support
 
         private static void ClearTargets(CoreComponent comp)
         {
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            for (int i = 0; i < comp.Platform.Weapons.Count; i++)
             {
                 var weapon = comp.Platform.Weapons[i];
                 if (weapon.Target.HasTarget)
@@ -318,7 +319,8 @@ namespace WeaponCore.Support
                     ent.OnClose -= SubpartClosed;
                     if (!CoreEntity.MarkedForClose && Platform.State == CorePlatform.PlatformState.Ready)
                     {
-                        Platform.ResetParts(this);
+                        if (IsWeapon)
+                            Platform.ResetParts(this);
                         Status = Start.Started;
 
                         foreach (var w in Platform.Weapons)

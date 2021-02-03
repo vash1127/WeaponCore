@@ -28,8 +28,7 @@ namespace WeaponCore
                 var turret = entity as IMyLargeTurretBase;
                 var controllableGun = entity as IMyUserControllableGun;
                 var rifle = entity as IMyAutomaticRifleGun;
-                var upgrade = entity as IMyUpgradeModule;
-                if (sorter != null || turret != null || controllableGun != null || rifle != null || upgrade != null)
+                if (sorter != null || turret != null || controllableGun != null || rifle != null)
                 {
                     var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || PartPlatforms.ContainsKey(cube.BlockDefinition.Id));
                     var rifleType = !cubeType && rifle != null && PartPlatforms.ContainsKey(rifle.DefinitionId);
@@ -57,16 +56,6 @@ namespace WeaponCore
                         else if (!FixedGunControls && controllableGun is IMySmallGatlingGun) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
                             FixedGunControls = true;
-                        }
-                        else if (!ArmorControls && sorter != null && WeaponCoreArmorBlockDefs.Contains(cube.BlockDefinition.Id))
-                        {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
-                            ArmorControls = true;
-                        }
-                        else  if (!UpgradeControls && sorter != null && WeaponCoreUpgradeBlockDefs.Contains(cube.BlockDefinition.Id))
-                        {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyUpgradeModule>(this));
-                            UpgradeControls = true;
                         }
                     }
                     InitComp(entity);

@@ -235,7 +235,6 @@ namespace WeaponCore.Platform
         {
 
             base.Init(comp, system);
-
             AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
             foreach (var set in AnimationsSet) {
                 foreach (var pa in set.Value) {
@@ -255,7 +254,6 @@ namespace WeaponCore.Platform
             }
             else
                 _numModelBarrels = System.Barrels.Length;
-
 
             bool hitParticle = false;
             foreach (var ammoType in System.AmmoTypes)
@@ -317,9 +315,6 @@ namespace WeaponCore.Platform
                     HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
-            if (System.Armor != HardwareType.BlockWeapon)
-                Comp.HasArmor = true;
-
             PartId = partId;
             PrimaryWeaponGroup = PartId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;
@@ -366,7 +361,7 @@ namespace WeaponCore.Platform
             
             FuckMyLife();
             
-            AiOnlyWeapon = Comp.BaseType != CoreComponent.BlockType.Turret || (Comp.BaseType == CoreComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
+            AiOnlyWeapon = Comp.BaseType != CoreComponent.CompType.VanillaTurret || (Comp.BaseType == CoreComponent.CompType.VanillaTurret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
             string ejectorMatch;
             MyEntity ejectorPart;

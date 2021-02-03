@@ -384,7 +384,7 @@ namespace WeaponCore.Platform
         {
             State.Action = TriggerActions.TriggerOff;
             var hasShot = false;
-            for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
+            for (int i = 0; i < Comp.Platform.Weapons.Count; i++) {
                 var w = Comp.Platform.Weapons[i];
 
                 if (w.ShootOnce)
