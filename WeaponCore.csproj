@@ -115,15 +115,15 @@
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\CustomActions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\ModelSupport\PartInfo.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitReload.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitAv.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitController.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitState.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponReload.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponTypes.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponController.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\BlockUi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitTrigger.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitTracking.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponTrigger.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\Weapon\WeaponTracking.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MiscTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionControls.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionFields.cs" />
@@ -246,6 +246,11 @@
     <Reference Include="VRage.XmlSerializers">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\Scripts\WeaponCore\EntityComp\Unit\Armor\" />
+    <Folder Include="Data\Scripts\WeaponCore\EntityComp\Unit\Formless\" />
+    <Folder Include="Data\Scripts\WeaponCore\EntityComp\Unit\Upgrade\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
