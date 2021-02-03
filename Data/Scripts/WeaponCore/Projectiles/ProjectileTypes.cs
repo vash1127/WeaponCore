@@ -40,7 +40,7 @@ namespace WeaponCore.Support
         internal FakeTarget DummyTarget;
         internal List<Action<long, int, ulong, long, Vector3D, bool>> Monitors;
         internal int TriggerGrowthSteps;
-        internal int WeaponId;
+        internal int PartId;
         internal int MuzzleId;
         internal int ObjectsHit;
         internal int Age;
@@ -70,24 +70,24 @@ namespace WeaponCore.Support
 
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
-        internal void InitVirtual(Part part, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Part.Muzzle muzzle, double maxTrajectory, float shotFade)
+        internal void InitVirtual(Weapon weapon, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Weapon.Muzzle muzzle, double maxTrajectory, float shotFade)
         {
             IsVirtual = true;
-            System = part.System;
-            Ai = part.Comp.Ai;
-            MyPlanet = part.Comp.Ai.MyPlanet;
-            MyShield = part.Comp.Ai.MyShield;
-            InPlanetGravity = part.Comp.Ai.InPlanetGravity;
+            System = weapon.System;
+            Ai = weapon.Comp.Ai;
+            MyPlanet = weapon.Comp.Ai.MyPlanet;
+            MyShield = weapon.Comp.Ai.MyShield;
+            InPlanetGravity = weapon.Comp.Ai.InPlanetGravity;
             AmmoDef = ammodef;
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;
-            Target.TargetEntity = part.Target.TargetEntity;
-            Target.Projectile = part.Target.Projectile;
-            Target.CoreEntity = part.Target.CoreEntity;
-            Target.CoreCube = part.Target.CoreCube;
-            Target.CoreParent = part.Target.CoreParent;
-            Target.CoreIsCube = part.Target.CoreIsCube;
-            WeaponId = part.WeaponId;
+            Target.TargetEntity = weapon.Target.TargetEntity;
+            Target.Projectile = weapon.Target.Projectile;
+            Target.CoreEntity = weapon.Target.CoreEntity;
+            Target.CoreCube = weapon.Target.CoreCube;
+            Target.CoreParent = weapon.Target.CoreParent;
+            Target.CoreIsCube = weapon.Target.CoreIsCube;
+            PartId = weapon.PartId;
             MuzzleId = muzzle.MuzzleId;
             UniqueMuzzleId = muzzle.UniqueId;
             Direction = muzzle.DeviatedDir;
@@ -100,7 +100,7 @@ namespace WeaponCore.Support
         {
             if (Monitors?.Count > 0) {
                 for (int i = 0; i < Monitors.Count; i++)
-                    Monitors[i].Invoke(Target.CoreEntity.EntityId, WeaponId,Id, Target.TargetId, Hit.LastHit, false);
+                    Monitors[i].Invoke(Target.CoreEntity.EntityId, PartId,Id, Target.TargetId, Hit.LastHit, false);
 
                 System.Session.MonitoredProjectiles.Remove(Id);
             }
@@ -146,7 +146,7 @@ namespace WeaponCore.Support
             ClientSent = false;
             InPlanetGravity = false;
             TriggerGrowthSteps = 0;
-            WeaponId = 0;
+            PartId = 0;
             MuzzleId = 0;
             Age = 0;
             ProjectileDisplacement = 0;
@@ -353,7 +353,7 @@ namespace WeaponCore.Support
     internal struct NewVirtual
     {
         internal ProInfo Info;
-        internal Part.Muzzle Muzzle;
+        internal Weapon.Muzzle Muzzle;
         internal bool Rotate;
         internal int VirtualId;
     }
@@ -368,7 +368,7 @@ namespace WeaponCore.Support
             Client
         }
 
-        internal Part.Muzzle Muzzle;
+        internal Weapon.Muzzle Muzzle;
         internal AmmoDef AmmoDef;
         internal MyEntity TargetEnt;
         internal List<NewVirtual> NewVirts;
@@ -394,7 +394,7 @@ namespace WeaponCore.Support
                 frag.AmmoDef = p.Info.System.AmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
                 frag.TargetEntity = p.Info.Target.TargetEntity;
                 frag.Overrides = p.Info.Overrides;
-                frag.WeaponId = p.Info.WeaponId;
+                frag.WeaponId = p.Info.PartId;
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.CoreEntity = p.Info.Target.CoreEntity;
                 frag.Guidance = p.Info.EnableGuidance;
@@ -456,7 +456,7 @@ namespace WeaponCore.Support
                 p.Info.Overrides = frag.Overrides;
                 p.Info.IsShrapnel = true;
                 p.Info.EnableGuidance = frag.Guidance;
-                p.Info.WeaponId = frag.WeaponId;
+                p.Info.PartId = frag.WeaponId;
                 p.Info.MuzzleId = frag.MuzzleId;
                 p.Info.UniqueMuzzleId = frag.System.Session.NewVoxelCache.Id;
                 p.Info.Origin = frag.Origin;

@@ -180,7 +180,7 @@ namespace WeaponCore
     [ProtoContract]
     public class AmmoCycleRequestPacket : Packet
     {
-        [ProtoMember(1)] internal int WeaponId;
+        [ProtoMember(1)] internal int PartId;
         [ProtoMember(2)] internal int NewAmmoId;
         [ProtoMember(3), DefaultValue(-1)] internal long PlayerId;
 
@@ -190,7 +190,7 @@ namespace WeaponCore
         public override void CleanUp()
         {
             base.CleanUp();
-            WeaponId = 0;
+            PartId = 0;
             NewAmmoId = 0;
             PlayerId = -1;
         }
@@ -199,7 +199,7 @@ namespace WeaponCore
     [ProtoContract]
     public class QueuedShotPacket : Packet
     {
-        [ProtoMember(1)] internal int WeaponId;
+        [ProtoMember(1)] internal int PartId;
         [ProtoMember(2), DefaultValue(-1)] internal long PlayerId;
 
 
@@ -208,7 +208,7 @@ namespace WeaponCore
         public override void CleanUp()
         {
             base.CleanUp();
-            WeaponId = 0;
+            PartId = 0;
             PlayerId = -1;
         }
     }
@@ -217,7 +217,7 @@ namespace WeaponCore
     public class WeaponAmmoPacket : Packet
     {
         [ProtoMember(1)] internal AmmoValues Data;
-        [ProtoMember(2)] internal int WeaponId;
+        [ProtoMember(2)] internal int PartId;
 
 
         public WeaponAmmoPacket() { }
@@ -226,7 +226,7 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
-            WeaponId = 0;
+            PartId = 0;
         }
     }
 
@@ -263,7 +263,7 @@ namespace WeaponCore
     public class WeaponReloadPacket : Packet
     {
         [ProtoMember(1)] internal WeaponReloadValues Data;
-        [ProtoMember(2)] internal int WeaponId;
+        [ProtoMember(2)] internal int PartId;
 
         public WeaponReloadPacket() { }
 
@@ -271,7 +271,7 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
-            WeaponId = 0;
+            PartId = 0;
         }
     }
 

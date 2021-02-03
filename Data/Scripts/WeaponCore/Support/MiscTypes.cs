@@ -90,18 +90,18 @@ namespace WeaponCore.Support
             IsTargetStorage = main;
         }
 
-        internal void PushTargetToClient(Part part)
+        internal void PushTargetToClient(Weapon weapon)
         {
-            if (!part.System.Session.MpActive || part.System.Session.IsClient)
+            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
                 return;
 
-            part.TargetData.TargetPos = TargetPos;
-            part.TargetData.WeaponId = part.WeaponId;
-            part.TargetData.EntityId = part.Target.TargetId;
-            part.System.Session.SendTargetChange(part.Comp, part.WeaponId);
+            weapon.TargetData.TargetPos = TargetPos;
+            weapon.TargetData.PartId = weapon.PartId;
+            weapon.TargetData.EntityId = weapon.Target.TargetId;
+            weapon.System.Session.SendTargetChange(weapon.Comp, weapon.PartId);
         }
 
-        internal void ClientUpdate(Part w, TransferTarget tData)
+        internal void ClientUpdate(Weapon w, TransferTarget tData)
         {
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
@@ -161,7 +161,7 @@ namespace WeaponCore.Support
             StateChange(true, States.Acquired);
         }
 
-        internal void LockTarget(Part w, MyEntity ent)
+        internal void LockTarget(Weapon w, MyEntity ent)
         {
             double rayDist;
             var targetPos = ent.PositionComp.WorldAABB.Center;

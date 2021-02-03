@@ -99,7 +99,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-                        if (w.WeaponReadyTick > Tick) {
+                        if (w.PartReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)
                                 w.Target.Reset(comp.Session.Tick, States.WeaponNotReady);
@@ -179,7 +179,7 @@ namespace WeaponCore
                                 w.Target.Reset(Tick, States.Expired);
                             else if (w.AiEnabled) {
 
-                                if (!Part.TrackingTarget(w, w.Target, out targetLock) && !IsClient && w.Target.ExpiredTick != Tick)
+                                if (!Weapon.TrackingTarget(w, w.Target, out targetLock) && !IsClient && w.Target.ExpiredTick != Tick)
                                     w.Target.Reset(Tick, States.LostTracking, !trackReticle && (w.Target.CurrentState != States.RayCheckFailed && !w.Target.HasTarget));
                             }
                             else {
@@ -189,15 +189,15 @@ namespace WeaponCore
 
                                     if (!w.TrackTarget && !IsClient) {
 
-                                        if ((comp.TrackingPart.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingPart.Target.TargetEntity != w.Target.TargetEntity || comp.TrackingPart.Target.IsFakeTarget != w.Target.IsFakeTarget))
+                                        if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.TargetEntity != w.Target.TargetEntity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                             w.Target.Reset(Tick, States.Expired);
                                         else
                                             targetLock = true;
                                     }
-                                    else if (!Part.TargetAligned(w, w.Target, out targetPos) && !IsClient)
+                                    else if (!Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                         w.Target.Reset(Tick, States.Expired);
                                 }
-                                else if (w.TrackTarget && !Part.TargetAligned(w, w.Target, out targetPos) && !IsClient)
+                                else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
@@ -410,9 +410,9 @@ namespace WeaponCore
 
                     if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
 
-                        if (comp.TrackingPart != null && comp.TrackingPart.System.DesignatorWeapon && comp.TrackingPart != w && comp.TrackingPart.Target.HasTarget) {
+                        if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
 
-                            var topMost = comp.TrackingPart.Target.TargetEntity?.GetTopMostParent();
+                            var topMost = comp.TrackingWeapon.Target.TargetEntity?.GetTopMostParent();
                             Ai.AcquireTarget(w, false, topMost);
                         }
                         else

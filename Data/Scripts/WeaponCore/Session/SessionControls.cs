@@ -327,10 +327,10 @@ namespace WeaponCore
 
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(EventTriggers.TurnOn, out delay))
-                        w.WeaponReadyTick = comp.Session.Tick + delay;
+                        w.PartReadyTick = comp.Session.Tick + delay;
 
                     if (w.LastEvent == EventTriggers.TurnOff && w.AnimationDelayTick > comp.Session.Tick)
-                        w.WeaponReadyTick += w.AnimationDelayTick - comp.Session.Tick;
+                        w.PartReadyTick += w.AnimationDelayTick - comp.Session.Tick;
                 }
 
                 if (w.AnimationDelayTick < comp.Session.Tick || w.LastEvent == EventTriggers.TurnOn || w.LastEvent == EventTriggers.TurnOff) {

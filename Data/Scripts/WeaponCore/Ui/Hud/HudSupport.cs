@@ -168,7 +168,7 @@ namespace WeaponCore
             _symbolWidth = _heatWidth + _padding;
         }
 
-        internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Part> list)
+        internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)
         {
             int length = list.Count;
             int finalCount = 0;
@@ -223,16 +223,16 @@ namespace WeaponCore
             }
 
 
-            Dictionary<int, List<Part>> weaponTypes = new Dictionary<int, List<Part>>();
+            Dictionary<int, List<Weapon>> weaponTypes = new Dictionary<int, List<Weapon>>();
             for (int i = 0; i < list.Count; i++) //sort list into groups of same weapon type
             {
                 var w = list[i];
 
                 if (!weaponTypes.ContainsKey(w.System.WeaponIdHash))
                 {
-                    List<Part> tmp;
+                    List<Weapon> tmp;
                     if (!_weaponSortingListPool.TryDequeue(out tmp))
-                        tmp = new List<Part>();
+                        tmp = new List<Weapon>();
 
                     weaponTypes[w.System.WeaponIdHash] = tmp;
                 }
@@ -248,15 +248,15 @@ namespace WeaponCore
 
                 if (weapons.Count > 1)
                 {
-                    List<List<Part>> subLists;
-                    List<Part> subList;
+                    List<List<Weapon>> subLists;
+                    List<Weapon> subList;
                     var last = weapons[0];
 
                     if (!_weaponSubListsPool.TryDequeue(out subLists))
-                        subLists = new List<List<Part>>();
+                        subLists = new List<List<Weapon>>();
 
                     if (!_weaponSortingListPool.TryDequeue(out subList))
-                        subList = new List<Part>();
+                        subList = new List<Weapon>();
 
                     for (int i = 0; i < weapons.Count; i++)
                     {
@@ -270,7 +270,7 @@ namespace WeaponCore
                             {
                                 subLists.Add(subList);
                                 if (!_weaponSortingListPool.TryDequeue(out subList))
-                                    subList = new List<Part>();
+                                    subList = new List<Weapon>();
                             }
 
                             last = w;
@@ -369,7 +369,7 @@ namespace WeaponCore
             while (_weaponInfoListPool.TryDequeue(out removeList))
                 removeList.Clear();
 
-            List<List<Part>> removeList1;
+            List<List<Weapon>> removeList1;
             while (_weaponSubListsPool.TryDequeue(out removeList1))
             {
                 for (int i = 0; i < removeList1.Count; i++)

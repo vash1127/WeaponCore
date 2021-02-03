@@ -12,7 +12,7 @@ using static WeaponCore.Support.PartDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore.Platform
 {
-    public partial class Part
+    public partial class Weapon : Part
     {
         internal int NextMuzzle;
         internal volatile bool Casting;
@@ -22,10 +22,7 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
         
-        internal readonly CoreComponent Comp;
-        internal readonly CoreSystem System;
         internal readonly WeaponFrameCache WeaponCache;
-        internal readonly WeaponAcquire Acquire;
         internal readonly Target Target;
         internal readonly Target NewTarget;
         internal readonly PartInfo MuzzlePart;
@@ -36,9 +33,6 @@ namespace WeaponCore.Platform
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
-        internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
-        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
-        internal readonly uint WeaponCreatedTick;
 
         internal Action<object> CancelableReloadAction = (o) => {};
 
@@ -65,7 +59,6 @@ namespace WeaponCore.Platform
         
         internal float HeatPerc;
 
-        internal int ShortLoadId;
         internal int BarrelRate;
         internal int ArmorHits;
         internal int ShotsFired;
@@ -137,7 +130,6 @@ namespace WeaponCore.Platform
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
         internal uint LastLoadedTick;
-        internal uint WeaponReadyTick;
         internal uint OffDelay;
         internal uint ChargeUntilTick;
         internal uint ChargeDelayTicks;
@@ -147,10 +139,8 @@ namespace WeaponCore.Platform
         internal uint StopBarrelAvTick;
         internal int ProposedAmmoId = -1;
         internal int FireCounter;
-        internal int UniqueId;
         internal int RateOfFire;
         internal int BarrelSpinRate;
-        internal int WeaponId;
         internal int EnergyPriority;
         internal int LastBlockCount;
         internal int ClientStartId;
@@ -241,12 +231,10 @@ namespace WeaponCore.Platform
             internal ChangeType Change;
         }
 
-        internal Part(MyEntity entity, CoreSystem system, int weaponId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
+        internal Weapon(MyEntity entity, CoreSystem system, int partId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
 
-            System = system;
-            Comp = comp;
-            WeaponCreatedTick = System.Session.Tick;
+            base.Init(comp, system);
 
             AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
             foreach (var set in AnimationsSet) {
@@ -332,8 +320,8 @@ namespace WeaponCore.Platform
             if (System.Armor != HardwareType.BlockWeapon)
                 Comp.HasArmor = true;
 
-            WeaponId = weaponId;
-            PrimaryWeaponGroup = WeaponId % 2 == 0;
+            PartId = partId;
+            PrimaryWeaponGroup = PartId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;
             TurretMode = System.Values.HardPoint.Ai.TurretController;
             TrackTarget = System.Values.HardPoint.Ai.TrackTargets;
@@ -350,11 +338,11 @@ namespace WeaponCore.Platform
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
 
-            if (Comp.Platform.Structure.PrimaryWeapon ==  weaponId)
-                comp.TrackingPart = this;
+            if (Comp.Platform.Structure.PrimaryPart == partId)
+                comp.TrackingWeapon = this;
 
             if (IsTurret && !TrackTarget)
-                Target = comp.TrackingPart.Target;
+                Target = comp.TrackingWeapon.Target;
             else Target = new Target(this, true);
 
             _numOfBarrels = System.Barrels.Length;
@@ -364,7 +352,7 @@ namespace WeaponCore.Platform
             WeaponCache = new WeaponFrameCache(_numOfBarrels);
             NewTarget = new Target(this);
             RayCallBack = new ParallelRayCallBack(this);
-            Acquire = new WeaponAcquire(this);
+            Acquire = new PartAcquire(this);
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
@@ -379,8 +367,6 @@ namespace WeaponCore.Platform
             FuckMyLife();
             
             AiOnlyWeapon = Comp.BaseType != CoreComponent.BlockType.Turret || (Comp.BaseType == CoreComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
-            UniqueId = comp.Session.UniqueWeaponId;
-            ShortLoadId = comp.Session.ShortLoadAssigner();
 
             string ejectorMatch;
             MyEntity ejectorPart;
@@ -392,7 +378,20 @@ namespace WeaponCore.Platform
             if (System.HasScope && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Scope, System.AltScopeName, out scopePart, out scopeMatch))
                 Scope = new Dummy(scopePart, this, scopeMatch);
 
-            Monitors = Comp.Monitors[WeaponId];
+
+            comp.Platform.SetupUi(this);
+
+            if (!comp.Debug && System.Values.HardPoint.Other.Debug)
+                comp.Debug = true;
+
+            if (System.Values.HardPoint.Ai.TurretController)
+            {
+                if (System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingWeapon == null)
+                    comp.TrackingWeapon = this;
+
+                if (AvCapable && System.HardPointRotationSound)
+                    comp.Platform.RotationSound.Init(System.Values.HardPoint.Audio.HardPointRotationSound, false);
+            }
         }
 
         private void FuckMyLife()

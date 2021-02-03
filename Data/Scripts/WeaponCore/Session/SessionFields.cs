@@ -101,7 +101,7 @@ namespace WeaponCore
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
-        internal readonly MyConcurrentHashSet<Part> WeaponToPullAmmo = new MyConcurrentHashSet<Part>();
+        internal readonly MyConcurrentHashSet<Weapon> WeaponToPullAmmo = new MyConcurrentHashSet<Weapon>();
 
         internal readonly ConcurrentCachingList<CoreComponent> CompsToStart = new ConcurrentCachingList<CoreComponent>();
         internal readonly ConcurrentCachingList<Ai> DelayedAiClean = new ConcurrentCachingList<Ai>();
@@ -137,7 +137,7 @@ namespace WeaponCore
         internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>();
         internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
-        internal readonly Dictionary<Part, int> ChargingWeaponsIndexer = new Dictionary<Part, int>();
+        internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<PartDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<PartDefinition.AmmoDef, AmmoModifer>();
@@ -156,13 +156,13 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Part> WeaponLosDebugActive = new HashSet<Part>();
 
-        internal readonly List<Part> InvPullClean = new List<Part>();
-        internal readonly List<Part> InvRemoveClean = new List<Part>();
+        internal readonly List<Weapon> InvPullClean = new List<Weapon>();
+        internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<CoreComponent> CompsDelayed = new List<CoreComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();
         internal readonly List<Projectile> Hits = new List<Projectile>(16);
-        internal readonly List<Part> AcquireTargets = new List<Part>(128);
-        internal readonly List<Part> HomingWeapons = new List<Part>(128);
+        internal readonly List<Weapon> AcquireTargets = new List<Weapon>(128);
+        internal readonly List<Weapon> HomingWeapons = new List<Weapon>(128);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreArmorBlockDefs = new List<MyDefinitionId>();
@@ -171,13 +171,13 @@ namespace WeaponCore
 
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);
-        internal readonly List<Part> ShootingWeapons = new List<Part>(128);
+        internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
         internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
-        internal readonly List<Part> ChargingWeapons = new List<Part>(64);
+        internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly HashSet<Ai> GridsToUpdateInventories = new HashSet<Ai>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
@@ -404,7 +404,7 @@ namespace WeaponCore
             set { VoxelCachePool.Push(value); } 
         }
 
-        internal int UniqueWeaponId => WeaponIdCounter++;
+        internal int UniquePartId => WeaponIdCounter++;
 
         public static T CastProhibit<T>(T ptr, object val) => (T) val;
 

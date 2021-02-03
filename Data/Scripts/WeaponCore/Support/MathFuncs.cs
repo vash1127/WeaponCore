@@ -225,17 +225,17 @@ namespace WeaponCore.Support
             return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
         }
 
-        internal static bool WeaponLookAt(Part part, ref Vector3D targetDir, double targetDistSqr, bool setWeapon, bool canSeeOnly, out bool isTracking)
+        internal static bool WeaponLookAt(Weapon weapon, ref Vector3D targetDir, double targetDistSqr, bool setWeapon, bool canSeeOnly, out bool isTracking)
         {
-            var system = part.System;
-            var target = part.Target;
+            var system = weapon.System;
+            var target = weapon.Target;
             isTracking = false;
             //Get weapon direction and orientation
             Vector3D currentVector;
-            Vector3D.CreateFromAzimuthAndElevation(part.Azimuth, part.Elevation, out currentVector);
-            Vector3D.Rotate(ref currentVector, ref part.WeaponConstMatrix, out currentVector);
+            Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
+            Vector3D.Rotate(ref currentVector, ref weapon.WeaponConstMatrix, out currentVector);
 
-            var up = part.MyPivotUp;
+            var up = weapon.MyPivotUp;
             Vector3D left;
             Vector3D.Cross(ref up, ref currentVector, out left);
             if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left)) left.Normalize();
@@ -267,13 +267,13 @@ namespace WeaponCore.Support
             // return result of desired values being in tolerances
             if (canSeeOnly)
             {
-                if (part.Azimuth + desiredAzimuth > part.MaxAzToleranceRadians && part.MaxAzToleranceRadians < Math.PI)
+                if (weapon.Azimuth + desiredAzimuth > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
                     return false;
 
-                if (part.Azimuth + desiredAzimuth < part.MinAzToleranceRadians && part.MinAzToleranceRadians > -Math.PI)
+                if (weapon.Azimuth + desiredAzimuth < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > -Math.PI)
                     return false;
 
-                if (desiredElevation < part.MinElToleranceRadians || desiredElevation > part.MaxElToleranceRadians)
+                if (desiredElevation < weapon.MinElToleranceRadians || desiredElevation > weapon.MaxElToleranceRadians)
                     return false;
 
                 return true;
@@ -281,23 +281,23 @@ namespace WeaponCore.Support
 
             // check for backAround constraint
             double azToTraverse;
-            if (part.MaxAzToleranceRadians < Math.PI && part.MinAzToleranceRadians > -Math.PI) {
+            if (weapon.MaxAzToleranceRadians < Math.PI && weapon.MinAzToleranceRadians > -Math.PI) {
                 
-                var azAngle = part.Azimuth + desiredAzimuth;
+                var azAngle = weapon.Azimuth + desiredAzimuth;
                 if (azAngle > Math.PI) {
                     azAngle -= MathHelperD.TwoPi;
                 }
                 else if (azAngle < -Math.PI) {
                     azAngle = MathHelperD.TwoPi + azAngle;
                 }
-                azToTraverse = azAngle - part.Azimuth;
+                azToTraverse = azAngle - weapon.Azimuth;
             }
             else 
                 azToTraverse = desiredAzimuth;
 
             // Clamp step within limits.
             var azStep = MathHelperD.Clamp(azToTraverse, -system.AzStep, system.AzStep);
-            var elStep = MathHelperD.Clamp(desiredElevation - part.Elevation, -system.ElStep, system.ElStep);
+            var elStep = MathHelperD.Clamp(desiredElevation - weapon.Elevation, -system.ElStep, system.ElStep);
 
             // epsilon based on target type and distance
             var epsilon = target.IsProjectile || system.Session.Tick120 ? 1E-06d : targetDistSqr <= 640000 ? 1E-03d : targetDistSqr <= 3240000 ? 1E-04d : 1E-05d;
@@ -310,8 +310,8 @@ namespace WeaponCore.Support
             var locked = azLocked && elLocked;
 
             // Compute actual angle to rotate subparts
-            var az = part.Azimuth + azStep;
-            var el = part.Elevation + elStep;
+            var az = weapon.Azimuth + azStep;
+            var el = weapon.Elevation + elStep;
 
             // This is where we should clamp. az and el are measured relative the WorldMatrix.Forward.
             // desiredAzimuth is measured off of the CURRENT heading of the barrel. The limits are based off of
@@ -320,30 +320,30 @@ namespace WeaponCore.Support
             var elHitLimit = false;
 
             // Check azimuth angles
-            if (az > part.MaxAzToleranceRadians && part.MaxAzToleranceRadians < Math.PI)
+            if (az > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
             {
                 // Hit upper azimuth limit
-                az = part.MaxAzToleranceRadians;
+                az = weapon.MaxAzToleranceRadians;
                 azHitLimit = true;
             }
-            else if (az < part.MinAzToleranceRadians && part.MinAzToleranceRadians > -Math.PI)
+            else if (az < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > -Math.PI)
             {
                 // Hit lower azimuth limit
-                az = part.MinAzToleranceRadians;
+                az = weapon.MinAzToleranceRadians;
                 azHitLimit = true;
             }
 
             // Check elevation angles
-            if (el > part.MaxElToleranceRadians)
+            if (el > weapon.MaxElToleranceRadians)
             {
                 // Hit upper elevation limit
-                el = part.MaxElToleranceRadians;
+                el = weapon.MaxElToleranceRadians;
                 elHitLimit = true;
             }
-            else if (el < part.MinElToleranceRadians)
+            else if (el < weapon.MinElToleranceRadians)
             {
                 // Hit lower elevation limit
-                el = part.MinElToleranceRadians;
+                el = weapon.MinElToleranceRadians;
                 elHitLimit = true;
             }
 
@@ -356,13 +356,13 @@ namespace WeaponCore.Support
                 isTracking = tracking;
 
                 if (!azLocked) {
-                    part.Azimuth = az;
-                    part.AzimuthTick = system.Session.Tick;
+                    weapon.Azimuth = az;
+                    weapon.AzimuthTick = system.Session.Tick;
                 }
 
                 if (!elLocked) {
-                    part.Elevation = el;
-                    part.ElevationTick = system.Session.Tick;
+                    weapon.Elevation = el;
+                    weapon.ElevationTick = system.Session.Tick;
                 }
             }
 

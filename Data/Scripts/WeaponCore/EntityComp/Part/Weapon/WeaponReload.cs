@@ -7,7 +7,7 @@ using WeaponCore.Support;
 using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
 {
-    public partial class Part
+    public partial class Weapon : Part
     {
         internal void ChangeActiveAmmoServer()
         {

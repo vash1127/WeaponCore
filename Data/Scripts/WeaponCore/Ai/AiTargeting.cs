@@ -26,7 +26,7 @@ namespace WeaponCore.Support
 {
     public partial class Ai
     {
-        internal static void AcquireTarget(Part w, bool attemptReset, MyEntity targetGrid = null)
+        internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
             //w.HitOther = false;
             var targetType = TargetType.None;
@@ -59,7 +59,7 @@ namespace WeaponCore.Support
             {
                 Vector3D predictedPos;
                 FakeTarget dummyTarget;
-                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Part.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
+                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || w.Comp.IsBlock && !w.MuzzleHitSelf())
@@ -187,7 +187,7 @@ namespace WeaponCore.Support
             return acquired;
         }
 
-        private static void AcquireTopMostEntity(Part w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
+        private static void AcquireTopMostEntity(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
             var comp = w.Comp;
             var overRides = comp.Data.Repo.Base.Set.Overrides;
@@ -292,12 +292,12 @@ namespace WeaponCore.Support
                         if (!w.AiEnabled) {
 
                             var validEstimate = true;
-                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Part.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
+                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!validEstimate || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
                         }
-                        else if (!Part.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
+                        else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
 
                         if (w.Comp.Ai.FriendlyShieldNear) {
                             var targetDir = newCenter - weaponPos;
@@ -322,7 +322,7 @@ namespace WeaponCore.Support
 
                     if (character != null && (!s.TrackCharacters || !overRides.Biologicals || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
-                    if (!Part.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos, true, info.Target)) continue;
+                    if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos, true, info.Target)) continue;
 
                     if (w.Comp.Ai.FriendlyShieldNear)
                     {
@@ -364,7 +364,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(CoreSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Part w = null, bool checkPower = true)
+        private static bool AcquireBlock(CoreSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -403,7 +403,7 @@ namespace WeaponCore.Support
             return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);
         }
 
-        private static bool FindRandomBlock(CoreSystem system, Ai ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Part w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
+        private static bool FindRandomBlock(CoreSystem system, Ai ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -467,7 +467,7 @@ namespace WeaponCore.Support
                     blocksChecked++;
                     ai.Session.CanShoot++;
                     Vector3D predictedPos;
-                    if (!Part.CanShootTarget(w, ref blockPos, targetLinVel, targetAccel, out predictedPos)) continue;
+                    if (!Weapon.CanShootTarget(w, ref blockPos, targetLinVel, targetAccel, out predictedPos)) continue;
 
                     if (system.Session.WaterApiLoaded && waterSphere.Radius > 2 && waterSphere.Contains(predictedPos) != ContainmentType.Disjoint)
                         continue;
@@ -517,7 +517,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, Ai ai, Target target, TargetInfo info, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere ,Part w = null, bool checkPower = true)
+        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, Ai ai, Target target, TargetInfo info, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere , Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -565,7 +565,7 @@ namespace WeaponCore.Support
 
                             ai.Session.CanShoot++;
                             Vector3D predictedPos;
-                            if (Part.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
+                            if (Weapon.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
 
                                 ai.Session.ClosestRayCasts++;
                                 if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
@@ -675,7 +675,7 @@ namespace WeaponCore.Support
             return top5.Count > 0;
         }
 
-        internal static void AcquireProjectile(Part w, out TargetType targetType)
+        internal static void AcquireProjectile(Weapon w, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
             var s = w.System;
@@ -715,7 +715,7 @@ namespace WeaponCore.Support
                 if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && w.Comp.Ai.IsGrid && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.GridEntity)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, weaponPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, weaponPos) < w.MinTargetDistanceBufferSqr) continue;
 
                 Vector3D predictedPos;
-                if (Part.CanShootTarget(w, ref lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
+                if (Weapon.CanShootTarget(w, ref lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
                 {
                     var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)

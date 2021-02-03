@@ -62,6 +62,10 @@
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompRun.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Armor\ArmorFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\PartFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Upgrade\UpgradeFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\CoreSettings.cs" />
@@ -94,7 +98,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDamageMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionInventory.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\UnitDefinitions.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\PartDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\CoreStructure.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionJobs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionLocalPlayer.cs" />
@@ -115,15 +119,15 @@
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\CustomActions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\ModelSupport\PartInfo.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitReload.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitAv.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitController.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitState.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponReload.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponTypes.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponController.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\BlockUi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitTrigger.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Unit\UnitTracking.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponTrigger.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponTracking.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MiscTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionControls.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionFields.cs" />
@@ -247,6 +251,7 @@
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

@@ -67,7 +67,7 @@ namespace WeaponCore
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(Part w, AmmoValues sync)
+        public void Sync(Weapon w, AmmoValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -155,7 +155,7 @@ namespace WeaponCore
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
 
-        public void Sync(Part w, WeaponReloadValues sync)
+        public void Sync(Weapon w, WeaponReloadValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -164,7 +164,6 @@ namespace WeaponCore
                 EndId = sync.EndId;
 
                 w.ClientReload(true);
-
             }
         }
     }
@@ -239,8 +238,11 @@ namespace WeaponCore
                 PlayerId = sync.PlayerId;
                 Control = sync.Control;
                 TerminalAction = sync.TerminalAction;
-                for (int i = 0; i < sync.Weapons.Length; i++) 
-                    comp.Platform.Weapons[i].State.Sync(sync.Weapons[i]);
+                for (int i = 0; i < sync.Weapons.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    w.State.Sync(sync.Weapons[i]);
+                }
             }
             //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
@@ -292,17 +294,17 @@ namespace WeaponCore
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public long EntityId;
         [ProtoMember(3)] public Vector3 TargetPos;
-        [ProtoMember(4)] public int WeaponId;
+        [ProtoMember(4)] public int PartId;
         [ProtoMember(5)] public WeaponRandomGenerator WeaponRandom; // save
 
-        internal void SyncTarget(Part w)
+        internal void SyncTarget(Weapon w)
         {
             if (Revision > w.TargetData.Revision)
             {
                 w.TargetData.Revision = Revision;
                 w.TargetData.EntityId = EntityId;
                 w.TargetData.TargetPos = TargetPos;
-                w.WeaponId = WeaponId;
+                w.PartId = PartId;
                 w.TargetData.WeaponRandom.Sync(WeaponRandom);
 
                 var target = w.Target;
@@ -314,7 +316,7 @@ namespace WeaponCore
             //else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
         }
 
-        public void WeaponInit(Part w)
+        public void WeaponInit(Weapon w)
         {
             WeaponRandom.Init(w.UniqueId);
 
@@ -326,7 +328,7 @@ namespace WeaponCore
             rand.AcquireRandom = new Random(rand.CurrentSeed);
         }
 
-        public void WeaponRefreshClient(Part w)
+        public void PartRefreshClient(Weapon w)
         {
             try
             {

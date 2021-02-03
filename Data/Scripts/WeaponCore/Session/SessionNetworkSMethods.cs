@@ -158,7 +158,7 @@ namespace WeaponCore
                 mIds[(int) packet.PType] = packet.MId;
 
                 comp.Data.Repo.Base.State.PlayerId = cyclePacket.PlayerId;
-                comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
+                comp.Platform.Weapons[cyclePacket.PartId].ChangeAmmo(cyclePacket.NewAmmoId);
                 data.Report.PacketValid = true;
             }
             else Log.Line($"ServerAmmoCycleRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");

@@ -62,7 +62,7 @@ namespace WeaponCore.Support
             internal double OtherRangeSqr;
             internal bool SomethingInRange;
 
-            internal bool ValidTargetExists(Part w)
+            internal bool ValidTargetExists(Weapon w)
             {
                 var comp = w.Comp;
                 var ai = comp.Ai;

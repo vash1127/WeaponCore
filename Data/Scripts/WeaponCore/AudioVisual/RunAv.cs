@@ -369,7 +369,7 @@ namespace WeaponCore.Support
             for (int i = AvBarrels1.Count - 1; i >= 0; i--) {
 
                 var avBarrel = AvBarrels1[i];
-                var weapon = avBarrel.Part;
+                var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
                 var bAv = weapon.System.Values.HardPoint.Graphics.Barrel1;
@@ -444,7 +444,7 @@ namespace WeaponCore.Support
         {
             for (int i = AvBarrels2.Count - 1; i >= 0; i--) {
                 var avBarrel = AvBarrels2[i];
-                var weapon = avBarrel.Part;
+                var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
                 try
                 {
@@ -525,14 +525,14 @@ namespace WeaponCore.Support
 
     internal class AvBarrel
     {
-        internal Part Part;
-        internal Part.Muzzle Muzzle;
+        internal Weapon Weapon;
+        internal Weapon.Muzzle Muzzle;
         internal uint StartTick;
         internal uint EndTick;
 
         internal void Clean()
         {
-            Part = null;
+            Weapon = null;
             Muzzle = null;
             StartTick = 0;
             EndTick = 0;

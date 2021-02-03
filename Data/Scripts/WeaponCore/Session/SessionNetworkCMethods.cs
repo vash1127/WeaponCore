@@ -175,7 +175,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<CoreComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
             
-            var w = comp.Platform.Weapons[weaponReloadPacket.WeaponId];
+            var w = comp.Platform.Weapons[weaponReloadPacket.PartId];
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
@@ -196,7 +196,7 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready ) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            var w = comp.Platform.Weapons[targetPacket.Target.WeaponId];
+            var w = comp.Platform.Weapons[targetPacket.Target.PartId];
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
@@ -217,7 +217,7 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            var w = comp.Platform.Weapons[ammoPacket.WeaponId];
+            var w = comp.Platform.Weapons[ammoPacket.PartId];
             if (w.MIds[(int)packet.PType] < packet.MId) {
                 w.MIds[(int)packet.PType] = packet.MId;
 
@@ -376,7 +376,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<CoreComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            var w = comp.Platform.Weapons[queueShot.WeaponId];
+            var w = comp.Platform.Weapons[queueShot.PartId];
             w.ShootOnce = true;
             if (PlayerId == queueShot.PlayerId)
                 w.ClientStaticShot = true;

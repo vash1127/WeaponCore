@@ -14,7 +14,7 @@ using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.CoreComponent;
 namespace WeaponCore.Platform
 {
-    public partial class Part
+    public partial class Weapon : Part
     {
         internal void Shoot() // Inlined due to keens mod profiler
         {
@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
                 #endregion
 
                 #region Projectile Creation
-                var rnd = Comp.Data.Repo.Base.Targets[WeaponId].WeaponRandom;
+                var rnd = Comp.Data.Repo.Base.Targets[PartId].WeaponRandom;
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;
@@ -139,7 +139,7 @@ namespace WeaponCore.Platform
 
                             muzzle.LastAv1Tick = tick;
                             var avBarrel = s.Av.AvBarrelPool.Get();
-                            avBarrel.Part = this;
+                            avBarrel.Weapon = this;
                             avBarrel.Muzzle = muzzle;
                             avBarrel.StartTick = tick;
                             s.Av.AvBarrels1.Add(avBarrel);
@@ -148,7 +148,7 @@ namespace WeaponCore.Platform
 
                             muzzle.LastAv2Tick = tick;
                             var avBarrel = s.Av.AvBarrelPool.Get();
-                            avBarrel.Part = this;
+                            avBarrel.Weapon = this;
                             avBarrel.Muzzle = muzzle;
                             avBarrel.StartTick = tick;
                             s.Av.AvBarrels2.Add(avBarrel);
@@ -385,7 +385,9 @@ namespace WeaponCore.Platform
             State.Action = TriggerActions.TriggerOff;
             var hasShot = false;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
-                if (Comp.Platform.Weapons[i].ShootOnce)
+                var w = Comp.Platform.Weapons[i];
+
+                if (w.ShootOnce)
                     hasShot = true;
             }
             return !hasShot;

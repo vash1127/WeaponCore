@@ -56,25 +56,25 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{CoreEntity.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
 
-        private void DpsAndHeatInit(Part part, out double maxTrajectory)
+        private void DpsAndHeatInit(Weapon weapon, out double maxTrajectory)
         {
-            MaxHeat += part.System.MaxHeat;
+            MaxHeat += weapon.System.MaxHeat;
 
-            part.RateOfFire = (int)(part.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
-            part.BarrelSpinRate = (int)(part.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
-            HeatSinkRate += part.HsRate;
+            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
+            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
+            HeatSinkRate += weapon.HsRate;
 
-            if (part.System.HasBarrelRotation) part.UpdateBarrelRotation();
+            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
 
-            if (part.RateOfFire < 1)
-                part.RateOfFire = 1;
+            if (weapon.RateOfFire < 1)
+                weapon.RateOfFire = 1;
 
-            part.SetWeaponDps();
+            weapon.SetWeaponDps();
 
-            if (!part.System.DesignatorWeapon)
+            if (!weapon.System.DesignatorWeapon)
             {
-                var patternSize = part.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
-                foreach (var ammo in part.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
+                var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
+                foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
                 {
                     PeakDps += ammo.Const.PeakDps / (float) patternSize;
                     EffectiveDps += ammo.Const.EffectiveDps / (float) patternSize;
@@ -86,10 +86,10 @@ namespace WeaponCore.Support
             }
 
             maxTrajectory = 0;
-            if (part.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
-                maxTrajectory = part.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+            if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
+                maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
-            if (part.System.TrackProjectile)
+            if (weapon.System.TrackProjectile)
                 Ai.PointDefense = true;
         }
 

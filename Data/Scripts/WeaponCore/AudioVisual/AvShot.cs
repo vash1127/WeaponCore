@@ -175,7 +175,7 @@ namespace WeaponCore.Support
             MaxTracerLength = info.TracerLength;
             MuzzleId = info.MuzzleId;
             UniqueMuzzleId = info.UniqueMuzzleId;
-            WeaponId = info.WeaponId;
+            WeaponId = info.PartId;
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;

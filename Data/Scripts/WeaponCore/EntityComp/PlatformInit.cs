@@ -17,7 +17,10 @@ namespace WeaponCore.Platform
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
-        internal Part[] Weapons = new Part[1];
+        internal Weapon[] Weapons = new Weapon[1];
+        internal Armor[] Armors = new Armor[1];
+        internal Upgrade[] Upgrades = new Upgrade[1];
+        internal Phantom[] Phantoms = new Phantom[1];
         internal CoreStructure Structure;
         internal CoreComponent Comp;
         internal PlatformState State;
@@ -51,6 +54,10 @@ namespace WeaponCore.Platform
         internal void Clean()
         {
             for (int i = 0; i < Weapons.Length; i++) Weapons[i] = null;
+            for (int i = 0; i < Armors.Length; i++) Armors[i] = null;
+            for (int i = 0; i < Upgrades.Length; i++) Upgrades[i] = null;
+            for (int i = 0; i < Phantoms.Length; i++) Phantoms[i] = null;
+
             Parts.Clean(null);
             Structure = null;
             State = PlatformState.Fresh;
@@ -109,8 +116,8 @@ namespace WeaponCore.Platform
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
                 _orderToCreate.Add(i);
 
-            if (Structure.PrimaryWeapon > 0) {
-                var tmpPos = _orderToCreate[Structure.PrimaryWeapon];
+            if (Structure.PrimaryPart > 0) {
+                var tmpPos = _orderToCreate[Structure.PrimaryPart];
                 _orderToCreate[tmpPos] = _orderToCreate[0];
                 _orderToCreate[0] = tmpPos;
             }
@@ -150,20 +157,8 @@ namespace WeaponCore.Platform
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
 
-                var weapon = Weapons[i] = new Part(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
-                
-                SetupUi(weapon);
+                Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
 
-                if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
-                    comp.Debug = true;
-
-                if (weapon.System.Values.HardPoint.Ai.TurretController) {
-                    if (weapon.System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingPart == null)
-                        comp.TrackingPart = weapon;
-
-                    if (weapon.AvCapable && weapon.System.HardPointRotationSound)
-                        RotationSound.Init(weapon.System.Values.HardPoint.Audio.HardPointRotationSound, false);
-                }
             }
             _orderToCreate.Clear();
 
@@ -324,7 +319,7 @@ namespace WeaponCore.Platform
                         if (weapon.Muzzles[i] == null)
                         {
                             weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, weapon, barrel);
-                            weapon.Muzzles[i] = new Muzzle(weapon, i, comp.Session);
+                            weapon.Muzzles[i] = new Weapon.Muzzle(weapon, i, comp.Session);
                         }
                         else
                             weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
@@ -547,7 +542,7 @@ namespace WeaponCore.Platform
             comp.Status = Stopped;
         }
 
-        internal void SetupUi(Part w)
+        internal void SetupUi(Weapon w)
         {
             var ui = w.System.Values.HardPoint.Ui;
             w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || ui.ToggleGuidance;
@@ -562,7 +557,7 @@ namespace WeaponCore.Platform
                 w.Comp.UiEnabled = true;
 
             if (w.System.HasAmmoSelection)
-                w.Comp.AmmoSelectionWeaponIds.Add(w.WeaponId);
+                w.Comp.AmmoSelectionWeaponIds.Add(w.PartId);
 
             foreach (var m in w.System.Values.Assignments.MountPoints) {
                 if (m.SubtypeId == Comp.SubTypeId.String && !string.IsNullOrEmpty(m.IconName)) {

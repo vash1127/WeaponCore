@@ -1161,7 +1161,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
-        public readonly int PrimaryWeapon;
+        public readonly int PrimaryPart;
         public readonly string ModPath;
         public readonly Session Session;
 
@@ -1176,7 +1176,7 @@ namespace WeaponCore.Support
             var weaponId = 0;
             WeaponSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
             HashToId = new Dictionary<int, int>();
-            PrimaryWeapon = -1;
+            PrimaryPart = -1;
             var gridWeaponCap = 0;
             foreach (var w in map)
             {
@@ -1195,8 +1195,8 @@ namespace WeaponCore.Support
                 if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
                 else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
 
-                if (weaponDef.HardPoint.Ai.PrimaryTracking && PrimaryWeapon < 0)
-                    PrimaryWeapon = weaponId;
+                if (weaponDef.HardPoint.Ai.PrimaryTracking && PrimaryPart < 0)
+                    PrimaryPart = weaponId;
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
                 
@@ -1237,8 +1237,8 @@ namespace WeaponCore.Support
                 WeaponSystems.Add(myMuzzleNameHash, new CoreSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
                 weaponId++;
             }
-            if (PrimaryWeapon == -1)
-                PrimaryWeapon = 0;
+            if (PrimaryPart == -1)
+                PrimaryPart = 0;
             
             GridWeaponCap = gridWeaponCap;
             MuzzlePartNames = muzzlePartNames;

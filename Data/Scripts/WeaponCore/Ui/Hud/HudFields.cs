@@ -33,10 +33,10 @@ namespace WeaponCore
         private readonly MyConcurrentPool<TextData> _textDataPool = new MyConcurrentPool<TextData>(128);
         private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
         private readonly ConcurrentQueue<TextDrawRequest> _textDrawPool = new ConcurrentQueue<TextDrawRequest>();
-        private readonly Queue<List<Part>> _weaponSortingListPool = new Queue<List<Part>>(InitialPoolCapacity);
+        private readonly Queue<List<Weapon>> _weaponSortingListPool = new Queue<List<Weapon>>(InitialPoolCapacity);
         private readonly Queue<StackedWeaponInfo> _weaponStackedInfoPool = new Queue<StackedWeaponInfo>(InitialPoolCapacity);
         private readonly Queue<List<StackedWeaponInfo>> _weaponInfoListPool = new Queue<List<StackedWeaponInfo>>(InitialPoolCapacity);
-        private readonly Queue<List<List<Part>>> _weaponSubListsPool = new Queue<List<List<Part>>>(InitialPoolCapacity);
+        private readonly Queue<List<List<Weapon>>> _weaponSubListsPool = new Queue<List<List<Weapon>>>(InitialPoolCapacity);
         private readonly List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
         private readonly List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
         private readonly List<TextureDrawData> _drawList = new List<TextureDrawData>(InitialPoolCapacity);
@@ -90,7 +90,7 @@ namespace WeaponCore
         ///
 
         internal readonly Dictionary<FontType, Dictionary<char, TextureMap>> CharacterMap;
-        internal readonly List<Part> WeaponsToDisplay = new List<Part>(128);
+        internal readonly List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
@@ -137,10 +137,10 @@ namespace WeaponCore
             {
                 _textureDrawPool.Enqueue(new TextureDrawData() { Position = new Vector3D(), Blend = PostPP });
                 _textDrawPool.Enqueue(new TextDrawRequest() { Position = new Vector3D() });
-                _weaponSortingListPool.Enqueue(new List<Part>());
+                _weaponSortingListPool.Enqueue(new List<Weapon>());
                 _weaponStackedInfoPool.Enqueue(new StackedWeaponInfo());
                 _weaponInfoListPool.Enqueue(new List<StackedWeaponInfo>());
-                _weaponSubListsPool.Enqueue(new List<List<Part>>());
+                _weaponSubListsPool.Enqueue(new List<List<Weapon>>());
             }
         }
 
@@ -205,7 +205,7 @@ namespace WeaponCore
 
         internal class StackedWeaponInfo
         {
-            internal Part HighestValuePart;
+            internal Weapon HighestValuePart;
             internal int WeaponStack;
             internal TextureDrawData CachedReloadTexture;
             internal TextureDrawData CachedHeatTexture;

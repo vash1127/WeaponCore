@@ -109,7 +109,7 @@ namespace WeaponCore
                         magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
 
                         var ammoPullRequests = InventoryMoveRequestPool.Get();
-                        ammoPullRequests.Part = weapon;
+                        ammoPullRequests.Weapon = weapon;
                         var magsAdded = 0;
                         var logged = 0;
 
@@ -187,7 +187,7 @@ namespace WeaponCore
             for (int i = 0; i < AmmoToPullQueue.Count; i++) {
                 
                 var weaponAmmoToPull = AmmoToPullQueue[i];
-                var weapon = weaponAmmoToPull.Part;
+                var weapon = weaponAmmoToPull.Weapon;
                 var inventoriesToPull = weaponAmmoToPull.Inventories;
                 
                 if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != CorePlatform.PlatformState.Ready) {

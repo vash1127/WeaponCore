@@ -9,7 +9,7 @@ using static WeaponCore.Support.CoreComponent;
 
 namespace WeaponCore.Platform
 {
-    public partial class Part
+    public partial class Weapon : Part
     {
         public void AimBarrel()
         {
@@ -254,7 +254,7 @@ namespace WeaponCore.Platform
                     LastHeatUpdateTick = 0;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null} - Value:{Comp.Data.Repo == null} - Weapons:{Comp.Data.Repo?.Base.State.Weapons[WeaponId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null} - Value:{Comp.Data.Repo == null} - Weapons:{Comp.Data.Repo?.Base.State.Weapons[PartId] == null}"); }
         }
 
         internal void UpdateRof()

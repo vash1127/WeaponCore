@@ -425,7 +425,7 @@ namespace WeaponCore
                     },
                     {"WeaponReadyTick", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.System.Session.Tick - w.WeaponReadyTick}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.System.Session.Tick - w.PartReadyTick}"); }
                     },
                     {"Charging", () => {
                             var message = string.Empty;
@@ -676,11 +676,11 @@ namespace WeaponCore
         internal class AcquireManager
         {
             internal Session Session;
-            internal readonly HashSet<WeaponAcquire> MonitorState = new HashSet<WeaponAcquire>();
-            internal readonly HashSet<WeaponAcquire> Asleep = new HashSet<WeaponAcquire>();
+            internal readonly HashSet<PartAcquire> MonitorState = new HashSet<PartAcquire>();
+            internal readonly HashSet<PartAcquire> Asleep = new HashSet<PartAcquire>();
 
-            internal readonly List<WeaponAcquire> Collector = new List<WeaponAcquire>();
-            internal readonly List<WeaponAcquire> ToRemove = new List<WeaponAcquire>();
+            internal readonly List<PartAcquire> Collector = new List<PartAcquire>();
+            internal readonly List<PartAcquire> ToRemove = new List<PartAcquire>();
 
             internal int LastSleepSlot = -1;
             internal int LastAwakeSlot = -1;
@@ -692,7 +692,7 @@ namespace WeaponCore
                 Session = session;
             }
 
-            internal void Refresh(WeaponAcquire wa)
+            internal void Refresh(PartAcquire wa)
             {
                 wa.CreatedTick = Session.Tick;
 
@@ -702,7 +702,7 @@ namespace WeaponCore
                 Monitor(wa);
             }
 
-            internal void Monitor(WeaponAcquire wa)
+            internal void Monitor(PartAcquire wa)
             {
                 wa.Monitoring = true;
                 wa.IsSleeping = false;
@@ -721,7 +721,9 @@ namespace WeaponCore
             {
                 foreach (var wa in MonitorState) {
 
-                    if (wa.Part.Target.HasTarget) {
+                    var w = wa.Part as Weapon;
+
+                    if (w != null && w.Target.HasTarget || w == null) {
                         ToRemove.Add(wa);
                         continue;
                     }
@@ -752,7 +754,9 @@ namespace WeaponCore
             {
                 foreach (var wa in Asleep) {
 
-                    var remove = wa.Part.Target.HasTarget || wa.Part.Comp.IsAsleep || !wa.Part.Comp.IsWorking || !wa.Part.TrackTarget;
+                    var w = wa.Part as Weapon;
+
+                    var remove = w != null && (w.Target.HasTarget || !w.TrackTarget) || wa.Part.Comp.IsAsleep || !wa.Part.Comp.IsWorking || w == null;
 
                     if (remove) {
                         ToRemove.Add(wa);
@@ -789,7 +793,7 @@ namespace WeaponCore
                 ToRemove.Clear();
             }
 
-            static void ShellSort(List<WeaponAcquire> list)
+            static void ShellSort(List<PartAcquire> list)
             {
                 int length = list.Count;
 
@@ -847,12 +851,12 @@ namespace WeaponCore
 
         public class WeaponAmmoMoveRequest
         {
-            public Part Part;
+            public Weapon Weapon;
             public List<InventoryMags> Inventories = new List<InventoryMags>();
 
             public void Clean()
             {
-                Part = null;
+                Weapon = null;
                 Inventories.Clear();
             }
         }

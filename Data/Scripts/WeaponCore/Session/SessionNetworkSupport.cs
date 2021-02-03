@@ -183,7 +183,7 @@ namespace WeaponCore
             else Log.Line($"SendAiData should never be called on Client");
         }
 
-        internal void SendWeaponAmmoData(Part w)
+        internal void SendWeaponAmmoData(Weapon w)
         {
             if (IsServer) {
 
@@ -205,7 +205,7 @@ namespace WeaponCore
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
                     iPacket.Data = w.Ammo;
-                    iPacket.WeaponId = w.WeaponId;
+                    iPacket.PartId = w.PartId;
                 }
 
 
@@ -249,7 +249,7 @@ namespace WeaponCore
             else Log.Line($"SendCompData should never be called on Client");
         }
 
-        internal void SendTargetChange(CoreComponent comp, int weaponId)
+        internal void SendTargetChange(CoreComponent comp, int partId)
         {
             if (IsServer) {
 
@@ -258,7 +258,7 @@ namespace WeaponCore
                     const PacketType type = PacketType.TargetChange;
                     comp.Data.Repo.Base.UpdateCompBasePacketInfo(comp);
 
-                    var w = comp.Platform.Weapons[weaponId];
+                    var w = comp.Platform.Weapons[partId];
                     PacketInfo oldInfo;
                     TargetPacket iPacket;
                     if (PrunedPacketsToClient.TryGetValue(w.TargetData, out oldInfo)) {
@@ -324,7 +324,7 @@ namespace WeaponCore
             else Log.Line($"SendCompState should never be called on Client");
         }
 
-        internal void SendWeaponReload(Part w)
+        internal void SendWeaponReload(Weapon w)
         {
             if (IsServer) {
 
@@ -347,7 +347,7 @@ namespace WeaponCore
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
                         iPacket.Data = w.Reload;
-                        iPacket.WeaponId = w.WeaponId;
+                        iPacket.PartId = w.PartId;
                     }
 
                     PrunedPacketsToClient[w.Reload] = new PacketInfo {
@@ -859,7 +859,7 @@ namespace WeaponCore
             else Log.Line($"SendPlayerControlRequest should never be called on Server");
         }
 
-        internal void SendQueuedShot(Part w)
+        internal void SendQueuedShot(Weapon w)
         {
             if (IsServer)
             {
@@ -872,7 +872,7 @@ namespace WeaponCore
                         EntityId = w.Comp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
-                        WeaponId = w.WeaponId,
+                        PartId = w.PartId,
                         PlayerId = w.Comp.Data.Repo.Base.State.PlayerId,
                     }
                 });
@@ -880,7 +880,7 @@ namespace WeaponCore
             else Log.Line($"SendAmmoCycleRequest should never be called on Client");
         }
 
-        internal void SendAmmoCycleRequest(Part w, int newAmmoId)
+        internal void SendAmmoCycleRequest(Weapon w, int newAmmoId)
         {
             if (IsClient)
             {
@@ -893,7 +893,7 @@ namespace WeaponCore
                         EntityId = w.Comp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.AmmoCycleRequest,
-                        WeaponId = w.WeaponId,
+                        PartId = w.PartId,
                         NewAmmoId = newAmmoId,
                         PlayerId = PlayerId,
                     });

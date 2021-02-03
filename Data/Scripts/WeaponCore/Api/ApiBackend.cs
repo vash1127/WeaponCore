@@ -663,7 +663,7 @@ namespace WeaponCore.Api
                 w.NewTarget.TargetEntity = (MyEntity) targetEnt;
 
                 Vector3D targetPos;
-                return Part.TargetAligned(w, w.NewTarget, out targetPos);
+                return Weapon.TargetAligned(w, w.NewTarget, out targetPos);
             }
             return false;
         }
@@ -678,7 +678,7 @@ namespace WeaponCore.Api
                 w.NewTarget.TargetEntity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                var targetAligned = Part.TargetAligned(w, w.NewTarget, out targetPos);
+                var targetAligned = Weapon.TargetAligned(w, w.NewTarget, out targetPos);
                 
                 return new MyTuple<bool, Vector3D?>(targetAligned, targetAligned ? targetPos : (Vector3D?)null);
             }
@@ -695,7 +695,7 @@ namespace WeaponCore.Api
                 var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
                 var targetAccel = topMost.Physics?.AngularAcceleration ?? Vector3.Zero;
                 Vector3D predictedPos;
-                return Part.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
+                return Weapon.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
             }
             return false;
         }
@@ -709,7 +709,7 @@ namespace WeaponCore.Api
                 w.NewTarget.TargetEntity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                Part.TargetAligned(w, w.NewTarget, out targetPos);
+                Weapon.TargetAligned(w, w.NewTarget, out targetPos);
                 return targetPos;
             }
             return null;

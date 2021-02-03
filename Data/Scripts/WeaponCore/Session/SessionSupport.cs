@@ -609,7 +609,7 @@ namespace WeaponCore
             return radius;
         }
 
-        public void WeaponDebug(Part w)
+        public void WeaponDebug(Weapon w)
         {
             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Red, 0.05f);
             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Blue, 0.05f);
@@ -653,14 +653,14 @@ namespace WeaponCore
             return false;
         }
 
-        internal void NewThreatLogging(Part u)
+        internal void NewThreatLogging(Weapon w)
         {
             try
             {
-                var topmost = u.Target.TargetEntity.GetTopMostParent();
-                var ownerId = u.Comp.IsBlock ? u.Comp.Cube.OwnerId : u.Comp.GunBase.OwnerId;
+                var topmost = w.Target.TargetEntity.GetTopMostParent();
+                var ownerId = w.Comp.IsBlock ? w.Comp.Cube.OwnerId : w.Comp.GunBase.OwnerId;
                 Ai.TargetInfo info;
-                if (topmost != null && u.Comp.Ai.PreviousTargets.Add(topmost) && u.Comp.Ai.Targets.TryGetValue(topmost, out info))
+                if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
                 {
                     IMyPlayer weaponOwner;
                     Players.TryGetValue(ownerId, out weaponOwner);
@@ -669,14 +669,14 @@ namespace WeaponCore
                     var wFaction = weaponFaction != null && !string.IsNullOrEmpty(weaponFaction.Name) ? $"{weaponFaction.Name}({weaponFaction.FactionId})" : $"NA";
 
                     IMyPlayer aiOwner;
-                    Players.TryGetValue(u.Comp.Ai.AiOwner, out aiOwner);
-                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({u.Comp.Ai.AiOwner})" : $"{u.Comp.Ai.AiOwner}";
-                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(u.Comp.Ai.AiOwner);
+                    Players.TryGetValue(w.Comp.Ai.AiOwner, out aiOwner);
+                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({w.Comp.Ai.AiOwner})" : $"{w.Comp.Ai.AiOwner}";
+                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.Comp.Ai.AiOwner);
                     var aFaction = aiFaction != null && !string.IsNullOrEmpty(aiFaction.Name) ? $"{aiFaction.Name}({aiFaction.FactionId})" : $"NA";
 
-                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {u.Comp.Ai.TopEntity.DebugName}" +
-                             $"Attacking Weapon:{u.System.WeaponName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{u.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{u.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{u.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
-                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{u.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
+                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {w.Comp.Ai.TopEntity.DebugName}" +
+                             $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
+                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
                 }
             }
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }
