@@ -11,7 +11,7 @@ namespace WeaponCore.Platform
     {
         public void PlayEmissives(PartAnimation animation)
         {
-            EmissiveState lastEmissive = new EmissiveState();
+            EmissiveState LastEmissive = new EmissiveState();
             for (int i = 0; i < animation.MoveToSetIndexer.Length; i++)
             {
                 EmissiveState currentEmissive;
@@ -19,10 +19,10 @@ namespace WeaponCore.Platform
                 {
                     currentEmissive.CurrentPart = animation.CurrentEmissivePart[animation.MoveToSetIndexer[i][(int)Indexer.EmissivePartIndex]];
 
-                    if (currentEmissive.EmissiveParts != null && lastEmissive.EmissiveParts != null && currentEmissive.CurrentPart == lastEmissive.CurrentPart && currentEmissive.CurrentColor == lastEmissive.CurrentColor && Math.Abs(currentEmissive.CurrentIntensity - lastEmissive.CurrentIntensity) < 0.001)
+                    if (currentEmissive.EmissiveParts != null && LastEmissive.EmissiveParts != null && currentEmissive.CurrentPart == LastEmissive.CurrentPart && currentEmissive.CurrentColor == LastEmissive.CurrentColor && Math.Abs(currentEmissive.CurrentIntensity - LastEmissive.CurrentIntensity) < 0.001)
                         currentEmissive = new EmissiveState();
 
-                    lastEmissive = currentEmissive;
+                    LastEmissive = currentEmissive;
 
 
                     if (currentEmissive.EmissiveParts != null && currentEmissive.EmissiveParts.Length > 0)
