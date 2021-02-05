@@ -300,7 +300,7 @@ namespace WeaponCore.Control
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_CycleAmmo");
             action.Icon = session.ModPath() + @"\Textures\GUI\Icons\Actions\Cycle_Ammo.dds";
-            action.Name = new StringBuilder("Cycle Ammo");
+            action.Name = new StringBuilder("Cycle Consumable");
             action.Action = CustomActions.TerminalActionCycleAmmo;
             action.Writer = CustomActions.AmmoSelectionWriter;
             action.Enabled = TerminalHelpers.AmmoSelection;

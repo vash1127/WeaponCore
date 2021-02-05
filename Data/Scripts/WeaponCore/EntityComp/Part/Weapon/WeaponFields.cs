@@ -60,7 +60,6 @@ namespace WeaponCore.Platform
         internal float HeatPerc;
 
         internal int BarrelRate;
-        internal int ArmorHits;
         internal int ShotsFired;
         internal int LastMuzzle;
         internal int MiddleMuzzleIndex;
@@ -89,8 +88,8 @@ namespace WeaponCore.Platform
 
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
-        internal MyParticleEffect[] BarrelEffects1;
-        internal MyParticleEffect[] BarrelEffects2;
+        internal MyParticleEffect[] Effects1;
+        internal MyParticleEffect[] Effects2;
         internal MyParticleEffect[] HitEffects;
         internal MySoundPair ReloadSound;
         internal MySoundPair PreFiringSound;
@@ -100,7 +99,7 @@ namespace WeaponCore.Platform
         internal WeaponReloadValues Reload;
         internal TransferTarget TargetData;
         internal AmmoValues Ammo;
-        internal CoreSystem.ConsumableTypes ActiveAmmoDef;
+        internal CoreSystem.AmmoType ActiveAmmoDef;
         internal int[] AmmoShufflePattern = {0};
         internal ParallelRayCallBack RayCallBack;
 
@@ -234,7 +233,7 @@ namespace WeaponCore.Platform
         internal Weapon(MyEntity entity, CoreSystem system, int partId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
 
-            base.Init(comp, system);
+            base.Init(comp, system, partId);
             AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
             foreach (var set in AnimationsSet) {
                 foreach (var pa in set.Value) {
@@ -275,7 +274,7 @@ namespace WeaponCore.Platform
                 FiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
                 FiringEmitter.CanPlayLoopSounds = true;
                 FiringEmitter.Entity = Comp.CoreEntity;
-                FiringSound = System.FireWhenDonePairs.Count > 0 ? System.FireWhenDonePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
+                FiringSound = System.FireWhenDonePairs.Count > 0 ? System.FireWhenDonePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.TriggerSound, false);
             }
 
             if (AvCapable && system.PreFireSound)
@@ -284,7 +283,7 @@ namespace WeaponCore.Platform
                 PreFiringEmitter.CanPlayLoopSounds = true;
 
                 PreFiringEmitter.Entity = Comp.CoreEntity;
-                PreFiringSound = System.PreFirePairs.Count > 0 ? System.PreFirePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.PreFiringSound, false);
+                PreFiringSound = System.PreFirePairs.Count > 0 ? System.PreFirePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.PreTriggerSound, false);
             }
 
             if (AvCapable && system.WeaponReloadSound)
@@ -293,7 +292,7 @@ namespace WeaponCore.Platform
                 ReloadEmitter.CanPlayLoopSounds = true;
 
                 ReloadEmitter.Entity = Comp.CoreEntity;
-                ReloadSound = System.ReloadPairs.Count > 0 ? System.ReloadPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.ReloadSound, false);
+                ReloadSound = System.ReloadPairs.Count > 0 ? System.ReloadPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.ReChargeSound, false);
             }
 
             if (AvCapable && system.BarrelRotationSound)
@@ -308,14 +307,13 @@ namespace WeaponCore.Platform
             if (AvCapable)
             {
                 if (System.BarrelEffect1)
-                    BarrelEffects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                    Effects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
                 if (System.BarrelEffect2)
-                    BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                    Effects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
                 if (hitParticle && CanUseBeams)
                     HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
-            PartId = partId;
             PrimaryWeaponGroup = PartId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;
             TurretMode = System.Values.HardPoint.Ai.TurretController;

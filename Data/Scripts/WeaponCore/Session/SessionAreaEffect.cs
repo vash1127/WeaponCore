@@ -248,7 +248,7 @@ namespace WeaponCore
                         blockState.NextTick = nextTick;
                         blockState.Endtick = Tick + (duration + 1);
                         blockState.Session = this;
-                        blockState.AmmoDef = ammoDef;
+                        blockState.AmmoDefDef = ammoDef;
                         if (!blockDisabled) blockState.Health = blockHp - scaledDamage;
                         else
                         {
@@ -304,7 +304,7 @@ namespace WeaponCore
                             functBlock.RefreshCustomInfo();
                         }
 
-                        if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                        if (!blockInfo.AmmoDefDef.AreaEffect.EwarFields.DisableParticleEffect)
                             functBlock.SetDamageEffect(true);
                     }
                 }
@@ -321,7 +321,7 @@ namespace WeaponCore
                             functBlock.EnabledChanged -= ForceDisable;
                             functBlock.Enabled = blockInfo.FirstState;
                             
-                            if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                            if (!blockInfo.AmmoDefDef.AreaEffect.EwarFields.DisableParticleEffect)
                                 functBlock.SetDamageEffect(false);
 
                             _effectPurge.Enqueue(cubeid);
@@ -339,7 +339,7 @@ namespace WeaponCore
 
                     functBlock.Enabled = blockInfo.FirstState;
                     
-                    if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                    if (!blockInfo.AmmoDefDef.AreaEffect.EwarFields.DisableParticleEffect)
                         functBlock.SetDamageEffect(false);
 
                     _effectPurge.Enqueue(cubeid);
@@ -416,7 +416,7 @@ namespace WeaponCore
     internal struct BlockState
     {
         public Session Session;
-        public AmmoDef AmmoDef;
+        public AmmoDef AmmoDefDef;
         public IMyFunctionalBlock FunctBlock;
         public bool FirstState;
         public uint FirstTick;

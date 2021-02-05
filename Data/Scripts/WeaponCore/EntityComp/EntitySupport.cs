@@ -149,17 +149,17 @@ namespace WeaponCore.Support
                             w.HitEffects[i].Stop();
                             w.HitEffects[i] = null;
                         }
-                        if (w.BarrelEffects1?[i] != null)
+                        if (w.Effects1?[i] != null)
                         {
-                            Log.Line($"[Clean BarrelEffects1] Weapon:{w.System.PartName} - Particle:{w.BarrelEffects1[i].GetName()}");
-                            w.BarrelEffects1[i].Stop();
-                            w.BarrelEffects1[i] = null;
+                            Log.Line($"[Clean Effects1] Weapon:{w.System.PartName} - Particle:{w.Effects1[i].GetName()}");
+                            w.Effects1[i].Stop();
+                            w.Effects1[i] = null;
                         }
-                        if (w.BarrelEffects2?[i] != null)
+                        if (w.Effects2?[i] != null)
                         {
-                            Log.Line($"[Clean BarrelEffects2] Weapon:{w.System.PartName} - Particle:{ w.BarrelEffects2[i].GetName()}");
-                            w.BarrelEffects2[i].Stop();
-                            w.BarrelEffects2[i] = null;
+                            Log.Line($"[Clean Effects2] Weapon:{w.System.PartName} - Particle:{ w.Effects2[i].GetName()}");
+                            w.Effects2[i].Stop();
+                            w.Effects2[i] = null;
                         }
                     }
                 }

@@ -27,14 +27,14 @@ namespace WeaponCore.Support
                     }
                     Session.ArmorCubes.Add(comp.Cube, comp);
                 }
-                PartsIdx.Add(comp, Parts.Count);
-                Parts.Add(comp);
+                PartsIdx.Add(comp, Comps.Count);
+                Comps.Add(comp);
             }
             else {
 
                 int idx;
                 if (!PartsIdx.TryGetValue(comp, out idx)) {
-                    Log.Line($"CompRemoveFailed: <{comp.CoreEntity.EntityId}> - {Parts.Count}[{PartsIdx.Count}]({PartBase.Count}) - {Parts.Contains(comp)}[{Parts.Count}] - {Session.GridTargetingAIs[comp.TopEntity].PartBase.ContainsKey(comp.CoreEntity)} - {Session.GridTargetingAIs[comp.TopEntity].PartBase.Count} ");
+                    Log.Line($"CompRemoveFailed: <{comp.CoreEntity.EntityId}> - {Comps.Count}[{PartsIdx.Count}]({PartBase.Count}) - {Comps.Contains(comp)}[{Comps.Count}] - {Session.GridTargetingAIs[comp.TopEntity].PartBase.ContainsKey(comp.CoreEntity)} - {Session.GridTargetingAIs[comp.TopEntity].PartBase.Count} ");
                     return;
                 }
 
@@ -47,9 +47,9 @@ namespace WeaponCore.Support
                     Session.ArmorCubes.Remove(comp.Cube);
                 }
 
-                Parts.RemoveAtFast(idx);
-                if (idx < Parts.Count)
-                    PartsIdx[Parts[idx]] = idx;
+                Comps.RemoveAtFast(idx);
+                if (idx < Comps.Count)
+                    PartsIdx[Comps[idx]] = idx;
 
                 //Session.IdToCompMap.Remove(comp.MyCube.EntityId);
                 PartsIdx.Remove(comp);
@@ -111,9 +111,9 @@ namespace WeaponCore.Support
 
         private void WeaponShootOff()
         {
-            for (int i = 0; i < Parts.Count; i++) {
+            for (int i = 0; i < Comps.Count; i++) {
 
-                var comp = Parts[i];
+                var comp = Comps[i];
                 for (int x = 0; x < comp.Platform.Weapons.Count; x++) {
                     var w = comp.Platform.Weapons[x];
                     w.StopReloadSound();
@@ -126,16 +126,16 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (Parts.Count == 0) {
+                if (Comps.Count == 0) {
                     Log.Line($"no valid weapon in powerDist");
                     return;
                 }
 
                 GridCurrentPower = 0;
                 GridMaxPower = 0;
-                for (int i = -1, j = 0; i < Parts.Count; i++, j++) {
+                for (int i = -1, j = 0; i < Comps.Count; i++, j++) {
 
-                    var powerBlock = j == 0 ? PowerBlock : Parts[i].Cube;
+                    var powerBlock = j == 0 ? PowerBlock : Comps[i].Cube;
                     if (powerBlock == null || j == 0 && PowerDirty) continue;
 
                     using (powerBlock.Pin()) {
@@ -302,7 +302,7 @@ namespace WeaponCore.Support
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
-            Parts.Clear();
+            Comps.Clear();
             PartsIdx.Clear();
             PartBase.Clear();
             LiveProjectile.Clear();

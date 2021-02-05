@@ -7,8 +7,9 @@ namespace WeaponCore.Platform
 {
     public partial class Phantoms : Part
     {
-        internal Phantoms()
+        internal Phantoms(CoreSystem system, CoreComponent comp, int partId)
         {
+            base.Init(comp, system, partId);
         }
     }
 }

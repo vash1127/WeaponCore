@@ -222,14 +222,14 @@ namespace WeaponCore.Platform
                     
                     var failSafeTimer = s.Tick - LastInventoryTick > 600;
                     
-                    if (pullAmmo && (CheckInventorySystem || failSafeTimer && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)) && !s.WeaponToPullAmmo.Contains(this)) {
+                    if (pullAmmo && (CheckInventorySystem || failSafeTimer && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)) && !s.PartToPullConsumable.Contains(this)) {
 
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;
-                        s.WeaponToPullAmmo.Add(this);
+                        s.PartToPullConsumable.Add(this);
                         s.GridsToUpdateInventories.Add(Comp.Ai);
                     }
-                    else if (CheckInventorySystem && failSafeTimer && !s.WeaponToPullAmmo.Contains(this))
+                    else if (CheckInventorySystem && failSafeTimer && !s.PartToPullConsumable.Contains(this))
                         CheckInventorySystem = false;
                 }
             }

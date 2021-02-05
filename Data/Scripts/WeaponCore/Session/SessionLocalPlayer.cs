@@ -246,9 +246,9 @@ namespace WeaponCore
                                 {
                                     DsDebugDraw.DrawSphere(restrictedSphere, _restrictionAreaColor);
                                 }
-                                for (int i = 0; i < ai.Parts.Count; i++)
+                                for (int i = 0; i < ai.Comps.Count; i++)
                                 {
-                                    var comp = ai.Parts[i];
+                                    var comp = ai.Comps[i];
 
                                     if (comp.IsBlock)
                                     {

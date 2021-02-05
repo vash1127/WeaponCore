@@ -72,35 +72,6 @@ namespace WeaponCore.Platform
             return !selfHit && (inRange && canTrack || weapon.Comp.Data.Repo.Base.State.TrackingReticle);
         }
 
-        internal static bool CheckSelfHit(Weapon w, ref Vector3D targetPos, ref Vector3D testPos, out Vector3D predictedMuzzlePos)
-        {
-
-            var testLine = new LineD(targetPos, testPos);
-            predictedMuzzlePos = testLine.To + (-testLine.Direction * w.MuzzleDistToBarrelCenter);
-            var ai = w.Comp.Ai;
-            var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.TopEntity.PositionComp.WorldMatrixNormalizedInv) * ai.GridEntity.GridSizeR);
-
-            MyCube cube;
-            var noCubeAtPosition = !ai.GridEntity.TryGetCube(localPredictedPos, out cube);
-            if (noCubeAtPosition || cube.CubeBlock == w.Comp.Cube.SlimBlock) {
-
-                var noCubeInLine = !ai.GridEntity.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
-                var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == w.Comp.Cube.Position;
-
-                if (noCubesInLineOrHitSelf) {
-
-                    w.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out w.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
-
-                    if (w.LastHitInfo != null && w.LastHitInfo.HitEntity == ai.TopEntity)
-                        return true;
-                }
-            }
-            else return true;
-
-            return false;
-        }
-
-
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
@@ -583,7 +554,7 @@ namespace WeaponCore.Platform
                 }
             }
             
-            var targetPos = Target.Projectile?.Position ?? Target.TargetEntity.PositionComp.WorldMatrixRef.Translation;
+            var targetPos = Target.Projectile?.Position ?? Target.TargetEntity.PositionComp.WorldAABB.Center;
             var distToTargetSqr = Vector3D.DistanceSquared(targetPos, trackingCheckPosition);
             if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {

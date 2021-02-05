@@ -199,7 +199,6 @@ namespace WeaponCore.Support
             var ai = comp.Ai;
             session.TargetRequests++;
             var physics = session.Physics;
-            var barrelPos = w.BarrelOrigin;
             var weaponPos = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
             var target = w.NewTarget;
             var s = w.System;
@@ -269,7 +268,7 @@ namespace WeaponCore.Support
                     var targetRadius = character != null ? info.TargetRadius * 5 : info.TargetRadius;
                     if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius && maxTargetRadius < 8192 || !focusTarget && info.OffenseRating <= 0) continue;
 
-                    var targetCenter = info.Target.PositionComp.WorldAABB.Center;
+                    var targetCenter = info.Target.PositionComp.WorldMatrixRef.Translation;
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, weaponPos);
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
 
@@ -281,8 +280,6 @@ namespace WeaponCore.Support
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                    Vector3D targetNormDir;
-                    Vector3D predictedMuzzlePos;
 
                     if (info.IsGrid) {
 
@@ -305,10 +302,7 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
-                        predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
-
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
 
@@ -475,8 +469,14 @@ namespace WeaponCore.Support
                     blocksSighted++;
 
                     system.Session.RandomRayCasts++;
+
+                    var targetDir = blockPos - w.BarrelOrigin;
+                    Vector3D targetDirNorm;
+                    Vector3D.Normalize(ref targetDir, out targetDirNorm);
+                    var testPos = w.BarrelOrigin + (targetDirNorm * w.MuzzleDistToBarrelCenter);
+
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15);
+                    physics.CastRay(testPos, blockPos, out hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase)
                         continue;
@@ -517,7 +517,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, Ai ai, Target target, TargetInfo info, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere , Weapon w = null, bool checkPower = true)
+        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere , Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -532,7 +532,6 @@ namespace WeaponCore.Support
             MyCubeBlock newEntity3 = null;
             var bestCubePos = Vector3D.Zero;
             var top5Count = target.Top5.Count;
-            var testPos = currentPos;
             var top5 = target.Top5;
             IHitInfo hitInfo = null;
 
@@ -548,7 +547,7 @@ namespace WeaponCore.Support
                     continue;
 
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
-                var range = cubePos - testPos;
+                var range = cubePos - weaponPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
 
                 if (ai.Session.WaterApiLoaded && waterSphere.Radius > 2 && waterSphere.Contains(cubePos) != ContainmentType.Disjoint)
@@ -568,13 +567,22 @@ namespace WeaponCore.Support
                             if (Weapon.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
 
                                 ai.Session.ClosestRayCasts++;
-                                if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
+
+                                var targetDir = cubePos - w.BarrelOrigin;
+                                Vector3D targetDirNorm;
+                                Vector3D.Normalize(ref targetDir, out targetDirNorm);
+
+                                var adjustedPos = w.BarrelOrigin + (targetDirNorm * w.MuzzleDistToBarrelCenter);
+
+                                if (ai.Session.Physics.CastRay(adjustedPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
                                     var hitEnt = hit.HitEntity?.GetTopMostParent() as MyEntity;
                                     var hitGrid = hitEnt as MyCubeGrid;
 
                                     if (hitGrid != null) {
+                                        if (hitGrid.MarkedForClose || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0 || (hitGrid != cube.CubeGrid && ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity))) continue;
 
-                                        if (hitGrid.MarkedForClose || hitGrid != cube.CubeGrid && (ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
+
+
                                         bool enemy;
 
                                         var bigOwners = hitGrid.BigOwners;
@@ -648,7 +656,7 @@ namespace WeaponCore.Support
             if (newEntity != null && hitInfo != null) {
 
                 double rayDist;
-                Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
+                Vector3D.Distance(ref weaponPos, ref bestCubePos, out rayDist);
                 var shortDist = rayDist * (1 - hitInfo.Fraction);
                 var origDist = rayDist * hitInfo.Fraction;
                 var topEntId = newEntity.GetTopMostParent().EntityId;
@@ -658,7 +666,7 @@ namespace WeaponCore.Support
             else if (newEntity != null) {
 
                 double rayDist;
-                Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
+                Vector3D.Distance(ref weaponPos, ref bestCubePos, out rayDist);
                 var shortDist = rayDist;
                 var origDist = rayDist;
                 var topEntId = newEntity.GetTopMostParent().EntityId;

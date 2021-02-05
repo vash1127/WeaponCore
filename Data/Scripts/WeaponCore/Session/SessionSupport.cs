@@ -277,7 +277,7 @@ namespace WeaponCore
 
                             foreach (var gridAi in GridTargetingAIs.Values) {
 
-                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Parts.Count > 0 && ((IMyTerminalBlock)gridAi.Parts[0].CoreEntity).HasPlayerAccess(playerId)) {
+                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Comps.Count > 0 && ((IMyTerminalBlock)gridAi.Comps[0].CoreEntity).HasPlayerAccess(playerId)) {
 
                                     if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.AiOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
                                         isAdmin = true;

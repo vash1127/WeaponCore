@@ -5,7 +5,14 @@ using VRageMath;
 namespace WeaponCore.Support
 {
     [ProtoContract]
-    public struct PartDefinition
+    public class ContainerDefinition
+    {
+        [ProtoMember(1)] internal PartDefinition[] PartDefs;
+        [ProtoMember(2)] internal ArmorDefinition[] ArmorDefs;
+    }
+
+    [ProtoContract]
+    public class PartDefinition
     {
         [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
         [ProtoMember(2)] internal TargetingDef Targeting;
@@ -234,8 +241,8 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct UiDef
             {
-                [ProtoMember(1)] internal bool RateOfFire;
-                [ProtoMember(2)] internal bool DamageModifier;
+                [ProtoMember(1)] internal bool CycleRate;
+                [ProtoMember(2)] internal bool StrengthModifier;
                 [ProtoMember(3)] internal bool ToggleGuidance;
                 [ProtoMember(4)] internal bool EnableOverload;
             }
@@ -281,20 +288,20 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct HardPointAudioDef
             {
-                [ProtoMember(1)] internal string ReloadSound;
-                [ProtoMember(2)] internal string NoAmmoSound;
+                [ProtoMember(1)] internal string ReChargeSound;
+                [ProtoMember(2)] internal string NoChargeSound;
                 [ProtoMember(3)] internal string HardPointRotationSound;
                 [ProtoMember(4)] internal string BarrelRotationSound;
-                [ProtoMember(5)] internal string FiringSound;
-                [ProtoMember(6)] internal bool FiringSoundPerShot;
-                [ProtoMember(7)] internal string PreFiringSound;
-                [ProtoMember(8)] internal uint FireSoundEndDelay;
+                [ProtoMember(5)] internal string TriggerSound;
+                [ProtoMember(6)] internal bool TriggerSoundPerCycle;
+                [ProtoMember(7)] internal string PreTriggerSound;
+                [ProtoMember(8)] internal uint TriggerSoundEndDelay;
             }
 
             [ProtoContract]
             public struct OtherDef
             {
-                [ProtoMember(1)] internal int GridWeaponCap;
+                [ProtoMember(1)] internal int ConstructPartCap;
                 [ProtoMember(2)] internal int EnergyPriority;
                 [ProtoMember(3)] internal int RotateBarrelAxis;
                 [ProtoMember(4)] internal bool MuzzleCheck;
@@ -307,8 +314,8 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct HardPointParticleDef
             {
-                [ProtoMember(1)] internal ParticleDef Barrel1;
-                [ProtoMember(2)] internal ParticleDef Barrel2;
+                [ProtoMember(1)] internal ParticleDef Effect1;
+                [ProtoMember(2)] internal ParticleDef Effect2;
             }
         }
 
@@ -339,7 +346,7 @@ namespace WeaponCore.Support
             [ProtoMember(22)] internal EjectionDef Ejection;
             [ProtoMember(23)] internal bool IgnoreWater;
 
-            internal ConsumableConstants Const;
+            internal AmmoConstants Const;
 
             [ProtoContract]
             public struct DamageScaleDef
@@ -388,6 +395,21 @@ namespace WeaponCore.Support
                 }
 
                 [ProtoContract]
+                public struct DamageTypes
+                {
+                    internal enum Damage
+                    {
+                        Energetic,
+                        Kinetic,
+                    }
+
+                    [ProtoMember(1)] internal Damage Base;
+                    [ProtoMember(2)] internal Damage AreaEffect;
+                    [ProtoMember(3)] internal Damage Detonation;
+                    [ProtoMember(4)] internal Damage Shield;
+                }
+
+                [ProtoContract]
                 public struct ShieldDef
                 {
                     internal enum ShieldType
@@ -395,8 +417,8 @@ namespace WeaponCore.Support
                         Heal,
                         Bypass,
                         Emp,
-                        Energy,
-                        Kinetic
+                        Energy, // retired
+                        Kinetic // retired
                     }
 
                     [ProtoMember(1)] internal float Modifier;
@@ -782,9 +804,8 @@ namespace WeaponCore.Support
         }
     }
 
-
     [ProtoContract]
-    public struct ArmorCompatibilityDef
+    public class ArmorDefinition
     {
         internal enum ArmorType
         {
@@ -792,7 +813,10 @@ namespace WeaponCore.Support
             Heavy,
             NonArmor,
         }
+
         [ProtoMember(1)] internal string SubtypeId;
         [ProtoMember(2)] internal ArmorType Kind;
+        [ProtoMember(3)] internal double KineticResistance;
+        [ProtoMember(4)] internal double EnergeticResistance;
     }
 }

@@ -47,7 +47,7 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
-        internal readonly List<CoreComponent> Parts = new List<CoreComponent>(32);
+        internal readonly List<CoreComponent> Comps = new List<CoreComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<Ai> TargetAisTmp = new List<Ai>();
         internal readonly List<Shields> NearByShieldsTmp = new List<Shields>();

@@ -19,11 +19,12 @@ namespace WeaponCore.Platform
         internal int UniqueId;
         internal int PartId;
 
-        internal void Init(CoreComponent comp, CoreSystem system)
+        internal void Init(CoreComponent comp, CoreSystem system, int partId)
         {
             System = system;
             Comp = comp;
             PartCreatedTick = System.Session.Tick;
+            PartId = partId;
 
             Acquire = new PartAcquire(this);
             UniqueId = comp.Session.UniquePartId;

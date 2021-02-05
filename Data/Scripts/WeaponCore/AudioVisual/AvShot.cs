@@ -200,7 +200,7 @@ namespace WeaponCore.Support
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, MaxTrajectory);
 
             AvInfoCache infoCache;
-            if (AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.TracerMode != ConsumableConstants.Texture.Normal && System.Session.AvShotCache.TryGetValue(info.UniqueMuzzleId, out infoCache))
+            if (AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && System.Session.AvShotCache.TryGetValue(info.UniqueMuzzleId, out infoCache))
                 UpdateCache(infoCache);
         }
         static void ShellSort(List<DeferedAv> list)
@@ -537,7 +537,7 @@ namespace WeaponCore.Support
         {
             var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
             var segmentColor = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
-            if (AmmoDef.Const.TracerMode != ConsumableConstants.Texture.Normal && TextureLastUpdate != System.Session.Tick)
+            if (AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && TextureLastUpdate != System.Session.Tick)
             {
                 if (System.Session.Tick - TextureLastUpdate > 1)
                     AmmoInfoClean();
@@ -545,7 +545,7 @@ namespace WeaponCore.Support
                 TextureLastUpdate = System.Session.Tick;
 
                 switch (AmmoDef.Const.TracerMode) {
-                    case ConsumableConstants.Texture.Resize:
+                    case AmmoConstants.Texture.Resize:
                         var wasGapped = SegmentGaped;
                         var segSize = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
                         var thisLen = wasGapped ? segSize.SegmentGap : segSize.SegmentLength;
@@ -559,9 +559,9 @@ namespace WeaponCore.Support
                         SegMeasureStep += AmmoDef.Const.SegmentStep;
                         SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(segSize.SegmentGap, 0, Math.Min(SegMeasureStep, segSize.SegmentGap)) : MathHelperD.Clamp(segSize.SegmentLength, 0, Math.Min(SegMeasureStep, segSize.SegmentLength));
                         break;
-                    case ConsumableConstants.Texture.Cycle:
-                    case ConsumableConstants.Texture.Wave:
-                        if (AmmoDef.Const.TracerMode == ConsumableConstants.Texture.Cycle) {
+                    case AmmoConstants.Texture.Cycle:
+                    case AmmoConstants.Texture.Wave:
+                        if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Cycle) {
                             var current = TextureIdx;
                             if (current + 1 < AmmoDef.Const.TracerTextures.Length)
                                 TextureIdx = current + 1;
@@ -588,7 +588,7 @@ namespace WeaponCore.Support
                             }
                         }
                         break;
-                    case ConsumableConstants.Texture.Chaos:
+                    case AmmoConstants.Texture.Chaos:
                         TextureIdx = MyUtils.GetRandomInt(0, AmmoDef.Const.TracerTextures.Length);
                         break;
                 }
@@ -604,7 +604,7 @@ namespace WeaponCore.Support
                 color.X *= randomValue;
                 color.Y *= randomValue;
                 color.Z *= randomValue;
-                if (AmmoDef.Const.TracerMode == ConsumableConstants.Texture.Resize && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
+                if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Resize && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
                 {
                     segmentColor.X *= randomValue;
                     segmentColor.Y *= randomValue;
@@ -866,7 +866,7 @@ namespace WeaponCore.Support
 
                 FireEmitter.CanPlayLoopSounds = true;
                 FireEmitter.Entity = CoreEntity;
-                FireSound = System.FirePerShotPairs.Count > 0 ? System.FirePerShotPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
+                FireSound = System.FirePerShotPairs.Count > 0 ? System.FirePerShotPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.TriggerSound, false);
 
                 FireEmitter.SetPosition(Origin);
             }

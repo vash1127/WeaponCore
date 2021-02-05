@@ -138,20 +138,20 @@ namespace WeaponCore.Platform
                         if (System.BarrelEffect1 && muzzle.LastAv1Tick == 0 && !muzzle.Av1Looping) {
 
                             muzzle.LastAv1Tick = tick;
-                            var avBarrel = s.Av.AvBarrelPool.Get();
+                            var avBarrel = s.Av.AvEffectPool.Get();
                             avBarrel.Weapon = this;
                             avBarrel.Muzzle = muzzle;
                             avBarrel.StartTick = tick;
-                            s.Av.AvBarrels1.Add(avBarrel);
+                            s.Av.Effects1.Add(avBarrel);
                         }
                         if (System.BarrelEffect2 && muzzle.LastAv2Tick == 0 && !muzzle.Av2Looping) {
 
                             muzzle.LastAv2Tick = tick;
-                            var avBarrel = s.Av.AvBarrelPool.Get();
+                            var avBarrel = s.Av.AvEffectPool.Get();
                             avBarrel.Weapon = this;
                             avBarrel.Muzzle = muzzle;
                             avBarrel.StartTick = tick;
-                            s.Av.AvBarrels2.Add(avBarrel);
+                            s.Av.Effects2.Add(avBarrel);
                         }
                     }
 

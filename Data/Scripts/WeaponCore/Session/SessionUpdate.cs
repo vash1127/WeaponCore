@@ -58,9 +58,9 @@ namespace WeaponCore
                 ///
                 /// Comp update section
                 ///
-                for (int i = 0; i < ai.Parts.Count; i++) {
+                for (int i = 0; i < ai.Comps.Count; i++) {
 
-                    var comp = ai.Parts[i];
+                    var comp = ai.Comps[i];
                     if (comp.Status != Started)
                         comp.HealthCheck();
 
@@ -93,6 +93,20 @@ namespace WeaponCore
                     var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
                     var canManualShoot = !ai.SuppressMouseShoot && !comp.InputState.InMenu;
 
+                    ///
+                    /// Upgrade update section
+                    ///
+                    for (int j = 0; j < comp.Platform.Armors.Count; j++)
+                    {
+                        var a = comp.Platform.Armors[j];
+                    }
+                    ///
+                    /// Upgrade update section
+                    ///
+                    for (int j = 0; j < comp.Platform.Upgrades.Count; j++)
+                    {
+                        var u = comp.Platform.Upgrades[j];
+                    }
                     ///
                     /// Weapon update section
                     ///

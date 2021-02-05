@@ -101,7 +101,7 @@ namespace WeaponCore
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
-        internal readonly MyConcurrentHashSet<Weapon> WeaponToPullAmmo = new MyConcurrentHashSet<Weapon>();
+        internal readonly MyConcurrentHashSet<Weapon> PartToPullConsumable = new MyConcurrentHashSet<Weapon>();
 
         internal readonly ConcurrentCachingList<CoreComponent> CompsToStart = new ConcurrentCachingList<CoreComponent>();
         internal readonly ConcurrentCachingList<Ai> DelayedAiClean = new ConcurrentCachingList<Ai>();
@@ -176,7 +176,7 @@ namespace WeaponCore
         internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
-        internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
+        internal readonly List<WeaponAmmoMoveRequest> ConsumableToPullQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly HashSet<Ai> GridsToUpdateInventories = new HashSet<Ai>();
@@ -204,7 +204,7 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
         private readonly Dictionary<IMySlimBlock, float> _slimHealthClient = new Dictionary<IMySlimBlock, float>();
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<PartDefinition>> _subTypeIdToPartDefs = new Dictionary<string, List<PartDefinition>>();
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();

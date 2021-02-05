@@ -302,7 +302,7 @@ namespace WeaponCore.Api
     public static class WcApiDef
     {
         [ProtoContract]
-        public struct PartDefinition
+        public class PartDefinition
         {
             [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
             [ProtoMember(2)] internal TargetingDef Targeting;

@@ -199,7 +199,7 @@ namespace WeaponCore.Support
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
 
-            Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Structure.MuzzlePartNames.Length];
+            Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Structure.PartHashes.Length];
             for (int i = 0; i < Monitors.Length; i++)
                 Monitors[i] = new List<Action<long, int, ulong, long, Vector3D, bool>>();
 

@@ -626,12 +626,21 @@ namespace WeaponCore.Projectiles
                                 MatrixD transform = grid.WorldMatrix;
                                 if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.Info.Target.CoreCube?.SlimBlock) {
 
-                                    hitEnt.Blocks.Add(firstBlock);
-                                    if (closestBlockFound) continue;
+                                    if (closestBlockFound) {
+                                        hitEnt.Blocks.Add(firstBlock);
+                                        continue;
+                                    }
                                     MyOrientedBoundingBoxD obb;
                                     var fat = firstBlock.FatBlock;
                                     if (fat != null)
+                                    {
+                                        var cube = (MyCubeBlock)fat;
+                                        Vector3D? test;
+                                        if (!cube.GetIntersectionWithLine(ref beam, out test, true))
+                                            continue;
+
                                         obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrixRef);
+                                    }
                                     else {
                                         Vector3 halfExt;
                                         firstBlock.ComputeScaledHalfExtents(out halfExt);
@@ -639,6 +648,7 @@ namespace WeaponCore.Projectiles
                                         transform.Translation = grid.GridIntegerToWorld(firstBlock.Position);
                                         obb = new MyOrientedBoundingBoxD(blockBox, transform);
                                     }
+                                    hitEnt.Blocks.Add(firstBlock);
 
                                     var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, obb.Center);
                                     var hitPos = beam.From + (beam.Direction * hitDist);

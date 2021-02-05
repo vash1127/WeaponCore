@@ -23,7 +23,7 @@ namespace WeaponCore.Support
 {
     internal class CoreSystem
     {
-        internal class ConsumableTypes
+        internal class AmmoType
         {
             public MyDefinitionId AmmoDefinitionId;
             public MyDefinitionId EjectionDefinitionId;
@@ -38,7 +38,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
         public readonly PartDefinition Values;
-        public readonly ConsumableTypes[] AmmoTypes;
+        public readonly AmmoType[] AmmoTypes;
         public readonly Stack<MySoundPair> PreFirePairs = new Stack<MySoundPair>();
         public readonly Stack<MySoundPair> FirePerShotPairs = new Stack<MySoundPair>();
         public readonly Stack<MySoundPair> FireWhenDonePairs = new Stack<MySoundPair>();
@@ -142,7 +142,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, PartDefinition values, string partName, ConsumableTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, PartDefinition values, string partName, AmmoType[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -196,7 +196,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < AmmoTypes.Length; i++) {
 
                 var ammo = AmmoTypes[i];
-                ammo.AmmoDef.Const = new ConsumableConstants(ammo, Values, Session, this, i);
+                ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
                 if (ammo.AmmoDef.Const.GuidedAmmoDetected)
                     HasGuidedAmmo = true;
 
@@ -218,10 +218,10 @@ namespace WeaponCore.Support
 
         private void BarrelsAv(out bool barrelEffect1, out bool barrelEffect2, out float barrel1AvTicks, out float barrel2AvTicks, out int barrelSpinRate, out bool hasBarrelRotation)
         {
-            barrelEffect1 = Values.HardPoint.Graphics.Barrel1.Name != string.Empty;
-            barrelEffect2 = Values.HardPoint.Graphics.Barrel2.Name != string.Empty;
-            barrel1AvTicks = Values.HardPoint.Graphics.Barrel1.Extras.MaxDuration;
-            barrel2AvTicks = Values.HardPoint.Graphics.Barrel2.Extras.MaxDuration;
+            barrelEffect1 = Values.HardPoint.Graphics.Effect1.Name != string.Empty;
+            barrelEffect2 = Values.HardPoint.Graphics.Effect2.Name != string.Empty;
+            barrel1AvTicks = Values.HardPoint.Graphics.Effect1.Extras.MaxDuration;
+            barrel2AvTicks = Values.HardPoint.Graphics.Effect2.Extras.MaxDuration;
             
             barrelSpinRate = 0;
             if (Values.HardPoint.Other.RotateBarrelAxis != 0) {
@@ -323,34 +323,34 @@ namespace WeaponCore.Support
 
         private void HardPointSoundSetup(out bool weaponReloadSound, out bool hardPointRotationSound, out bool barrelRotationSound, out bool noAmmoSound, out bool preFireSound, out float hardPointAvMaxDistSqr, out FiringSoundState firingSound)
         {
-            weaponReloadSound = Values.HardPoint.Audio.ReloadSound != string.Empty;
+            weaponReloadSound = Values.HardPoint.Audio.ReChargeSound != string.Empty;
             hardPointRotationSound = Values.HardPoint.Audio.HardPointRotationSound != string.Empty;
             barrelRotationSound = Values.HardPoint.Audio.BarrelRotationSound != string.Empty;
-            noAmmoSound = Values.HardPoint.Audio.NoAmmoSound != string.Empty;
-            preFireSound = Values.HardPoint.Audio.PreFiringSound != string.Empty;
+            noAmmoSound = Values.HardPoint.Audio.NoChargeSound != string.Empty;
+            preFireSound = Values.HardPoint.Audio.PreTriggerSound != string.Empty;
 
-            var fSoundStart = Values.HardPoint.Audio.FiringSound;
-            if (fSoundStart != string.Empty && Values.HardPoint.Audio.FiringSoundPerShot)
+            var fSoundStart = Values.HardPoint.Audio.TriggerSound;
+            if (fSoundStart != string.Empty && Values.HardPoint.Audio.TriggerSoundPerCycle)
                 firingSound = FiringSoundState.PerShot;
-            else if (fSoundStart != string.Empty && !Values.HardPoint.Audio.FiringSoundPerShot)
+            else if (fSoundStart != string.Empty && !Values.HardPoint.Audio.TriggerSoundPerCycle)
                 firingSound = FiringSoundState.WhenDone;
             else firingSound = FiringSoundState.None;
 
             hardPointAvMaxDistSqr = 0;
-            if (Values.HardPoint.Graphics.Barrel1.Extras.MaxDistance * Values.HardPoint.Graphics.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
-                hardPointAvMaxDistSqr = Values.HardPoint.Graphics.Barrel1.Extras.MaxDistance * Values.HardPoint.Graphics.Barrel1.Extras.MaxDistance;
+            if (Values.HardPoint.Graphics.Effect1.Extras.MaxDistance * Values.HardPoint.Graphics.Effect1.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                hardPointAvMaxDistSqr = Values.HardPoint.Graphics.Effect1.Extras.MaxDistance * Values.HardPoint.Graphics.Effect1.Extras.MaxDistance;
 
-            if (Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance * Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
-                hardPointAvMaxDistSqr = Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance * Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance;
+            if (Values.HardPoint.Graphics.Effect2.Extras.MaxDistance * Values.HardPoint.Graphics.Effect2.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                hardPointAvMaxDistSqr = Values.HardPoint.Graphics.Effect2.Extras.MaxDistance * Values.HardPoint.Graphics.Effect2.Extras.MaxDistance;
         }
 
-        private void HardPointSoundDistMaxSqr(ConsumableTypes[] weaponAmmo, out float firingSoundDistSqr, out float reloadSoundDistSqr, out float barrelSoundDistSqr, out float hardPointSoundDistSqr, out float noAmmoSoundDistSqr, out float hardPointAvMaxDistSqr)
+        private void HardPointSoundDistMaxSqr(AmmoType[] weaponAmmo, out float firingSoundDistSqr, out float reloadSoundDistSqr, out float barrelSoundDistSqr, out float hardPointSoundDistSqr, out float noAmmoSoundDistSqr, out float hardPointAvMaxDistSqr)
         {
-            var fireSound = string.Concat(Arc, Values.HardPoint.Audio.FiringSound);
-            var reloadSound = string.Concat(Arc, Values.HardPoint.Audio.ReloadSound);
+            var fireSound = string.Concat(Arc, Values.HardPoint.Audio.TriggerSound);
+            var reloadSound = string.Concat(Arc, Values.HardPoint.Audio.ReChargeSound);
             var barrelSound = string.Concat(Arc, Values.HardPoint.Audio.BarrelRotationSound);
             var hardPointSound = string.Concat(Arc, Values.HardPoint.Audio.HardPointRotationSound);
-            var noAmmoSound = string.Concat(Arc, Values.HardPoint.Audio.NoAmmoSound);
+            var noAmmoSound = string.Concat(Arc, Values.HardPoint.Audio.NoChargeSound);
 
             firingSoundDistSqr = 0f;
             reloadSoundDistSqr = 0f;
@@ -403,7 +403,7 @@ namespace WeaponCore.Support
         }
     }
 
-    public class ConsumableConstants
+    public class AmmoConstants
     {
         public enum Texture
         {
@@ -544,7 +544,7 @@ namespace WeaponCore.Support
         public readonly double HealthHitModifier;
         public readonly double VoxelHitModifier;
 
-        internal ConsumableConstants(CoreSystem.ConsumableTypes ammo, PartDefinition wDef, Session session, CoreSystem system, int ammoIndex)
+        internal AmmoConstants(CoreSystem.AmmoType ammo, PartDefinition wDef, Session session, CoreSystem system, int ammoIndex)
         {
             AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
@@ -644,7 +644,7 @@ namespace WeaponCore.Support
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
         }
 
-        internal void ComputeTextures(CoreSystem.ConsumableTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
+        internal void ComputeTextures(CoreSystem.AmmoType ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
         {
             var lineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0;
 
@@ -700,7 +700,7 @@ namespace WeaponCore.Support
         }
 
 
-        private void ComputeSteps(CoreSystem.ConsumableTypes ammo, out float shotFadeStep, out float trajectoryStep)
+        private void ComputeSteps(CoreSystem.AmmoType ammo, out float shotFadeStep, out float trajectoryStep)
         {
             var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
             shotFadeStep = 1f / changeFadeSteps;
@@ -708,7 +708,7 @@ namespace WeaponCore.Support
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
-        private void ComputeAmmoPattern(CoreSystem.ConsumableTypes ammo, PartDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
+        private void ComputeAmmoPattern(CoreSystem.AmmoType ammo, PartDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
         {
             var pattern = ammo.AmmoDef.Pattern;
             var indexPos = 0;
@@ -748,7 +748,7 @@ namespace WeaponCore.Support
             guidedDetected = guidedAmmo;
         }
 
-        internal void GetParticleInfo(CoreSystem.ConsumableTypes ammo, PartDefinition wDef, Session session)
+        internal void GetParticleInfo(CoreSystem.AmmoType ammo, PartDefinition wDef, Session session)
         {
             var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
             var comparer = new Session.HackEqualityComparer();
@@ -775,7 +775,7 @@ namespace WeaponCore.Support
         }
 
         private int mexLogLevel = 0;
-        private void GetPeakDps(CoreSystem.ConsumableTypes ammoDef, CoreSystem system, PartDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        private void GetPeakDps(CoreSystem.AmmoType ammoDef, CoreSystem system, PartDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
             var a = ammoDef.AmmoDef;
@@ -1068,7 +1068,7 @@ namespace WeaponCore.Support
             voxelHitModifer = ammoDef.DamageScales.VoxelHitModifier > 0 ? ammoDef.DamageScales.VoxelHitModifier : 1;
         }
 
-        private void Energy(CoreSystem.ConsumableTypes ammoPair, CoreSystem system, PartDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
+        private void Energy(CoreSystem.AmmoType ammoPair, CoreSystem system, PartDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
@@ -1155,10 +1155,11 @@ namespace WeaponCore.Support
 
     internal class CoreStructure
     {
-        public readonly Dictionary<MyStringHash, CoreSystem> WeaponSystems;
+        public readonly Dictionary<MyStringHash, CoreSystem> PartSystems;
         public readonly Dictionary<int, int> HashToId;
 
-        public readonly MyStringHash[] MuzzlePartNames;
+        public readonly MyStringHash[] PartHashes;
+        public readonly MyStringHash[] MuzzleHashes;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
         public readonly int PrimaryPart;
@@ -1172,47 +1173,53 @@ namespace WeaponCore.Support
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             ModPath = modPath;
-            var muzzlePartNames = new MyStringHash[numOfParts];
-            var weaponId = 0;
-            WeaponSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
+            var partHashes = new MyStringHash[numOfParts];
+            var muzzleHashes = new MyStringHash[numOfParts];
+            var partId = 0;
+            PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
             HashToId = new Dictionary<int, int>();
             PrimaryPart = -1;
-            var gridWeaponCap = 0;
+            var partCap = 0;
             foreach (var w in map)
             {
-                var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Key);
-                var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
-                var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
-
-                muzzlePartNames[weaponId] = myMuzzleNameHash;
-
                 var typeName = w.Value.Item1;
-                var weaponDef = new PartDefinition();
-                foreach (var weapon in wDefList)
-                    if (weapon.HardPoint.PartName == typeName) weaponDef = weapon;
+                PartDefinition partDef = null;
+                foreach (var def in wDefList)
+                    if (def.HardPoint.PartName == typeName) partDef = def;
 
-                var cap = weaponDef.HardPoint.Other.GridWeaponCap;
-                if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
-                else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
+                if (partDef == null) {
+                    Log.Line($"CoreStructure failed to match PartName to typeName");
+                    return;
+                }
 
-                if (weaponDef.HardPoint.Ai.PrimaryTracking && PrimaryPart < 0)
-                    PrimaryPart = weaponId;
-
-                weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
+                var muzzletNameHash = MyStringHash.GetOrCompute(w.Key);
+                muzzleHashes[partId] = muzzletNameHash;
+                var azimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
+                var elevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
                 
+                partHashes[partId] = MyStringHash.GetOrCompute(partDef.HardPoint.PartName + $" {partId}");
+
+                var cap = partDef.HardPoint.Other.ConstructPartCap;
+                if (partCap == 0 && cap > 0) partCap = cap;
+                else if (cap > 0 && partCap > 0 && cap < partCap) partCap = cap;
+
+                if (partDef.HardPoint.Ai.PrimaryTracking && PrimaryPart < 0)
+                    PrimaryPart = partId;
+
+                partDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(partDef.HardPoint.DeviateShotAngle);
+
                 var shrapnelNames = new HashSet<string>();
-                for (int i = 0; i < weaponDef.Ammos.Length; i++)
+                for (int i = 0; i < partDef.Ammos.Length; i++)
                 {
-                    var ammo = weaponDef.Ammos[i];
+                    var ammo = partDef.Ammos[i];
                     if (!shrapnelNames.Contains(ammo.Fragment.AmmoRound) && !string.IsNullOrEmpty(ammo.Fragment.AmmoRound))
                         shrapnelNames.Add(ammo.Fragment.AmmoRound);
                 }
-                    
 
-                var weaponAmmo = new CoreSystem.ConsumableTypes[weaponDef.Ammos.Length];
-                for (int i = 0; i < weaponDef.Ammos.Length; i++)
+                var weaponAmmo = new CoreSystem.AmmoType[partDef.Ammos.Length];
+                for (int i = 0; i < partDef.Ammos.Length; i++)
                 {
-                    var ammo = weaponDef.Ammos[i];
+                    var ammo = partDef.Ammos[i];
                     var ammoDefId = new MyDefinitionId();
                     var ejectionDefId = new MyDefinitionId();
 
@@ -1229,19 +1236,20 @@ namespace WeaponCore.Support
 
                     Session.AmmoDefIds.Add(ammoDefId);
                     Session.AmmoDamageMap[ammo] = null;
-                    weaponAmmo[i] = new CoreSystem.ConsumableTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
+                    weaponAmmo[i] = new CoreSystem.AmmoType { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
-                var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
-                HashToId.Add(weaponIdHash, weaponId);
-                WeaponSystems.Add(myMuzzleNameHash, new CoreSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
-                weaponId++;
+                var partHash = (tDef.Key + elevationNameHash + muzzletNameHash + azimuthNameHash).GetHashCode();
+                HashToId.Add(partHash, partId);
+                PartSystems.Add(muzzletNameHash, new CoreSystem(Session, muzzletNameHash, azimuthNameHash, elevationNameHash, partDef, typeName, weaponAmmo, partHash, partId));
+                partId++;
             }
             if (PrimaryPart == -1)
                 PrimaryPart = 0;
             
-            GridWeaponCap = gridWeaponCap;
-            MuzzlePartNames = muzzlePartNames;
+            GridWeaponCap = partCap;
+            PartHashes = partHashes;
+            MuzzleHashes = muzzleHashes;
         }
     }
 

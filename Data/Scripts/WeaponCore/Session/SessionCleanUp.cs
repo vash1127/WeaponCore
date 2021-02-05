@@ -142,7 +142,7 @@ namespace WeaponCore
 
             foreach (var structure in PartPlatforms.Values)
             {
-                foreach (var system in structure.WeaponSystems)
+                foreach (var system in structure.PartSystems)
                 {
                     system.Value.PreFirePairs.Clear();
                     system.Value.FireWhenDonePairs.Clear();
@@ -161,7 +161,7 @@ namespace WeaponCore
                     }
                 }
 
-                structure.WeaponSystems.Clear();
+                structure.PartSystems.Clear();
             }
             PartPlatforms.Clear();
 
@@ -187,8 +187,8 @@ namespace WeaponCore
 
             ShootingWeapons.Clear();
             RemoveEffectsFromGrid.Clear();
-            WeaponToPullAmmo.Clear();
-            AmmoToPullQueue.Clear();
+            PartToPullConsumable.Clear();
+            ConsumableToPullQueue.Clear();
             ChargingWeaponsIndexer.Clear();
             WeaponsToRemoveAmmoIndexer.Clear();
             ChargingWeapons.Clear();
@@ -211,7 +211,7 @@ namespace WeaponCore
             _destroyedSlimsClient.Clear();
             _slimHealthClient.Clear();
             _slimsSet.Clear();
-            _turretDefinitions.Clear();
+            _subTypeMaps.Clear();
             _tmpNearByBlocks.Clear();
 
             foreach (var av in Av.AvShots) {
@@ -219,8 +219,8 @@ namespace WeaponCore
                 Av.AvShotPool.Return(av);
             }
             Av.AvShotPool.Clean();
-            Av.AvBarrels1.Clear();
-            Av.AvBarrels2.Clear();
+            Av.Effects1.Clear();
+            Av.Effects2.Clear();
             Av.AvShots.Clear();
             Av.HitSounds.Clear();
 

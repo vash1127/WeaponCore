@@ -456,7 +456,7 @@ namespace WeaponCore.Api
             CoreStructure coreStructure;
             if (_session.PartPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure))
             {
-                foreach (var weaponSystem in coreStructure.WeaponSystems.Values)
+                foreach (var weaponSystem in coreStructure.PartSystems.Values)
                 {
                     var system = weaponSystem;
                     if (!collection.ContainsKey(system.PartName))

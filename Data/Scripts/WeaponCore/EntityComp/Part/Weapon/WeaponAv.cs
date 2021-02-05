@@ -52,8 +52,8 @@ namespace WeaponCore.Platform
 
         public void StopShootingAv(bool power)
         {
-            if (System.Values.HardPoint.Audio.FireSoundEndDelay > 0)
-                Comp.Session.FutureEvents.Schedule(StopFiringSound, null, System.Values.HardPoint.Audio.FireSoundEndDelay);
+            if (System.Values.HardPoint.Audio.TriggerSoundEndDelay > 0)
+                Comp.Session.FutureEvents.Schedule(StopFiringSound, null, System.Values.HardPoint.Audio.TriggerSoundEndDelay);
             else StopFiringSound(false);
 
             StopPreFiringSound();
