@@ -30,13 +30,14 @@ namespace WeaponCore
                 var rifle = entity as IMyAutomaticRifleGun;
                 if (sorter != null || turret != null || controllableGun != null || rifle != null)
                 {
-                    var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || PartPlatforms.ContainsKey(cube.BlockDefinition.Id));
-                    var rifleType = !cubeType && rifle != null && PartPlatforms.ContainsKey(rifle.DefinitionId);
-                    var validType = cubeType || rifleType;
-                    if (!validType) return;
-
                     lock (InitObj)
                     {
+                        var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || PartPlatforms.ContainsKey(cube.BlockDefinition.Id));
+                        var rifleType = !cubeType && rifle != null && PartPlatforms.ContainsKey(rifle.DefinitionId);
+                        var validType = cubeType || rifleType;
+                        if (!validType) return;
+
+
                         if (!SorterControls && entity is MyConveyorSorter) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
                             SorterControls = true;
@@ -58,7 +59,8 @@ namespace WeaponCore
                             FixedGunControls = true;
                         }
                     }
-                    InitComp(entity);
+                    var def = cube?.BlockDefinition.Id ?? rifle?.DefinitionId ?? entity.DefinitionId;
+                    InitComp(entity, ref def);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }

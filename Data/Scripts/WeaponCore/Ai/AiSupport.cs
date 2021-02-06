@@ -19,14 +19,6 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.BaseType == CoreComponent.CompType.Support) {
-                    for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
-                        var w = comp.Platform.Weapons[i];
-                        if (w.System.PartType != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
-                         Armor.Add(w.Comp.Cube, w);
-                    }
-                    Session.ArmorCubes.Add(comp.Cube, comp);
-                }
                 PartsIdx.Add(comp, Comps.Count);
                 Comps.Add(comp);
             }
@@ -36,15 +28,6 @@ namespace WeaponCore.Support
                 if (!PartsIdx.TryGetValue(comp, out idx)) {
                     Log.Line($"CompRemoveFailed: <{comp.CoreEntity.EntityId}> - {Comps.Count}[{PartsIdx.Count}]({PartBase.Count}) - {Comps.Contains(comp)}[{Comps.Count}] - {Session.GridTargetingAIs[comp.TopEntity].PartBase.ContainsKey(comp.CoreEntity)} - {Session.GridTargetingAIs[comp.TopEntity].PartBase.Count} ");
                     return;
-                }
-
-                if (comp.BaseType == CoreComponent.CompType.Support) {
-                    for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
-                        var w = comp.Platform.Weapons[i];
-                        if (w.System.PartType != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
-                            Armor.Remove(w.Comp.Cube);
-                    }
-                    Session.ArmorCubes.Remove(comp.Cube);
                 }
 
                 Comps.RemoveAtFast(idx);

@@ -87,7 +87,7 @@ namespace WeaponCore.Support
                         PowerInit();
                     else Ai.AiOwner = GunBase.OwnerId;
 
-                    if (IsWeapon && Platform.State == CorePlatform.PlatformState.Inited)
+                    if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
                         Platform.ResetParts(this);
 
                     Entity.NeedsWorldMatrix = true;
@@ -97,7 +97,7 @@ namespace WeaponCore.Support
 
                     Platform.State = CorePlatform.PlatformState.Ready;
 
-                    if (IsWeapon)
+                    if (Type == CompType.Weapon)
                     {
                         for (int i = 0; i < Platform.Weapons.Count; i++)
                         {
@@ -138,7 +138,7 @@ namespace WeaponCore.Support
 
                         Ai.FirstRun = true;
 
-                        if (IsWeapon && Platform.State == CorePlatform.PlatformState.Inited)
+                        if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
                             Platform.ResetParts(this);
 
                         Entity.NeedsWorldMatrix = true;
@@ -192,7 +192,7 @@ namespace WeaponCore.Support
                     SubGridInit();
                 }
 
-                if (IsWeapon)
+                if (Type == CompType.Weapon)
                 {
                     var maxTrajectory = 0d;
 

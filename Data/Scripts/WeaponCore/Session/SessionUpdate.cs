@@ -66,7 +66,7 @@ namespace WeaponCore
 
                     if (ai.DbUpdated || !comp.UpdatedState) {
 
-                        if (comp.IsWeapon)
+                        if (comp.Type == CoreComponent.CompType.Weapon)
                             comp.WeaponDetectStateChanges();
                         else
                             comp.OtherDetectStateChanges();

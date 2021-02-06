@@ -20,7 +20,7 @@ namespace WeaponCore.Support
                     Startup();
                     break;
                 case Start.ReInit:
-                    if (IsWeapon) 
+                    if (Type == CompType.Weapon) 
                         Platform.ResetParts(this);
                     Status = Start.Started;
                     break;
@@ -283,7 +283,7 @@ namespace WeaponCore.Support
                     ent.OnClose -= SubpartClosed;
                     if (!CoreEntity.MarkedForClose && Platform.State == CorePlatform.PlatformState.Ready)
                     {
-                        if (IsWeapon)
+                        if (Type == CompType.Weapon)
                             Platform.ResetParts(this);
                         Status = Start.Started;
 

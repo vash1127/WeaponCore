@@ -25,11 +25,11 @@ namespace WeaponCore.Support
                 Registered = true;
                 if (IsBlock)
                 {
-                    if (IsWeapon)
+                    if (Type == CompType.Weapon)
                         TerminalBlock.AppendingCustomInfo += AppendingCustomInfoWeapon;
-                    else if (BaseType == CompType.Support)
+                    else if (TypeSpecific == CompTypeSpecific.Support)
                         TerminalBlock.AppendingCustomInfo += AppendingCustomInfoSupport;
-                    else if (BaseType == CompType.Upgrade)
+                    else if (TypeSpecific == CompTypeSpecific.Upgrade)
                         TerminalBlock.AppendingCustomInfo += AppendingCustomInfoUpgrade;
 
                     Cube.IsWorkingChanged += IsWorkingChanged;
@@ -70,11 +70,11 @@ namespace WeaponCore.Support
 
                     if (IsBlock) {
 
-                        if (IsWeapon)
+                        if (Type == CompType.Weapon)
                             TerminalBlock.AppendingCustomInfo -= AppendingCustomInfoWeapon;
-                        else if (BaseType == CompType.Support)
+                        else if (TypeSpecific == CompTypeSpecific.Support)
                             TerminalBlock.AppendingCustomInfo -= AppendingCustomInfoSupport;
-                        else if (BaseType == CompType.Upgrade)
+                        else if (TypeSpecific == CompTypeSpecific.Upgrade)
                             TerminalBlock.AppendingCustomInfo -= AppendingCustomInfoUpgrade;
 
                         Cube.IsWorkingChanged -= IsWorkingChanged;
@@ -295,7 +295,7 @@ namespace WeaponCore.Support
 
                 stringBuilder.Append(status + "\nCurrent: " + CurrentDps.ToString("0.0") + " (" + (CurrentDps / PeakDps).ToString("P") + ")");
 
-                stringBuilder.Append("\n\n==== Support ====");
+                stringBuilder.Append("\n\n==== SupportSys ====");
 
                 var weaponCnt = Platform.ArmorSupports.Count;
                 for (int i = 0; i < weaponCnt; i++)

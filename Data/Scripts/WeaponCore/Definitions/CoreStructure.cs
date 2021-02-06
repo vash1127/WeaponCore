@@ -1183,8 +1183,8 @@ namespace WeaponCore.Support
         public enum StructureTypes
         {
             Weapon,
-            WeaponUpgrade,
-            ArmorEnhancer,
+            Upgrade,
+            Support,
             Phantom
         }
 
@@ -1282,7 +1282,7 @@ namespace WeaponCore.Support
             switch (system.PartType)
             {
                 case HardwareDef.HardwareType.Upgrade:
-                    StructureType = StructureTypes.WeaponUpgrade;
+                    StructureType = StructureTypes.Upgrade;
                     EntityType = EnittyTypes.Block;
                     break;
                 case HardwareDef.HardwareType.Phantom:
@@ -1292,7 +1292,7 @@ namespace WeaponCore.Support
                 case HardwareDef.HardwareType.ActiveArmor:
                 case HardwareDef.HardwareType.PassiveArmor:
                 case HardwareDef.HardwareType.RegenArmor:
-                    StructureType = StructureTypes.ArmorEnhancer;
+                    StructureType = StructureTypes.Support;
                     EntityType = EnittyTypes.Block;
                     break;
                 case HardwareDef.HardwareType.BlockWeapon:

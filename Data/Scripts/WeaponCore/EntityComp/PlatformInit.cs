@@ -6,7 +6,7 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 using static WeaponCore.Support.CoreComponent.Start;
-using static WeaponCore.Support.CoreComponent.CompType;
+using static WeaponCore.Support.CoreComponent.CompTypeSpecific;
 using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
@@ -17,7 +17,7 @@ namespace WeaponCore.Platform
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
         internal List<Weapon> Weapons = new List<Weapon>();
-        internal List<ArmorSupport> ArmorSupports = new List<ArmorSupport>();
+        internal List<SupportSys> ArmorSupports = new List<SupportSys>();
         internal List<Upgrades> Upgrades = new List<Upgrades>();
         internal List<Phantoms> Phantoms = new List<Phantoms>();
         internal CoreStructure Structure;
@@ -122,7 +122,7 @@ namespace WeaponCore.Platform
 
             foreach (var i in _orderToCreate)
             {
-                if (Comp.IsWeapon)
+                if (Comp.Type == CoreComponent.CompType.Weapon)
                 {
                     if (Phantoms.Count > 0 || ArmorSupports.Count > 0 || Upgrades.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
@@ -145,8 +145,8 @@ namespace WeaponCore.Platform
                     }
 
                     //compatability with old configs of converted turrets
-                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
+                    var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
+                    var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                     MyEntity azimuthPart = null;
                     if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
@@ -161,7 +161,7 @@ namespace WeaponCore.Platform
 
                     Weapons.Add(new Weapon(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName));
                 }
-                else if (Comp.BaseType == Upgrade)
+                else if (Comp.Type == CoreComponent.CompType.Upgrade)
                 {
                     if (Weapons.Count > 0 || ArmorSupports.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
@@ -172,7 +172,7 @@ namespace WeaponCore.Platform
                         Upgrades.Add(new Upgrades(system, comp, i));
                     }
                 }
-                else if (Comp.BaseType == CoreComponent.CompType.Support)
+                else if (Comp.Type == CoreComponent.CompType.Support)
                 {
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
@@ -180,10 +180,10 @@ namespace WeaponCore.Platform
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
-                        ArmorSupports.Add(new ArmorSupport(system, comp, i));
+                        ArmorSupports.Add(new SupportSys(system, comp, i));
                     }
                 }
-                else if (Comp.BaseType == Phantom)
+                else if (Comp.Type == CoreComponent.CompType.Phantom)
                 {
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || ArmorSupports.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
@@ -196,7 +196,7 @@ namespace WeaponCore.Platform
                 }
             }
 
-            if (Comp.IsWeapon)
+            if (Comp.Type == CoreComponent.CompType.Weapon)
                 CompileTurret(comp);
             
             _orderToCreate.Clear();
@@ -216,8 +216,8 @@ namespace WeaponCore.Platform
 
                 if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || v.DesignatorWeapon)
                 {
-                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" : v.ElevationPartName.String : v.ElevationPartName.String;
+                    var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
+                    var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" : v.ElevationPartName.String : v.ElevationPartName.String;
                     var weapon = Weapons[c];
 
                     if (v.DesignatorWeapon)
@@ -426,8 +426,8 @@ namespace WeaponCore.Platform
                         registered = true;
                     }
 
-                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" :v.ElevationPartName.String : v.ElevationPartName.String;
+                    var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
+                    var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" :v.ElevationPartName.String : v.ElevationPartName.String;
                     var weapon = Weapons[c];
                     MyEntity azimuthPartEntity;
                     if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))

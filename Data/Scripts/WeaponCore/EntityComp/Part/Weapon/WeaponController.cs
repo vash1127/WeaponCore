@@ -75,7 +75,7 @@ namespace WeaponCore.Platform
                     return;
                 }
 
-                if (Comp.BaseType == CompType.VanillaTurret && Comp.VanillaTurretBase != null) {
+                if (Comp.TypeSpecific == CompTypeSpecific.VanillaTurret && Comp.VanillaTurretBase != null) {
                     Azimuth = Comp.VanillaTurretBase.Azimuth;
                     Elevation = Comp.VanillaTurretBase.Elevation;
                 }

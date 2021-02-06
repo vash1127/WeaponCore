@@ -17,32 +17,32 @@ namespace WeaponCore.Support
 {
     public partial class CoreComponent
     {
-        internal bool InventoryInited;
-        internal CompType BaseType;
-
-        internal readonly MyEntity CoreEntity;
-
-        internal readonly IMySlimBlock Slim;
-        internal readonly IMyTerminalBlock TerminalBlock;
-        internal readonly IMyFunctionalBlock FunctionalBlock;
-        internal readonly IMyLargeTurretBase VanillaTurretBase;
-        internal readonly IMyAutomaticRifleGun Rifle;
-        internal readonly IMyHandheldGunObject<MyGunBase> GunBase;
-        internal readonly MyCubeBlock Cube;
-
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
         internal readonly List<int> AmmoSelectionPartIds = new List<int>();
-        internal readonly List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
-        internal readonly Session Session;
-        internal readonly MyInventory CoreInventory;
-        internal readonly bool IsBlock;
-        internal readonly CompData Data;
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
-        internal readonly MyStringHash SubTypeId;
-        internal readonly string SubtypeName;
-        internal readonly bool LazyUpdate;
-
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
+
+        internal List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
+
+        internal bool InventoryInited;
+        internal CompTypeSpecific TypeSpecific;
+        internal CompType Type;
+        internal MyEntity CoreEntity;
+        internal IMySlimBlock Slim;
+        internal IMyTerminalBlock TerminalBlock;
+        internal IMyFunctionalBlock FunctionalBlock;
+        internal IMyLargeTurretBase VanillaTurretBase;
+        internal IMyAutomaticRifleGun Rifle;
+        internal IMyHandheldGunObject<MyGunBase> GunBase;
+        internal MyCubeBlock Cube;
+        internal Session Session;
+        internal bool IsBlock;
+
+        internal MyStringHash SubTypeId;
+        internal string SubtypeName;
+        internal bool LazyUpdate;
+        internal MyInventory CoreInventory;
+        internal CompData Data;
 
         internal InputStateData InputState;
         internal Ai Ai;
@@ -97,7 +97,6 @@ namespace WeaponCore.Support
         internal bool UiEnabled;
         internal bool ShootSubmerged;
         internal bool HasTracking;
-        internal bool IsWeapon;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -112,7 +111,7 @@ namespace WeaponCore.Support
             ReInit,
         }
 
-        internal enum CompType
+        internal enum CompTypeSpecific
         {
             VanillaTurret,
             VanillaFixed,
@@ -121,6 +120,14 @@ namespace WeaponCore.Support
             Upgrade,
             Phantom,
             Rifle,
+        }
+
+        internal enum CompType
+        {
+            Phantom,
+            Weapon,
+            Support,
+            Upgrade
         }
 
         public enum TriggerActions
@@ -133,7 +140,7 @@ namespace WeaponCore.Support
 
         internal bool FakeIsWorking => !IsBlock || IsWorking;
 
-        public CoreComponent(Session session, MyEntity coreEntity)
+        public void Init(Session session, MyEntity coreEntity)
         {
             Session = session;
             CoreEntity = coreEntity;
@@ -157,46 +164,50 @@ namespace WeaponCore.Support
 
                     VanillaTurretBase = turret;
                     VanillaTurretBase.EnableIdleRotation = false;
-                    BaseType = CompType.VanillaTurret;
-                    IsWeapon = true;
+                    TypeSpecific = CompTypeSpecific.VanillaTurret;
+                    Type = CompType.Weapon;
                 }
                 else if (CoreEntity is IMyConveyorSorter)
                 {
                     if (Session.WeaponCoreArmorEnhancerDefs.Contains(Cube.BlockDefinition.Id))
                     {
-                        BaseType = CompType.Support;
+                        TypeSpecific = CompTypeSpecific.Support;
+                        Type = CompType.Support;
                         LazyUpdate = true;
                     }
                     else if (Session.WeaponCoreUpgradeBlockDefs.Contains(Cube.BlockDefinition.Id))
                     {
-                        BaseType = CompType.Upgrade;
+                        TypeSpecific = CompTypeSpecific.Upgrade;
+                        Type = CompType.Upgrade;
                         LazyUpdate = true;
                     }
                     else {
 
-                        IsWeapon = true;
-                        BaseType = CompType.SorterWeapon;
+                        TypeSpecific = CompTypeSpecific.SorterWeapon;
+                        Type = CompType.Weapon;
                     }
                 }
                 else {
-                    IsWeapon = true;
-                    BaseType = CompType.VanillaFixed;
+                    TypeSpecific = CompTypeSpecific.VanillaFixed;
+                    Type = CompType.Weapon;
                 }
 
             }
             else if (CoreEntity is IMyAutomaticRifleGun) {
                 
-                IsWeapon = true;
                 Rifle = (IMyAutomaticRifleGun)CoreEntity;
                 GunBase = (IMyHandheldGunObject<MyGunBase>)CoreEntity;
                 TopEntity = Rifle.Owner;
                 SubtypeName = Rifle.DefinitionId.SubtypeName;
                 SubTypeId = Rifle.DefinitionId.SubtypeId;
                 MaxIntegrity = 1;
-                BaseType = CompType.Rifle;
+                TypeSpecific = CompTypeSpecific.Rifle;
+                Type = CompType.Weapon;
             }
-            else 
-                BaseType = CompType.Phantom;
+            else {
+                TypeSpecific = CompTypeSpecific.Phantom;
+                Type = CompType.Phantom;
+            }
 
             CoreInventory = (MyInventory)CoreEntity.GetInventoryBase();
             SinkPower = IdlePower;

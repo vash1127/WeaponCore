@@ -360,7 +360,7 @@ namespace WeaponCore.Platform
             
             FuckMyLife();
             
-            AiOnlyWeapon = Comp.BaseType != CoreComponent.CompType.VanillaTurret || (Comp.BaseType == CoreComponent.CompType.VanillaTurret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
+            AiOnlyWeapon = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.VanillaTurret || (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.VanillaTurret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
             string ejectorMatch;
             MyEntity ejectorPart;

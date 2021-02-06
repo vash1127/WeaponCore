@@ -91,17 +91,35 @@ namespace WeaponCore
             CompsToStart.ApplyRemovals();
         }
 
-        private void InitComp(MyEntity entity, bool thread = true)
+        private void InitComp(MyEntity entity, ref MyDefinitionId? id)
         {
             using (entity.Pin())
             {
                 if (entity.MarkedForClose)
                     return;
 
-                var comp = new CoreComponent(this, entity);
+                CoreStructure c;
+                if (PartPlatforms.TryGetValue(id.GetValueOrDefault(), out c))
+                {
+                    switch (c.StructureType)
+                    {
+                        case CoreStructure.StructureTypes.Upgrade:
+                            CompsToStart.Add(new Upgrade.UpgradeComponent(this, entity));
+                            break;
+                        case CoreStructure.StructureTypes.Support:
+                            CompsToStart.Add(new SupportSys.SupportComponent(this, entity));
+                            break;
+                        case CoreStructure.StructureTypes.Phantom:
+                            CompsToStart.Add(new Phantom.PhantomComponent(this, entity));
+                            break;
+                        case CoreStructure.StructureTypes.Weapon:
+                            CompsToStart.Add(new Weapon.WeaponComponent(this, entity));
+                            break;
+                    }
 
-                CompsToStart.Add(comp);
-                if (thread) CompsToStart.ApplyAdditions();
+                    CompsToStart.ApplyAdditions();
+                }
+                else Log.Line($"failed InitComp");
             }
         }
 

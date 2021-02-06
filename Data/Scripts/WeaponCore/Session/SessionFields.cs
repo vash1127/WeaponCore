@@ -154,7 +154,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Part> WeaponLosDebugActive = new HashSet<Part>();
-        internal readonly HashSet<ArmorSupport> DisplayAffectedArmor = new HashSet<ArmorSupport>();
+        internal readonly HashSet<Platform.SupportSys> DisplayAffectedArmor = new HashSet<Platform.SupportSys>();
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<CoreComponent> CompsDelayed = new List<CoreComponent>();

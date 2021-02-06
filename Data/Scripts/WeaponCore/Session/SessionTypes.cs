@@ -317,7 +317,7 @@ namespace WeaponCore
                 {
                     {"IsAsleep", () => GetComp()?.IsAsleep.ToString() ?? string.Empty },
                     {"GridId", () => GetComp()?.TopEntity.EntityId.ToString() ?? string.Empty },
-                    {"BaseType", () => GetComp()?.BaseType.ToString() ?? string.Empty },
+                    {"TypeSpecific", () => GetComp()?.TypeSpecific.ToString() ?? string.Empty },
                     {"AiGridMatchCubeGrid", () => (GetComp()?.Ai?.TopEntity == GetComp()?.TopEntity).ToString() ?? string.Empty },
                     {"IsWorking", () => GetComp()?.IsWorking.ToString() ?? string.Empty },
                     {"entityIsWorking", () => GetComp()?.FakeIsWorking.ToString() ?? string.Empty },

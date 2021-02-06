@@ -8,6 +8,15 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon : Part
     {
+        internal class WeaponComponent : CoreComponent
+        {
+
+            internal WeaponComponent(Session session, MyEntity coreEntity)
+            {
+                base.Init(session, coreEntity);
+            }
+        }
+
         internal class ParallelRayCallBack
         {
             internal Weapon Weapon;

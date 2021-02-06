@@ -63,12 +63,14 @@
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityWeaponSub.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\ArmorEnhTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\ArmorEnhSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\ArmorEnhFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\SupportTypes.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\SupportSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\SupportFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\PartFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Upgrade\UpgradeFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Upgrade\UpgradeTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\CoreSettings.cs" />

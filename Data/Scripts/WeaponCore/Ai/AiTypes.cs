@@ -68,7 +68,7 @@ namespace WeaponCore.Support
                 return signalInRange || w.Comp.Ai.Construct.Data.Repo.FocusData.HasFocus || w.Comp.Ai.LiveProjectile.Count > 0;
             }
 
-            internal bool ValidSignalExists(ArmorSupport a)
+            internal bool ValidSignalExists(Platform.SupportSys a)
             {
                 var signalInRange = true;
                 return signalInRange;

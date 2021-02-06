@@ -321,10 +321,10 @@ namespace WeaponCore
 
                     switch (c.StructureType)
                     {
-                        case CoreStructure.StructureTypes.WeaponUpgrade:
+                        case CoreStructure.StructureTypes.Upgrade:
                             WeaponCoreUpgradeBlockDefs.Add(defId);
                             break;
-                        case CoreStructure.StructureTypes.ArmorEnhancer:
+                        case CoreStructure.StructureTypes.Support:
                             WeaponCoreArmorEnhancerDefs.Add(defId);
                             DamageHandler = true;
                             break;
