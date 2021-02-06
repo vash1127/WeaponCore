@@ -34,6 +34,7 @@ namespace WeaponCore.Support
 
         private const string Arc = "Arc";
 
+        public readonly MyStringHash PartNameIdHash;
         public readonly MyStringHash MuzzlePartName;
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
@@ -55,7 +56,7 @@ namespace WeaponCore.Support
         public readonly Prediction Prediction;
         public readonly TurretType TurretMovement;
         public readonly FiringSoundState FiringSound;
-        public readonly HardwareDef.HardwareType Armor;
+        public readonly HardwareDef.HardwareType PartType;
 
         public readonly string PartName;
         public readonly string AltScopeName;
@@ -142,9 +143,11 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, PartDefinition values, string partName, AmmoType[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public CoreSystem(Session session, MyStringHash partNameIdHash, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, PartDefinition values, string partName, AmmoType[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
+
+            PartNameIdHash = partNameIdHash;
             MuzzlePartName = muzzlePartName;
             DesignatorWeapon = muzzlePartName.String == "Designator";
             AzimuthPartName = azimuthPartName;
@@ -168,7 +171,7 @@ namespace WeaponCore.Support
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
             SuppressFire = Values.HardPoint.Ai.SuppressFire;
-            Armor = Values.HardPoint.HardWare.Type;
+            PartType = Values.HardPoint.HardWare.Type;
             HasEjector = !string.IsNullOrEmpty(Values.Assignments.Ejector);
             AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
             HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
@@ -642,6 +645,9 @@ namespace WeaponCore.Support
             HasShotFade =  ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
             MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
+
+            if (CollisionSize > 5 && !session.LocalVersion) Log.Line($"{ammo.AmmoDef.AmmoRound} has large largeCollisionSize: {CollisionSize} meters");
+
         }
 
         internal void ComputeTextures(CoreSystem.AmmoType ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
@@ -1033,7 +1039,6 @@ namespace WeaponCore.Support
                 size = 1;
             }
             else if (!isLine) size *= 0.5;
-            if (size > 5) Log.Line($"{ammoDef.AmmoRound} has large largeCollisionSize: {size} meters");
             collisionIsLine = isLine;
             collisionSize = size;
         }
@@ -1159,12 +1164,29 @@ namespace WeaponCore.Support
         public readonly Dictionary<int, int> HashToId;
 
         public readonly MyStringHash[] PartHashes;
-        public readonly MyStringHash[] MuzzleHashes;
         public readonly bool MultiParts;
-        public readonly int GridWeaponCap;
+        public readonly bool HasTurret;
+        public readonly int ConstructPartCap;
         public readonly int PrimaryPart;
         public readonly string ModPath;
         public readonly Session Session;
+        public readonly StructureTypes StructureType;
+        public readonly EnittyTypes EntityType;
+
+        public enum EnittyTypes
+        {
+            Rifle,
+            Phantom,
+            Block,
+        }
+
+        public enum StructureTypes
+        {
+            Weapon,
+            WeaponUpgrade,
+            ArmorEnhancer,
+            Phantom
+        }
 
         public CoreStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<PartDefinition> wDefList, string modPath)
         {
@@ -1196,8 +1218,8 @@ namespace WeaponCore.Support
                 muzzleHashes[partId] = muzzletNameHash;
                 var azimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
                 var elevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
-                
-                partHashes[partId] = MyStringHash.GetOrCompute(partDef.HardPoint.PartName + $" {partId}");
+                var partNameIdHash = MyStringHash.GetOrCompute(partDef.HardPoint.PartName + $" {partId}");
+                partHashes[partId] = partNameIdHash;
 
                 var cap = partDef.HardPoint.Other.ConstructPartCap;
                 if (partCap == 0 && cap > 0) partCap = cap;
@@ -1239,17 +1261,47 @@ namespace WeaponCore.Support
                     weaponAmmo[i] = new CoreSystem.AmmoType { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
-                var partHash = (tDef.Key + elevationNameHash + muzzletNameHash + azimuthNameHash).GetHashCode();
+                var partHash = (tDef.Key + partNameIdHash + elevationNameHash + muzzletNameHash + azimuthNameHash).GetHashCode();
                 HashToId.Add(partHash, partId);
-                PartSystems.Add(muzzletNameHash, new CoreSystem(Session, muzzletNameHash, azimuthNameHash, elevationNameHash, partDef, typeName, weaponAmmo, partHash, partId));
+                var coreSystem = new CoreSystem(Session, partNameIdHash, muzzletNameHash, azimuthNameHash, elevationNameHash, partDef, typeName, weaponAmmo, partHash, partId);
+                
+                if (coreSystem.Values.HardPoint.Ai.TurretAttached && !HasTurret)
+                    HasTurret = true;
+
+                PartSystems.Add(partNameIdHash, coreSystem);
                 partId++;
             }
+
             if (PrimaryPart == -1)
                 PrimaryPart = 0;
-            
-            GridWeaponCap = partCap;
+
+            ConstructPartCap = partCap;
             PartHashes = partHashes;
-            MuzzleHashes = muzzleHashes;
+
+            var system = PartSystems[PartHashes[PrimaryPart]];
+            switch (system.PartType)
+            {
+                case HardwareDef.HardwareType.Upgrade:
+                    StructureType = StructureTypes.WeaponUpgrade;
+                    EntityType = EnittyTypes.Block;
+                    break;
+                case HardwareDef.HardwareType.Phantom:
+                    StructureType = StructureTypes.Phantom;
+                    EntityType = EnittyTypes.Phantom;
+                    break;
+                case HardwareDef.HardwareType.ActiveArmor:
+                case HardwareDef.HardwareType.PassiveArmor:
+                case HardwareDef.HardwareType.RegenArmor:
+                    StructureType = StructureTypes.ArmorEnhancer;
+                    EntityType = EnittyTypes.Block;
+                    break;
+                case HardwareDef.HardwareType.BlockWeapon:
+                case HardwareDef.HardwareType.HandWeapon:
+
+                    StructureType = StructureTypes.Weapon;
+                    EntityType = system.PartType == HardwareDef.HardwareType.HandWeapon ? EnittyTypes.Block : EnittyTypes.Rifle;
+                    break;
+            }
         }
     }
 

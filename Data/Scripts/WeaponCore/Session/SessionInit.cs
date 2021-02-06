@@ -68,7 +68,6 @@ namespace WeaponCore
             ApiServer.Load();
             GenerateButtonMap();
             Settings = new CoreSettings(this);
-            LocalVersion = ModContext.ModId == "WeaponCore";
             CounterKeenLogMessage();
             if (!CompsToStart.IsEmpty)
                 StartComps();
@@ -113,6 +112,7 @@ namespace WeaponCore
             IsCreative = MyAPIGateway.Session.CreativeMode;
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
+            LocalVersion = ModContext.ModId == "WeaponCore";
 
             foreach (var x in PartDefinitions)
             {
@@ -158,8 +158,9 @@ namespace WeaponCore
                 {
                     var mount = x.Assignments.MountPoints[i];
                     var subTypeId = mount.SubtypeId;
-                    var muzzleOrRootPartId = mount.MuzzlePartId;
-                    var muzzlePartOrRoot = !string.IsNullOrEmpty(muzzleOrRootPartId) ? muzzleOrRootPartId : x.HardPoint.PartName + $" {i}";
+                    var muzzlePartId = mount.MuzzlePartId;
+                    var weapon = x.HardPoint.HardWare.Type == BlockWeapon || x.HardPoint.HardWare.Type == HandWeapon;
+                    var partAttachmentId = weapon ? muzzlePartId : x.HardPoint.PartName + $" {i}";
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
 
@@ -167,12 +168,12 @@ namespace WeaponCore
 
                     if (!_subTypeMaps.ContainsKey(subTypeId)) {
 
-                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> {[muzzlePartOrRoot] = extraInfo};
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> {[partAttachmentId] = extraInfo};
 
                         _subTypeIdToPartDefs[subTypeId] = new List<PartDefinition> { x };
                     }
                     else {
-                        _subTypeMaps[subTypeId][muzzlePartOrRoot] = extraInfo;
+                        _subTypeMaps[subTypeId][partAttachmentId] = extraInfo;
                         _subTypeIdToPartDefs[subTypeId].Add(x);
                     }
                 }
@@ -194,72 +195,44 @@ namespace WeaponCore
                 }
 
                 var parts = _subTypeIdToPartDefs[subTypeMap.Key];
-                var isTurret = false;
-                var isArmor = false;
-                var isUpgrade = false;
-                var isWeapon = false;
-                var isRifle = false;
-                var isPhantom = false;
                 var firstWeapon = true;
                 string modPath = null;
-                foreach (var partDef in parts)
-                {
+
+                foreach (var partDef in parts) {
+
                     try {
                         modPath = partDef.ModPath;
-                        if (partDef.HardPoint.Ai.TurretAttached)
-                            isTurret = true;
-
-                        if (partDef.HardPoint.HardWare.Type == BlockWeapon || partDef.HardPoint.HardWare.Type == HandWeapon)
-                        {
-                            isWeapon = true;
-                            if (partDef.HardPoint.HardWare.Type == HandWeapon)
-                                isRifle = true;
-                        }
-
-                        if (partDef.HardPoint.HardWare.Type == Upgrade)
-                            isUpgrade = true;
-
-                        if (partDef.HardPoint.HardWare.Type == Phantom)
-                            isPhantom = true;
-
-                        if (isUpgrade && !isWeapon && !isPhantom) {
-                            DamageHandler = true;
-                            isArmor = true;
-                        }
                         foreach (var def in AllDefinitions) {
+
                             MyDefinitionId defid;
                             var matchingDef = def.Id.SubtypeName == subTypeMap.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeMap.Key), out defid) && defid == def.Id);
-                            if (matchingDef)
-                            {
-                                if (partDef.HardPoint.Other.RestrictionRadius > 0)
-                                {
-                                    if (partDef.HardPoint.Other.CheckForAnyWeapon && !areaRestriction.CheckForAnyWeapon)
-                                    {
+
+                            if (matchingDef) {
+
+                                if (partDef.HardPoint.Other.RestrictionRadius > 0) {
+
+                                    if (partDef.HardPoint.Other.CheckForAnyWeapon && !areaRestriction.CheckForAnyWeapon) {
                                         areaRestriction.CheckForAnyWeapon = true;
                                     }
-                                    if (partDef.HardPoint.Other.CheckInflatedBox)
-                                    {
-                                        if (areaRestriction.RestrictionBoxInflation < partDef.HardPoint.Other.RestrictionRadius)
-                                        {
+
+                                    if (partDef.HardPoint.Other.CheckInflatedBox) {
+                                        if (areaRestriction.RestrictionBoxInflation < partDef.HardPoint.Other.RestrictionRadius) {
                                             areaRestriction.RestrictionBoxInflation = partDef.HardPoint.Other.RestrictionRadius;
                                         }
                                     }
-                                    else
-                                    {
+                                    else {
+
                                         if (areaRestriction.RestrictionRadius < partDef.HardPoint.Other.RestrictionRadius)
-                                        {
                                             areaRestriction.RestrictionRadius = partDef.HardPoint.Other.RestrictionRadius;
-                                        }
                                     }
                                 }
 
                                 WeaponCoreDefs[subTypeMap.Key] = def.Id;
                                 var designator = false;
 
-                                for (int i = 0; i < partDef.Assignments.MountPoints.Length; i++)
-                                {
-                                    if (partDef.Assignments.MountPoints[i].MuzzlePartId == "Designator")
-                                    {
+                                for (int i = 0; i < partDef.Assignments.MountPoints.Length; i++) {
+
+                                    if (partDef.Assignments.MountPoints[i].MuzzlePartId == "Designator") {
                                         designator = true;
                                         break;
                                     }
@@ -267,7 +240,6 @@ namespace WeaponCore
 
                                 if (!designator)
                                 {
-
                                     var wepBlockDef = def as MyWeaponBlockDefinition;
                                     if (wepBlockDef != null)
                                     {
@@ -338,39 +310,39 @@ namespace WeaponCore
                         }
 
                     }
-                    catch (Exception e)
-                    {
-                        Log.Line($"Failed to load {partDef.HardPoint.PartName}");
-                    }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
                 }
 
                 MyDefinitionId defId;
-                if (WeaponCoreDefs.TryGetValue(subTypeMap.Key, out defId))
-                {
-                    if (isWeapon)
+                if (WeaponCoreDefs.TryGetValue(subTypeMap.Key, out defId)) {
+
+                    var c = new CoreStructure(this, subTypeMap, parts, modPath);
+                    PartPlatforms[defId] = c;
+
+                    switch (c.StructureType)
                     {
-                        if (isTurret)
-                            WeaponCoreTurretBlockDefs.Add(defId);
-                        else
-                            WeaponCoreFixedBlockDefs.Add(defId);
+                        case CoreStructure.StructureTypes.WeaponUpgrade:
+                            WeaponCoreUpgradeBlockDefs.Add(defId);
+                            break;
+                        case CoreStructure.StructureTypes.ArmorEnhancer:
+                            WeaponCoreArmorEnhancerDefs.Add(defId);
+                            DamageHandler = true;
+                            break;
+                        case CoreStructure.StructureTypes.Phantom:
+                            WeaponCorePhantomDefs.Add(defId);
+                            break;
+                        case CoreStructure.StructureTypes.Weapon:
+                            if (c.HasTurret && c.EntityType == CoreStructure.EnittyTypes.Block)
+                                WeaponCoreTurretBlockDefs.Add(defId);
+                            else if (c.EntityType == CoreStructure.EnittyTypes.Block)
+                                WeaponCoreFixedBlockDefs.Add(defId);
+                            else 
+                                WeaponCoreRifleDefs.Add(defId);
+                            break;
                     }
-                    else if (isUpgrade)
-                    {
-                        WeaponCoreUpgradeBlockDefs.Add(defId);
-                    }
-                    else if (isArmor)
-                        WeaponCoreArmorBlockDefs.Add(defId);
-                    else if (isPhantom)
-                        WeaponCorePhantomDefs.Add(defId);
-                    else if (isRifle)
-                        WeaponCoreRifleDefs.Add(defId);
                 }
-                PartPlatforms[defId] = new CoreStructure(this, subTypeMap, parts, modPath);
             }
-
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
-
         }
-
     }
 }

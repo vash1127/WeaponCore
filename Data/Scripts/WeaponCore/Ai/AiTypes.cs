@@ -54,28 +54,42 @@ namespace WeaponCore.Support
             }
         }
 
-        public class AiTargetingInfo
+        public class AiDetectionInfo
         {
-            internal bool ThreatInRange;
-            internal double ThreatRangeSqr;
+            internal bool PriorityInRange;
+            internal double PriorityRangeSqr;
             internal bool OtherInRange;
             internal double OtherRangeSqr;
             internal bool SomethingInRange;
 
-            internal bool ValidTargetExists(Weapon w)
+            internal bool ValidSignalExists(Weapon w)
             {
-                var comp = w.Comp;
-                var ai = comp.Ai;
+                var signalInRange = !w.Comp.DetectOtherSignals ? PriorityRangeSqr <= w.MaxTargetDistanceSqr : (OtherRangeSqr <= w.MaxTargetDistanceSqr || PriorityRangeSqr <= w.MaxTargetDistanceSqr);
+                return signalInRange || w.Comp.Ai.Construct.Data.Repo.FocusData.HasFocus || w.Comp.Ai.LiveProjectile.Count > 0;
+            }
 
-                var targetInrange = !comp.TargetNonThreats ? ThreatRangeSqr <= w.MaxTargetDistanceSqr : (OtherRangeSqr <= w.MaxTargetDistanceSqr || ThreatRangeSqr <= w.MaxTargetDistanceSqr);
+            internal bool ValidSignalExists(ArmorSupport a)
+            {
+                var signalInRange = true;
+                return signalInRange;
+            }
 
-                return targetInrange || ai.Construct.Data.Repo.FocusData.HasFocus || ai.LiveProjectile.Count > 0;
+            internal bool ValidSignalExists(Upgrades u)
+            {
+                var signalInRange = true;
+                return signalInRange;
+            }
+
+            internal bool ValidSignalExists(Phantoms p)
+            {
+                var signalInRange = true;
+                return signalInRange;
             }
 
             internal void Clean()
             {
-                ThreatRangeSqr = double.MaxValue;
-                ThreatInRange = false;
+                PriorityRangeSqr = double.MaxValue;
+                PriorityInRange = false;
                 OtherRangeSqr = double.MaxValue;
                 OtherInRange = false;
                 SomethingInRange = false;

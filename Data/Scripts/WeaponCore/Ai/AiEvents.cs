@@ -104,6 +104,7 @@ namespace WeaponCore.Support
                         }
                     }
                 }
+                LastBlockChangeTick = Session.Tick;
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null} - RootAiNull: {Construct.RootAi == null}"); }
         }
@@ -117,8 +118,10 @@ namespace WeaponCore.Support
                 var cubeDef = cube.BlockDefinition;
                 var isWeaponBase = weaponType && cubeDef != null && !sessionNull && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.PartPlatforms.ContainsKey(cubeDef.Id));
                 var battery = cube as MyBatteryBlock;
+                
                 if (sessionNull)
                     Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose} - isRegistered:{SubGridsRegistered.Contains(cube.CubeGrid)} - regCnt:{SubGridsRegistered.Count}");
+                else LastBlockChangeTick = Session.Tick;
 
                 MyInventory inventory;
                 if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory)) {

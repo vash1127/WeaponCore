@@ -4,7 +4,6 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Sandbox.Game.Weapons;
 using Sandbox.ModAPI.Weapons;
 using VRage.Game;
@@ -41,6 +40,8 @@ namespace WeaponCore.Support
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal readonly MyStringHash SubTypeId;
         internal readonly string SubtypeName;
+        internal readonly bool LazyUpdate;
+
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
         internal InputStateData InputState;
@@ -50,13 +51,12 @@ namespace WeaponCore.Support
         internal MyEntity TopEntity;
         internal uint LastRayCastTick;
         internal uint IsWorkingChangedTick;
-
-        internal int WeaponsTracking;
-        internal double MaxTargetDistance = double.MinValue;
-        internal double MaxTargetDistanceSqr = double.MinValue;
-        internal double MinTargetDistance = double.MaxValue;
-        internal double MinTargetDistanceSqr = double.MaxValue;
-        internal long PreviousOwner = long.MaxValue;
+        internal uint NextLazyUpdateStart;
+        internal int PartTracking;
+        internal double MaxDetectDistance = double.MinValue;
+        internal double MaxDetectDistanceSqr = double.MinValue;
+        internal double MinDetectDistance = double.MaxValue;
+        internal double MinDetectDistanceSqr = double.MaxValue;
 
         internal float EffectiveDps;
         internal float PeakDps;
@@ -75,7 +75,7 @@ namespace WeaponCore.Support
         internal float MaxIntegrity;
         internal float CurrentCharge;
         internal float CurrentInventoryVolume;
-        internal bool TargetNonThreats;
+        internal bool DetectOtherSignals;
         internal bool IsAsleep;
         internal bool IsFunctional;
         internal bool IsWorking;
@@ -97,7 +97,6 @@ namespace WeaponCore.Support
         internal bool UiEnabled;
         internal bool ShootSubmerged;
         internal bool HasTracking;
-        internal bool UnexpectedMag;
         internal bool IsWeapon;
         internal string CustomIcon;
 
@@ -118,7 +117,7 @@ namespace WeaponCore.Support
             VanillaTurret,
             VanillaFixed,
             SorterWeapon,
-            Armor,
+            ArmorEnhancer,
             Upgrade,
             Phantom,
             Rifle,
@@ -163,11 +162,16 @@ namespace WeaponCore.Support
                 }
                 else if (CoreEntity is IMyConveyorSorter)
                 {
-
-                    if (Session.WeaponCoreArmorBlockDefs.Contains(Cube.BlockDefinition.Id))
-                        BaseType = CompType.Armor;
+                    if (Session.WeaponCoreArmorEnhancerDefs.Contains(Cube.BlockDefinition.Id))
+                    {
+                        BaseType = CompType.ArmorEnhancer;
+                        LazyUpdate = true;
+                    }
                     else if (Session.WeaponCoreUpgradeBlockDefs.Contains(Cube.BlockDefinition.Id))
+                    {
                         BaseType = CompType.Upgrade;
+                        LazyUpdate = true;
+                    }
                     else {
 
                         IsWeapon = true;

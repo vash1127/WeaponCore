@@ -16,7 +16,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Toggle Click To Fire");
             action.Action = CustomActions.TerminalActionShootClick;
             action.Writer = CustomActions.ClickShootWriter;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.WeaponIsReady;
             action.ValidForGroups = true;
             MyAPIGateway.TerminalControls.AddAction<T>(action);
             session.CustomActions.Add(action);
@@ -29,7 +29,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Shoot Once");
             action.Action = CustomActions.TerminalActionShootOnce;
             action.Writer = TerminalHelpers.EmptyStringBuilder;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.WeaponIsReady;
             action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -43,7 +43,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Shoot On/Off");
             action.Action = CustomActions.TerminActionToggleShoot;
             action.Writer = CustomActions.ShootStateWriter;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.WeaponIsReady;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -57,7 +57,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Shoot Off");
             action.Action = CustomActions.TerminalActionShootOff;
             action.Writer = CustomActions.ShootStateWriter;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.WeaponIsReady;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -71,7 +71,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Shoot On");
             action.Action = CustomActions.TerminalActionShootOn;
             action.Writer = CustomActions.ShootStateWriter;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.WeaponIsReady;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

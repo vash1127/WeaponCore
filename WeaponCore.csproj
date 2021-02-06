@@ -62,6 +62,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompRun.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Armor\ArmorSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Armor\ArmorFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\PartFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomFields.cs" />

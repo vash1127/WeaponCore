@@ -200,6 +200,10 @@ namespace WeaponCore
                     var averageMisses = RayMissAmounts > 0 ? RayMissAmounts / Rays : 0; 
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
                 }
+                if (Tick180)
+                {
+                    Log.Line($"{PartDefinitions.Count} - {CustomArmorSubtypes.Count}");
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

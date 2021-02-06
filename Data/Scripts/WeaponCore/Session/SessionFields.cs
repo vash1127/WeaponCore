@@ -165,7 +165,7 @@ namespace WeaponCore
         internal readonly List<Weapon> HomingWeapons = new List<Weapon>(128);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCoreArmorBlockDefs = new List<MyDefinitionId>();
+        internal readonly List<MyDefinitionId> WeaponCoreArmorEnhancerDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCorePhantomDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreUpgradeBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreRifleDefs = new List<MyDefinitionId>();

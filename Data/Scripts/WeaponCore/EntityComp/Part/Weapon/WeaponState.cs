@@ -198,14 +198,14 @@ namespace WeaponCore.Platform
             var minBufferSqr = (MinTargetDistance + minBuffer) * (MinTargetDistance + minBuffer);
             MinTargetDistanceBufferSqr = minBufferSqr;
 
-            if (Comp.MaxTargetDistance < MaxTargetDistance) {
-                Comp.MaxTargetDistance = MaxTargetDistance;
-                Comp.MaxTargetDistanceSqr = MaxTargetDistanceSqr;
+            if (Comp.MaxDetectDistance < MaxTargetDistance) {
+                Comp.MaxDetectDistance = MaxTargetDistance;
+                Comp.MaxDetectDistanceSqr = MaxTargetDistanceSqr;
             }
 
-            if (Comp.MinTargetDistance > MinTargetDistance) {
-                Comp.MinTargetDistance = MinTargetDistance;
-                Comp.MinTargetDistanceSqr = MinTargetDistanceSqr;
+            if (Comp.MinDetectDistance > MinTargetDistance) {
+                Comp.MinDetectDistance = MinTargetDistance;
+                Comp.MinDetectDistanceSqr = MinTargetDistanceSqr;
             }
         }
 

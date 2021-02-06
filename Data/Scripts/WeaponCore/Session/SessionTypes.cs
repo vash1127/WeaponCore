@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Havok;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -302,11 +299,11 @@ namespace WeaponCore
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
                     {"WeaponBase", () => GetAi()?.PartBase.Count.ToString() ?? string.Empty },
-                    {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty },
+                    {"PriorityRangeSqr", () => GetAi()?.DetectionInfo.PriorityRangeSqr.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty },
                     {"AiOwner", () => GetAi()?.AiOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
                     {"NumOfParts", () => GetAi()?.PartCount.ToString() ?? string.Empty },
-                    {"WeaponsTracking", () => GetAi()?.WeaponsTracking.ToString() ?? string.Empty },
+                    {"PartTracking", () => GetAi()?.WeaponsTracking.ToString() ?? string.Empty },
                     {"GridAvailablePower", () => GetAi()?.GridAvailablePower.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"MaxTargetingRange", () => GetAi()?.MaxTargetingRange.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                 };
@@ -324,7 +321,7 @@ namespace WeaponCore
                     {"AiGridMatchCubeGrid", () => (GetComp()?.Ai?.TopEntity == GetComp()?.TopEntity).ToString() ?? string.Empty },
                     {"IsWorking", () => GetComp()?.IsWorking.ToString() ?? string.Empty },
                     {"entityIsWorking", () => GetComp()?.FakeIsWorking.ToString() ?? string.Empty },
-                    {"MaxTargetDistance", () => GetComp()?.MaxTargetDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
+                    {"MaxDetectDistance", () => GetComp()?.MaxDetectDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
                     {"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
                     {"PlayerId", () => GetComp()?.Data.Repo.Base.State.PlayerId.ToString() ?? string.Empty },
@@ -363,7 +360,7 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.IsSleeping}"); }
                     },
-                    {"MaxTargetDistance", () => {
+                    {"MaxDetectDistance", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.MaxTargetDistance}"); }
                     },

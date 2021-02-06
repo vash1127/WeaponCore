@@ -150,7 +150,7 @@ namespace WeaponCore.Support
                 Session.SendCompBaseData(this);
         }
 
-        internal void DetectStateChanges()
+        internal void WeaponDetectStateChanges()
         {
             if (Platform.State != CorePlatform.PlatformState.Ready)
                 return;
@@ -159,7 +159,7 @@ namespace WeaponCore.Support
                 Ai.LastDetectEvent = Session.Tick;
                 Ai.SleepingComps = 0;
                 Ai.AwakeComps = 0;
-                Ai.TargetNonThreats = false;
+                Ai.DetectOtherSignals = false;
             }
 
             UpdatedState = true;
@@ -170,9 +170,9 @@ namespace WeaponCore.Support
             var attackFriends = overRides.Friendly;
             var targetNonThreats = (attackNoOwner || attackNeutrals || attackFriends);
             
-            TargetNonThreats = targetNonThreats;
-            if (TargetNonThreats)
-                Ai.TargetNonThreats = true;
+            DetectOtherSignals = targetNonThreats;
+            if (DetectOtherSignals)
+                Ai.DetectOtherSignals = true;
             var wasAsleep = IsAsleep;
             IsAsleep = false;
             IsDisabled = Ai.TouchingWater && !ShootSubmerged && Ai.WaterVolume.Contains(CoreEntity.PositionComp.WorldAABB.Center) != ContainmentType.Disjoint;
@@ -180,12 +180,12 @@ namespace WeaponCore.Support
             if (!Ai.Session.IsServer)
                 return;
 
-            var otherRangeSqr = Ai.TargetingInfo.OtherRangeSqr;
-            var threatRangeSqr = Ai.TargetingInfo.ThreatRangeSqr;
-            var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr || threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >= MinTargetDistanceSqr
-                : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
+            var otherRangeSqr = Ai.DetectionInfo.OtherRangeSqr;
+            var threatRangeSqr = Ai.DetectionInfo.PriorityRangeSqr;
+            var targetInrange = DetectOtherSignals ? otherRangeSqr <= MaxDetectDistanceSqr && otherRangeSqr >=MinDetectDistanceSqr || threatRangeSqr <= MaxDetectDistanceSqr && threatRangeSqr >= MinDetectDistanceSqr
+                : threatRangeSqr <= MaxDetectDistanceSqr && threatRangeSqr >=MinDetectDistanceSqr;
 
-            if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOff) {
+            if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !targetInrange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOff) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;
@@ -195,6 +195,52 @@ namespace WeaponCore.Support
                 Ai.AwakeComps++;
             }
             else 
+                Ai.AwakeComps++;
+        }
+
+        internal void OtherDetectStateChanges()
+        {
+            if (Platform.State != CorePlatform.PlatformState.Ready)
+                return;
+
+            if (Session.Tick - Ai.LastDetectEvent > 59)
+            {
+                Ai.LastDetectEvent = Session.Tick;
+                Ai.SleepingComps = 0;
+                Ai.AwakeComps = 0;
+                Ai.DetectOtherSignals = false;
+            }
+
+            UpdatedState = true;
+
+
+            DetectOtherSignals = false;
+            if (DetectOtherSignals)
+                Ai.DetectOtherSignals = true;
+
+            var wasAsleep = IsAsleep;
+            IsAsleep = false;
+            IsDisabled = false;
+
+            if (!Ai.Session.IsServer)
+                return;
+
+            var otherRangeSqr = Ai.DetectionInfo.OtherRangeSqr;
+            var priorityRangeSqr = Ai.DetectionInfo.PriorityRangeSqr;
+            var somethingInRange = DetectOtherSignals ? otherRangeSqr <= MaxDetectDistanceSqr && otherRangeSqr >= MinDetectDistanceSqr || priorityRangeSqr <= MaxDetectDistanceSqr && priorityRangeSqr >= MinDetectDistanceSqr : priorityRangeSqr <= MaxDetectDistanceSqr && priorityRangeSqr >= MinDetectDistanceSqr;
+
+            if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !somethingInRange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOff)
+            {
+
+                IsAsleep = true;
+                Ai.SleepingComps++;
+            }
+            else if (wasAsleep)
+            {
+
+                Ai.AwakeComps++;
+            }
+            else
                 Ai.AwakeComps++;
         }
 

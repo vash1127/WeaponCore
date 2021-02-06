@@ -224,7 +224,7 @@ namespace WeaponCore
             var detonateDmg = t.AmmoDef.Const.DetonationDamage;
             var shieldBypass = t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var attackerId = shieldBypass ? grid.EntityId : t.Target.CoreEntity.EntityId;
-            var attacker = shieldBypass ? (MyEntity)grid : t.Target.CoreEntity;
+            var attacker = shieldBypass ? grid : t.Target.CoreEntity;
             
             var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
@@ -996,8 +996,6 @@ namespace WeaponCore
             if (sorted)
                 SlimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
         }
-
-
 
         public static void GetExistingCubes(MyCubeGrid grid, Vector3I min, Vector3I max, Dictionary<Vector3I, IMySlimBlock> resultSet)
         {

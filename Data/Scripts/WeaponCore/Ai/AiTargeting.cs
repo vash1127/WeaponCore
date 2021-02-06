@@ -268,7 +268,7 @@ namespace WeaponCore.Support
                     var targetRadius = character != null ? info.TargetRadius * 5 : info.TargetRadius;
                     if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius && maxTargetRadius < 8192 || !focusTarget && info.OffenseRating <= 0) continue;
 
-                    var targetCenter = info.Target.PositionComp.WorldMatrixRef.Translation;
+                    var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, weaponPos);
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
 

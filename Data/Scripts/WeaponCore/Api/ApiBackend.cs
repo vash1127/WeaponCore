@@ -921,7 +921,7 @@ namespace WeaponCore.Api
             Ai ai;
             if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
             {
-                return new MyTuple<bool, bool>(ai.TargetingInfo.ThreatInRange, ai.TargetingInfo.OtherInRange);
+                return new MyTuple<bool, bool>(ai.DetectionInfo.PriorityInRange, ai.DetectionInfo.OtherInRange);
             }
             return new MyTuple<bool, bool>();
         }

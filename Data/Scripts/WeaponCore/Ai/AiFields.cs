@@ -27,7 +27,7 @@ namespace WeaponCore.Support
         internal volatile uint AiCloseTick;
         internal volatile uint AiMarkedTick;
         internal volatile uint LastAiDataSave;
-        internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
+        internal readonly AiDetectionInfo DetectionInfo = new AiDetectionInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
 
         internal readonly Constructs Construct = new Constructs();
@@ -96,7 +96,7 @@ namespace WeaponCore.Support
         internal long AiOwner;
         internal bool AiSleep;
         internal bool DbUpdated;
-        internal bool TargetNonThreats;
+        internal bool DetectOtherSignals;
         internal bool PointDefense;
         internal bool SuppressMouseShoot;
         internal bool OverPowered;
@@ -138,6 +138,7 @@ namespace WeaponCore.Support
         internal uint ProjectileTicker;
         internal uint LastDetectEvent;
         internal uint SubGridInitTick;
+        internal uint LastBlockChangeTick;
         internal int SleepingComps;
         internal int AwakeComps;
         internal int SourceCount;

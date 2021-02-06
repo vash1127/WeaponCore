@@ -19,10 +19,10 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.BaseType == CoreComponent.CompType.Armor) {
+                if (comp.BaseType == CoreComponent.CompType.ArmorEnhancer) {
                     for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.Armor != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
+                        if (w.System.PartType != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                          Armor.Add(w.Comp.Cube, w);
                     }
                     Session.ArmorCubes.Add(comp.Cube, comp);
@@ -38,10 +38,10 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.BaseType == CoreComponent.CompType.Armor) {
+                if (comp.BaseType == CoreComponent.CompType.ArmorEnhancer) {
                     for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.Armor != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
+                        if (w.System.PartType != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
                             Armor.Remove(w.Comp.Cube);
                     }
                     Session.ArmorCubes.Remove(comp.Cube);

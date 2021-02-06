@@ -145,7 +145,7 @@ namespace WeaponCore.Support
                             Ai.PartCounting[SubTypeId] = Session.WeaponCountPool.Get();
 
                         var wCounter = Ai.PartCounting[SubTypeId];
-                        wCounter.Max = Platform.Structure.GridWeaponCap;
+                        wCounter.Max = Platform.Structure.ConstructPartCap;
 
                         wCounter.Current++;
                         Constructs.UpdateWeaponCounters(Ai);

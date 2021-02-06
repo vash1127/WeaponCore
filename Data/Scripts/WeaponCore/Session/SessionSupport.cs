@@ -682,6 +682,39 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }
         }
 
+        public enum CubeTypes
+        {
+            All,
+            Slims,
+            Fats,
+        }
+
+        public static void GetCubesInRange(MyCubeGrid grid, MyCubeBlock rootBlock, int cubeDistance, Dictionary<IMySlimBlock, Vector3I> resultSet, CubeTypes types = CubeTypes.All)
+        {
+            resultSet.Clear();
+            var start = rootBlock.Min - cubeDistance;
+            var end = rootBlock.Max + cubeDistance;
+            var next = rootBlock.Position;
+            var iter = new Vector3I_RangeIterator(ref start, ref end);
+
+            while (iter.IsValid()) {
+
+                MyCube myCube;
+                if (grid.TryGetCube(next, out myCube) && myCube.CubeBlock != rootBlock.SlimBlock) {
+
+                    var slim = (IMySlimBlock)myCube.CubeBlock;
+
+                    if (types == CubeTypes.Fats && slim.FatBlock != null)
+                        resultSet[slim] = next;
+                    else if (types == CubeTypes.Slims && slim.FatBlock == null)
+                        resultSet[slim] = next;
+                    else
+                        resultSet[slim] = next;
+                }
+                iter.GetNext(out next);
+            }
+        }
+
         public void CalculateRestrictedShapes(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
             restrictedSphere = new BoundingSphereD();

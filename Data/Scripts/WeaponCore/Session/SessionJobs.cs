@@ -77,7 +77,7 @@ namespace WeaponCore
                             continue;
                         }
 
-                        ai.TargetingInfo.Clean();
+                        ai.DetectionInfo.Clean();
 
                         if (ai.MyPlanetTmp != null)
                             ai.MyPlanetInfo();
@@ -115,16 +115,16 @@ namespace WeaponCore
 
                             if (targetInfo.DistSqr < ai.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
                             {
-                                if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+                                if (checkFocus || targetInfo.DistSqr < ai.DetectionInfo.PriorityRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
                                 {
-                                    ai.TargetingInfo.ThreatInRange = true;
-                                    ai.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
+                                    ai.DetectionInfo.PriorityInRange = true;
+                                    ai.DetectionInfo.PriorityRangeSqr = targetInfo.DistSqr;
                                 }
 
-                                if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.OtherRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies)
+                                if (checkFocus || targetInfo.DistSqr < ai.DetectionInfo.OtherRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies)
                                 {
-                                    ai.TargetingInfo.OtherInRange = true;
-                                    ai.TargetingInfo.OtherRangeSqr = targetInfo.DistSqr;
+                                    ai.DetectionInfo.OtherInRange = true;
+                                    ai.DetectionInfo.OtherRangeSqr = targetInfo.DistSqr;
                                 }
                             }
                         }
@@ -155,18 +155,18 @@ namespace WeaponCore
                         ai.PartCount = ai.IsGrid ? ai.GridEntity.BlocksCount : 1;
                         ai.NearByEntities = ai.NearByEntitiesTmp;
 
-                        if (!ai.TargetingInfo.ThreatInRange && ai.LiveProjectile.Count > 0)
+                        if (!ai.DetectionInfo.PriorityInRange && ai.LiveProjectile.Count > 0)
                         {
-                            ai.TargetingInfo.ThreatInRange = true;
-                            ai.TargetingInfo.ThreatRangeSqr = 0;
+                            ai.DetectionInfo.PriorityInRange = true;
+                            ai.DetectionInfo.PriorityRangeSqr = 0;
                         }
 
-                        ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
+                        ai.DetectionInfo.SomethingInRange = ai.DetectionInfo.PriorityInRange || ai.DetectionInfo.OtherInRange;
 
                         ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count > 0 || ai.FirstRun;
 
                         MyCubeBlock activeCube;
-                        ai.AiSleep = ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Data.Repo.ActiveTerminal <= 0 || MyEntities.TryGetEntityById(ai.Data.Repo.ActiveTerminal, out activeCube) && activeCube != null && !ai.SubGrids.Contains(activeCube.CubeGrid));
+                        ai.AiSleep = ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && (!ai.DetectionInfo.PriorityInRange && !ai.DetectionInfo.OtherInRange || !ai.DetectOtherSignals && ai.DetectionInfo.OtherInRange) && (ai.Data.Repo.ActiveTerminal <= 0 || MyEntities.TryGetEntityById(ai.Data.Repo.ActiveTerminal, out activeCube) && activeCube != null && !ai.SubGrids.Contains(activeCube.CubeGrid));
 
                         ai.DbUpdated = true;
                         ai.FirstRun = false;

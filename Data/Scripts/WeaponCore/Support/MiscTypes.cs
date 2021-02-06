@@ -212,11 +212,11 @@ namespace WeaponCore.Support
 
                 if (setTarget) {
                     Part.Comp.Ai.WeaponsTracking++;
-                    Part.Comp.WeaponsTracking++;
+                    Part.Comp.PartTracking++;
                 }
                 else {
                     Part.Comp.Ai.WeaponsTracking--;
-                    Part.Comp.WeaponsTracking--;
+                    Part.Comp.PartTracking--;
                 }
             }
             HasTarget = setTarget;

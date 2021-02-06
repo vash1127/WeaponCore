@@ -64,9 +64,15 @@ namespace WeaponCore
                     if (comp.Status != Started)
                         comp.HealthCheck();
 
-                    if (ai.DbUpdated || !comp.UpdatedState) 
-                        comp.DetectStateChanges();
-                    if (comp.Platform.State != CorePlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.CoreEntity.MarkedForClose || comp.IsDisabled) 
+                    if (ai.DbUpdated || !comp.UpdatedState) {
+
+                        if (comp.IsWeapon)
+                            comp.WeaponDetectStateChanges();
+                        else
+                            comp.OtherDetectStateChanges();
+                    }
+
+                    if (comp.Platform.State != CorePlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.CoreEntity.MarkedForClose || comp.IsDisabled || comp.LazyUpdate && !ai.DbUpdated && Tick > comp.NextLazyUpdateStart) 
                         continue;
 
                     if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
@@ -96,9 +102,11 @@ namespace WeaponCore
                     ///
                     /// Upgrade update section
                     ///
-                    for (int j = 0; j < comp.Platform.Armors.Count; j++)
+                    for (int j = 0; j < comp.Platform.ArmorSupports.Count; j++)
                     {
-                        var a = comp.Platform.Armors[j];
+                        var a = comp.Platform.ArmorSupports[j];
+                        if (a.LastBlockRefreshTick < ai.LastBlockChangeTick)
+                            a.RefreshBlocks();
                     }
                     ///
                     /// Upgrade update section
@@ -169,7 +177,7 @@ namespace WeaponCore
                             HudUi.WeaponsToDisplay.Add(w);
                         }
 
-                        if (w.System.Armor != HardwareType.BlockWeapon)
+                        if (w.System.PartType != HardwareType.BlockWeapon)
                             continue;
 
                         if (w.Target.ClientDirty)
@@ -224,7 +232,7 @@ namespace WeaponCore
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
-                        var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == TriggerClick));
+                        var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.DetectOtherSignals && ai.DetectionInfo.OtherInRange || ai.DetectionInfo.PriorityInRange) && (!comp.UserControlled || w.State.Action == TriggerClick));
                         if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
@@ -422,7 +430,7 @@ namespace WeaponCore
 
                 if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 
-                    if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
+                    if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.DetectOtherSignals && w.Comp.Ai.DetectionInfo.OtherInRange || w.Comp.Ai.DetectionInfo.PriorityInRange) && w.Comp.Ai.DetectionInfo.ValidSignalExists(w)) {
 
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
 
@@ -433,7 +441,7 @@ namespace WeaponCore
                             Ai.AcquireTarget(w, w.Comp.Ai.TargetResetTick == Tick);
                     }
 
-                    if (w.Target.HasTarget || !(comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange)) {
+                    if (w.Target.HasTarget || !(comp.DetectOtherSignals && w.Comp.Ai.DetectionInfo.OtherInRange || w.Comp.Ai.DetectionInfo.PriorityInRange)) {
 
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);

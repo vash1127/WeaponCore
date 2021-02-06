@@ -16,7 +16,7 @@ namespace WeaponCore.Control
         {
             AddWeaponOnOff<T>(session, -2, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.RequestSetGuidance, UiGuidance);
 
-            AddSliderDamage<T>(session, -3, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.RequestSetDps, UiDamageSlider);
+            AddSliderDamage<T>(session, -3, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.RequestSetDps, UiStrengthSlider);
 
             AddSliderRof<T>(session, -4, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.RequestSetRof, UiRofSlider);
 
@@ -59,7 +59,7 @@ namespace WeaponCore.Control
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
-            AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, IsReady);
+            AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, WeaponIsReady);
         }
 
         internal static bool Istrue(IMyTerminalBlock block)
@@ -67,26 +67,21 @@ namespace WeaponCore.Control
             return true;
         }
 
-        internal static bool HasComp(IMyTerminalBlock block)
-        {
-            return block.Components.Has<CoreComponent>();
-        }
-
-        internal static bool IsReady(IMyTerminalBlock block)
+        internal static bool WeaponIsReady(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon;
         }
 
         internal static bool UiRofSlider(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasRofSlider;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasRofSlider && comp.IsWeapon;
         }
 
-        internal static bool UiDamageSlider(IMyTerminalBlock block)
+        internal static bool UiStrengthSlider(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
@@ -104,65 +99,65 @@ namespace WeaponCore.Control
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasGuidanceToggle;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasGuidanceToggle && comp.IsWeapon;
         }
 
         internal static bool TrackMeteors(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.TrackingWeapon.System.TrackMeteors;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon && comp.TrackingWeapon.System.TrackMeteors;
         }
 
         internal static bool TrackGrids(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.TrackingWeapon.System.TrackGrids;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon && comp.TrackingWeapon.System.TrackGrids;
         }
 
         internal static bool TrackProjectiles(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.TrackingWeapon.System.TrackProjectile;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon && comp.TrackingWeapon.System.TrackProjectile;
         }
 
         internal static bool TrackBiologicals(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.TrackingWeapon.System.TrackCharacters;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon && comp.TrackingWeapon.System.TrackCharacters;
         }
 
         internal static bool AmmoSelection(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.AmmoSelectionWeaponIds.Count > 0;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.AmmoSelectionWeaponIds.Count > 0 && comp.IsWeapon;
         }
 
         internal static bool HasTracking(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTracking;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTracking && comp.IsWeapon;
         }
 
         internal static bool HasTurret(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTurret;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTurret && comp.IsWeapon; 
         }
 
         internal static bool NoTurret(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && !comp.HasTurret;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && !comp.HasTurret && comp.IsWeapon;
         }
 
         internal static bool GuidedAmmo(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.TrackingWeapon.System.HasGuidedAmmo;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon && comp.TrackingWeapon.System.HasGuidedAmmo;
         }
         internal static bool TurretOrGuidedAmmo(IMyTerminalBlock block)
         {

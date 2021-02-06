@@ -17,7 +17,7 @@ namespace WeaponCore.Platform
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
         internal List<Weapon> Weapons = new List<Weapon>();
-        internal List<Armor> Armors = new List<Armor>();
+        internal List<ArmorSupport> ArmorSupports = new List<ArmorSupport>();
         internal List<Upgrades> Upgrades = new List<Upgrades>();
         internal List<Phantoms> Phantoms = new List<Phantoms>();
         internal CoreStructure Structure;
@@ -52,7 +52,7 @@ namespace WeaponCore.Platform
         internal void Clean()
         {
             Weapons.Clear();
-            Armors.Clear();
+            ArmorSupports.Clear();
             Upgrades.Clear();
             Phantoms.Clear();
             Parts.Clean(null);
@@ -86,7 +86,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.PartCounting[blockDef] = Comp.Session.WeaponCountPool.Get();
 
             var wCounter = comp.Ai.PartCounting[blockDef];
-            wCounter.Max = Structure.GridWeaponCap;
+            wCounter.Max = Structure.ConstructPartCap;
 
             if (newAi) {
 
@@ -124,13 +124,16 @@ namespace WeaponCore.Platform
             {
                 if (Comp.IsWeapon)
                 {
-                    var muzzlePartHash = Structure.MuzzleHashes[i];
+                    if (Phantoms.Count > 0 || ArmorSupports.Count > 0 || Upgrades.Count > 0)
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
+
+                    var partHashId = Structure.PartHashes[i];
                     CoreSystem system;
-                    if (!Structure.PartSystems.TryGetValue(muzzlePartHash, out system))
+                    if (!Structure.PartSystems.TryGetValue(partHashId, out system))
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid weapon system, I am crashing now Dave.");
 
-                    var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
-
+                    var muzzlePartName = system.MuzzlePartName.String != "Designator" ? system.MuzzlePartName.String : system.ElevationPartName.String;
+                    Log.Line($"muzzlePartName:{muzzlePartName}");
                     MyEntity muzzlePartEntity;
                     if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                     {
@@ -161,22 +164,31 @@ namespace WeaponCore.Platform
                 }
                 else if (Comp.BaseType == Upgrade)
                 {
+                    if (Weapons.Count > 0 || ArmorSupports.Count > 0 || Phantoms.Count > 0)
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
+
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
                         Upgrades.Add(new Upgrades(system, comp, i));
                     }
                 }
-                else if (Comp.BaseType == CoreComponent.CompType.Armor)
+                else if (Comp.BaseType == ArmorEnhancer)
                 {
+                    if (Weapons.Count > 0 || Upgrades.Count > 0 || Phantoms.Count > 0)
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
+
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
-                        Armors.Add(new Armor(system, comp, i));
+                        ArmorSupports.Add(new ArmorSupport(system, comp, i));
                     }
                 }
-                else if (Comp.BaseType == CoreComponent.CompType.Phantom)
+                else if (Comp.BaseType == Phantom)
                 {
+                    if (Weapons.Count > 0 || Upgrades.Count > 0 || ArmorSupports.Count > 0)
+                        return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
+
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
@@ -197,28 +209,30 @@ namespace WeaponCore.Platform
         private void CompileTurret(CoreComponent comp, bool reset = false)
         {
             var c = 0;
-            foreach (var m in Structure.PartSystems)
+            foreach (var pair in Structure.PartSystems)
             {
                 MyEntity muzzlePart = null;
-                if (Parts.NameToEntity.TryGetValue(m.Key.String, out muzzlePart) || m.Value.DesignatorWeapon)
+                var mPartName = pair.Value.MuzzlePartName.String;
+                var v = pair.Value;
+
+                if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || v.DesignatorWeapon)
                 {
-                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
+                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
+                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" : v.ElevationPartName.String : v.ElevationPartName.String;
                     var weapon = Weapons[c];
 
-                    var muzzlePartName  = m.Key.String;
-                    if (m.Value.DesignatorWeapon)
+                    if (v.DesignatorWeapon)
                     {
                         muzzlePart = weapon.ElevationPart.Entity;
-                        muzzlePartName = elevationPartName;
+                        mPartName = elevationPartName;
                     }
 
                     weapon.MuzzlePart.Entity = muzzlePart;
                     weapon.HeatingParts = new List<MyEntity> {weapon.MuzzlePart.Entity};
 
-                    if (muzzlePartName != "None")
+                    if (mPartName != "None")
                     {
-                        var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model);
+                        var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + mPartName, muzzlePart.Parent.Model);
 
                         var muzzlePartPosTo = MatrixD.CreateTranslation(-muzzlePartLocation);
                         var muzzlePartPosFrom = MatrixD.CreateTranslation(muzzlePartLocation);
@@ -247,7 +261,7 @@ namespace WeaponCore.Platform
                             var azPartPosTo = MatrixD.CreateTranslation(-azimuthPartLocation);
                             var azPrtPosFrom = MatrixD.CreateTranslation(azimuthPartLocation);
 
-                            var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, - m.Value.AzStep) * azPrtPosFrom;
+                            var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, - v.AzStep) * azPrtPosFrom;
 
                             var rFullStepAzRotation = MatrixD.Invert(fullStepAzRotation);
 
@@ -286,7 +300,7 @@ namespace WeaponCore.Platform
                             var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = MatrixD.CreateTranslation(elevationPartLocation);
 
-                            var fullStepElRotation = elPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Left, m.Value.ElStep) * elPartPosFrom;
+                            var fullStepElRotation = elPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Left, v.ElStep) * elPartPosFrom;
 
                             var rFullStepElRotation = MatrixD.Invert(fullStepElRotation);
 
@@ -313,9 +327,9 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    var barrelCount = m.Value.Barrels.Length;
+                    var barrelCount = v.Barrels.Length;
 
-                    if (m.Key.String != "Designator")
+                    if (mPartName != "Designator")
                     {
                         weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                         weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
@@ -338,7 +352,7 @@ namespace WeaponCore.Platform
 
                     for (int i = 0; i < barrelCount; i++)
                     {
-                        var barrel = m.Value.Barrels[i];
+                        var barrel = v.Barrels[i];
 
                         weapon.MuzzleIdToName.Add(i, barrel);
                         if (weapon.Muzzles[i] == null)
@@ -350,9 +364,9 @@ namespace WeaponCore.Platform
                             weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
                     }
 
-                    for (int i = 0; i < m.Value.HeatingSubparts.Length; i++)
+                    for (int i = 0; i < v.HeatingSubparts.Length; i++)
                     {
-                        var partName = m.Value.HeatingSubparts[i];
+                        var partName = v.HeatingSubparts[i];
                         MyEntity ent;
                         if (Parts.NameToEntity.TryGetValue(partName, out ent))
                         {
@@ -399,10 +413,13 @@ namespace WeaponCore.Platform
         {
             var c = 0;
             var registered = false;
-            foreach (var m in Structure.PartSystems)
+            foreach (var pair in Structure.PartSystems)
             {
                 MyEntity muzzlePart = null;
-                if (Parts.NameToEntity.TryGetValue(m.Key.String, out muzzlePart) || m.Value.DesignatorWeapon)
+                var mPartName = pair.Value.MuzzlePartName.String;
+                var v = pair.Value;
+
+                if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || v.DesignatorWeapon)
                 {
                     if (!registered)
                     {
@@ -410,15 +427,14 @@ namespace WeaponCore.Platform
                         registered = true;
                     }
 
-                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
-                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
+                    var azimuthPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
+                    var elevationPartName = comp.BaseType == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" :v.ElevationPartName.String : v.ElevationPartName.String;
                     var weapon = Weapons[c];
                     MyEntity azimuthPartEntity;
                     if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
                     {
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
-                        //weapon.AzimuthPart.Entity.InvalidateOnMove = false;
                         weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
                     }
 
@@ -426,7 +442,6 @@ namespace WeaponCore.Platform
                     if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
                     {
                         weapon.ElevationPart.Entity = elevationPartEntity;
-                        //weapon.ElevationPart.Entity.InvalidateOnMove = false;
                         weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                     }
 
@@ -440,7 +455,7 @@ namespace WeaponCore.Platform
                     if ((weapon.System.HasScope) && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Scope, weapon.System.AltScopeName, out scopePart, out scopeMatch))
                         weapon.Scope.Entity = scopePart;
 
-                    if (m.Value.DesignatorWeapon)
+                    if (v.DesignatorWeapon)
                         muzzlePart = weapon.ElevationPart.Entity;
 
                     weapon.MuzzlePart.Entity = muzzlePart;
@@ -476,7 +491,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    if (m.Key.String != "Designator")
+                    if (mPartName != "Designator")
                     {
                         weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                         weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
@@ -497,13 +512,13 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    for (int i = 0; i < m.Value.Barrels.Length; i++)
+                    for (int i = 0; i < v.Barrels.Length; i++)
                         weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
 
 
-                    for (int i = 0; i < m.Value.HeatingSubparts.Length; i++)
+                    for (int i = 0; i < v.HeatingSubparts.Length; i++)
                     {
-                        var partName = m.Value.HeatingSubparts[i];
+                        var partName = v.HeatingSubparts[i];
                         MyEntity ent;
                         if (Parts.NameToEntity.TryGetValue(partName, out ent))
                         {
