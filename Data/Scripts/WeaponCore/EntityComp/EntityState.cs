@@ -51,91 +51,6 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void RequestShootUpdate(TriggerActions action, long playerId)
-        {
-            if (IsDisabled) return;
-
-            if (Session.HandlesInput)
-                Session.TerminalMon.HandleInputUpdate(this);
-            
-            if (Session.IsServer)
-            {
-                ResetShootState(action, playerId);
-                
-                if (action == TriggerActions.TriggerOnce)
-                    ShootOnceCheck();
-
-                if (Session.MpActive) {
-                    Session.SendCompBaseData(this);
-                    if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOn) {
-                        foreach (var w in Platform.Weapons)
-                            Session.SendWeaponAmmoData(w);
-                    }
-                }
-
-            }
-            else if (action == TriggerActions.TriggerOnce)
-                ShootOnceCheck();
-            else Session.SendActionShootUpdate(this, action);
-        }
-
-        internal bool ShootOnceCheck(int weaponToCheck = -1)
-        {
-            var checkAllWeapons = weaponToCheck == -1;
-            var numOfWeapons = checkAllWeapons ? Platform.Weapons.Count : 1;
-            var loadedWeapons = 0;
-
-            for (int i = 0; i < Platform.Weapons.Count; i++) {
-                var w = Platform.Weapons[i];
-
-                if (w.State.Overheated)
-                    return false;
-
-                if ((w.Ammo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
-                    ++loadedWeapons;
-            }
-            if (numOfWeapons == loadedWeapons) {
-
-                for (int i = 0; i < Platform.Weapons.Count; i++)  {
-
-                    var w = Platform.Weapons[i];
-
-                    if (!checkAllWeapons && i != weaponToCheck)
-                        continue;
-
-                    if (Session.IsServer)
-                        w.ShootOnce = true;
-                }
-                
-                if (Session.IsClient) 
-                    Session.SendActionShootUpdate(this, TriggerActions.TriggerOnce);
-                return true;
-            }
-
-            return false;
-        }
-
-        internal void ResetShootState(TriggerActions action, long playerId)
-        {
-            var cycleShootClick = Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerClick && action == TriggerActions.TriggerClick;
-            var cycleShootOn = Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOn && action == TriggerActions.TriggerOn;
-            var cycleSomething = cycleShootOn || cycleShootClick;
-
-            Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
-
-            Data.Repo.Base.State.TerminalActionSetter(this, cycleSomething ? TriggerActions.TriggerOff : action);
-
-            if (action == TriggerActions.TriggerClick && HasTurret) 
-                Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
-            else if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOnce ||  action == TriggerActions.TriggerOn)
-                Data.Repo.Base.State.Control = CompStateValues.ControlMode.Toolbar;
-            else
-                Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
-
-            playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-            var newId = action == TriggerActions.TriggerOff && !Data.Repo.Base.State.TrackingReticle ? -1 : playerId;
-            Data.Repo.Base.State.PlayerId = newId;
-        }
 
         internal void ResetPlayerControl()
         {
@@ -300,6 +215,9 @@ namespace WeaponCore.Support
                     break;
                 case "Grids":
                     o.Grids = enabled;
+                    break;
+                case "ArmorShowArea":
+                    o.ArmorShowArea = enabled;
                     break;
                 case "Biologicals":
                     o.Biologicals = enabled;

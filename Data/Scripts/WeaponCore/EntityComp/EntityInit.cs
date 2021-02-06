@@ -56,43 +56,6 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{CoreEntity.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
 
-        private void DpsAndHeatInit(Weapon weapon, out double maxTrajectory)
-        {
-            MaxHeat += weapon.System.MaxHeat;
-
-            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
-            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
-            HeatSinkRate += weapon.HsRate;
-
-            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
-
-            if (weapon.RateOfFire < 1)
-                weapon.RateOfFire = 1;
-
-            weapon.SetWeaponDps();
-
-            if (!weapon.System.DesignatorWeapon)
-            {
-                var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
-                foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
-                {
-                    PeakDps += ammo.Const.PeakDps / (float) patternSize;
-                    EffectiveDps += ammo.Const.EffectiveDps / (float) patternSize;
-                    ShotsPerSec += ammo.Const.ShotsPerSec / (float) patternSize;
-                    BaseDps += ammo.Const.BaseDps / (float) patternSize;
-                    AreaDps += ammo.Const.AreaDps / (float) patternSize;
-                    DetDps += ammo.Const.DetDps / (float) patternSize;
-                }
-            }
-
-            maxTrajectory = 0;
-            if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
-                maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
-
-            if (weapon.System.TrackProjectile)
-                Ai.PointDefense = true;
-        }
-
         internal void SubGridInit()
         {
             if (Ai.SubGridInitTick != Session.Tick)

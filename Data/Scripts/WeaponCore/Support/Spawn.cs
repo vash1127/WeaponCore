@@ -78,7 +78,6 @@ namespace WeaponCore.Support
             PositionAndOrientation = new MyPositionAndOrientation(Vector3D.Zero, Vector3D.Forward, Vector3D.Up)
         };
 
-
         public static MyEntity EmptyEntity(string displayName, string model, MyEntity parent, bool parented = false)
         {
             try

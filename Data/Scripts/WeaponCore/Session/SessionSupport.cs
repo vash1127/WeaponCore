@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -689,14 +690,20 @@ namespace WeaponCore
             Fats,
         }
 
-        public static void GetCubesInRange(MyCubeGrid grid, MyCubeBlock rootBlock, int cubeDistance, Dictionary<IMySlimBlock, Vector3I> resultSet, CubeTypes types = CubeTypes.All)
+        public static void GetCubesInRange(MyCubeGrid grid, MyCubeBlock rootBlock, int cubeDistance, Dictionary<MyCube, Vector3I> resultSet, out Vector3I min, out Vector3I max, CubeTypes types = CubeTypes.All)
         {
             resultSet.Clear();
-            var start = rootBlock.Min - cubeDistance;
-            var end = rootBlock.Max + cubeDistance;
-            var next = rootBlock.Position;
-            var iter = new Vector3I_RangeIterator(ref start, ref end);
+            min = rootBlock.Min - cubeDistance;
+            max = rootBlock.Max + cubeDistance;
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
 
+            Vector3I.Max(ref min, ref gridMin, out min);
+            Vector3I.Min(ref max, ref gridMax, out max);
+
+            var iter = new Vector3I_RangeIterator(ref min, ref max);
+
+            var next = rootBlock.Position;
             while (iter.IsValid()) {
 
                 MyCube myCube;
@@ -704,12 +711,15 @@ namespace WeaponCore
 
                     var slim = (IMySlimBlock)myCube.CubeBlock;
 
-                    if (types == CubeTypes.Fats && slim.FatBlock != null)
-                        resultSet[slim] = next;
-                    else if (types == CubeTypes.Slims && slim.FatBlock == null)
-                        resultSet[slim] = next;
-                    else
-                        resultSet[slim] = next;
+                    if (next == slim.Position) {
+
+                        if (types == CubeTypes.Slims && slim.FatBlock == null)
+                            resultSet[myCube] = next;
+                        else if (types == CubeTypes.Fats && slim.FatBlock != null)
+                            resultSet[myCube] = next;
+                        else if (types == CubeTypes.All)
+                            resultSet[myCube] = next;
+                    }
                 }
                 iter.GetNext(out next);
             }

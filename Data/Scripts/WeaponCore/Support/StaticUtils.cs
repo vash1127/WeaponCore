@@ -13,8 +13,14 @@ using WeaponCore.Projectiles;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Support
 {
-    internal static class SUtils
+    internal static class DsStaticUtils
     {
+
+        public static Vector3 ColorToHSVOffset(Color color)
+        {
+            return MyColorPickerConstants.HSVToHSVOffset(color.ColorToHSV());
+        }
+
         static void ShellSort(List<Projectile> list, Vector3D weaponPos)
         {
             int length = list.Count;

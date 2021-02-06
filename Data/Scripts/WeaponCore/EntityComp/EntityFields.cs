@@ -31,7 +31,7 @@ namespace WeaponCore.Support
         internal readonly MyCubeBlock Cube;
 
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
-        internal readonly List<int> AmmoSelectionWeaponIds = new List<int>();
+        internal readonly List<int> AmmoSelectionPartIds = new List<int>();
         internal readonly List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
         internal readonly Session Session;
         internal readonly MyInventory CoreInventory;
@@ -117,7 +117,7 @@ namespace WeaponCore.Support
             VanillaTurret,
             VanillaFixed,
             SorterWeapon,
-            ArmorEnhancer,
+            Support,
             Upgrade,
             Phantom,
             Rifle,
@@ -164,7 +164,7 @@ namespace WeaponCore.Support
                 {
                     if (Session.WeaponCoreArmorEnhancerDefs.Contains(Cube.BlockDefinition.Id))
                     {
-                        BaseType = CompType.ArmorEnhancer;
+                        BaseType = CompType.Support;
                         LazyUpdate = true;
                     }
                     else if (Session.WeaponCoreUpgradeBlockDefs.Contains(Cube.BlockDefinition.Id))

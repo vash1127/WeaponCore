@@ -119,6 +119,24 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
+
+                    if (DisplayAffectedArmor.Count > 0)
+                    {
+                        if (Tick120)
+                        {
+                            Log.Line($"test1: {DisplayAffectedArmor.Count} - {ColorArmorToggle}");
+                            var color = ColorArmorToggle ? DsStaticUtils.ColorToHSVOffset(Color.Black) : DsStaticUtils.ColorToHSVOffset(Color.OrangeRed);
+                            foreach (var enhancer in DisplayAffectedArmor)
+                            {
+                                var grid = enhancer.Comp.Ai.GridEntity;
+                                foreach (var myCube in enhancer.EnhancedArmorBlocks.Keys)
+                                {
+                                    grid.ChangeColorAndSkin(myCube.CubeBlock, color);
+                                }
+                            }
+                            ColorArmorToggle = !ColorArmorToggle;
+                        }
+                    }
                 }
 
                 if (GameLoaded) {
@@ -200,10 +218,6 @@ namespace WeaponCore
                     var averageMisses = RayMissAmounts > 0 ? RayMissAmounts / Rays : 0; 
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
                 }
-                if (Tick180)
-                {
-                    Log.Line($"{PartDefinitions.Count} - {CustomArmorSubtypes.Count}");
-                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
@@ -215,6 +229,7 @@ namespace WeaponCore
 
                 if (SuppressWc || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 
+
                 if (DebugLos)
                     LosDebuging();
                 

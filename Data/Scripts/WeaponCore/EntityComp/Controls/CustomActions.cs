@@ -147,6 +147,17 @@ namespace WeaponCore.Control
 
             CoreComponent.RequestSetValue(comp, "Grids", newValue, comp.Session.PlayerId);
         }
+        internal static void TerminalActionToggleArmorShowArea(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<CoreComponent>();
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.ArmorShowArea;
+            var newValue = newBool ? 1 : 0;
+
+            CoreComponent.RequestSetValue(comp, "ArmorShowArea", newValue, comp.Session.PlayerId);
+        }
 
         internal static void TerminalActionToggleFriendly(IMyTerminalBlock blk)
         {
@@ -431,8 +442,8 @@ namespace WeaponCore.Control
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<CoreComponent>();
-            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.AmmoSelectionWeaponIds.Count == 0) return;
-            var w = comp.Platform.Weapons[comp.AmmoSelectionWeaponIds[0]];
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.AmmoSelectionPartIds.Count == 0) return;
+            var w = comp.Platform.Weapons[comp.AmmoSelectionPartIds[0]];
             sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
         }
         #endregion

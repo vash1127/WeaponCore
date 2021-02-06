@@ -32,6 +32,8 @@ namespace WeaponCore
                 else if (typeof(T) == typeof(IMyConveyorSorter))
                 {
                     CreateDefaultActions<T>(session);
+                    TerminalHelpers.CreateGenericArmor<T>(session);
+                    CreateCustomActions<T>.CreateArmorShowArea(session);
                 }
 
                 TerminalHelpers.AddTurretOrTrackingControls<T>(session);
@@ -66,6 +68,11 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateGrids(session);
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
+        }
+
+        internal static void CreateCustomActionSetArmorEnhancer<T>(Session session) where T: IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateArmorShowArea(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)

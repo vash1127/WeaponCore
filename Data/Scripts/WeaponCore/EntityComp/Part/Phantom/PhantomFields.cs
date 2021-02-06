@@ -9,6 +9,8 @@ namespace WeaponCore.Platform
     {
         internal Phantoms(CoreSystem system, CoreComponent comp, int partId)
         {
+            Log.Line($"init Phantoms: {system.PartName}");
+
             base.Init(comp, system, partId);
         }
     }

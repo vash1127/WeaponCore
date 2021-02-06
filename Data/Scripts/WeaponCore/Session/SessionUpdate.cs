@@ -107,6 +107,9 @@ namespace WeaponCore
                         var a = comp.Platform.ArmorSupports[j];
                         if (a.LastBlockRefreshTick < ai.LastBlockChangeTick)
                             a.RefreshBlocks();
+
+                        if (a.ShowAffectedBlocks != comp.Data.Repo.Base.Set.Overrides.ArmorShowArea)
+                            a.ToggleAreaEffectDisplay();
                     }
                     ///
                     /// Upgrade update section

@@ -137,8 +137,8 @@ namespace WeaponCore.Support
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             var pos = !MyUtils.IsZero(av.Hit.SurfaceHit) ? av.Hit.SurfaceHit : av.TracerFront;
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.AreaEffectSize, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
+                            if (av.DetonateFakeExp) DsStaticUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
+                            else DsStaticUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.AreaEffectSize, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
                         }
                     }
 

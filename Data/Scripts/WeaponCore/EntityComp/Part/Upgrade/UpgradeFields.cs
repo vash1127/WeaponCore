@@ -11,7 +11,7 @@ namespace WeaponCore.Platform
         internal Upgrades(CoreSystem system, CoreComponent comp, int partId)
         {
             base.Init(comp, system, partId);
-            Log.Line("upgrade");
+            Log.Line($"init Upgrades: {system.PartName}");
         }
     }
 }

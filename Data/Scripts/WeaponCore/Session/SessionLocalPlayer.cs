@@ -195,7 +195,7 @@ namespace WeaponCore
                     var lookSphere = new BoundingSphereD(badBlock.PositionComp.WorldAABB.Center, 30f);
                     if (Camera.IsInFrustum(ref lookSphere)) {
                         MyOrientedBoundingBoxD blockBox;
-                        SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
+                        DsStaticUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
                         DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
                     }
                 }
@@ -253,7 +253,7 @@ namespace WeaponCore
                                     if (comp.IsBlock)
                                     {
                                         MyOrientedBoundingBoxD blockBox;
-                                        SUtils.GetBlockOrientedBoundingBox(comp.Cube, out blockBox);
+                                        DsStaticUtils.GetBlockOrientedBoundingBox(comp.Cube, out blockBox);
 
                                         BoundingSphereD s;
                                         MyOrientedBoundingBoxD b;

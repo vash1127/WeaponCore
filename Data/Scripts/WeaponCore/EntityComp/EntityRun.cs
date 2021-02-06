@@ -97,16 +97,19 @@ namespace WeaponCore.Support
 
                     Platform.State = CorePlatform.PlatformState.Ready;
 
-                    for (int i = 0; i < Platform.Weapons.Count; i++)
+                    if (IsWeapon)
                     {
-                        var weapon = Platform.Weapons[i];
-                        weapon.UpdatePivotPos();
+                        for (int i = 0; i < Platform.Weapons.Count; i++)
+                        {
+                            var weapon = Platform.Weapons[i];
+                            weapon.UpdatePivotPos();
 
-                        if (Session.IsClient)
-                            weapon.Target.ClientDirty = true;
+                            if (Session.IsClient)
+                                weapon.Target.ClientDirty = true;
 
-                        if (weapon.Ammo.CurrentAmmo == 0 && !weapon.Reloading)
-                            weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
+                            if (weapon.Ammo.CurrentAmmo == 0 && !weapon.Reloading)
+                                weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
+                        }
                     }
                 } 
                 else Log.Line($"Comp Init() failed");
@@ -142,13 +145,13 @@ namespace WeaponCore.Support
 
                         // ReInit Counters
                         if (!Ai.PartCounting.ContainsKey(SubTypeId)) // Need to account for reinit case
-                            Ai.PartCounting[SubTypeId] = Session.WeaponCountPool.Get();
+                            Ai.PartCounting[SubTypeId] = Session.PartCountPool.Get();
 
-                        var wCounter = Ai.PartCounting[SubTypeId];
-                        wCounter.Max = Platform.Structure.ConstructPartCap;
+                        var pCounter = Ai.PartCounting[SubTypeId];
+                        pCounter.Max = Platform.Structure.ConstructPartCap;
 
-                        wCounter.Current++;
-                        Constructs.UpdateWeaponCounters(Ai);
+                        pCounter.Current++;
+                        Constructs.UpdatePartCounters(Ai);
                         // end ReInit
 
                         if (!Ai.GridInit || !Ai.Session.GridToInfoMap.ContainsKey(Ai.TopEntity)) 
@@ -189,34 +192,39 @@ namespace WeaponCore.Support
                     SubGridInit();
                 }
 
-                var maxTrajectory = 0d;
+                if (IsWeapon)
+                {
+                    var maxTrajectory = 0d;
 
-                for (int i = 0; i < Platform.Weapons.Count; i++) {
-                    
-                    var weapon = Platform.Weapons[i];
-                    weapon.InitTracking();
-                    
-                    double weaponMaxRange;
-                    DpsAndHeatInit(weapon, out weaponMaxRange);
+                    for (int i = 0; i < Platform.Weapons.Count; i++)
+                    {
 
-                    if (maxTrajectory < weaponMaxRange)
-                        maxTrajectory = weaponMaxRange;
+                        var weapon = Platform.Weapons[i];
+                        weapon.InitTracking();
 
-                    if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                        weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                        double weaponMaxRange;
+                        DpsAndHeatInit(weapon, out weaponMaxRange);
 
-                    if (Session.IsServer && weapon.TrackTarget)
-                        Session.AcqManager.Monitor(weapon.Acquire);
+                        if (maxTrajectory < weaponMaxRange)
+                            maxTrajectory = weaponMaxRange;
+
+                        if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                            weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+
+                        if (Session.IsServer && weapon.TrackTarget)
+                            Session.AcqManager.Monitor(weapon.Acquire);
+                    }
+
+                    if (maxTrajectory + Ai.TopEntity.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange)
+                    {
+
+                        Ai.MaxTargetingRange = maxTrajectory + Ai.TopEntity.PositionComp.LocalVolume.Radius;
+                        Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
+                    }
+
+                    Ai.OptimalDps += PeakDps;
+                    Ai.EffectiveDps += EffectiveDps;
                 }
-
-                if (maxTrajectory + Ai.TopEntity.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {
-
-                    Ai.MaxTargetingRange = maxTrajectory + Ai.TopEntity.PositionComp.LocalVolume.Radius;
-                    Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
-                }
-
-                Ai.OptimalDps += PeakDps;
-                Ai.EffectiveDps += EffectiveDps;
 
 
                 if (!Ai.PartBase.TryAdd(CoreEntity, this))

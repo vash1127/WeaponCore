@@ -94,6 +94,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD WaterVolume;
 
         internal long AiOwner;
+        internal bool BlockMonitoring;
         internal bool AiSleep;
         internal bool DbUpdated;
         internal bool DetectOtherSignals;
@@ -197,7 +198,7 @@ namespace WeaponCore.Support
             Closed = false;
             MarkedForClose = false;
             Session = session;
-            
+
             if (CreatedTick == 0) 
                 CreatedTick = session.Tick;
 

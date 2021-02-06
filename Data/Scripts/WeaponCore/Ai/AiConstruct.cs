@@ -203,7 +203,7 @@ namespace WeaponCore.Support
                     if (LargestAi == null)
                         LargestAi = ai;
                     
-                    UpdateWeaponCounters(ai);
+                    UpdatePartCounters(ai);
                     return;
                 }
                 Log.Line($"ConstructRefresh Failed main Ai no GridMap: {caller} - Marked: {ai.TopEntity.MarkedForClose}");
@@ -265,7 +265,7 @@ namespace WeaponCore.Support
                     ai.Session.SendAiData(ai);
             }
 
-            internal static void UpdateWeaponCounters(Ai cAi)
+            internal static void UpdatePartCounters(Ai cAi)
             {
                 cAi.Construct.RefreshedAis.Clear();
                 cAi.Construct.RefreshedAis.Add(cAi);

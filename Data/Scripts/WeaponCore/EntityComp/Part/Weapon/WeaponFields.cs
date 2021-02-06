@@ -241,6 +241,7 @@ namespace WeaponCore.Platform
                     AnimationLookup.Add(pa.AnimationId, pa);
                 }
             }
+            Log.Line($"init Weapons: {system.PartName}");
 
             ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts); 
 

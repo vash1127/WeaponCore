@@ -19,7 +19,7 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.BaseType == CoreComponent.CompType.ArmorEnhancer) {
+                if (comp.BaseType == CoreComponent.CompType.Support) {
                     for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                         var w = comp.Platform.Weapons[i];
                         if (w.System.PartType != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
@@ -38,7 +38,7 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (comp.BaseType == CoreComponent.CompType.ArmorEnhancer) {
+                if (comp.BaseType == CoreComponent.CompType.Support) {
                     for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
                         var w = comp.Platform.Weapons[i];
                         if (w.System.PartType != PartDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon)
@@ -335,6 +335,8 @@ namespace WeaponCore.Support
             DbReady = false;
             GridInit = false;
             TouchingWater = false;
+            BlockMonitoring = false;
+
             Data.Clean();
 
             MyShield = null;

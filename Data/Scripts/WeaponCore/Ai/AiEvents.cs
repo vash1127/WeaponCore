@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage;
 using VRageMath;
 using VRage.Collections;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using static WeaponCore.Session;
 
 namespace WeaponCore.Support
@@ -47,6 +49,10 @@ namespace WeaponCore.Support
                     {
                         GridEntity.OnFatBlockAdded -= FatBlockAdded;
                         GridEntity.OnFatBlockRemoved -= FatBlockRemoved;
+                        
+                        if (BlockMonitoring)
+                            DelayedEventRegistration();
+
                         if (!SubGridsRegistered.Contains(GridEntity))
                             Log.Line($"Main Grid Already UnRegistered");
                         SubGridsRegistered.Remove(GridEntity);
@@ -58,6 +64,50 @@ namespace WeaponCore.Support
                 }
                 else if (!force) Log.Line($"NotRegistered:- Aimarked:{MarkedForClose} - aiClosed:{Closed} - Ticks:{Session?.Tick - AiCloseTick} - NullSession:{Session == null} - topMarked:{TopEntity.MarkedForClose}");
             }
+        }
+
+        internal void DelayedEventRegistration(bool register = false)
+        {
+            if (IsGrid)
+            {
+                if (register && Registered)
+                {
+                    BlockMonitoring = true;
+                    GridEntity.OnBlockAdded += OnBlockAdded;
+                    GridEntity.OnBlockRemoved += OnBlockRemoved;
+                    GridEntity.OnBlockIntegrityChanged += OnBlockIntegrityChanged;
+                    LastBlockChangeTick = Session.Tick > 0 ? Session.Tick : 1;
+
+                }
+                else if (!register && Registered)
+                {
+                    GridEntity.OnBlockAdded -= OnBlockAdded;
+                    GridEntity.OnBlockRemoved -= OnBlockRemoved;
+                    GridEntity.OnBlockIntegrityChanged -= OnBlockIntegrityChanged;
+                }
+                else
+                {
+                    Log.Line($"DelayedEventRegistration failed: {register} - {Registered}");
+                }
+            }
+            else
+                Log.Line($"DelayedEventRegistration failed no grid");
+        }
+
+        internal void OnBlockAdded(IMySlimBlock mySlimBlock)
+        {
+            LastBlockChangeTick = Session.Tick;
+        }
+
+        internal void OnBlockRemoved(IMySlimBlock mySlimBlock)
+        {
+            if (Session != null)
+                LastBlockChangeTick = Session.Tick;
+        }
+
+        internal void OnBlockIntegrityChanged(IMySlimBlock mySlimBlock)
+        {
+
         }
 
         internal void FatBlockAdded(MyCubeBlock cube)
@@ -95,7 +145,7 @@ namespace WeaponCore.Support
                     MyOrientedBoundingBoxD b;
                     BoundingSphereD s;
                     MyOrientedBoundingBoxD blockBox;
-                    SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
+                    DsStaticUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
                     if (Session.IsPartAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, cube.CubeGrid, cube.EntityId, null, out b, out s))
                     {
                         if (Session.IsServer)
@@ -104,7 +154,6 @@ namespace WeaponCore.Support
                         }
                     }
                 }
-                LastBlockChangeTick = Session.Tick;
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null} - RootAiNull: {Construct.RootAi == null}"); }
         }
@@ -121,7 +170,6 @@ namespace WeaponCore.Support
                 
                 if (sessionNull)
                     Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose} - isRegistered:{SubGridsRegistered.Contains(cube.CubeGrid)} - regCnt:{SubGridsRegistered.Count}");
-                else LastBlockChangeTick = Session.Tick;
 
                 MyInventory inventory;
                 if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory)) {

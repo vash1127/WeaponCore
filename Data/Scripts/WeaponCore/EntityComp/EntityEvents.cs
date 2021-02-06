@@ -25,7 +25,13 @@ namespace WeaponCore.Support
                 Registered = true;
                 if (IsBlock)
                 {
-                    TerminalBlock.AppendingCustomInfo += AppendingCustomInfo;
+                    if (IsWeapon)
+                        TerminalBlock.AppendingCustomInfo += AppendingCustomInfoWeapon;
+                    else if (BaseType == CompType.Support)
+                        TerminalBlock.AppendingCustomInfo += AppendingCustomInfoSupport;
+                    else if (BaseType == CompType.Upgrade)
+                        TerminalBlock.AppendingCustomInfo += AppendingCustomInfoUpgrade;
+
                     Cube.IsWorkingChanged += IsWorkingChanged;
                     IsWorkingChanged(Cube);
                 }
@@ -63,7 +69,14 @@ namespace WeaponCore.Support
                     Registered = false;
 
                     if (IsBlock) {
-                        TerminalBlock.AppendingCustomInfo -= AppendingCustomInfo;
+
+                        if (IsWeapon)
+                            TerminalBlock.AppendingCustomInfo -= AppendingCustomInfoWeapon;
+                        else if (BaseType == CompType.Support)
+                            TerminalBlock.AppendingCustomInfo -= AppendingCustomInfoSupport;
+                        else if (BaseType == CompType.Upgrade)
+                            TerminalBlock.AppendingCustomInfo -= AppendingCustomInfoUpgrade;
+
                         Cube.IsWorkingChanged -= IsWorkingChanged;
                     }
 
@@ -182,10 +195,10 @@ namespace WeaponCore.Support
         {
             if (!Cube.IsFunctional) return "[Fault]";
             if (!Cube.IsWorking) return "[Offline]";
-            return Ai.AiOwner != 0 ? "[Online]" : "[Rogue Ai] Weapons are unowned!!";
+            return Ai.AiOwner != 0 ? "[Online]" : "[Rogue Ai] Parts are unowned!!";
         }
 
-        private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder stringBuilder)
+        private void AppendingCustomInfoWeapon(IMyTerminalBlock block, StringBuilder stringBuilder)
         {
             try
             {
@@ -272,6 +285,62 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
+        }
+
+        private void AppendingCustomInfoSupport(IMyTerminalBlock block, StringBuilder stringBuilder)
+        {
+            try
+            {
+                var status = GetSystemStatus();
+
+                stringBuilder.Append(status + "\nCurrent: " + CurrentDps.ToString("0.0") + " (" + (CurrentDps / PeakDps).ToString("P") + ")");
+
+                stringBuilder.Append("\n\n==== Support ====");
+
+                var weaponCnt = Platform.ArmorSupports.Count;
+                for (int i = 0; i < weaponCnt; i++)
+                {
+                    var a = Platform.ArmorSupports[i];
+                }
+
+                if (Debug)
+                {
+                    foreach (var support in Platform.ArmorSupports)
+                    {
+                        stringBuilder.Append($"\n\nPart: {support.System.PartName} - Enabled: {IsWorking}");
+                        stringBuilder.Append($"\nManual: {support.Comp.UserControlled}");
+                    }
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in AppendingCustomInfoSupport: {ex}"); }
+        }
+
+        private void AppendingCustomInfoUpgrade(IMyTerminalBlock block, StringBuilder stringBuilder)
+        {
+            try
+            {
+                var status = GetSystemStatus();
+
+                stringBuilder.Append(status + "\nCurrent: " + CurrentDps.ToString("0.0") + " (" + (CurrentDps / PeakDps).ToString("P") + ")");
+
+                stringBuilder.Append("\n\n==== Upgrade ====");
+
+                var weaponCnt = Platform.ArmorSupports.Count;
+                for (int i = 0; i < weaponCnt; i++)
+                {
+                    var a = Platform.Upgrades[i];
+                }
+
+                if (Debug)
+                {
+                    foreach (var upgrade in Platform.Upgrades)
+                    {
+                        stringBuilder.Append($"\n\nPart: {upgrade.System.PartName} - Enabled: {IsWorking}");
+                        stringBuilder.Append($"\nManual: {upgrade.Comp.UserControlled}");
+                    }
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in AppendingCustomInfoUpgrade: {ex}"); }
         }
     }
 }

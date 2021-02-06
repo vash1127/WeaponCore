@@ -176,6 +176,20 @@ namespace WeaponCore.Control
             session.CustomActions.Add(action);
         }
 
+        public static void CreateArmorShowArea(Session session)
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Grids");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder($"Grids On/Off");
+            action.Action = CustomActions.TerminalActionToggleArmorShowArea;
+            action.Writer = CustomActions.GridsWriter;
+            action.Enabled = TerminalHelpers.HasArmorEnhancer;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            session.CustomActions.Add(action);
+        }
+
         public static void CreateFriendly(Session session)
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Friendly");

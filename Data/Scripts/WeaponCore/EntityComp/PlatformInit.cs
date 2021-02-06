@@ -83,7 +83,7 @@ namespace WeaponCore.Platform
 
             var blockDef = Comp.SubTypeId; 
             if (!Comp.Ai.PartCounting.ContainsKey(blockDef)) 
-                Comp.Ai.PartCounting[blockDef] = Comp.Session.WeaponCountPool.Get();
+                Comp.Ai.PartCounting[blockDef] = Comp.Session.PartCountPool.Get();
 
             var wCounter = comp.Ai.PartCounting[blockDef];
             wCounter.Max = Structure.ConstructPartCap;
@@ -97,7 +97,7 @@ namespace WeaponCore.Platform
 
             if (wCounter.Max == 0 || Comp.Ai.Construct.GetPartCount(blockDef) + 1 <= wCounter.Max) {
                 wCounter.Current++;
-                Ai.Constructs.UpdateWeaponCounters(Comp.Ai);
+                Ai.Constructs.UpdatePartCounters(Comp.Ai);
                 State = PlatformState.Valid;
             }
             else
@@ -133,7 +133,6 @@ namespace WeaponCore.Platform
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid weapon system, I am crashing now Dave.");
 
                     var muzzlePartName = system.MuzzlePartName.String != "Designator" ? system.MuzzlePartName.String : system.ElevationPartName.String;
-                    Log.Line($"muzzlePartName:{muzzlePartName}");
                     MyEntity muzzlePartEntity;
                     if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                     {
@@ -173,7 +172,7 @@ namespace WeaponCore.Platform
                         Upgrades.Add(new Upgrades(system, comp, i));
                     }
                 }
-                else if (Comp.BaseType == ArmorEnhancer)
+                else if (Comp.BaseType == CoreComponent.CompType.Support)
                 {
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
@@ -597,7 +596,7 @@ namespace WeaponCore.Platform
                 w.Comp.UiEnabled = true;
 
             if (w.System.HasAmmoSelection)
-                w.Comp.AmmoSelectionWeaponIds.Add(w.PartId);
+                w.Comp.AmmoSelectionPartIds.Add(w.PartId);
 
             foreach (var m in w.System.Values.Assignments.MountPoints) {
                 if (m.SubtypeId == Comp.SubTypeId.String && !string.IsNullOrEmpty(m.IconName)) {

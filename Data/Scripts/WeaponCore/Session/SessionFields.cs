@@ -64,9 +64,8 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128, invMove => invMove.Clean());
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100, cList => cList.ClearImmediate());
-
         internal readonly MyConcurrentPool<GridMap> GridMapPool = new MyConcurrentPool<GridMap>(128, fatMap => fatMap.Clean());
-        internal readonly MyConcurrentPool<PartCounter> WeaponCountPool = new MyConcurrentPool<PartCounter>(64, count => count.Current = 0);
+        internal readonly MyConcurrentPool<PartCounter> PartCountPool = new MyConcurrentPool<PartCounter>(64, count => count.Current = 0);
         internal readonly MyConcurrentPool<Ai> GridAiPool = new MyConcurrentPool<Ai>(128, ai => ai.CleanUp());
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
         internal readonly MyConcurrentPool<CorePlatform> PlatFormPool = new MyConcurrentPool<CorePlatform>(256, platform => platform.Clean());
@@ -155,7 +154,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Part> WeaponLosDebugActive = new HashSet<Part>();
-
+        internal readonly HashSet<ArmorSupport> DisplayAffectedArmor = new HashSet<ArmorSupport>();
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<CoreComponent> CompsDelayed = new List<CoreComponent>();
@@ -346,6 +345,8 @@ namespace WeaponCore
         internal bool DebugLos = false;
         internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
+        internal bool ColorArmorToggle;
+
         [Flags]
         internal enum SafeZoneAction
         {

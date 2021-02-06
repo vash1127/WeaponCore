@@ -279,6 +279,23 @@ namespace WeaponCore
             return comp.Data.Repo.Base.State.TerminalAction == CoreComponent.TriggerActions.TriggerOn;
         }
 
+        internal static bool GetShowArea(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>();
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Base.Set.Overrides.ArmorShowArea;
+
+        }
+
+        internal static void RequestSetShowArea(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<CoreComponent>();
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            CoreComponent.RequestSetValue(comp, "ArmorShowArea", value, comp.Session.PlayerId);
+        }
+
         internal static void RequestSetShoot(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<CoreComponent>();

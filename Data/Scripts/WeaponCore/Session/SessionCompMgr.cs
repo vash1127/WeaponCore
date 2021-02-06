@@ -34,7 +34,7 @@ namespace WeaponCore
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
-            SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
+            DsStaticUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
 
             if (IsPartAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.CoreEntity.EntityId, ai, out b, out s)) {
 

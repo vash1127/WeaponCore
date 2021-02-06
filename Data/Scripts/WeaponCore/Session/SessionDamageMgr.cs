@@ -455,9 +455,9 @@ namespace WeaponCore
                         var aoeOffset = Math.Min(areaRadius * 0.5f, travelOffset);
                         var expOffsetClamp = MathHelperD.Clamp(aoeOffset, minAoeOffset, 2f);
                         var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
-                        if ((areaEffectDmg * areaDamageScale) > 0) SUtils.CreateMissileExplosion(this, (areaEffectDmg  * damageScale) * areaDamageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if ((areaEffectDmg * areaDamageScale) > 0) DsStaticUtils.CreateMissileExplosion(this, (areaEffectDmg  * damageScale) * areaDamageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
-                         SUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * detDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                         DsStaticUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * detDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
@@ -682,7 +682,7 @@ namespace WeaponCore
                     if (dRadius < 1.5) dRadius = 1.5f;
 
                     if (canDamage)
-                        SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.CoreEntity, destObj, info.AmmoDef, true);
+                        DsStaticUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.CoreEntity, destObj, info.AmmoDef, true);
                 }
             }
         }

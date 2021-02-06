@@ -62,6 +62,10 @@ namespace WeaponCore.Control
             AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, WeaponIsReady);
         }
 
+        internal static void CreateGenericArmor<T>(Session session) where T : IMyTerminalBlock
+        {
+            AddOnOffSwitchNoAction<T>(session, -20, "Show Enhanced Area", "Area Influence", "Show On/Off", WepUi.GetShowArea, WepUi.RequestSetShowArea, true, ArmorEnhancerIsReady);
+        }
         internal static bool Istrue(IMyTerminalBlock block)
         {
             return true;
@@ -72,6 +76,13 @@ namespace WeaponCore.Control
 
             var comp = block?.Components?.Get<CoreComponent>();
             return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.IsWeapon;
+        }
+
+        internal static bool ArmorEnhancerIsReady(IMyTerminalBlock block)
+        {
+
+            var comp = block?.Components?.Get<CoreComponent>();
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.BaseType == CoreComponent.CompType.Support;
         }
 
         internal static bool UiRofSlider(IMyTerminalBlock block)
@@ -133,13 +144,19 @@ namespace WeaponCore.Control
         internal static bool AmmoSelection(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.AmmoSelectionWeaponIds.Count > 0 && comp.IsWeapon;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.AmmoSelectionPartIds.Count > 0 && comp.IsWeapon;
         }
 
         internal static bool HasTracking(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
             return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTracking && comp.IsWeapon;
+        }
+
+        internal static bool HasArmorEnhancer(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>();
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.BaseType == CoreComponent.CompType.Support;
         }
 
         internal static bool HasTurret(IMyTerminalBlock block)
