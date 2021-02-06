@@ -56,74 +56,78 @@ namespace WeaponCore
                 }
 
                 ///
-                /// Comp update section
+                /// BaseComp update section
                 ///
                 for (int i = 0; i < ai.Comps.Count; i++) {
 
-                    var comp = ai.Comps[i];
-                    if (comp.Status != Started)
-                        comp.HealthCheck();
+                    var baseComp = ai.Comps[i];
+                    if (baseComp.Status != Started)
+                        baseComp.HealthCheck();
 
-                    if (ai.DbUpdated || !comp.UpdatedState) {
+                    if (ai.DbUpdated || !baseComp.UpdatedState) {
 
-                        if (comp.Type == CoreComponent.CompType.Weapon)
-                            comp.WeaponDetectStateChanges();
+                        if (baseComp.Type == CoreComponent.CompType.Weapon)
+                            baseComp.WeaponDetectStateChanges((Weapon.WeaponComponent)baseComp);
                         else
-                            comp.OtherDetectStateChanges();
+                            baseComp.OtherDetectStateChanges();
                     }
 
-                    if (comp.Platform.State != CorePlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.CoreEntity.MarkedForClose || comp.IsDisabled || comp.LazyUpdate && !ai.DbUpdated && Tick > comp.NextLazyUpdateStart) 
+                    if (baseComp.Platform.State != CorePlatform.PlatformState.Ready || baseComp.IsAsleep || !baseComp.IsWorking || baseComp.CoreEntity.MarkedForClose || baseComp.IsDisabled || baseComp.LazyUpdate && !ai.DbUpdated && Tick > baseComp.NextLazyUpdateStart) 
                         continue;
 
-                    if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
-                        comp.ResetPlayerControl();
+                    if (IsServer && baseComp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(baseComp.Data.Repo.Base.State.PlayerId))
+                        baseComp.ResetPlayerControl();
 
                     if (HandlesInput) {
-                        var wasTrack = comp.Data.Repo.Base.State.TrackingReticle;
+                        var wasTrack = baseComp.Data.Repo.Base.State.TrackingReticle;
 
-                        var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
+                        var isControllingPlayer = baseComp.Data.Repo.Base.State.PlayerId == PlayerId;
+                        var track = (isControllingPlayer && (baseComp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && baseComp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
                         if (IsServer)
-                            comp.Data.Repo.Base.State.TrackingReticle = track;
+                            baseComp.Data.Repo.Base.State.TrackingReticle = track;
                         
                         if (MpActive && track != wasTrack)
-                            comp.Session.SendTrackReticleUpdate(comp, track);
+                            baseComp.Session.SendTrackReticleUpdate(baseComp, track);
                     }
 
-                    var trackReticle = comp.Data.Repo.Base.State.TrackingReticle;
-                    comp.WasControlled = comp.UserControlled;
-                    comp.UserControlled = comp.Data.Repo.Base.State.Control != ControlMode.None;
+                    var trackReticle = baseComp.Data.Repo.Base.State.TrackingReticle;
+                    baseComp.WasControlled = baseComp.UserControlled;
+                    baseComp.UserControlled = baseComp.Data.Repo.Base.State.Control != ControlMode.None;
 
-                    if (!PlayerMouseStates.TryGetValue(comp.Data.Repo.Base.State.PlayerId, out comp.InputState)) 
-                        comp.InputState = DefaultInputStateData;
-                    var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
-                    var canManualShoot = !ai.SuppressMouseShoot && !comp.InputState.InMenu;
+                    if (!PlayerMouseStates.TryGetValue(baseComp.Data.Repo.Base.State.PlayerId, out baseComp.InputState))
+                        baseComp.InputState = DefaultInputStateData;
+                    var compManualMode = baseComp.Data.Repo.Base.State.Control == ControlMode.Camera || (baseComp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
+                    var canManualShoot = !ai.SuppressMouseShoot && !baseComp.InputState.InMenu;
 
                     ///
                     /// Upgrade update section
                     ///
-                    for (int j = 0; j < comp.Platform.ArmorSupports.Count; j++)
+                    for (int j = 0; j < baseComp.Platform.ArmorSupports.Count; j++)
                     {
-                        var a = comp.Platform.ArmorSupports[j];
+                        var a = baseComp.Platform.ArmorSupports[j];
+                        var comp = a.Comp;
                         if (a.LastBlockRefreshTick < ai.LastBlockChangeTick)
                             a.RefreshBlocks();
 
-                        if (a.ShowAffectedBlocks != comp.Data.Repo.Base.Set.Overrides.ArmorShowArea)
+                        if (a.ShowAffectedBlocks != baseComp.Data.Repo.Base.Set.Overrides.ArmorShowArea)
                             a.ToggleAreaEffectDisplay();
                     }
                     ///
                     /// Upgrade update section
                     ///
-                    for (int j = 0; j < comp.Platform.Upgrades.Count; j++)
+                    for (int j = 0; j < baseComp.Platform.Upgrades.Count; j++)
                     {
-                        var u = comp.Platform.Upgrades[j];
+                        var u = baseComp.Platform.Upgrades[j];
+                        var comp = u.Comp;
+
                     }
                     ///
                     /// Weapon update section
                     ///
-                    for (int j = 0; j < comp.Platform.Weapons.Count; j++) {
+                    for (int j = 0; j < baseComp.Platform.Weapons.Count; j++) {
 
-                        var w = comp.Platform.Weapons[j];
+                        var w = baseComp.Platform.Weapons[j];
+                        var comp = w.Comp;
                         if (w.PartReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)
@@ -227,7 +231,7 @@ namespace WeaponCore
                             }
                         }
 
-                        w.ProjectilesNear = enemyProjectiles && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
+                        w.ProjectilesNear = enemyProjectiles && w.System.TrackProjectile && w.BaseComp.Data.Repo.Base.Set.Overrides.Projectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
 
                         if (comp.Data.Repo.Base.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
@@ -323,7 +327,7 @@ namespace WeaponCore
             for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ChargingWeapons[i];
-                var comp = w.Comp;
+                var comp = w.BaseComp;
                 var ai = comp.Ai;
                 if (ai == null || ai.TopEntity.MarkedForClose || ai.Concealed || !ai.HasPower || comp.CoreEntity.MarkedForClose || !comp.IsWorking  || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                     
@@ -376,7 +380,7 @@ namespace WeaponCore
 
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
-                        if(!w.Comp.UnlimitedPower)
+                        if(!w.BaseComp.UnlimitedPower)
                             w.DrawPower();
 
                         w.ChargeDelayTicks = 0;
@@ -400,7 +404,7 @@ namespace WeaponCore
                     w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.Ammo.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
 
-                    if (!w.Comp.UnlimitedPower) {
+                    if (!w.BaseComp.UnlimitedPower) {
                         if (!w.DrawingPower)
                             w.DrawPower();
                         else
@@ -416,7 +420,7 @@ namespace WeaponCore
             {
                 var w = AcquireTargets[i];
                 var comp = w.Comp;
-                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.TopEntity.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking  || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
+                if (w.BaseComp.IsAsleep || w.BaseComp.Ai == null || comp.Ai.TopEntity.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking  || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
                     
                     w.AcquiringTarget = false;
                     AcquireTargets.RemoveAtFast(i);
@@ -428,12 +432,12 @@ namespace WeaponCore
 
                 var acquire = (w.Acquire.IsSleeping && AsleepCount == w.Acquire.SlotId || !w.Acquire.IsSleeping && AwakeCount == w.Acquire.SlotId);
 
-                var seekProjectile = w.ProjectilesNear || w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles && w.Comp.Ai.CheckProjectiles;
+                var seekProjectile = w.ProjectilesNear || w.System.TrackProjectile && w.BaseComp.Data.Repo.Base.Set.Overrides.Projectiles && w.BaseComp.Ai.CheckProjectiles;
                 var checkTime = w.Target.TargetChanged || acquire || seekProjectile || w.FastTargetResetTick == Tick;
 
-                if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
+                if (checkTime || w.BaseComp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 
-                    if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.DetectOtherSignals && w.Comp.Ai.DetectionInfo.OtherInRange || w.Comp.Ai.DetectionInfo.PriorityInRange) && w.Comp.Ai.DetectionInfo.ValidSignalExists(w)) {
+                    if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.DetectOtherSignals && w.BaseComp.Ai.DetectionInfo.OtherInRange || w.BaseComp.Ai.DetectionInfo.PriorityInRange) && w.BaseComp.Ai.DetectionInfo.ValidSignalExists(w)) {
 
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
 
@@ -441,10 +445,10 @@ namespace WeaponCore
                             Ai.AcquireTarget(w, false, topMost);
                         }
                         else
-                            Ai.AcquireTarget(w, w.Comp.Ai.TargetResetTick == Tick);
+                            Ai.AcquireTarget(w, w.BaseComp.Ai.TargetResetTick == Tick);
                     }
 
-                    if (w.Target.HasTarget || !(comp.DetectOtherSignals && w.Comp.Ai.DetectionInfo.OtherInRange || w.Comp.Ai.DetectionInfo.PriorityInRange)) {
+                    if (w.Target.HasTarget || !(comp.DetectOtherSignals && w.BaseComp.Ai.DetectionInfo.OtherInRange || w.BaseComp.Ai.DetectionInfo.PriorityInRange)) {
 
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
@@ -460,51 +464,51 @@ namespace WeaponCore
         {
             for (int i = ShootingWeapons.Count - 1; i >= 0; i--) {
 
-                var u = ShootingWeapons[i];
-                var invalidWeapon = u.Comp.CoreEntity.MarkedForClose || u.Comp.Ai == null || u.Comp.Ai.Concealed || u.Comp.Ai.TopEntity.MarkedForClose || u.Comp.Platform.State != CorePlatform.PlatformState.Ready;
-                var smartTimer = !u.AiEnabled && u.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == PartDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - u.LastSmartLosCheck > 180;
-                var quickSkip = invalidWeapon || u.Comp.IsBlock && smartTimer && !u.SmartLos() || u.PauseShoot;
+                var w = ShootingWeapons[i];
+                var invalidWeapon = w.Comp.CoreEntity.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.TopEntity.MarkedForClose || w.Comp.Platform.State != CorePlatform.PlatformState.Ready;
+                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == PartDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
+                var quickSkip = invalidWeapon || w.Comp.IsBlock && smartTimer && !w.SmartLos() || w.PauseShoot;
                 if (quickSkip) continue;
 
-                if (!u.Comp.UnlimitedPower) {
+                if (!w.Comp.UnlimitedPower) {
 
                     //TODO add logic for power priority
-                    if (!u.System.DesignatorWeapon && u.Comp.Ai.OverPowered && (u.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || u.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !u.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
-                        if (u.ChargeDelayTicks == 0) {
-                            var percUseable = u.RequiredPower / u.Comp.Ai.RequestedWeaponsDraw;
-                            u.OldUseablePower = u.UseablePower;
-                            u.UseablePower = (u.Comp.Ai.GridMaxPower * .98f) * percUseable;
+                        if (w.ChargeDelayTicks == 0) {
+                            var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+                            w.OldUseablePower = w.UseablePower;
+                            w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                            if (u.DrawingPower)
-                                u.DrawPower(true);
+                            if (w.DrawingPower)
+                                w.DrawPower(true);
                             else
-                                u.DrawPower();
+                                w.DrawPower();
 
-                            u.ChargeDelayTicks = (uint)(((u.RequiredPower - u.UseablePower) / u.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                            u.ChargeUntilTick = Tick + u.ChargeDelayTicks;
-                            u.Charging = true;
+                            w.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
+                            w.Charging = true;
                         }
-                        else if (u.ChargeUntilTick <= Tick) {
-                            u.Charging = false;
-                            u.ChargeUntilTick = Tick + u.ChargeDelayTicks;
+                        else if (w.ChargeUntilTick <= Tick) {
+                            w.Charging = false;
+                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                         }
                     }
-                    else if (!u.ActiveAmmoDef.AmmoDef.Const.MustCharge && (u.Charging || u.ChargeDelayTicks > 0 || u.ResetPower)) {
-                        u.OldUseablePower = u.UseablePower;
-                        u.UseablePower = u.RequiredPower;
-                        u.DrawPower(true);
-                        u.ChargeDelayTicks = 0;
-                        u.Charging = false;
-                        u.ResetPower = false;
+                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
+                        w.OldUseablePower = w.UseablePower;
+                        w.UseablePower = w.RequiredPower;
+                        w.DrawPower(true);
+                        w.ChargeDelayTicks = 0;
+                        w.Charging = false;
+                        w.ResetPower = false;
                     }
 
-                    if (u.Charging)
+                    if (w.Charging)
                         continue;
 
                 }
 
-                u.Shoot();
+                w.Shoot();
             }
             ShootingWeapons.Clear();
         }

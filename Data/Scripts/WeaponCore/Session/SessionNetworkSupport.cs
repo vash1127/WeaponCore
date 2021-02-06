@@ -194,14 +194,14 @@ namespace WeaponCore
                 WeaponAmmoPacket iPacket;
                 if (PrunedPacketsToClient.TryGetValue(w.Ammo, out oldInfo)) {
                     iPacket = (WeaponAmmoPacket)oldInfo.Packet;
-                    iPacket.EntityId = w.Comp.CoreEntity.EntityId;
+                    iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                     iPacket.Data = w.Ammo;
                 }
                 else {
 
                     iPacket = PacketAmmoPool.Get();
                     iPacket.MId = ++w.MIds[(int)type];
-                    iPacket.EntityId = w.Comp.CoreEntity.EntityId;
+                    iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
                     iPacket.Data = w.Ammo;
@@ -210,7 +210,7 @@ namespace WeaponCore
 
 
                 PrunedPacketsToClient[w.Ammo] = new PacketInfo {
-                    Entity = w.Comp.CoreEntity,
+                    Entity = w.BaseComp.CoreEntity,
                     Packet = iPacket,
                 };
             }
@@ -328,22 +328,22 @@ namespace WeaponCore
         {
             if (IsServer) {
 
-                if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Base)) {
+                if (!PrunedPacketsToClient.ContainsKey(w.BaseComp.Data.Repo.Base)) {
 
                     const PacketType type = PacketType.WeaponReload;
-                    w.Comp.Data.Repo.Base.UpdateCompBasePacketInfo(w.Comp);
+                    w.BaseComp.Data.Repo.Base.UpdateCompBasePacketInfo(w.BaseComp);
 
                     PacketInfo oldInfo;
                     WeaponReloadPacket iPacket;
                     if (PrunedPacketsToClient.TryGetValue(w.Reload, out oldInfo)) {
                         iPacket = (WeaponReloadPacket)oldInfo.Packet;
-                        iPacket.EntityId = w.Comp.CoreEntity.EntityId;
+                        iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                         iPacket.Data = w.Reload;
                     }
                     else {
                         iPacket = PacketReloadPool.Get();
                         iPacket.MId = ++w.MIds[(int)type];
-                        iPacket.EntityId = w.Comp.CoreEntity.EntityId;
+                        iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
                         iPacket.Data = w.Reload;
@@ -351,12 +351,12 @@ namespace WeaponCore
                     }
 
                     PrunedPacketsToClient[w.Reload] = new PacketInfo {
-                        Entity = w.Comp.CoreEntity,
+                        Entity = w.BaseComp.CoreEntity,
                         Packet = iPacket,
                     };
                 }
                 else 
-                    SendCompBaseData(w.Comp);
+                    SendCompBaseData(w.BaseComp);
             }
             else Log.Line($"SendWeaponReload should never be called on Client");
         }
@@ -865,15 +865,15 @@ namespace WeaponCore
             {
                 PacketsToClient.Add(new PacketInfo
                 {
-                    Entity = w.Comp.CoreEntity,
+                    Entity = w.BaseComp.CoreEntity,
                     Packet = new QueuedShotPacket
                     {
                         MId = ++w.MIds[(int)PacketType.QueueShot],
-                        EntityId = w.Comp.CoreEntity.EntityId,
+                        EntityId = w.BaseComp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
                         PartId = w.PartId,
-                        PlayerId = w.Comp.Data.Repo.Base.State.PlayerId,
+                        PlayerId = w.BaseComp.Data.Repo.Base.State.PlayerId,
                     }
                 });
             }
@@ -890,7 +890,7 @@ namespace WeaponCore
                     PacketsToServer.Add(new AmmoCycleRequestPacket
                     {
                         MId = ++mIds[(int)PacketType.AmmoCycleRequest],
-                        EntityId = w.Comp.CoreEntity.EntityId,
+                        EntityId = w.BaseComp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.AmmoCycleRequest,
                         PartId = w.PartId,

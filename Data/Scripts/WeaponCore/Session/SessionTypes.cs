@@ -95,7 +95,7 @@ namespace WeaponCore
 
                 AllDicts.Add("Session", SessionFields);
                 AllDicts.Add("Ai", AiFields);
-                AllDicts.Add("Comp", CompFields);
+                AllDicts.Add("BaseComp", CompFields);
                 AllDicts.Add("Platform", PlatformFields);
                 AllDicts.Add("Weapon", WeaponFields);
             }
@@ -170,7 +170,7 @@ namespace WeaponCore
             }
 
 
-            internal string[] IndexToString = { "Session", "Ai", "Platform", "Comp", "Weapon" };
+            internal string[] IndexToString = { "Session", "Ai", "Platform", "BaseComp", "Weapon" };
             internal Dictionary<string, string> GetStorage(DataReport data, string storageName)
             {
                 switch (storageName)
@@ -179,7 +179,7 @@ namespace WeaponCore
                         return data.Session;
                     case "Ai":
                         return data.Ai;
-                    case "Comp":
+                    case "BaseComp":
                         return data.Comp;
                     case "Platform":
                         return data.Platform;
@@ -470,11 +470,11 @@ namespace WeaponCore
                     },
                     {"AnimationDelay", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AnimationDelayTick <= w.Comp.Session.Tick}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AnimationDelayTick <= w.BaseComp.Session.Tick}"); }
                     },
                     {"ShootDelay", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShootTick <= w.Comp.Session.Tick}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShootTick <= w.BaseComp.Session.Tick}"); }
                     },
 
                 };
@@ -753,7 +753,7 @@ namespace WeaponCore
 
                     var w = wa.Part as Weapon;
 
-                    var remove = w != null && (w.Target.HasTarget || !w.TrackTarget) || wa.Part.Comp.IsAsleep || !wa.Part.Comp.IsWorking || w == null;
+                    var remove = w != null && (w.Target.HasTarget || !w.TrackTarget) || wa.Part.BaseComp.IsAsleep || !wa.Part.BaseComp.IsWorking || w == null;
 
                     if (remove) {
                         ToRemove.Add(wa);

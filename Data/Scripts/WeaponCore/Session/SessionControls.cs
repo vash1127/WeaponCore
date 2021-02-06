@@ -317,7 +317,7 @@ namespace WeaponCore
 
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                        if (!w.Comp.Session.IsClient) w.Target.Reset(comp.Session.Tick, Target.States.AnimationOff);
+                        if (!w.BaseComp.Session.IsClient) w.Target.Reset(comp.Session.Tick, Target.States.AnimationOff);
                         w.ScheduleWeaponHome(true);
                     }
 

@@ -6,14 +6,14 @@ namespace WeaponCore.Platform
     {
         internal void RefreshBlocks()
         {
-            Session.GetCubesInRange(Comp.Cube.CubeGrid, Comp.Cube, 3, EnhancedArmorBlocks, out Min, out Max, Session.CubeTypes.Slims);
+            Session.GetCubesInRange(BaseComp.Cube.CubeGrid, BaseComp.Cube, 3, EnhancedArmorBlocks, out Min, out Max, Session.CubeTypes.Slims);
             
             LastBlockRefreshTick = System.Session.Tick;
         }
 
         internal void ToggleAreaEffectDisplay()
         {
-            var grid = Comp.Cube.CubeGrid;
+            var grid = BaseComp.Cube.CubeGrid;
             if (!ShowAffectedBlocks) {
 
                 ShowAffectedBlocks = true;

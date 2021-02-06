@@ -233,12 +233,12 @@ namespace WeaponCore.Support
                 var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
                 foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
                 {
-                    PeakDps += ammo.Const.PeakDps / (float)patternSize;
-                    EffectiveDps += ammo.Const.EffectiveDps / (float)patternSize;
-                    ShotsPerSec += ammo.Const.ShotsPerSec / (float)patternSize;
-                    BaseDps += ammo.Const.BaseDps / (float)patternSize;
-                    AreaDps += ammo.Const.AreaDps / (float)patternSize;
-                    DetDps += ammo.Const.DetDps / (float)patternSize;
+                    weapon.Comp.PeakDps += ammo.Const.PeakDps / (float)patternSize;
+                    weapon.Comp.EffectiveDps += ammo.Const.EffectiveDps / (float)patternSize;
+                    weapon.Comp.ShotsPerSec += ammo.Const.ShotsPerSec / (float)patternSize;
+                    weapon.Comp.BaseDps += ammo.Const.BaseDps / (float)patternSize;
+                    weapon.Comp.AreaDps += ammo.Const.AreaDps / (float)patternSize;
+                    weapon.Comp.DetDps += ammo.Const.DetDps / (float)patternSize;
                 }
             }
 

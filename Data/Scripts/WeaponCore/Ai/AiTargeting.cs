@@ -195,7 +195,7 @@ namespace WeaponCore.Support
             var attackFriends = overRides.Friendly;
             var attackNoOwner =  overRides.Unowned;
             var forceFoci = overRides.FocusTargets;
-            var session = w.Comp.Session;
+            var session = comp.Session;
             var ai = comp.Ai;
             session.TargetRequests++;
             var physics = session.Physics;

@@ -17,7 +17,7 @@ namespace WeaponCore.Support
             {
                 if (_entity?.Model == null) {
                     if (_part.System.Session.LocalVersion) Log.Line($"reset parts");
-                    _part.Comp.Platform?.ResetParts(_part.Comp);
+                    _part.BaseComp.Platform?.ResetParts(_part.BaseComp);
                     if (_entity?.Model == null)
                         Log.Line($"Dummy Entity/Model null");
                 }

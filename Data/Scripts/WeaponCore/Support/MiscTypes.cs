@@ -81,10 +81,10 @@ namespace WeaponCore.Support
 
         internal Target(Part part = null, bool main = false)
         {
-            ParentIsPart = part?.Comp?.CoreEntity != null;
-            CoreEntity = part?.Comp?.CoreEntity;
-            CoreParent = part?.Comp?.TopEntity;
-            CoreCube = part?.Comp?.Cube;
+            ParentIsPart = part?.BaseComp?.CoreEntity != null;
+            CoreEntity = part?.BaseComp?.CoreEntity;
+            CoreParent = part?.BaseComp?.TopEntity;
+            CoreCube = part?.BaseComp?.Cube;
             CoreIsCube = CoreCube != null;
             Part = part;
             IsTargetStorage = main;
@@ -211,12 +211,12 @@ namespace WeaponCore.Support
             if (TargetChanged && ParentIsPart && IsTargetStorage) {
 
                 if (setTarget) {
-                    Part.Comp.Ai.WeaponsTracking++;
-                    Part.Comp.PartTracking++;
+                    Part.BaseComp.Ai.WeaponsTracking++;
+                    Part.BaseComp.PartTracking++;
                 }
                 else {
-                    Part.Comp.Ai.WeaponsTracking--;
-                    Part.Comp.PartTracking--;
+                    Part.BaseComp.Ai.WeaponsTracking--;
+                    Part.BaseComp.PartTracking--;
                 }
             }
             HasTarget = setTarget;

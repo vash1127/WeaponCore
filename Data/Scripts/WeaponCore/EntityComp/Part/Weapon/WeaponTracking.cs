@@ -44,19 +44,19 @@ namespace WeaponCore.Platform
 
             bool selfHit = false;
             weapon.LastHitInfo = null;
-            if (checkSelfHit && target != null && weapon.Comp.IsBlock) {
+            if (checkSelfHit && target != null && weapon.BaseComp.IsBlock) {
 
                 var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
                 var predictedMuzzlePos = testLine.To + (-testLine.Direction * weapon.MuzzleDistToBarrelCenter);
-                var ai = weapon.Comp.Ai;
+                var ai = weapon.BaseComp.Ai;
                 var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.TopEntity.PositionComp.WorldMatrixNormalizedInv) * ai.GridEntity.GridSizeR);
 
                 MyCube cube;
                 var noCubeAtPosition = !ai.GridEntity.TryGetCube(localPredictedPos, out cube);
-                if (noCubeAtPosition || cube.CubeBlock == weapon.Comp.Cube.SlimBlock) {
+                if (noCubeAtPosition || cube.CubeBlock == weapon.BaseComp.Cube.SlimBlock) {
 
                     var noCubeInLine = !ai.GridEntity.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
-                    var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == weapon.Comp.Cube.Position;
+                    var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == weapon.BaseComp.Cube.Position;
 
                     if (noCubesInLineOrHitSelf) {
 
@@ -69,7 +69,7 @@ namespace WeaponCore.Platform
                 else selfHit = true;
             }
 
-            return !selfHit && (inRange && canTrack || weapon.Comp.Data.Repo.Base.State.TrackingReticle);
+            return !selfHit && (inRange && canTrack || weapon.BaseComp.Data.Repo.Base.State.TrackingReticle);
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
@@ -122,7 +122,7 @@ namespace WeaponCore.Platform
                     var testRay = new RayD(ref weapon.MyPivotPos, ref constraintVector);
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
-                    if (weapon.Comp.Debug)
+                    if (weapon.BaseComp.Debug)
                         weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
                 }
                 else
@@ -137,8 +137,8 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             Vector3D targetCenter;
 
-            if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Position;
+            if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -150,10 +150,10 @@ namespace WeaponCore.Platform
             if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
 
-                if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
+                if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
                 {
-                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
+                    targetLinVel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].LinearVelocity;
+                    targetAccel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Acceleration;
                 }
                 else
                 {
@@ -184,7 +184,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
-            var isAligned = validEstimate && (inRange || weapon.Comp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
+            var isAligned = validEstimate && (inRange || weapon.BaseComp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -194,8 +194,8 @@ namespace WeaponCore.Platform
         internal static Vector3D TargetCenter(Weapon weapon)
         {
             var targetCenter = Vector3D.Zero;
-            if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Position;
+            if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Position;
             else if (weapon.Target.IsProjectile)
                 targetCenter = weapon.Target.Projectile?.Position ?? Vector3D.Zero;
             else if (!weapon.Target.IsFakeTarget)
@@ -211,8 +211,8 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
             targetLock = false;
 
-            if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Position;
+            if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -223,9 +223,9 @@ namespace WeaponCore.Platform
             var validEstimate = true;
             if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
-                if (weapon.Comp.Data.Repo.Base.State.TrackingReticle) {
-                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
+                if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle) {
+                    targetLinVel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].LinearVelocity;
+                    targetAccel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Acceleration;
                 }
                 else {
                     var cube = target.TargetEntity as MyCubeBlock;
@@ -253,11 +253,11 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
 
             var targetDir = targetPos - weapon.MyPivotPos;
-            var readyToTrack = validEstimate && !weapon.Comp.ResettingSubparts && (weapon.Comp.Data.Repo.Base.State.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
+            var readyToTrack = validEstimate && !weapon.BaseComp.ResettingSubparts && (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
             
             var locked = true;
             var isTracking = false;
-            if (readyToTrack && weapon.Comp.Data.Repo.Base.State.Control != CompStateValues.ControlMode.Camera) {
+            if (readyToTrack && weapon.BaseComp.Data.Repo.Base.State.Control != CompStateValues.ControlMode.Camera) {
 
                 if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
 
@@ -269,7 +269,7 @@ namespace WeaponCore.Platform
             
             weapon.Rotating = !locked;
 
-            if (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
+            if (weapon.BaseComp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
                 return isTracking;
 
             var isAligned = false;
@@ -281,8 +281,8 @@ namespace WeaponCore.Platform
             weapon.Target.IsAligned = isAligned;
             var alignedChange = wasAligned != isAligned;
             if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer && alignedChange) { 
-                for (int i = 0; i < weapon.Comp.Platform.Weapons.Count; i++) {
-                    var w = weapon.Comp.Platform.Weapons[i];
+                for (int i = 0; i < weapon.BaseComp.Platform.Weapons.Count; i++) {
+                    var w = weapon.BaseComp.Platform.Weapons[i];
 
                     if (isAligned && !w.System.DesignatorWeapon)
                         w.Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
@@ -293,7 +293,7 @@ namespace WeaponCore.Platform
 
             targetLock = isTracking && weapon.Target.IsAligned;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && targetLock && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            var rayCheckTest = !weapon.BaseComp.Session.IsClient && targetLock && (weapon.BaseComp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.BaseComp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.BaseComp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.BaseComp.Session.Tick - weapon.LastMuzzleCheck > 29);
             
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
@@ -303,14 +303,14 @@ namespace WeaponCore.Platform
 
         public bool SmartLos()
         {
-            LastSmartLosCheck = Comp.Ai.Session.Tick;
+            LastSmartLosCheck = BaseComp.Ai.Session.Tick;
             IHitInfo hitInfo;
 
             var trackingCheckPosition = GetScope.Info.Position;
             
-            Comp.Ai.Session.Physics.CastRay(trackingCheckPosition + (MyPivotFwd * Comp.Ai.GridVolume.Radius), trackingCheckPosition, out hitInfo, 15, false);
+            BaseComp.Ai.Session.Physics.CastRay(trackingCheckPosition + (MyPivotFwd * BaseComp.Ai.GridVolume.Radius), trackingCheckPosition, out hitInfo, 15, false);
             var grid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-            if (grid != null && grid.IsSameConstructAs(Comp.Ai.GridEntity) && grid.GetTargetedBlock(hitInfo.Position + (-MyPivotFwd * 0.1f)) != Comp.Cube.SlimBlock)
+            if (grid != null && grid.IsSameConstructAs(BaseComp.Ai.GridEntity) && grid.GetTargetedBlock(hitInfo.Position + (-MyPivotFwd * 0.1f)) != BaseComp.Cube.SlimBlock)
             {
                 PauseShoot = true;
                 return false;
@@ -323,7 +323,7 @@ namespace WeaponCore.Platform
         internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
         {
             valid = true;
-            var ai = weapon.Comp.Ai;
+            var ai = weapon.BaseComp.Ai;
             var session = ai.Session;
             var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick) {
@@ -339,10 +339,10 @@ namespace WeaponCore.Platform
             }
 
             var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
-            var targetMaxSpeed = weapon.Comp.Session.MaxEntitySpeed;
+            var targetMaxSpeed = weapon.BaseComp.Session.MaxEntitySpeed;
             var shooterPos = weapon.MyPivotPos;
 
-            var shooterVel = (Vector3D)weapon.Comp.Ai.GridVel;
+            var shooterVel = (Vector3D)weapon.BaseComp.Ai.GridVel;
             var projectileMaxSpeed = ammoDef.Const.DesiredProjectileSpeed;
             var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
@@ -485,25 +485,25 @@ namespace WeaponCore.Platform
                 }
             }
             
-            var tick = Comp.Session.Tick;
+            var tick = BaseComp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             
             if (System.Values.HardPoint.Other.MuzzleCheck)
             {
                 LastMuzzleCheck = tick;
-                if (Comp.IsBlock && MuzzleHitSelf())
+                if (BaseComp.IsBlock && MuzzleHitSelf())
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, !Comp.Data.Repo.Base.State.TrackingReticle);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, !Comp.Data.Repo.Base.State.TrackingReticle);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckSelfHit, !BaseComp.Data.Repo.Base.State.TrackingReticle);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckSelfHit, !BaseComp.Data.Repo.Base.State.TrackingReticle);
                     return false;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
             }
             
-            if (Target.TargetEntity is IMyCharacter && !Comp.Data.Repo.Base.Set.Overrides.Biologicals || Target.TargetEntity is MyCubeBlock && !Comp.Data.Repo.Base.Set.Overrides.Grids)
+            if (Target.TargetEntity is IMyCharacter && !BaseComp.Data.Repo.Base.Set.Overrides.Biologicals || Target.TargetEntity is MyCubeBlock && !BaseComp.Data.Repo.Base.Set.Overrides.Grids)
             {
-                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
-                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
+                masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckProjectile);
+                if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckProjectile);
                 return false;
             }
 
@@ -512,44 +512,44 @@ namespace WeaponCore.Platform
             if (Target.IsFakeTarget)
             {
                 Casting = true;
-                Comp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
+                BaseComp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return true;
             }
-            if (Comp.Data.Repo.Base.State.TrackingReticle) return true;
+            if (BaseComp.Data.Repo.Base.State.TrackingReticle) return true;
 
 
             if (Target.IsProjectile)
             {
-                if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
+                if (!BaseComp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckProjectile);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckProjectile);
                     return false;
                 }
             }
             if (!Target.IsProjectile)
             {
                 var character = Target.TargetEntity as IMyCharacter;
-                if ((Target.TargetEntity == null || Target.TargetEntity.MarkedForClose) || character != null && (character.IsDead || character.Integrity <= 0 || Comp.Session.AdminMap.ContainsKey(character)))
+                if ((Target.TargetEntity == null || Target.TargetEntity.MarkedForClose) || character != null && (character.IsDead || character.Integrity <= 0 || BaseComp.Session.AdminMap.ContainsKey(character)))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckOther);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckOther);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckOther);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckOther);
                     return false;
                 }
 
                 var cube = Target.TargetEntity as MyCubeBlock;
-                if (cube != null && !cube.IsWorking && !Comp.Ai.Construct.Focus.EntityIsFocused(Comp.Ai, cube.CubeGrid))
+                if (cube != null && !cube.IsWorking && !BaseComp.Ai.Construct.Focus.EntityIsFocused(BaseComp.Ai, cube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckDeadBlock);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckDeadBlock);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckDeadBlock);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckDeadBlock);
                     FastTargetResetTick = System.Session.Tick;
                     return false;
                 }
                 var topMostEnt = Target.TargetEntity.GetTopMostParent();
-                if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
+                if (Target.TopEntityId != topMostEnt.EntityId || !BaseComp.Ai.Targets.ContainsKey(topMostEnt))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckFailed);
                     return false;
                 }
             }
@@ -558,26 +558,26 @@ namespace WeaponCore.Platform
             var distToTargetSqr = Vector3D.DistanceSquared(targetPos, trackingCheckPosition);
             if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {
-                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckDistExceeded);
-                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckDistExceeded);
+                masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckDistExceeded);
+                if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckDistExceeded);
                 return false;
             }
 
             Water water = null;
-            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
+            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && BaseComp.Ai.InPlanetGravity && BaseComp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(BaseComp.Ai.MyPlanet, out water))
             {
-                var waterSphere = new BoundingSphereD(Comp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
+                var waterSphere = new BoundingSphereD(BaseComp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
                 if (waterSphere.Contains(targetPos) != ContainmentType.Disjoint)
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckFailed);
                     return false;
                 }
             }
 
             Casting = true;
 
-            Comp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
+            BaseComp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
             return true;
         }
 
@@ -589,10 +589,10 @@ namespace WeaponCore.Platform
             var grid = hitInfo.HitEntity as MyCubeGrid;
             if (grid != null)
             {
-                if (Comp.IsBlock && grid.IsSameConstructAs(Comp.Cube.CubeGrid))
+                if (BaseComp.IsBlock && grid.IsSameConstructAs(BaseComp.Cube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckFailed, false);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckFailed, false);
                 }
             }
         }
@@ -600,21 +600,21 @@ namespace WeaponCore.Platform
         public bool HitFriendlyShield(Vector3D weaponPos, Vector3D targetPos, Vector3D dir)
         {
             var testRay = new RayD(weaponPos, dir);
-            Comp.Ai.TestShields.Clear();
+            BaseComp.Ai.TestShields.Clear();
             var checkDistanceSqr = Vector3.DistanceSquared(targetPos, weaponPos);
 
-            for (int i = 0; i < Comp.Ai.NearByFriendlyShields.Count; i++)
+            for (int i = 0; i < BaseComp.Ai.NearByFriendlyShields.Count; i++)
             {
-                var shield = Comp.Ai.NearByFriendlyShields[i];
+                var shield = BaseComp.Ai.NearByFriendlyShields[i];
                 var dist = testRay.Intersects(shield.PositionComp.WorldVolume);
                 if (dist != null && dist.Value * dist.Value <= checkDistanceSqr)
-                    Comp.Ai.TestShields.Add(shield);
+                    BaseComp.Ai.TestShields.Add(shield);
             }
 
-            if (Comp.Ai.TestShields.Count == 0)
+            if (BaseComp.Ai.TestShields.Count == 0)
                 return false;
 
-            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.AiOwner, checkDistanceSqr);
+            var result = BaseComp.Ai.Session.SApi.IntersectEntToShieldFast(BaseComp.Ai.TestShields, testRay, true, false, BaseComp.Ai.AiOwner, checkDistanceSqr);
 
             return result.Item1 && result.Item2 > 0;
         }
@@ -624,18 +624,18 @@ namespace WeaponCore.Platform
             for (int i = 0; i < Muzzles.Length; i++)
             {
                 var m = Muzzles[i];
-                var grid = Comp.Ai.GridEntity;
+                var grid = BaseComp.Ai.GridEntity;
                 var dummy = Dummies[i];
                 var newInfo = dummy.Info;
                 m.Direction = newInfo.Direction;
                 m.Position = newInfo.Position;
-                m.LastUpdateTick = Comp.Session.Tick;
+                m.LastUpdateTick = BaseComp.Session.Tick;
 
                 var start = m.Position;
                 var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
 
                 Vector3D? hit;
-                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.Cube, Comp.Ai))
+                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, BaseComp.Cube, BaseComp.Ai))
                     return true;
             }
             return false;

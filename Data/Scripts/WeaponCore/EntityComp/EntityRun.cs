@@ -14,7 +14,6 @@ namespace WeaponCore.Support
         public override void OnAddedToContainer()
         {
             try {
-
                 base.OnAddedToContainer();
                 TopEntity = CoreEntity.GetTopMostParent();
                 if (Container.Entity.InScene) {
@@ -85,7 +84,7 @@ namespace WeaponCore.Support
                     InventoryInit();
                     if (IsBlock)
                         PowerInit();
-                    else Ai.AiOwner = GunBase.OwnerId;
+                    else if (TypeSpecific == CompTypeSpecific.Rifle) Ai.AiOwner = ((Weapon.WeaponComponent)this).GunBase.OwnerId;
 
                     if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
                         Platform.ResetParts(this);
@@ -112,7 +111,7 @@ namespace WeaponCore.Support
                         }
                     }
                 } 
-                else Log.Line($"Comp Init() failed");
+                else Log.Line($"BaseComp Init() failed");
             }
         }
 
@@ -160,11 +159,11 @@ namespace WeaponCore.Support
                             OnAddedToSceneTasks();
                     }
                     else {
-                        Log.Line($"Comp ReInit() failed stage2!");
+                        Log.Line($"BaseComp ReInit() failed stage2!");
                     }
                 }
                 else {
-                    Log.Line($"Comp ReInit() failed stage1! - marked:{CoreEntity.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridTargetingAIs.ContainsKey(TopEntity)}");
+                    Log.Line($"BaseComp ReInit() failed stage1! - marked:{CoreEntity.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridTargetingAIs.ContainsKey(TopEntity)}");
                 }
             }
         }
@@ -222,8 +221,8 @@ namespace WeaponCore.Support
                         Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
                     }
 
-                    Ai.OptimalDps += PeakDps;
-                    Ai.EffectiveDps += EffectiveDps;
+                    Ai.OptimalDps += ((Weapon.WeaponComponent)this).PeakDps;
+                    Ai.EffectiveDps += ((Weapon.WeaponComponent)this).EffectiveDps;
                 }
 
 
@@ -239,7 +238,8 @@ namespace WeaponCore.Support
                     for (int i = 0; i < Platform.Weapons.Count; i++)
                         Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
 
-                VanillaTurretBase?.SetTarget(Vector3D.MaxValue);
+                if (Type == CompType.Weapon)
+                    ((Weapon.WeaponComponent)this).VanillaTurretBase?.SetTarget(Vector3D.MaxValue);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

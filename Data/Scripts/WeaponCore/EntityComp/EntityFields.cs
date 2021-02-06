@@ -18,26 +18,24 @@ namespace WeaponCore.Support
     public partial class CoreComponent
     {
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
-        internal readonly List<int> AmmoSelectionPartIds = new List<int>();
+        internal readonly List<int> ConsumableSelectionPartIds = new List<int>();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
         internal List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
 
         internal bool InventoryInited;
-        internal CompTypeSpecific TypeSpecific;
         internal CompType Type;
+        internal CompTypeSpecific TypeSpecific;
         internal MyEntity CoreEntity;
         internal IMySlimBlock Slim;
         internal IMyTerminalBlock TerminalBlock;
         internal IMyFunctionalBlock FunctionalBlock;
-        internal IMyLargeTurretBase VanillaTurretBase;
-        internal IMyAutomaticRifleGun Rifle;
-        internal IMyHandheldGunObject<MyGunBase> GunBase;
+
         internal MyCubeBlock Cube;
         internal Session Session;
         internal bool IsBlock;
-
+        internal MyDefinitionId Id;
         internal MyStringHash SubTypeId;
         internal string SubtypeName;
         internal bool LazyUpdate;
@@ -46,10 +44,8 @@ namespace WeaponCore.Support
 
         internal InputStateData InputState;
         internal Ai Ai;
-        internal Weapon TrackingWeapon;
         internal CorePlatform Platform;
         internal MyEntity TopEntity;
-        internal uint LastRayCastTick;
         internal uint IsWorkingChangedTick;
         internal uint NextLazyUpdateStart;
         internal int PartTracking;
@@ -58,13 +54,6 @@ namespace WeaponCore.Support
         internal double MinDetectDistance = double.MaxValue;
         internal double MinDetectDistanceSqr = double.MaxValue;
 
-        internal float EffectiveDps;
-        internal float PeakDps;
-        internal float ShotsPerSec;
-        internal float BaseDps;
-        internal float AreaDps;
-        internal float DetDps;
-        internal float CurrentDps;
         internal float CurrentHeat;
         internal float MaxHeat;
         internal float HeatPerSecond;
@@ -80,13 +69,10 @@ namespace WeaponCore.Support
         internal bool IsFunctional;
         internal bool IsWorking;
         internal bool IsDisabled;
-        internal bool HasEnergyWeapon;
-        internal bool HasGuidanceToggle;
-        internal bool HasDamageSlider;
-        internal bool HasRofSlider;
+
+        internal bool HasStrengthSlider;
         internal bool CanOverload;
         internal bool HasTurret;
-        internal bool HasChargeWeapon;
         internal bool WasControlled;
         internal bool UpdatedState;
         internal bool UserControlled;
@@ -95,8 +81,7 @@ namespace WeaponCore.Support
         internal bool Registered;
         internal bool ResettingSubparts;
         internal bool UiEnabled;
-        internal bool ShootSubmerged;
-        internal bool HasTracking;
+
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -140,30 +125,27 @@ namespace WeaponCore.Support
 
         internal bool FakeIsWorking => !IsBlock || IsWorking;
 
-        public void Init(Session session, MyEntity coreEntity)
+        public void Init(Session session, MyEntity coreEntity, bool isBlock, MyEntity topEntity, MyDefinitionId id)
         {
             Session = session;
             CoreEntity = coreEntity;
-            IsBlock = coreEntity is MyCubeBlock;
+            IsBlock = isBlock;
+            Id = id;
+            SubtypeName = id.SubtypeName;
+            SubTypeId = id.SubtypeId;
+            TopEntity = topEntity;
 
             if (IsBlock) {
 
                 Cube = (MyCubeBlock)CoreEntity;
                 Slim = Cube.SlimBlock;
                 MaxIntegrity = Slim.MaxIntegrity;
-                TopEntity = Cube.CubeGrid;
-                SubtypeName = Cube.BlockDefinition.Id.SubtypeName;
-                SubTypeId = Cube.BlockDefinition.Id.SubtypeId;
-
                 TerminalBlock = coreEntity as IMyTerminalBlock;
                 FunctionalBlock = coreEntity as IMyFunctionalBlock;
 
                 var turret = CoreEntity as IMyLargeTurretBase;
                 if (turret != null)
                 {
-
-                    VanillaTurretBase = turret;
-                    VanillaTurretBase.EnableIdleRotation = false;
                     TypeSpecific = CompTypeSpecific.VanillaTurret;
                     Type = CompType.Weapon;
                 }
@@ -173,13 +155,11 @@ namespace WeaponCore.Support
                     {
                         TypeSpecific = CompTypeSpecific.Support;
                         Type = CompType.Support;
-                        LazyUpdate = true;
                     }
                     else if (Session.WeaponCoreUpgradeBlockDefs.Contains(Cube.BlockDefinition.Id))
                     {
                         TypeSpecific = CompTypeSpecific.Upgrade;
                         Type = CompType.Upgrade;
-                        LazyUpdate = true;
                     }
                     else {
 
@@ -195,11 +175,6 @@ namespace WeaponCore.Support
             }
             else if (CoreEntity is IMyAutomaticRifleGun) {
                 
-                Rifle = (IMyAutomaticRifleGun)CoreEntity;
-                GunBase = (IMyHandheldGunObject<MyGunBase>)CoreEntity;
-                TopEntity = Rifle.Owner;
-                SubtypeName = Rifle.DefinitionId.SubtypeName;
-                SubTypeId = Rifle.DefinitionId.SubtypeId;
                 MaxIntegrity = 1;
                 TypeSpecific = CompTypeSpecific.Rifle;
                 Type = CompType.Weapon;
@@ -209,6 +184,7 @@ namespace WeaponCore.Support
                 Type = CompType.Phantom;
             }
 
+            LazyUpdate = Type == CompType.Support || Type == CompType.Upgrade;
             CoreInventory = (MyInventory)CoreEntity.GetInventoryBase();
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();

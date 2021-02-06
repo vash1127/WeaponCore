@@ -25,7 +25,7 @@ namespace WeaponCore
         private bool CompRestricted(CoreComponent comp)
         {
             var cube = comp.Cube;
-            var grid = cube.CubeGrid;
+            var grid = cube?.CubeGrid;
 
             Ai ai;
             if (grid == null || !GridTargetingAIs.TryGetValue(grid, out ai))
@@ -57,14 +57,13 @@ namespace WeaponCore
             for (int i = 0; i < CompsToStart.Count; i++) {
 
                 var comp = CompsToStart[i];
-                if (comp.IsBlock && comp.Cube.CubeGrid.IsPreview || CompRestricted(comp)) {
+                if (comp.IsBlock && (comp.Cube.CubeGrid.IsPreview || CompRestricted(comp))) {
 
                     PlatFormPool.Return(comp.Platform);
                     comp.Platform = null;
                     CompsToStart.Remove(comp);
                     continue;
                 }
-
                 if (comp.IsBlock && (comp.Cube.CubeGrid.Physics == null && !comp.Cube.CubeGrid.MarkedForClose && comp.Cube.BlockDefinition.HasPhysics))
                     continue;
 
@@ -75,10 +74,8 @@ namespace WeaponCore
                         CompsToStart.Remove(comp);
                         continue;
                     }
-
                     if (!GridToInfoMap.ContainsKey(comp.TopEntity))
                         continue;
-
                     IdToCompMap[comp.CoreEntity.EntityId] = comp;
                     comp.CoreEntity.Components.Add(comp);
                     CompsToStart.Remove(comp);
@@ -99,21 +96,21 @@ namespace WeaponCore
                     return;
 
                 CoreStructure c;
-                if (PartPlatforms.TryGetValue(id.GetValueOrDefault(), out c))
+                if (id.HasValue && PartPlatforms.TryGetValue(id.Value, out c))
                 {
                     switch (c.StructureType)
                     {
                         case CoreStructure.StructureTypes.Upgrade:
-                            CompsToStart.Add(new Upgrade.UpgradeComponent(this, entity));
+                            CompsToStart.Add(new Upgrade.UpgradeComponent(this, entity, id.Value));
                             break;
                         case CoreStructure.StructureTypes.Support:
-                            CompsToStart.Add(new SupportSys.SupportComponent(this, entity));
+                            CompsToStart.Add(new SupportSys.SupportComponent(this, entity, id.Value));
                             break;
                         case CoreStructure.StructureTypes.Phantom:
-                            CompsToStart.Add(new Phantom.PhantomComponent(this, entity));
+                            CompsToStart.Add(new Phantom.PhantomComponent(this, entity, id.Value));
                             break;
                         case CoreStructure.StructureTypes.Weapon:
-                            CompsToStart.Add(new Weapon.WeaponComponent(this, entity));
+                            CompsToStart.Add(new Weapon.WeaponComponent(this, entity, id.Value));
                             break;
                     }
 
@@ -207,7 +204,7 @@ namespace WeaponCore
 
                 if (comp.Ai != null)
                 {
-                    Log.Line("Comp still had AI on close");
+                    Log.Line("BaseComp still had AI on close");
                     comp.Ai = null;
                 }
                 

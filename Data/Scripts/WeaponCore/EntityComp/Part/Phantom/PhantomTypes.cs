@@ -1,4 +1,5 @@
-﻿using VRage.Game.Entity;
+﻿using VRage.Game;
+using VRage.Game.Entity;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
@@ -8,9 +9,9 @@ namespace WeaponCore.Platform
         internal class PhantomComponent : CoreComponent
         {
 
-            internal PhantomComponent(Session session, MyEntity coreEntity)
+            internal PhantomComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
-                base.Init(session, coreEntity);
+                base.Init(session, coreEntity, false, coreEntity, id);
             }
         }
     }

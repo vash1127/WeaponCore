@@ -98,7 +98,6 @@ namespace WeaponCore
                 grid.OnFatBlockRemoved += FromGridMap;
                 grid.OnClose += RemoveGridFromMap;
                 DirtyGridInfos.Add(grid);
-
             }
         }
 

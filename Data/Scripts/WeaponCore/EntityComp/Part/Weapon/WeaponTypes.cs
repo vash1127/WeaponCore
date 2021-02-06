@@ -1,6 +1,11 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.Game.Weapons;
+using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -10,10 +15,54 @@ namespace WeaponCore.Platform
     {
         internal class WeaponComponent : CoreComponent
         {
+            internal IMyAutomaticRifleGun Rifle;
+            internal IMyHandheldGunObject<MyGunBase> GunBase;
+            internal IMyLargeTurretBase VanillaTurretBase;
+            internal Weapon TrackingWeapon;
+            internal uint LastRayCastTick;
+            internal float EffectiveDps;
+            internal float PeakDps;
+            internal float ShotsPerSec;
+            internal float BaseDps;
+            internal float AreaDps;
+            internal float DetDps;
+            internal float CurrentDps;
+            internal bool HasEnergyWeapon;
+            internal bool HasGuidanceToggle;
+            internal bool HasRofSlider;
+            internal bool HasChargeWeapon;
+            internal bool ShootSubmerged;
+            internal bool HasTracking;
 
-            internal WeaponComponent(Session session, MyEntity coreEntity)
+            internal WeaponComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
-                base.Init(session, coreEntity);
+                MyEntity topEntity;
+
+                var cube = coreEntity as MyCubeBlock;
+                if (cube != null) {
+
+                    topEntity = cube.CubeGrid;
+
+                    var turret = coreEntity as IMyLargeTurretBase;
+                    if (turret != null) {
+                        VanillaTurretBase = turret;
+                        VanillaTurretBase.EnableIdleRotation = false;
+                    }
+                }
+                else {
+
+                    var gun = coreEntity as IMyAutomaticRifleGun;
+
+                    if (gun != null) {
+                        Rifle = gun;
+                        GunBase = gun;
+                        topEntity = Rifle.Owner;
+                    }
+                    else
+                        topEntity = coreEntity;
+                }
+
+                base.Init(session, coreEntity, cube != null, topEntity, id);
             }
         }
 

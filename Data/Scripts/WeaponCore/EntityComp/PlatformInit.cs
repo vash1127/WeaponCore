@@ -37,16 +37,13 @@ namespace WeaponCore.Platform
 
         internal void Setup(CoreComponent comp)
         {
-            var defId = comp.IsBlock ? comp.Cube.BlockDefinition.Id : comp.Rifle.DefinitionId;
-            if (!comp.Session.PartPlatforms.ContainsKey(defId))
+            if (!comp.Session.PartPlatforms.ContainsKey(comp.Id))
             {
                 PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) was not found in platform setup, I am crashing now Dave.");
                 return;
             }
-            Structure = comp.Session.PartPlatforms[defId];
+            Structure = comp.Session.PartPlatforms[comp.Id];
             Comp = comp;
-
-
         }
 
         internal void Clean()
@@ -67,7 +64,7 @@ namespace WeaponCore.Platform
             if (comp.CoreEntity.MarkedForClose) 
                 return PlatformCrash(comp, true, false, $"Your block subTypeId ({comp.SubtypeName}) markedForClose, init platform invalid, I am crashing now Dave.");
             
-            if (comp.IsBlock && !comp.Cube.IsFunctional || !comp.IsBlock && comp.Rifle == null || comp.CoreEntity.MarkedForClose) {
+            if (comp.IsBlock && !comp.Cube.IsFunctional || comp.CoreEntity.MarkedForClose) {
                 State = PlatformState.Delay;
                 return State;
             }
@@ -159,7 +156,7 @@ namespace WeaponCore.Platform
                     azimuthPart.NeedsWorldMatrix = true;
                     elevationPart.NeedsWorldMatrix = true;
 
-                    Weapons.Add(new Weapon(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName));
+                    Weapons.Add(new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName));
                 }
                 else if (Comp.Type == CoreComponent.CompType.Upgrade)
                 {
@@ -169,7 +166,7 @@ namespace WeaponCore.Platform
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
-                        Upgrades.Add(new Upgrades(system, comp, i));
+                        Upgrades.Add(new Upgrades(system, (Upgrade.UpgradeComponent)comp, i));
                     }
                 }
                 else if (Comp.Type == CoreComponent.CompType.Support)
@@ -180,7 +177,7 @@ namespace WeaponCore.Platform
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
-                        ArmorSupports.Add(new SupportSys(system, comp, i));
+                        ArmorSupports.Add(new SupportSys(system, (SupportSys.SupportComponent)comp, i));
                     }
                 }
                 else if (Comp.Type == CoreComponent.CompType.Phantom)
@@ -191,7 +188,7 @@ namespace WeaponCore.Platform
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
-                        Phantoms.Add(new Phantoms(system, comp, i));
+                        Phantoms.Add(new Phantoms(system, (Phantom.PhantomComponent)comp, i));
                     }
                 }
             }
@@ -585,18 +582,18 @@ namespace WeaponCore.Platform
         {
             var ui = w.System.Values.HardPoint.Ui;
             w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || ui.ToggleGuidance;
-            w.Comp.HasDamageSlider = w.Comp.HasDamageSlider || (!w.CanUseChargeAmmo && ui.StrengthModifier && w.CanUseEnergyAmmo || w.CanUseHybridAmmo);
+            w.BaseComp.HasStrengthSlider = w.BaseComp.HasStrengthSlider || (!w.CanUseChargeAmmo && ui.StrengthModifier && w.CanUseEnergyAmmo || w.CanUseHybridAmmo);
             w.Comp.HasRofSlider = w.Comp.HasRofSlider || (ui.CycleRate && !w.CanUseChargeAmmo);
-            w.Comp.CanOverload = w.Comp.CanOverload || (ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
-            w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
+            w.BaseComp.CanOverload = w.BaseComp.CanOverload || (ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
+            w.BaseComp.HasTurret = w.BaseComp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
             w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets;
             w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
             w.Comp.ShootSubmerged = w.Comp.ShootSubmerged || w.System.Values.HardPoint.CanShootSubmerged;
             if (ui.StrengthModifier || ui.EnableOverload || ui.CycleRate || ui.ToggleGuidance)
-                w.Comp.UiEnabled = true;
+                w.BaseComp.UiEnabled = true;
 
             if (w.System.HasAmmoSelection)
-                w.Comp.AmmoSelectionPartIds.Add(w.PartId);
+                w.BaseComp.ConsumableSelectionPartIds.Add(w.PartId);
 
             foreach (var m in w.System.Values.Assignments.MountPoints) {
                 if (m.SubtypeId == Comp.SubTypeId.String && !string.IsNullOrEmpty(m.IconName)) {

@@ -763,7 +763,7 @@ namespace WeaponCore.Api
             var terminalBlock = entity as IMyTerminalBlock;
             if (terminalBlock != null)
             {
-                CoreComponent comp;
+                Weapon.WeaponComponent comp;
                 if (terminalBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
                     return comp.PeakDps;
             }

@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer =  w.BaseComp.Data.Repo.Base.State.PlayerId == w.BaseComp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -27,29 +27,29 @@ namespace WeaponCore.Projectiles
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
                 p.Info.System = w.System;
-                p.Info.Ai = w.Comp.Ai;
+                p.Info.Ai = w.BaseComp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
+                p.Info.Overrides = w.BaseComp.Data.Repo.Base.Set.Overrides;
                 p.Info.Target.TargetEntity = t != Kind.Client ? w.Target.TargetEntity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
-                p.Info.Target.CoreEntity = w.Comp.CoreEntity;
-                p.Info.Target.CoreCube = w.Comp.Cube;
-                p.Info.Target.CoreParent = w.Comp.TopEntity;
-                p.Info.Target.CoreIsCube = w.Comp.Cube != null;
+                p.Info.Target.IsFakeTarget = w.BaseComp.Data.Repo.Base.State.TrackingReticle;
+                p.Info.Target.CoreEntity = w.BaseComp.CoreEntity;
+                p.Info.Target.CoreCube = w.BaseComp.Cube;
+                p.Info.Target.CoreParent = w.BaseComp.TopEntity;
+                p.Info.Target.CoreIsCube = w.BaseComp.Cube != null;
 
-                p.Info.DummyTarget = w.Comp.Data.Repo.Base.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
+                p.Info.DummyTarget = w.BaseComp.Data.Repo.Base.State.TrackingReticle ? w.BaseComp.Session.PlayerDummyTargets[w.BaseComp.Data.Repo.Base.State.PlayerId] : null;
 
                 p.Info.PartId = w.PartId;
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;
-                p.Info.EnableGuidance = w.Comp.Data.Repo.Base.Set.Guidance;
+                p.Info.EnableGuidance = w.BaseComp.Data.Repo.Base.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
                 p.Info.WeaponRng = w.TargetData.WeaponRandom;
                 p.Info.LockOnFireState = w.LockOnFireState;
-                p.Info.ShooterVel = w.Comp.Ai.GridVel;
+                p.Info.ShooterVel = w.BaseComp.Ai.GridVel;
 
                 p.Info.OriginUp = t != Kind.Client ? w.MyPivotUp : gen.OriginUp;
                 p.Info.MaxTrajectory = t != Kind.Client ? a.Const.MaxTrajectoryGrows && w.FireCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * w.FireCounter : a.Const.MaxTrajectory : gen.MaxTrajectory;
@@ -73,7 +73,7 @@ namespace WeaponCore.Projectiles
                 p.Info.ShotFade = shotFade;
                 p.PredictedTargetPos = w.Target.TargetPos;
                 p.DeadSphere.Center = w.MyPivotPos;
-                p.DeadSphere.Radius = w.Comp.Ai.DeadSphereRadius;
+                p.DeadSphere.Radius = w.BaseComp.Ai.DeadSphereRadius;
 
                 if (a.Const.FeelsGravity && w.System.Session.Tick - w.GravityTick > 60)
                 {
@@ -120,7 +120,7 @@ namespace WeaponCore.Projectiles
                 if (p.Info.Monitors?.Count > 0) {
                     Session.MonitoredProjectiles[p.Info.Id] = p;
                     for (int j = 0; j < p.Info.Monitors.Count; j++)
-                        p.Info.Monitors[j].Invoke(w.Comp.CoreEntity.EntityId, w.PartId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
+                        p.Info.Monitors[j].Invoke(w.BaseComp.CoreEntity.EntityId, w.PartId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
 
             }

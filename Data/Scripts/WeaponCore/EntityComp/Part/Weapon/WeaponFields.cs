@@ -102,7 +102,7 @@ namespace WeaponCore.Platform
         internal CoreSystem.AmmoType ActiveAmmoDef;
         internal int[] AmmoShufflePattern = {0};
         internal ParallelRayCallBack RayCallBack;
-
+        internal readonly WeaponComponent Comp;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -230,10 +230,11 @@ namespace WeaponCore.Platform
             internal ChangeType Change;
         }
 
-        internal Weapon(MyEntity entity, CoreSystem system, int partId, CoreComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
+        internal Weapon(MyEntity entity, CoreSystem system, int partId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
-
+            Comp = comp;
             base.Init(comp, system, partId);
+            
             AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
             foreach (var set in AnimationsSet) {
                 foreach (var pa in set.Value) {

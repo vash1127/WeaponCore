@@ -7,6 +7,7 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
+using WeaponCore.Platform;
 using static WeaponCore.Platform.CorePlatform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
@@ -20,7 +21,7 @@ namespace WeaponCore.Support
             if (register)
             {
                 if (Registered)
-                    Log.Line($"Comp RegisterEvents error");
+                    Log.Line($"BaseComp RegisterEvents error");
                 //TODO change this
                 Registered = true;
                 if (IsBlock)
@@ -61,7 +62,7 @@ namespace WeaponCore.Support
             else
             {
                 if (!Registered)
-                    Log.Line($"Comp UnRegisterEvents error");
+                    Log.Line($"BaseComp UnRegisterEvents error");
 
                 if (Registered)
                 {
@@ -202,18 +203,19 @@ namespace WeaponCore.Support
         {
             try
             {
+                var comp = ((Weapon.WeaponComponent)this);
                 var status = GetSystemStatus();
 
                 stringBuilder.Append(status + 
                     "\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0") +
-                    "\nShotsPerSec: " + ShotsPerSec.ToString("0.000") +
+                    "\nShotsPerSec: " + comp.ShotsPerSec.ToString("0.000") +
                     "\n" +
-                    "\nRealDps: " + EffectiveDps.ToString("0.0") +
-                    "\nPeakDps: " + PeakDps.ToString("0.0") +
-                    "\nBaseDps: " + BaseDps.ToString("0.0") +
-                    "\nAreaDps: " + AreaDps.ToString("0.0") +
-                    "\nExplode: " + DetDps.ToString("0.0") +
-                    "\nCurrent: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/ PeakDps).ToString("P") + ")");
+                    "\nRealDps: " + comp.EffectiveDps.ToString("0.0") +
+                    "\nPeakDps: " + comp.PeakDps.ToString("0.0") +
+                    "\nBaseDps: " + comp.BaseDps.ToString("0.0") +
+                    "\nAreaDps: " + comp.AreaDps.ToString("0.0") +
+                    "\nExplode: " + comp.DetDps.ToString("0.0") +
+                    "\nCurrent: " + comp.CurrentDps.ToString("0.0") +" ("+ (comp.CurrentDps / comp.PeakDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +
@@ -221,13 +223,13 @@ namespace WeaponCore.Support
                     "\nHeat Dissipated / s: " + HeatSinkRate.ToString("0.0") + " W" +
                     "\nCurrent Heat: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat / MaxHeat).ToString("P")+")");
 
-                if (HeatPerSecond > 0 && HasEnergyWeapon)
+                if (HeatPerSecond > 0 && comp.HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");
 
-                if (HasEnergyWeapon)
+                if (comp.HasEnergyWeapon)
                 {
                     stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MWs");
-                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MWs");
+                    if(comp.HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MWs");
                     stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MWs");
                 }
                 
@@ -272,14 +274,14 @@ namespace WeaponCore.Support
                     foreach (var weapon in Platform.Weapons)
                     {
                         stringBuilder.Append($"\n\nWeapon: {weapon.System.PartName} - Enabled: {IsWorking}");
-                        stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
+                        stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.BaseComp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting}");
                         stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.Ammo.CurrentCharge})");
-                        stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
+                        stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.BaseComp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
                         stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }
                 }
@@ -293,7 +295,7 @@ namespace WeaponCore.Support
             {
                 var status = GetSystemStatus();
 
-                stringBuilder.Append(status + "\nCurrent: " + CurrentDps.ToString("0.0") + " (" + (CurrentDps / PeakDps).ToString("P") + ")");
+                stringBuilder.Append(status + "\nCurrent: )");
 
                 stringBuilder.Append("\n\n==== SupportSys ====");
 
@@ -308,7 +310,7 @@ namespace WeaponCore.Support
                     foreach (var support in Platform.ArmorSupports)
                     {
                         stringBuilder.Append($"\n\nPart: {support.System.PartName} - Enabled: {IsWorking}");
-                        stringBuilder.Append($"\nManual: {support.Comp.UserControlled}");
+                        stringBuilder.Append($"\nManual: {support.BaseComp.UserControlled}");
                     }
                 }
             }
@@ -321,7 +323,7 @@ namespace WeaponCore.Support
             {
                 var status = GetSystemStatus();
 
-                stringBuilder.Append(status + "\nCurrent: " + CurrentDps.ToString("0.0") + " (" + (CurrentDps / PeakDps).ToString("P") + ")");
+                stringBuilder.Append(status + "\nCurrent: )");
 
                 stringBuilder.Append("\n\n==== Upgrade ====");
 
@@ -336,7 +338,7 @@ namespace WeaponCore.Support
                     foreach (var upgrade in Platform.Upgrades)
                     {
                         stringBuilder.Append($"\n\nPart: {upgrade.System.PartName} - Enabled: {IsWorking}");
-                        stringBuilder.Append($"\nManual: {upgrade.Comp.UserControlled}");
+                        stringBuilder.Append($"\nManual: {upgrade.BaseComp.UserControlled}");
                     }
                 }
             }

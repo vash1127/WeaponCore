@@ -70,7 +70,7 @@ namespace WeaponCore
 
                     w.State = Repo.Base.State.Weapons[i];
                     w.Reload = Repo.Base.Reloads[i];
-                    w.Ammo = w.Comp.Data.Repo.Ammos[i];
+                    w.Ammo = w.BaseComp.Data.Repo.Ammos[i];
 
                     if (Comp.Session.IsServer)
                     {
@@ -81,10 +81,10 @@ namespace WeaponCore
                     }
                     else
                     {
-                        w.Ammo = w.Comp.Data.Repo.Ammos[i];
+                        w.Ammo = w.BaseComp.Data.Repo.Ammos[i];
                         w.ClientStartId = w.Reload.StartId;
                         w.ClientEndId = w.Reload.EndId;
-                        w.TargetData = w.Comp.Data.Repo.Base.Targets[i];
+                        w.TargetData = w.BaseComp.Data.Repo.Base.Targets[i];
                         w.TargetData.PartRefreshClient(w);
                     }
 

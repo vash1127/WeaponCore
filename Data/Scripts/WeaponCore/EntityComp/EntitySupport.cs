@@ -31,8 +31,11 @@ namespace WeaponCore.Support
 
                 if (Ai != null) {
 
-                    Ai.OptimalDps -= PeakDps;
-                    Ai.EffectiveDps -= EffectiveDps;
+                    if (Type == CompType.Weapon)
+                    {
+                        Ai.OptimalDps -= ((Weapon.WeaponComponent)this).PeakDps;
+                        Ai.EffectiveDps -= ((Weapon.WeaponComponent)this).EffectiveDps;
+                    }
 
                     PartCounter wCount;
                     if (Ai.PartCounting.TryGetValue(SubTypeId, out wCount)) {

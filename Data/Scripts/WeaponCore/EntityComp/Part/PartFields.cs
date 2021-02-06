@@ -10,7 +10,7 @@ namespace WeaponCore.Platform
         internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
-        internal CoreComponent Comp;
+        internal CoreComponent BaseComp;
         internal CoreSystem System;
         internal PartAcquire Acquire;
         internal uint PartCreatedTick;
@@ -22,15 +22,15 @@ namespace WeaponCore.Platform
         internal void Init(CoreComponent comp, CoreSystem system, int partId)
         {
             System = system;
-            Comp = comp;
+            BaseComp = comp;
             PartCreatedTick = System.Session.Tick;
             PartId = partId;
 
             Acquire = new PartAcquire(this);
             UniqueId = comp.Session.UniquePartId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
-            for (int i = 0; i < Comp.Monitors[PartId].Count; i++)
-                Monitors.Add(Comp.Monitors[PartId][i]);
+            for (int i = 0; i < BaseComp.Monitors[PartId].Count; i++)
+                Monitors.Add(BaseComp.Monitors[PartId][i]);
         }
 
 

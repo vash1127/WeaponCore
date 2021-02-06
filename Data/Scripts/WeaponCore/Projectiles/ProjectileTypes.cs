@@ -74,10 +74,10 @@ namespace WeaponCore.Support
         {
             IsVirtual = true;
             System = weapon.System;
-            Ai = weapon.Comp.Ai;
-            MyPlanet = weapon.Comp.Ai.MyPlanet;
-            MyShield = weapon.Comp.Ai.MyShield;
-            InPlanetGravity = weapon.Comp.Ai.InPlanetGravity;
+            Ai = weapon.BaseComp.Ai;
+            MyPlanet = weapon.BaseComp.Ai.MyPlanet;
+            MyShield = weapon.BaseComp.Ai.MyShield;
+            InPlanetGravity = weapon.BaseComp.Ai.InPlanetGravity;
             AmmoDef = ammodef;
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;

@@ -65,7 +65,7 @@ namespace WeaponCore.Support
                 Session.SendCompBaseData(this);
         }
 
-        internal void WeaponDetectStateChanges()
+        internal void WeaponDetectStateChanges(Weapon.WeaponComponent weaponComp)
         {
             if (Platform.State != CorePlatform.PlatformState.Ready)
                 return;
@@ -90,7 +90,7 @@ namespace WeaponCore.Support
                 Ai.DetectOtherSignals = true;
             var wasAsleep = IsAsleep;
             IsAsleep = false;
-            IsDisabled = Ai.TouchingWater && !ShootSubmerged && Ai.WaterVolume.Contains(CoreEntity.PositionComp.WorldAABB.Center) != ContainmentType.Disjoint;
+            IsDisabled = Ai.TouchingWater && !weaponComp.ShootSubmerged && Ai.WaterVolume.Contains(CoreEntity.PositionComp.WorldAABB.Center) != ContainmentType.Disjoint;
 
             if (!Ai.Session.IsServer)
                 return;

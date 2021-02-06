@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                     if (active && particle.Restart && particle.Triggered) continue;
 
                     var obb = particle.MyDummy.Entity.PositionComp.WorldAABB;
-                    //var inView = Comp.Session.Camera.IsInFrustum(ref obb);
+                    //var inView = BaseComp.Session.Camera.IsInFrustum(ref obb);
 
                     var canPlay = true;
                     if (muzzles != null)

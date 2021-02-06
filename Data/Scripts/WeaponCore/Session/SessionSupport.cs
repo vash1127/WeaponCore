@@ -328,8 +328,8 @@ namespace WeaponCore
             for (int i = HomingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = HomingWeapons[i];
-                var comp = w.Comp;
-                if (w.Comp.Ai == null || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.IsWorking) {
+                var comp = w.BaseComp;
+                if (w.BaseComp.Ai == null || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.IsWorking) {
                     HomingWeapons.RemoveAtFast(i);
                     continue;
                 }
@@ -659,9 +659,9 @@ namespace WeaponCore
             try
             {
                 var topmost = w.Target.TargetEntity.GetTopMostParent();
-                var ownerId = w.Comp.IsBlock ? w.Comp.Cube.OwnerId : w.Comp.GunBase.OwnerId;
+                var ownerId = w.BaseComp.IsBlock ? w.BaseComp.Cube.OwnerId : w.Comp.GunBase.OwnerId;
                 Ai.TargetInfo info;
-                if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
+                if (topmost != null && w.BaseComp.Ai.PreviousTargets.Add(topmost) && w.BaseComp.Ai.Targets.TryGetValue(topmost, out info))
                 {
                     IMyPlayer weaponOwner;
                     Players.TryGetValue(ownerId, out weaponOwner);
@@ -670,14 +670,14 @@ namespace WeaponCore
                     var wFaction = weaponFaction != null && !string.IsNullOrEmpty(weaponFaction.Name) ? $"{weaponFaction.Name}({weaponFaction.FactionId})" : $"NA";
 
                     IMyPlayer aiOwner;
-                    Players.TryGetValue(w.Comp.Ai.AiOwner, out aiOwner);
-                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({w.Comp.Ai.AiOwner})" : $"{w.Comp.Ai.AiOwner}";
-                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.Comp.Ai.AiOwner);
+                    Players.TryGetValue(w.BaseComp.Ai.AiOwner, out aiOwner);
+                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({w.BaseComp.Ai.AiOwner})" : $"{w.BaseComp.Ai.AiOwner}";
+                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.BaseComp.Ai.AiOwner);
                     var aFaction = aiFaction != null && !string.IsNullOrEmpty(aiFaction.Name) ? $"{aiFaction.Name}({aiFaction.FactionId})" : $"NA";
 
-                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {w.Comp.Ai.TopEntity.DebugName}" +
-                             $"Attacking Weapon:{w.System.PartName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
-                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
+                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {w.BaseComp.Ai.TopEntity.DebugName}" +
+                             $"Attacking Weapon:{w.System.PartName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{w.BaseComp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.BaseComp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.BaseComp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
+                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.BaseComp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
                 }
             }
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }

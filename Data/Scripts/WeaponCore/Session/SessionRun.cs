@@ -128,7 +128,7 @@ namespace WeaponCore
                             var color = ColorArmorToggle ? DsStaticUtils.ColorToHSVOffset(Color.Black) : DsStaticUtils.ColorToHSVOffset(Color.OrangeRed);
                             foreach (var enhancer in DisplayAffectedArmor)
                             {
-                                var grid = enhancer.Comp.Ai.GridEntity;
+                                var grid = enhancer.BaseComp.Ai.GridEntity;
                                 foreach (var myCube in enhancer.EnhancedArmorBlocks.Keys)
                                 {
                                     grid.ChangeColorAndSkin(myCube.CubeBlock, color);

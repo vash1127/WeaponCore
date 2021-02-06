@@ -63,9 +63,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityWeaponSub.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\SupportTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\SupportSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\ArmorEnhancer\SupportFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportTypes.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\PartFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomTypes.cs" />

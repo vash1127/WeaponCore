@@ -34,7 +34,6 @@ namespace WeaponCore.Support
                 if (idx < Comps.Count)
                     PartsIdx[Comps[idx]] = idx;
 
-                //Session.IdToCompMap.Remove(comp.MyCube.EntityId);
                 PartsIdx.Remove(comp);
             }
         }

@@ -10,20 +10,22 @@ namespace WeaponCore.Platform
     {
         internal readonly Dictionary<MyCube, Vector3I> EnhancedArmorBlocks = new Dictionary<MyCube, Vector3I>();
         private readonly Dictionary<MyCube, Vector3> _blockColorBackup = new Dictionary<MyCube, Vector3>();
+        internal readonly SupportComponent Comp;
 
         internal uint LastBlockRefreshTick;
         internal bool ShowAffectedBlocks;
         internal Vector3I Min;
         internal Vector3I Max;
 
-        internal SupportSys(CoreSystem system, CoreComponent comp, int partId)
+        internal SupportSys(CoreSystem system, SupportComponent comp, int partId)
         {
+            Comp = comp;
             base.Init(comp, system, partId);
 
-            Log.Line($"init armor: {system.PartName} - BlockMonitoring:{Comp.Ai.BlockMonitoring}");
+            Log.Line($"init armor: {system.PartName} - BlockMonitoring:{BaseComp.Ai.BlockMonitoring}");
 
-            if (!Comp.Ai.BlockMonitoring)
-                Comp.Ai.DelayedEventRegistration(true);
+            if (!BaseComp.Ai.BlockMonitoring)
+                BaseComp.Ai.DelayedEventRegistration(true);
         }
     }
 }

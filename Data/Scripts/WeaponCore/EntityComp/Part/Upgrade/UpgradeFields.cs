@@ -8,9 +8,13 @@ namespace WeaponCore.Platform
 {
     public partial class Upgrades : Part
     {
-        internal Upgrades(CoreSystem system, CoreComponent comp, int partId)
+        internal readonly Upgrade.UpgradeComponent Comp;
+
+        internal Upgrades(CoreSystem system, Upgrade.UpgradeComponent comp, int partId)
         {
+            Comp = comp;
             base.Init(comp, system, partId);
+
             Log.Line($"init Upgrades: {system.PartName}");
         }
     }

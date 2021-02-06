@@ -94,16 +94,16 @@ namespace WeaponCore
             {
                 foreach (var part in PartToPullConsumable) { 
 
-                    using (part.Comp.Ai?.TopEntity.Pin())
-                    using (part.Comp.CoreEntity.Pin()) {
+                    using (part.BaseComp.Ai?.TopEntity.Pin())
+                    using (part.BaseComp.CoreEntity.Pin()) {
 
-                        if (part.Comp.CoreEntity.MarkedForClose || part.Comp.Ai == null || part.Comp.Ai.MarkedForClose || part.Comp.Ai.TopEntity.MarkedForClose || !part.Comp.InventoryInited || part.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        if (part.BaseComp.CoreEntity.MarkedForClose || part.BaseComp.Ai == null || part.BaseComp.Ai.MarkedForClose || part.BaseComp.Ai.TopEntity.MarkedForClose || !part.BaseComp.InventoryInited || part.BaseComp.Platform.State != CorePlatform.PlatformState.Ready) {
                             InvPullClean.Add(part);
                             continue;
                         }
 
                         var defId = part.ActiveAmmoDef.AmmoDefinitionId;
-                        var freeSpace = part.System.MaxAmmoVolume - part.Comp.CurrentInventoryVolume;
+                        var freeSpace = part.System.MaxAmmoVolume - part.BaseComp.CurrentInventoryVolume;
                         var spotsFree = (int)(freeSpace / part.ActiveAmmoDef.AmmoDef.Const.MagVolume);
                         var magsNeeded = (int)((part.System.FullAmmoVolume - part.CurrentAmmoVolume) / part.ActiveAmmoDef.AmmoDef.Const.MagVolume);
                         magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
@@ -113,7 +113,7 @@ namespace WeaponCore
                         var magsAdded = 0;
                         var logged = 0;
 
-                        foreach (var inventory in part.Comp.Ai.InventoryMonitor.Values) {
+                        foreach (var inventory in part.BaseComp.Ai.InventoryMonitor.Values) {
 
                             MyConcurrentList<BetterInventoryItem> items;
                             if (ConsumableItemList.TryGetValue(inventory, out items)) {
@@ -125,7 +125,7 @@ namespace WeaponCore
 
                                     var magsAvailable = item.Amount;
 
-                                    if (magsAvailable > 0 && magsNeeded > 0 && ((IMyInventory)inventory).CanTransferItemTo(part.Comp.CoreInventory, defId)) {
+                                    if (magsAvailable > 0 && magsNeeded > 0 && ((IMyInventory)inventory).CanTransferItemTo(part.BaseComp.CoreInventory, defId)) {
                                         
                                         if (magsAvailable >= magsNeeded) {
                                             
@@ -153,7 +153,7 @@ namespace WeaponCore
                                 }
                             }
                             else if (logged++ == 0) 
-                                Log.Line($"[Inventory invalid in ConsumablePull] Weapon:{part.Comp.SubtypeName}  - blockMarked:{part.Comp.CoreEntity.MarkedForClose} - aiMarked:{part.Comp.Ai.MarkedForClose} - cTick:{Tick - part.Comp.Ai.AiCloseTick} - mTick:{Tick - part.Comp.Ai.AiMarkedTick} - sTick:{Tick - part.Comp.Ai.CreatedTick}");
+                                Log.Line($"[Inventory invalid in ConsumablePull] Weapon:{part.BaseComp.SubtypeName}  - blockMarked:{part.BaseComp.CoreEntity.MarkedForClose} - aiMarked:{part.BaseComp.Ai.MarkedForClose} - cTick:{Tick - part.BaseComp.Ai.AiCloseTick} - mTick:{Tick - part.BaseComp.Ai.AiMarkedTick} - sTick:{Tick - part.BaseComp.Ai.CreatedTick}");
                         }
 
                         if (consumablePullRequests.Inventories.Count > 0)
@@ -190,7 +190,7 @@ namespace WeaponCore
                 var part = partConsumableToPull.Weapon;
                 var inventoriesToPull = partConsumableToPull.Inventories;
                 
-                if (!part.Comp.InventoryInited || part.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                if (!part.BaseComp.InventoryInited || part.BaseComp.Platform.State != CorePlatform.PlatformState.Ready) {
                     InventoryMoveRequestPool.Return(partConsumableToPull);
                     continue;
                 }
@@ -201,13 +201,13 @@ namespace WeaponCore
                     var amt = mag.Amount;
                     var item = mag.Item;
                     
-                    if (part.Comp.CoreInventory.ItemsCanBeAdded(amt, part.ActiveAmmoDef.AmmoDef.Const.AmmoItem) && mag.Inventory.ItemsCanBeRemoved(amt, item.Item)) {
+                    if (part.BaseComp.CoreInventory.ItemsCanBeAdded(amt, part.ActiveAmmoDef.AmmoDef.Const.AmmoItem) && mag.Inventory.ItemsCanBeRemoved(amt, item.Item)) {
                         mag.Inventory.RemoveItems(item.Item.ItemId, amt);
-                        part.Comp.CoreInventory.Add(part.ActiveAmmoDef.AmmoDef.Const.AmmoItem, amt);
+                        part.BaseComp.CoreInventory.Add(part.ActiveAmmoDef.AmmoDef.Const.AmmoItem, amt);
                     }
                 }
 
-                part.Ammo.CurrentMags = part.Comp.CoreInventory.GetItemAmount(part.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                part.Ammo.CurrentMags = part.BaseComp.CoreInventory.GetItemAmount(part.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
 
                 InventoryMoveRequestPool.Return(partConsumableToPull);
             }

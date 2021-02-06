@@ -442,8 +442,8 @@ namespace WeaponCore.Control
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<CoreComponent>();
-            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.AmmoSelectionPartIds.Count == 0) return;
-            var w = comp.Platform.Weapons[comp.AmmoSelectionPartIds[0]];
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.ConsumableSelectionPartIds.Count == 0) return;
+            var w = comp.Platform.Weapons[comp.ConsumableSelectionPartIds[0]];
             sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
         }
         #endregion
