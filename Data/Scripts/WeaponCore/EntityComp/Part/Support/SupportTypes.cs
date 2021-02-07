@@ -16,7 +16,7 @@ namespace WeaponCore.Platform
                 base.Init(session, coreEntity, true, ((MyCubeBlock)coreEntity).CubeGrid, id);
             }
 
-            internal void OtherDetectStateChanges()
+            internal void DetectStateChanges()
             {
                 if (Platform.State != CorePlatform.PlatformState.Ready)
                     return;

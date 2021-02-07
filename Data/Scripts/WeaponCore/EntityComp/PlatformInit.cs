@@ -17,7 +17,7 @@ namespace WeaponCore.Platform
         internal readonly MySoundPair RotationSound = new MySoundPair();
         private readonly List<int> _orderToCreate = new List<int>();
         internal List<Weapon> Weapons = new List<Weapon>();
-        internal List<SupportSys> ArmorSupports = new List<SupportSys>();
+        internal List<SupportSys> Support = new List<SupportSys>();
         internal List<Upgrades> Upgrades = new List<Upgrades>();
         internal List<Phantoms> Phantoms = new List<Phantoms>();
         internal CoreStructure Structure;
@@ -49,7 +49,7 @@ namespace WeaponCore.Platform
         internal void Clean()
         {
             Weapons.Clear();
-            ArmorSupports.Clear();
+            Support.Clear();
             Upgrades.Clear();
             Phantoms.Clear();
             Parts.Clean(null);
@@ -121,7 +121,7 @@ namespace WeaponCore.Platform
             {
                 if (Comp.Type == CoreComponent.CompType.Weapon)
                 {
-                    if (Phantoms.Count > 0 || ArmorSupports.Count > 0 || Upgrades.Count > 0)
+                    if (Phantoms.Count > 0 || Support.Count > 0 || Upgrades.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
                     var partHashId = Structure.PartHashes[i];
@@ -160,7 +160,7 @@ namespace WeaponCore.Platform
                 }
                 else if (Comp.Type == CoreComponent.CompType.Upgrade)
                 {
-                    if (Weapons.Count > 0 || ArmorSupports.Count > 0 || Phantoms.Count > 0)
+                    if (Weapons.Count > 0 || Support.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
                     CoreSystem system;
@@ -177,12 +177,12 @@ namespace WeaponCore.Platform
                     CoreSystem system;
                     if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
                     {
-                        ArmorSupports.Add(new SupportSys(system, (SupportSys.SupportComponent)comp, i));
+                        Support.Add(new SupportSys(system, (SupportSys.SupportComponent)comp, i));
                     }
                 }
                 else if (Comp.Type == CoreComponent.CompType.Phantom)
                 {
-                    if (Weapons.Count > 0 || Upgrades.Count > 0 || ArmorSupports.Count > 0)
+                    if (Weapons.Count > 0 || Upgrades.Count > 0 || Support.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
                     CoreSystem system;

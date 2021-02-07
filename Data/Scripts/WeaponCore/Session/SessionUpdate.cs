@@ -55,76 +55,124 @@ namespace WeaponCore
                         ai.Construct.RootAi.Construct.CheckEmptyWeapons();
                 }
 
+
+                ///
+                /// Upgrade update section
+                ///
+                for (int i = 0; i < ai.UpgradeComps.Count; i++)
+                {
+                    var uComp = ai.UpgradeComps[i];
+                    if (uComp.Status != Started)
+                        uComp.HealthCheck();
+
+                    if (ai.DbUpdated || !uComp.UpdatedState)
+                    {
+                        uComp.DetectStateChanges();
+                    }
+
+                    for (int j = 0; j < uComp.Platform.Upgrades.Count; j++)
+                    {
+                        var u = uComp.Platform.Upgrades[j];
+                    }
+                }
+
+                ///
+                /// Support update section
+                ///
+                for (int i = 0; i < ai.SupportComps.Count; i++)
+                {
+
+                    var sComp = ai.SupportComps[i];
+                    if (sComp.Status != Started)
+                        sComp.HealthCheck();
+
+                    if (ai.DbUpdated || !sComp.UpdatedState)
+                    {
+                        sComp.DetectStateChanges();
+                    }
+
+                    for (int j = 0; j < sComp.Platform.Support.Count; j++)
+                    {
+                        var a = sComp.Platform.Support[j];
+                        if (a.LastBlockRefreshTick < ai.LastBlockChangeTick)
+                            a.RefreshBlocks();
+
+                        //if (a.ShowAffectedBlocks != sComp.Data.Repo.Base.Set.Overrides.ArmorShowArea)
+                            //a.ToggleAreaEffectDisplay();
+                    }
+                }
+
+                ///
+                /// Phantom update section
+                ///
+                for (int i = 0; i < ai.PhantomComps.Count; i++)
+                {
+                    var pComp = ai.PhantomComps[i];
+                    if (pComp.Status != Started)
+                        pComp.HealthCheck();
+
+                    if (ai.DbUpdated || !pComp.UpdatedState)
+                    {
+                        //pComp.DetectStateChanges();
+                    }
+
+                    ///
+                    /// Upgrade update section
+                    ///
+                    for (int j = 0; j < pComp.Platform.Phantoms.Count; j++)
+                    {
+                        var u = pComp.Platform.Phantoms[j];
+                    }
+                }
+
                 ///
                 /// WeaponComp update section
                 ///
                 for (int i = 0; i < ai.WeaponComps.Count; i++) {
 
-                    var weaponComp = ai.WeaponComps[i];
-                    if (weaponComp.Status != Started)
-                        weaponComp.HealthCheck();
+                    var wComp = ai.WeaponComps[i];
+                    if (wComp.Status != Started)
+                        wComp.HealthCheck();
 
-                    if (ai.DbUpdated || !weaponComp.UpdatedState) {
+                    if (ai.DbUpdated || !wComp.UpdatedState) {
 
-                            weaponComp.WeaponDetectStateChanges();
+                        wComp.DetectStateChanges();
                     }
 
-                    if (weaponComp.Platform.State != CorePlatform.PlatformState.Ready || weaponComp.IsAsleep || !weaponComp.IsWorking || weaponComp.CoreEntity.MarkedForClose || weaponComp.IsDisabled || weaponComp.LazyUpdate && !ai.DbUpdated && Tick > weaponComp.NextLazyUpdateStart) 
+                    if (wComp.Platform.State != CorePlatform.PlatformState.Ready || wComp.IsAsleep || !wComp.IsWorking || wComp.CoreEntity.MarkedForClose || wComp.IsDisabled || wComp.LazyUpdate && !ai.DbUpdated && Tick > wComp.NextLazyUpdateStart) 
                         continue;
 
-                    if (IsServer && weaponComp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(weaponComp.Data.Repo.Base.State.PlayerId))
-                        weaponComp.ResetPlayerControl();
+                    if (IsServer && wComp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(wComp.Data.Repo.Base.State.PlayerId))
+                        wComp.ResetPlayerControl();
 
                     if (HandlesInput) {
-                        var wasTrack = weaponComp.Data.Repo.Base.State.TrackingReticle;
+                        var wasTrack = wComp.Data.Repo.Base.State.TrackingReticle;
 
-                        var isControllingPlayer = weaponComp.Data.Repo.Base.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && (weaponComp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && weaponComp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
+                        var isControllingPlayer = wComp.Data.Repo.Base.State.PlayerId == PlayerId;
+                        var track = (isControllingPlayer && (wComp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && wComp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
                         if (IsServer)
-                            weaponComp.Data.Repo.Base.State.TrackingReticle = track;
+                            wComp.Data.Repo.Base.State.TrackingReticle = track;
                         
                         if (MpActive && track != wasTrack)
-                            weaponComp.Session.SendTrackReticleUpdate(weaponComp, track);
+                            wComp.Session.SendTrackReticleUpdate(wComp, track);
                     }
+                    var trackReticle = wComp.Data.Repo.Base.State.TrackingReticle;
+                    wComp.WasControlled = wComp.UserControlled;
+                    wComp.UserControlled = wComp.Data.Repo.Base.State.Control != ControlMode.None;
 
-                    var trackReticle = weaponComp.Data.Repo.Base.State.TrackingReticle;
-                    weaponComp.WasControlled = weaponComp.UserControlled;
-                    weaponComp.UserControlled = weaponComp.Data.Repo.Base.State.Control != ControlMode.None;
+                    if (!PlayerMouseStates.TryGetValue(wComp.Data.Repo.Base.State.PlayerId, out wComp.InputState))
+                        wComp.InputState = DefaultInputStateData;
+                    var compManualMode = wComp.Data.Repo.Base.State.Control == ControlMode.Camera || (wComp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
+                    var canManualShoot = !ai.SuppressMouseShoot && !wComp.InputState.InMenu;
 
-                    if (!PlayerMouseStates.TryGetValue(weaponComp.Data.Repo.Base.State.PlayerId, out weaponComp.InputState))
-                        weaponComp.InputState = DefaultInputStateData;
-                    var compManualMode = weaponComp.Data.Repo.Base.State.Control == ControlMode.Camera || (weaponComp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
-                    var canManualShoot = !ai.SuppressMouseShoot && !weaponComp.InputState.InMenu;
-
-                    ///
-                    /// Upgrade update section
-                    ///
-                    for (int j = 0; j < weaponComp.Platform.ArmorSupports.Count; j++)
-                    {
-                        var a = weaponComp.Platform.ArmorSupports[j];
-                        var comp = a.Comp;
-                        if (a.LastBlockRefreshTick < ai.LastBlockChangeTick)
-                            a.RefreshBlocks();
-
-                        if (a.ShowAffectedBlocks != comp.Data.Repo.Base.Set.Overrides.ArmorShowArea)
-                            a.ToggleAreaEffectDisplay();
-                    }
-                    ///
-                    /// Upgrade update section
-                    ///
-                    for (int j = 0; j < weaponComp.Platform.Upgrades.Count; j++)
-                    {
-                        var u = weaponComp.Platform.Upgrades[j];
-                        var comp = u.Comp;
-
-                    }
                     ///
                     /// Weapon update section
                     ///
-                    for (int j = 0; j < weaponComp.Platform.Weapons.Count; j++) {
+                    for (int j = 0; j < wComp.Platform.Weapons.Count; j++) {
 
-                        var w = weaponComp.Platform.Weapons[j];
+                        var w = wComp.Platform.Weapons[j];
                         var comp = w.Comp;
+
                         if (w.PartReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)
@@ -238,6 +286,7 @@ namespace WeaponCore
                         /// 
                         var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.DetectOtherSignals && ai.DetectionInfo.OtherInRange || ai.DetectionInfo.PriorityInRange) && (!comp.UserControlled || w.State.Action == TriggerClick));
                         if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
+                            
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
                         }
@@ -435,14 +484,15 @@ namespace WeaponCore
                 if (checkTime || w.BaseComp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 
                     if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.DetectOtherSignals && w.BaseComp.Ai.DetectionInfo.OtherInRange || w.BaseComp.Ai.DetectionInfo.PriorityInRange) && w.BaseComp.Ai.DetectionInfo.ValidSignalExists(w)) {
-
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
 
                             var topMost = comp.TrackingWeapon.Target.TargetEntity?.GetTopMostParent();
                             Ai.AcquireTarget(w, false, topMost);
                         }
                         else
+                        {
                             Ai.AcquireTarget(w, w.BaseComp.Ai.TargetResetTick == Tick);
+                        }
                     }
 
                     if (w.Target.HasTarget || !(comp.DetectOtherSignals && w.BaseComp.Ai.DetectionInfo.OtherInRange || w.BaseComp.Ai.DetectionInfo.PriorityInRange)) {

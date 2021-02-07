@@ -290,15 +290,15 @@ namespace WeaponCore.Support
 
                 stringBuilder.Append("\n\n==== SupportSys ====");
 
-                var weaponCnt = Platform.ArmorSupports.Count;
+                var weaponCnt = Platform.Support.Count;
                 for (int i = 0; i < weaponCnt; i++)
                 {
-                    var a = Platform.ArmorSupports[i];
+                    var a = Platform.Support[i];
                 }
 
                 if (Debug)
                 {
-                    foreach (var support in Platform.ArmorSupports)
+                    foreach (var support in Platform.Support)
                     {
                         stringBuilder.Append($"\n\nPart: {support.System.PartName} - Enabled: {IsWorking}");
                         stringBuilder.Append($"\nManual: {support.BaseComp.UserControlled}");
@@ -318,7 +318,7 @@ namespace WeaponCore.Support
 
                 stringBuilder.Append("\n\n==== Upgrade ====");
 
-                var weaponCnt = Platform.ArmorSupports.Count;
+                var weaponCnt = Platform.Support.Count;
                 for (int i = 0; i < weaponCnt; i++)
                 {
                     var a = Platform.Upgrades[i];

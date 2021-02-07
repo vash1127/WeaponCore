@@ -239,6 +239,7 @@ namespace WeaponCore.Support
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
 
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.TargetData.WeaponRandom, Acquire);
+
             try
             {
                 for (int x = 0; x < adjTargetCount; x++)

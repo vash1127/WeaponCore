@@ -278,7 +278,7 @@ namespace WeaponCore.Platform
                 else Session.SendActionShootUpdate(this, action);
             }
 
-            internal void WeaponDetectStateChanges()
+            internal void DetectStateChanges()
             {
                 if (Platform.State != CorePlatform.PlatformState.Ready)
                     return;
