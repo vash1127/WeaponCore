@@ -5,7 +5,7 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Phantoms : Part
+    internal partial class Phantoms : Part
     {
         internal readonly Phantom.PhantomComponent Comp;
 

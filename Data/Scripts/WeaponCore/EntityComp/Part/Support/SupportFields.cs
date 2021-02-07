@@ -6,7 +6,7 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class SupportSys : Part
+    internal partial class SupportSys : Part
     {
         internal readonly Dictionary<MyCube, Vector3I> EnhancedArmorBlocks = new Dictionary<MyCube, Vector3I>();
         private readonly Dictionary<MyCube, Vector3> _blockColorBackup = new Dictionary<MyCube, Vector3>();

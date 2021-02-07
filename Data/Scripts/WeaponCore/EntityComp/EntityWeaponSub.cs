@@ -6,35 +6,7 @@ namespace WeaponCore.Support
 {
     public partial class CoreComponent 
     {
-        internal static void SetRange(CoreComponent comp)
-        {
-            foreach (var w in comp.Platform.Weapons)
-                w.UpdateWeaponRange();
-        }
 
-        internal static void SetRof(CoreComponent comp)
-        {
-            for (int i = 0; i < comp.Platform.Weapons.Count; i++)  {
-                var w = comp.Platform.Weapons[i];
-
-                if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
-
-                w.UpdateRof();
-            }
-
-            SetDps(comp);
-        }
-
-        internal static void SetDps(CoreComponent comp, bool change = false)
-        {
-            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-
-            for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
-                var w = comp.Platform.Weapons[i];
-                if (!change && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
-                comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
-            }
-        }
 
         internal void GeneralWeaponCleanUp()
         {
@@ -121,36 +93,6 @@ namespace WeaponCore.Support
         }
 
 
-        internal void RequestShootUpdate(TriggerActions action, long playerId)
-        {
-            if (IsDisabled) return;
-
-            if (Session.HandlesInput)
-                Session.TerminalMon.HandleInputUpdate(this);
-
-            if (Session.IsServer)
-            {
-                ResetShootState(action, playerId);
-
-                if (action == TriggerActions.TriggerOnce)
-                    ShootOnceCheck();
-
-                if (Session.MpActive)
-                {
-                    Session.SendCompBaseData(this);
-                    if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOn)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            Session.SendWeaponAmmoData(w);
-                    }
-                }
-
-            }
-            else if (action == TriggerActions.TriggerOnce)
-                ShootOnceCheck();
-            else Session.SendActionShootUpdate(this, action);
-        }
-
         internal bool ShootOnceCheck(int weaponToCheck = -1)
         {
             var checkAllWeapons = weaponToCheck == -1;
@@ -189,66 +131,5 @@ namespace WeaponCore.Support
 
             return false;
         }
-
-        internal void ResetShootState(TriggerActions action, long playerId)
-        {
-            var cycleShootClick = Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerClick && action == TriggerActions.TriggerClick;
-            var cycleShootOn = Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOn && action == TriggerActions.TriggerOn;
-            var cycleSomething = cycleShootOn || cycleShootClick;
-
-            Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
-
-            Data.Repo.Base.State.TerminalActionSetter(this, cycleSomething ? TriggerActions.TriggerOff : action);
-
-            if (action == TriggerActions.TriggerClick && HasTurret)
-                Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
-            else if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOnce || action == TriggerActions.TriggerOn)
-                Data.Repo.Base.State.Control = CompStateValues.ControlMode.Toolbar;
-            else
-                Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
-
-            playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-            var newId = action == TriggerActions.TriggerOff && !Data.Repo.Base.State.TrackingReticle ? -1 : playerId;
-            Data.Repo.Base.State.PlayerId = newId;
-        }
-
-
-        private void DpsAndHeatInit(Weapon weapon, out double maxTrajectory)
-        {
-            MaxHeat += weapon.System.MaxHeat;
-
-            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
-            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
-            HeatSinkRate += weapon.HsRate;
-
-            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
-
-            if (weapon.RateOfFire < 1)
-                weapon.RateOfFire = 1;
-
-            weapon.SetWeaponDps();
-
-            if (!weapon.System.DesignatorWeapon)
-            {
-                var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
-                foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
-                {
-                    weapon.Comp.PeakDps += ammo.Const.PeakDps / (float)patternSize;
-                    weapon.Comp.EffectiveDps += ammo.Const.EffectiveDps / (float)patternSize;
-                    weapon.Comp.ShotsPerSec += ammo.Const.ShotsPerSec / (float)patternSize;
-                    weapon.Comp.BaseDps += ammo.Const.BaseDps / (float)patternSize;
-                    weapon.Comp.AreaDps += ammo.Const.AreaDps / (float)patternSize;
-                    weapon.Comp.DetDps += ammo.Const.DetDps / (float)patternSize;
-                }
-            }
-
-            maxTrajectory = 0;
-            if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
-                maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
-
-            if (weapon.System.TrackProjectile)
-                Ai.PointDefense = true;
-        }
-
     }
 }

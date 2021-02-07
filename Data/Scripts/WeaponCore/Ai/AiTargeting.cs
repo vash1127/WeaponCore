@@ -32,7 +32,7 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
 
-            if (!w.Comp.Data.Repo.Base.State.TrackingReticle)
+            if (!w.Comp.BaseData.RepoBase.Player.TrackingReticle)
             {
                 w.AimCone.ConeDir = w.MyPivotFwd;
                 w.AimCone.ConeTip = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
@@ -59,7 +59,7 @@ namespace WeaponCore.Support
             {
                 Vector3D predictedPos;
                 FakeTarget dummyTarget;
-                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
+                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.BaseData.RepoBase.Player.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || w.Comp.IsBlock && !w.MuzzleHitSelf())
@@ -72,7 +72,7 @@ namespace WeaponCore.Support
                     w.Acquire.Monitoring = false;
 
                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
+                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.BaseData.RepoBase.Player.TrackingReticle);
              
                 w.LastBlockCount = w.Comp.Ai.PartCount;
             }

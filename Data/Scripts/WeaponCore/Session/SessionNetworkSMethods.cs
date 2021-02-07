@@ -15,7 +15,7 @@ namespace WeaponCore
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
 
             if (ent == null) return Error(data, Msg("Entity"));
-            if (inputPacket.Data == null) return Error(data, Msg("Data"));
+            if (inputPacket.Data == null) return Error(data, Msg("BaseData"));
 
             long playerId;
             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -149,7 +149,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var cyclePacket = (AmmoCycleRequestPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<Weapon.WeaponComponent>();
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
@@ -157,7 +157,7 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.PlayerId = cyclePacket.PlayerId;
+                comp.BaseData.RepoBase.Player.PlayerId = cyclePacket.PlayerId;
                 comp.Platform.Weapons[cyclePacket.PartId].ChangeAmmo(cyclePacket.NewAmmoId);
                 data.Report.PacketValid = true;
             }
@@ -179,9 +179,9 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
                 mIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.PlayerId = controlPacket.PlayerId;
-                comp.Data.Repo.Base.State.Control = controlPacket.Mode;
-                SendCompBaseData(comp);
+                comp.BaseData.RepoBase.Player.PlayerId = controlPacket.PlayerId;
+                comp.BaseData.RepoBase.Player.Control = controlPacket.Mode;
+                SendPlayerState(comp);
                 data.Report.PacketValid = true;
             }
             else Log.Line($"ServerPlayerControlRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
@@ -202,8 +202,8 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.TrackingReticle = reticlePacket.Data;
-                SendCompState(comp);
+                comp.BaseData.RepoBase.Player.TrackingReticle = reticlePacket.Data;
+                SendPlayerState(comp);
 
                 data.Report.PacketValid = true;
             }
@@ -261,7 +261,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var shootStatePacket = (ShootStatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<Weapon.WeaponComponent>();
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 

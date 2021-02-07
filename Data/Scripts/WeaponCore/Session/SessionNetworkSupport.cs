@@ -217,7 +217,43 @@ namespace WeaponCore
             else Log.Line($"SendWeaponAmmoData should never be called on Client");
         }
 
-        internal void SendCompBaseData(CoreComponent comp)
+        internal void SendPlayerState(CoreComponent comp)
+        {
+            if (IsServer)
+            {
+                const PacketType type = PacketType.PlayerState;
+                ++comp.BaseData.RepoBase.Player.Revision;
+
+                PacketInfo oldInfo;
+                PlayerStatePacket iPacket;
+                if (PrunedPacketsToClient.TryGetValue(comp.BaseData.RepoBase.Player, out oldInfo))
+                {
+                    iPacket = (PlayerStatePacket)oldInfo.Packet;
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.Data = comp.BaseData.RepoBase.Player;
+                }
+                else
+                {
+
+                    iPacket = PacketPlayerPool.Get();
+                    iPacket.MId = ++comp.MIds[(int)type];
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.SenderId = MultiplayerId;
+                    iPacket.PType = type;
+                    iPacket.Data = comp.BaseData.RepoBase.Player;
+                }
+
+
+                PrunedPacketsToClient[comp.BaseData.RepoBase.Player] = new PacketInfo
+                {
+                    Entity = comp.CoreEntity,
+                    Packet = iPacket,
+                };
+            }
+            else Log.Line($"SendWeaponAmmoData should never be called on Client");
+        }
+
+        internal void SendCompBaseData(Weapon.WeaponComponent comp)
         {
             if (IsServer) {
 
@@ -249,7 +285,7 @@ namespace WeaponCore
             else Log.Line($"SendCompData should never be called on Client");
         }
 
-        internal void SendTargetChange(CoreComponent comp, int partId)
+        internal void SendTargetChange(Weapon.WeaponComponent comp, int partId)
         {
             if (IsServer) {
 
@@ -287,7 +323,7 @@ namespace WeaponCore
             else Log.Line($"SendTargetChange should never be called on Client");
         }
 
-        internal void SendCompState(CoreComponent comp)
+        internal void SendCompState(Weapon.WeaponComponent comp)
         {
             if (IsServer) {
 
@@ -324,26 +360,27 @@ namespace WeaponCore
             else Log.Line($"SendCompState should never be called on Client");
         }
 
+
         internal void SendWeaponReload(Weapon w)
         {
             if (IsServer) {
 
-                if (!PrunedPacketsToClient.ContainsKey(w.BaseComp.Data.Repo.Base)) {
+                if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Base)) {
 
                     const PacketType type = PacketType.WeaponReload;
-                    w.BaseComp.Data.Repo.Base.UpdateCompBasePacketInfo(w.BaseComp);
+                    w.Comp.Data.Repo.Base.UpdateCompBasePacketInfo(w.Comp);
 
                     PacketInfo oldInfo;
                     WeaponReloadPacket iPacket;
                     if (PrunedPacketsToClient.TryGetValue(w.Reload, out oldInfo)) {
                         iPacket = (WeaponReloadPacket)oldInfo.Packet;
-                        iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
+                        iPacket.EntityId = w.Comp.CoreEntity.EntityId;
                         iPacket.Data = w.Reload;
                     }
                     else {
                         iPacket = PacketReloadPool.Get();
                         iPacket.MId = ++w.MIds[(int)type];
-                        iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
+                        iPacket.EntityId = w.Comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
                         iPacket.Data = w.Reload;
@@ -351,12 +388,12 @@ namespace WeaponCore
                     }
 
                     PrunedPacketsToClient[w.Reload] = new PacketInfo {
-                        Entity = w.BaseComp.CoreEntity,
+                        Entity = w.Comp.CoreEntity,
                         Packet = iPacket,
                     };
                 }
                 else 
-                    SendCompBaseData(w.BaseComp);
+                    SendCompBaseData(w.Comp);
             }
             else Log.Line($"SendWeaponReload should never be called on Client");
         }
@@ -821,7 +858,7 @@ namespace WeaponCore
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
 
-        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, CompStateValues.ControlMode mode)
+        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, PlayerValues.ControlMode mode)
         {
             if (IsClient)
             {
@@ -873,7 +910,7 @@ namespace WeaponCore
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
                         PartId = w.PartId,
-                        PlayerId = w.BaseComp.Data.Repo.Base.State.PlayerId,
+                        PlayerId = w.Comp.BaseData.RepoBase.Player.PlayerId,
                     }
                 });
             }
@@ -994,8 +1031,8 @@ namespace WeaponCore
                 else Log.Line($"SendTrackReticleUpdate no player MIds found");
             }
             else if (HandlesInput) {
-                comp.Data.Repo.Base.State.TrackingReticle = track;
-                SendCompBaseData(comp);
+                comp.BaseData.RepoBase.Player.TrackingReticle = track;
+                SendPlayerState(comp);
             }
         }
 

@@ -82,34 +82,19 @@ namespace WeaponCore.Support
 
                     StorageSetup();
                     InventoryInit();
+
                     if (IsBlock)
                         PowerInit();
-                    else if (TypeSpecific == CompTypeSpecific.Rifle) Ai.AiOwner = ((Weapon.WeaponComponent)this).GunBase.OwnerId;
 
-                    if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
-                        Platform.ResetParts(this);
+                    //if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
+                        //Platform.ResetParts(this);
 
                     Entity.NeedsWorldMatrix = true;
 
                     if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
-                    else OnAddedToSceneTasks();
+                    else OnAddedToSceneTasks(true);
 
                     Platform.State = CorePlatform.PlatformState.Ready;
-
-                    if (Type == CompType.Weapon)
-                    {
-                        for (int i = 0; i < Platform.Weapons.Count; i++)
-                        {
-                            var weapon = Platform.Weapons[i];
-                            weapon.UpdatePivotPos();
-
-                            if (Session.IsClient)
-                                weapon.Target.ClientDirty = true;
-
-                            if (weapon.Ammo.CurrentAmmo == 0 && !weapon.Reloading)
-                                weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
-                        }
-                    }
                 } 
                 else Log.Line($"BaseComp Init() failed");
             }
@@ -156,7 +141,7 @@ namespace WeaponCore.Support
                         if (!Ai.GridInit || !Ai.Session.GridToInfoMap.ContainsKey(Ai.TopEntity)) 
                             Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                         else 
-                            OnAddedToSceneTasks();
+                            OnAddedToSceneTasks(false);
                     }
                     else {
                         Log.Line($"BaseComp ReInit() failed stage2!");
@@ -168,7 +153,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void OnAddedToSceneTasks()
+        internal void OnAddedToSceneTasks(bool firstRun)
         {
             try {
 
@@ -192,38 +177,7 @@ namespace WeaponCore.Support
                 }
 
                 if (Type == CompType.Weapon)
-                {
-                    var maxTrajectory = 0d;
-
-                    for (int i = 0; i < Platform.Weapons.Count; i++)
-                    {
-
-                        var weapon = Platform.Weapons[i];
-                        weapon.InitTracking();
-
-                        double weaponMaxRange;
-                        DpsAndHeatInit(weapon, out weaponMaxRange);
-
-                        if (maxTrajectory < weaponMaxRange)
-                            maxTrajectory = weaponMaxRange;
-
-                        if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                            weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
-                        if (Session.IsServer && weapon.TrackTarget)
-                            Session.AcqManager.Monitor(weapon.Acquire);
-                    }
-
-                    if (maxTrajectory + Ai.TopEntity.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange)
-                    {
-
-                        Ai.MaxTargetingRange = maxTrajectory + Ai.TopEntity.PositionComp.LocalVolume.Radius;
-                        Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
-                    }
-
-                    Ai.OptimalDps += ((Weapon.WeaponComponent)this).PeakDps;
-                    Ai.EffectiveDps += ((Weapon.WeaponComponent)this).EffectiveDps;
-                }
+                    ((Weapon.WeaponComponent)this).OnAddedToSceneWeaponTasks(firstRun);
 
 
                 if (!Ai.PartBase.TryAdd(CoreEntity, this))
@@ -237,9 +191,6 @@ namespace WeaponCore.Support
                 if (!FunctionalBlock.Enabled)
                     for (int i = 0; i < Platform.Weapons.Count; i++)
                         Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
-
-                if (Type == CompType.Weapon)
-                    ((Weapon.WeaponComponent)this).VanillaTurretBase?.SetTarget(Vector3D.MaxValue);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
@@ -261,7 +212,7 @@ namespace WeaponCore.Support
             if (Session.IsServer && Platform.State == CorePlatform.PlatformState.Ready) {
 
                 if (CoreEntity?.Storage != null) {
-                    Data.Save();
+                    BaseData.Save();
                 }
             }
             return false;

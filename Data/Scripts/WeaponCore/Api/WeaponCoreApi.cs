@@ -10,7 +10,7 @@ using VRageMath;
 namespace WeaponCore.Api
 {
     /// <summary>
-    /// https://github.com/sstixrud/WeaponCore/blob/master/Data/Scripts/WeaponCore/Api/WeaponCoreApi.cs
+    /// https://github.com/sstixrud/WeaponCore/blob/master/BaseData/Scripts/WeaponCore/Api/WeaponCoreApi.cs
     /// </summary>
     public class WcApi
     {

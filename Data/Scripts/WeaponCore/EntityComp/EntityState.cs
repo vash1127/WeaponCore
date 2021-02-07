@@ -54,63 +54,15 @@ namespace WeaponCore.Support
 
         internal void ResetPlayerControl()
         {
-            Data.Repo.Base.State.PlayerId = -1;
-            Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
-            Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
+            BaseData.RepoBase.Player.PlayerId = -1;
+            BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.None;
+            BaseData.RepoBase.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
 
-            var tAction = Data.Repo.Base.State.TerminalAction;
+            var tAction = BaseData.RepoBase.Player.TerminalAction;
             if (tAction == TriggerActions.TriggerOnce || tAction == TriggerActions.TriggerClick) 
-                Data.Repo.Base.State.TerminalActionSetter(this, TriggerActions.TriggerOff, Session.MpActive);
+                BaseData.RepoBase.Base.State.TerminalActionSetter(this, TriggerActions.TriggerOff, Session.MpActive);
             if (Session.MpActive) 
                 Session.SendCompBaseData(this);
-        }
-
-        internal void WeaponDetectStateChanges(Weapon.WeaponComponent weaponComp)
-        {
-            if (Platform.State != CorePlatform.PlatformState.Ready)
-                return;
-
-            if (Session.Tick - Ai.LastDetectEvent > 59) {
-                Ai.LastDetectEvent = Session.Tick;
-                Ai.SleepingComps = 0;
-                Ai.AwakeComps = 0;
-                Ai.DetectOtherSignals = false;
-            }
-
-            UpdatedState = true;
-
-            var overRides = Data.Repo.Base.Set.Overrides;
-            var attackNeutrals = overRides.Neutrals;
-            var attackNoOwner = overRides.Unowned;
-            var attackFriends = overRides.Friendly;
-            var targetNonThreats = (attackNoOwner || attackNeutrals || attackFriends);
-            
-            DetectOtherSignals = targetNonThreats;
-            if (DetectOtherSignals)
-                Ai.DetectOtherSignals = true;
-            var wasAsleep = IsAsleep;
-            IsAsleep = false;
-            IsDisabled = Ai.TouchingWater && !weaponComp.ShootSubmerged && Ai.WaterVolume.Contains(CoreEntity.PositionComp.WorldAABB.Center) != ContainmentType.Disjoint;
-
-            if (!Ai.Session.IsServer)
-                return;
-
-            var otherRangeSqr = Ai.DetectionInfo.OtherRangeSqr;
-            var threatRangeSqr = Ai.DetectionInfo.PriorityRangeSqr;
-            var targetInrange = DetectOtherSignals ? otherRangeSqr <= MaxDetectDistanceSqr && otherRangeSqr >=MinDetectDistanceSqr || threatRangeSqr <= MaxDetectDistanceSqr && threatRangeSqr >= MinDetectDistanceSqr
-                : threatRangeSqr <= MaxDetectDistanceSqr && threatRangeSqr >=MinDetectDistanceSqr;
-
-            if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !targetInrange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOff) {
-
-                IsAsleep = true;
-                Ai.SleepingComps++;
-            }
-            else if (wasAsleep) {
-
-                Ai.AwakeComps++;
-            }
-            else 
-                Ai.AwakeComps++;
         }
 
         internal void OtherDetectStateChanges()
@@ -144,7 +96,7 @@ namespace WeaponCore.Support
             var priorityRangeSqr = Ai.DetectionInfo.PriorityRangeSqr;
             var somethingInRange = DetectOtherSignals ? otherRangeSqr <= MaxDetectDistanceSqr && otherRangeSqr >= MinDetectDistanceSqr || priorityRangeSqr <= MaxDetectDistanceSqr && priorityRangeSqr >= MinDetectDistanceSqr : priorityRangeSqr <= MaxDetectDistanceSqr && priorityRangeSqr >= MinDetectDistanceSqr;
 
-            if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !somethingInRange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOff)
+            if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !somethingInRange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && BaseData.RepoBase.Player.TerminalAction == TriggerActions.TriggerOff)
             {
 
                 IsAsleep = true;
@@ -173,7 +125,7 @@ namespace WeaponCore.Support
 
         internal static void SetValue(CoreComponent comp, string setting, int v, long playerId)
         {
-            var o = comp.Data.Repo.Base.Set.Overrides;
+            var o = comp.BaseData.RepoBase.Base.Set.Overrides;
             var enabled = v > 0;
             var clearTargets = false;
 
@@ -241,20 +193,20 @@ namespace WeaponCore.Support
 
         internal static void ResetCompState(CoreComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
         {
-            var o = comp.Data.Repo.Base.Set.Overrides;
+            var o = comp.BaseData.RepoBase.Base.Set.Overrides;
             var userControl = o.Control != GroupOverrides.ControlModes.Auto;
 
             if (userControl)
             {
-                comp.Data.Repo.Base.State.PlayerId = playerId;
-                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
+                comp.BaseData.RepoBase.Player.PlayerId = playerId;
+                comp.BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.Ui;
                 if (settings != null) settings["ControlModes"] = (int)o.Control;
-                comp.Data.Repo.Base.State.TerminalActionSetter(comp, TriggerActions.TriggerOff);
+                comp.BaseData.RepoBase.Base.State.TerminalActionSetter(comp, TriggerActions.TriggerOff);
             }
             else
             {
-                comp.Data.Repo.Base.State.PlayerId = -1;
-                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
+                comp.BaseData.RepoBase.Player.PlayerId = -1;
+                comp.BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.None;
             }
 
             if (resetTarget)

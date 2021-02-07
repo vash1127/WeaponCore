@@ -5,7 +5,7 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class SupportSys : Part
+    internal partial class SupportSys : Part
     {
         internal class SupportComponent : CoreComponent
         {

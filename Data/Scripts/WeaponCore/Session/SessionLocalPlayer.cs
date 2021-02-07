@@ -88,8 +88,8 @@ namespace WeaponCore
                             GunnerBlackList = true;
                             if (IsServer)
                             {
-                                comp.Data.Repo.Base.State.PlayerId = PlayerId;
-                                comp.Data.Repo.Base.State.Control = ControlMode.Camera;
+                                comp.BaseData.RepoBase.Player.PlayerId = PlayerId;
+                                comp.BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.Camera;
                             }
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -100,7 +100,7 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, false);
 
                             if (HandlesInput && MpActive)
-                                SendPlayerControlRequest(comp, PlayerId, ControlMode.Camera);
+                                SendPlayerControlRequest(comp, PlayerId, PlayerValues.ControlMode.Camera);
                         }
                     }
                 }
@@ -124,13 +124,13 @@ namespace WeaponCore
                             {
                                 if (IsServer)
                                 {
-                                    comp.Data.Repo.Base.State.PlayerId = -1;
-                                    comp.Data.Repo.Base.State.Control = ControlMode.None;
+                                    comp.BaseData.RepoBase.Player.PlayerId = -1;
+                                    comp.BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.None;
 
                                 }
 
                                 if (HandlesInput && MpActive)
-                                    SendPlayerControlRequest(comp, -1, ControlMode.None);
+                                    SendPlayerControlRequest(comp, -1, PlayerValues.ControlMode.None);
 
                                 ActiveControlBlock = null;
                             }

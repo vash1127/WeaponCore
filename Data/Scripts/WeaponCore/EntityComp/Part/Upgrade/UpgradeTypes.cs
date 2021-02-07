@@ -5,13 +5,15 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Upgrade : Part
+    internal partial class Upgrade : Part
     {
         internal class UpgradeComponent : CoreComponent
         {
+            internal UpgradeCompData Data;
 
             internal UpgradeComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
+                Data = new UpgradeCompData(this);
                 base.Init(session, coreEntity, true, ((MyCubeBlock)coreEntity).CubeGrid, id);
             }
         }

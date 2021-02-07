@@ -69,7 +69,7 @@ namespace WeaponCore.Platform
                 else selfHit = true;
             }
 
-            return !selfHit && (inRange && canTrack || weapon.BaseComp.Data.Repo.Base.State.TrackingReticle);
+            return !selfHit && (inRange && canTrack || weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle);
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
@@ -137,8 +137,8 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             Vector3D targetCenter;
 
-            if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Position;
+            if (weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle)
+                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -150,10 +150,10 @@ namespace WeaponCore.Platform
             if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
 
-                if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
+                if (weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle)
                 {
-                    targetLinVel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Acceleration;
+                    targetLinVel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].LinearVelocity;
+                    targetAccel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].Acceleration;
                 }
                 else
                 {
@@ -184,7 +184,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
-            var isAligned = validEstimate && (inRange || weapon.BaseComp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
+            var isAligned = validEstimate && (inRange || weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -194,8 +194,8 @@ namespace WeaponCore.Platform
         internal static Vector3D TargetCenter(Weapon weapon)
         {
             var targetCenter = Vector3D.Zero;
-            if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Position;
+            if (weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle)
+                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].Position;
             else if (weapon.Target.IsProjectile)
                 targetCenter = weapon.Target.Projectile?.Position ?? Vector3D.Zero;
             else if (!weapon.Target.IsFakeTarget)
@@ -211,8 +211,8 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
             targetLock = false;
 
-            if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Position;
+            if (weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle)
+                targetCenter = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -223,9 +223,9 @@ namespace WeaponCore.Platform
             var validEstimate = true;
             if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
-                if (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle) {
-                    targetLinVel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.Data.Repo.Base.State.PlayerId].Acceleration;
+                if (weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle) {
+                    targetLinVel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].LinearVelocity;
+                    targetAccel = weapon.BaseComp.Session.PlayerDummyTargets[weapon.BaseComp.BaseData.RepoBase.Player.PlayerId].Acceleration;
                 }
                 else {
                     var cube = target.TargetEntity as MyCubeBlock;
@@ -253,11 +253,11 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
 
             var targetDir = targetPos - weapon.MyPivotPos;
-            var readyToTrack = validEstimate && !weapon.BaseComp.ResettingSubparts && (weapon.BaseComp.Data.Repo.Base.State.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
+            var readyToTrack = validEstimate && !weapon.BaseComp.ResettingSubparts && (weapon.BaseComp.BaseData.RepoBase.Player.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
             
             var locked = true;
             var isTracking = false;
-            if (readyToTrack && weapon.BaseComp.Data.Repo.Base.State.Control != CompStateValues.ControlMode.Camera) {
+            if (readyToTrack && weapon.BaseComp.BaseData.RepoBase.Player.Control != PlayerValues.ControlMode.Camera) {
 
                 if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
 
@@ -269,7 +269,7 @@ namespace WeaponCore.Platform
             
             weapon.Rotating = !locked;
 
-            if (weapon.BaseComp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
+            if (weapon.BaseComp.BaseData.RepoBase.Player.Control == PlayerValues.ControlMode.Camera)
                 return isTracking;
 
             var isAligned = false;
@@ -293,7 +293,7 @@ namespace WeaponCore.Platform
 
             targetLock = isTracking && weapon.Target.IsAligned;
 
-            var rayCheckTest = !weapon.BaseComp.Session.IsClient && targetLock && (weapon.BaseComp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.BaseComp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.BaseComp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.BaseComp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            var rayCheckTest = !weapon.BaseComp.Session.IsClient && targetLock && (weapon.BaseComp.BaseData.RepoBase.Player.Control == PlayerValues.ControlMode.None || weapon.BaseComp.BaseData.RepoBase.Player.Control == PlayerValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.BaseComp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.BaseComp.Session.Tick - weapon.LastMuzzleCheck > 29);
             
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
@@ -493,14 +493,14 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (BaseComp.IsBlock && MuzzleHitSelf())
                 {
-                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckSelfHit, !BaseComp.Data.Repo.Base.State.TrackingReticle);
-                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckSelfHit, !BaseComp.Data.Repo.Base.State.TrackingReticle);
+                    masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckSelfHit, !BaseComp.BaseData.RepoBase.Player.TrackingReticle);
+                    if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckSelfHit, !BaseComp.BaseData.RepoBase.Player.TrackingReticle);
                     return false;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
             }
             
-            if (Target.TargetEntity is IMyCharacter && !BaseComp.Data.Repo.Base.Set.Overrides.Biologicals || Target.TargetEntity is MyCubeBlock && !BaseComp.Data.Repo.Base.Set.Overrides.Grids)
+            if (Target.TargetEntity is IMyCharacter && !Comp.Data.Repo.Base.Set.Overrides.Biologicals || Target.TargetEntity is MyCubeBlock && !Comp.Data.Repo.Base.Set.Overrides.Grids)
             {
                 masterWeapon.Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckProjectile);
                 if (masterWeapon != this) Target.Reset(BaseComp.Session.Tick, Target.States.RayCheckProjectile);
@@ -515,7 +515,7 @@ namespace WeaponCore.Platform
                 BaseComp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return true;
             }
-            if (BaseComp.Data.Repo.Base.State.TrackingReticle) return true;
+            if (BaseComp.BaseData.RepoBase.Player.TrackingReticle) return true;
 
 
             if (Target.IsProjectile)

@@ -23,37 +23,9 @@ namespace WeaponCore.Support
             try
             {
                 if (CoreEntity.Storage == null)
-                    Data.StorageInit();
-
-                Data.Load();
-
-                if (Session.IsServer)
-                    Data.Repo.ResetToFreshLoadState();
-
-                var maxTrajectory = 0f;
-                for (int i = 0; i < Platform.Weapons.Count; i++) {
-
-                    var weapon = Platform.Weapons[i];
-
-                    if (Session.IsServer)
-                        weapon.ChangeActiveAmmoServer();
-                    else weapon.ChangeActiveAmmoClient();
-
-                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
-                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.PartName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
-                        return;
-                    }
-
-                    weapon.UpdateWeaponRange();
-                    if (maxTrajectory < weapon.MaxTargetDistance)
-                        maxTrajectory = (float)weapon.MaxTargetDistance;
-
-                }
-                if (Data.Repo.Base.Set.Range <= 0)
-                    Data.Repo.Base.Set.Range = maxTrajectory;
-                
+                    BaseData.StorageInit();
             }
-            catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{CoreEntity.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{BaseData.RepoBase == null} - cubeMarked:{CoreEntity.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
 
         internal void SubGridInit()

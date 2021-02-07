@@ -133,7 +133,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var compDataPacket = (CompBasePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<Weapon.WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < packet.MId) {
@@ -153,7 +153,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var compStatePacket = (CompStatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<Weapon.WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < packet.MId)  {
@@ -229,6 +229,28 @@ namespace WeaponCore
             return true;
         }
 
+        private bool ClientPlayerUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var playerPacket = (PlayerStatePacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.BaseData.RepoBase.Player.Sync(comp, playerPacket.Data, PlayerValues.Caller.PlayerUpdate);
+            }
+            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
 
         private bool ClientFakeTargetUpdate(PacketObj data)
         {
@@ -273,7 +295,7 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var mousePacket = (InputPacket)packet;
-            if (mousePacket.Data == null) return Error(data, Msg("Data"));
+            if (mousePacket.Data == null) return Error(data, Msg("BaseData"));
             var entity = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var topEntity = entity?.GetTopMostParent();
             if (topEntity == null) return Error(data, Msg($"entityId: {packet.EntityId}"));
@@ -328,7 +350,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var mouseUpdatePacket = (MouseInputSyncPacket)packet;
 
-            if (mouseUpdatePacket.Data == null) return Error(data, Msg("Data"));
+            if (mouseUpdatePacket.Data == null) return Error(data, Msg("BaseData"));
 
             for (int i = 0; i < mouseUpdatePacket.Data.Length; i++)  {
                 var playerMousePackets = mouseUpdatePacket.Data[i];
@@ -345,7 +367,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var clientNotifyPacket = (ClientNotifyPacket)packet;
 
-            if (clientNotifyPacket.Message == string.Empty || clientNotifyPacket.Color == string.Empty) return Error(data, Msg("Data"));
+            if (clientNotifyPacket.Message == string.Empty || clientNotifyPacket.Color == string.Empty) return Error(data, Msg("BaseData"));
 
             ShowClientNotify(clientNotifyPacket);
             data.Report.PacketValid = true;

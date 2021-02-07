@@ -40,7 +40,7 @@ namespace WeaponCore.Support
         internal string SubtypeName;
         internal bool LazyUpdate;
         internal MyInventory CoreInventory;
-        internal CompData Data;
+        internal CompData BaseData;
 
         internal InputStateData InputState;
         internal Ai Ai;
@@ -193,8 +193,6 @@ namespace WeaponCore.Support
             Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Structure.PartHashes.Length];
             for (int i = 0; i < Monitors.Length; i++)
                 Monitors[i] = new List<Action<long, int, ulong, long, Vector3D, bool>>();
-
-            Data = new CompData(this);
 
             CoreEntity.OnClose += Session.CloseComps;
         }        

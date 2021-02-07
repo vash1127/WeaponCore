@@ -323,12 +323,12 @@ namespace WeaponCore
                     {"entityIsWorking", () => GetComp()?.FakeIsWorking.ToString() ?? string.Empty },
                     {"MaxDetectDistance", () => GetComp()?.MaxDetectDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
-                    {"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
-                    {"PlayerId", () => GetComp()?.Data.Repo.Base.State.PlayerId.ToString() ?? string.Empty },
-                    {"FocusSubSystem", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
-                    {"FocusTargets", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
-                    {"MaxSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
-                    {"MinSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
+                    {"ControlType", () => GetComp()?.BaseData.RepoBase.Player.Control.ToString() ?? string.Empty },
+                    {"PlayerId", () => GetComp()?.BaseData.RepoBase.Player.PlayerId.ToString() ?? string.Empty },
+                    //{"FocusSubSystem", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
+                    //{"FocusTargets", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
+                    //{"MaxSize", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
+                   //{"MinSize", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
                 };
 
                 return compFields;

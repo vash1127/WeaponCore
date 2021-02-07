@@ -39,7 +39,7 @@ namespace WeaponCore.Platform
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
-                    if (!Comp.Data.Repo.Base.State.TrackingReticle)
+                    if (!Comp.BaseData.RepoBase.Player.TrackingReticle)
                         Target.PushTargetToClient(this);
                 } 
             }
@@ -228,5 +228,6 @@ namespace WeaponCore.Platform
 
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
+
     }
 }

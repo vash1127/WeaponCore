@@ -50,6 +50,7 @@ namespace WeaponCore
         WeaponReload,
         WeaponAmmo,
         QueueShot,
+        PlayerState,
     }
 
     #region packets
@@ -231,17 +232,32 @@ namespace WeaponCore
     }
 
     [ProtoContract]
+    public class PlayerStatePacket : Packet
+    {
+        [ProtoMember(1)] internal PlayerValues Data;
+
+
+        public PlayerStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
     public class PlayerControlRequestPacket : Packet
     {
         [ProtoMember(1)] internal long PlayerId;
-        [ProtoMember(2)] internal CompStateValues.ControlMode Mode;
+        [ProtoMember(2)] internal PlayerValues.ControlMode Mode;
 
         public PlayerControlRequestPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Mode = CompStateValues.ControlMode.None;
+            Mode = PlayerValues.ControlMode.None;
             PlayerId = -1;
         }
     }
@@ -525,7 +541,7 @@ namespace WeaponCore
 
     #endregion
 
-    #region packet Data
+    #region packet BaseData
     [ProtoContract]
     internal class DataReport
     {

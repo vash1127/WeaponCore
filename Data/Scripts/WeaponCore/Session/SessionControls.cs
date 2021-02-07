@@ -138,7 +138,7 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
+                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null)
                                 oldAction(blk);
@@ -153,7 +153,7 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
+                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null)
                                 oldAction(blk);
@@ -165,12 +165,12 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => {
 
-                        var comp = blk.Components.Get<CoreComponent>();
+                        var comp = blk.Components.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+                        if (comp.BaseData.RepoBase.Player.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -182,25 +182,25 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
+                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null) oldAction(blk);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOn)
+                        if (comp.BaseData.RepoBase.Player.TerminalAction != TriggerOn)
                             comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) =>
                     {
-                        var comp = blk.Components.Get<CoreComponent>();
+                        var comp = blk.Components.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                         {
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+                        if (comp.BaseData.RepoBase.Player.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -212,24 +212,24 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
+                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null)  oldAction(blk);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOff)
+                        if (comp.BaseData.RepoBase.Player.TerminalAction != TriggerOff)
                             comp.RequestShootUpdate(TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => {
 
-                        var comp = blk.Components.Get<CoreComponent>();
+                        var comp = blk.Components.Get<Weapon.WeaponComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+                        if (comp.BaseData.RepoBase.Player.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");

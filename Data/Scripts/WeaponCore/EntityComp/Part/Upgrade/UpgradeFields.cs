@@ -6,7 +6,7 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Upgrades : Part
+    internal partial class Upgrades : Part
     {
         internal readonly Upgrade.UpgradeComponent Comp;
 

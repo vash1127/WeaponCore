@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.Ai;
 
@@ -204,8 +205,10 @@ namespace WeaponCore
             if (topMost != null && GridTargetingAIs.TryGetValue(topMost, out ai)) {
 
                 CoreComponent comp;
-                if (ai.PartBase.TryGetValue(lastEnt, out comp))
-                    comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
+                if (ai.PartBase.TryGetValue(lastEnt, out comp)) {
+                    if (comp.Type == CoreComponent.CompType.Weapon)
+                        ((Weapon.WeaponComponent)comp).RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
+                }
             }
         }
 
