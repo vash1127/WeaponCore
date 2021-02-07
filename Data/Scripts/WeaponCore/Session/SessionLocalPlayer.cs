@@ -9,6 +9,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.Ai;
 using static WeaponCore.Support.PartDefinition.TargetingDef;
@@ -80,16 +81,17 @@ namespace WeaponCore
                 {
                     var topEntity = ControlledEntity.GetTopMostParent();
                     Ai ai;
-                    if (topEntity != null && GridTargetingAIs.TryGetValue(topEntity, out ai))
+                    if (topEntity != null && GridAIs.TryGetValue(topEntity, out ai))
                     {
                         CoreComponent comp;
-                        if (ai.PartBase.TryGetValue(ControlledEntity, out comp))
+                        if (ai.CompBase.TryGetValue(ControlledEntity, out comp) && comp.Type == CoreComponent.CompType.Weapon)
                         {
                             GunnerBlackList = true;
                             if (IsServer)
                             {
-                                comp.BaseData.RepoBase.Player.PlayerId = PlayerId;
-                                comp.BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.Camera;
+                                var wComp = ((Weapon.WeaponComponent)comp);
+                                wComp.Data.Repo.Base.State.PlayerId = PlayerId;
+                                wComp.Data.Repo.Base.State.Control = ControlMode.Camera;
                             }
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -100,7 +102,7 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, false);
 
                             if (HandlesInput && MpActive)
-                                SendPlayerControlRequest(comp, PlayerId, PlayerValues.ControlMode.Camera);
+                                SendPlayerControlRequest(comp, PlayerId, ControlMode.Camera);
                         }
                     }
                 }
@@ -117,20 +119,21 @@ namespace WeaponCore
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         Ai ai;
-                        if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out ai))
+                        if (oldCube != null && GridAIs.TryGetValue(oldCube.CubeGrid, out ai))
                         {
                             CoreComponent comp;
-                            if (ai.PartBase.TryGetValue(oldCube, out comp))
+                            if (ai.CompBase.TryGetValue(oldCube, out comp) && comp.Type == CoreComponent.CompType.Weapon)
                             {
                                 if (IsServer)
                                 {
-                                    comp.BaseData.RepoBase.Player.PlayerId = -1;
-                                    comp.BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.None;
+                                    var wComp = ((Weapon.WeaponComponent)comp);
+                                    wComp.Data.Repo.Base.State.PlayerId = -1;
+                                    wComp.Data.Repo.Base.State.Control = ControlMode.None;
 
                                 }
 
                                 if (HandlesInput && MpActive)
-                                    SendPlayerControlRequest(comp, -1, PlayerValues.ControlMode.None);
+                                    SendPlayerControlRequest(comp, -1, ControlMode.None);
 
                                 ActiveControlBlock = null;
                             }
@@ -178,7 +181,7 @@ namespace WeaponCore
                             if (block.IsFunctional && PartPlatforms.ContainsKey(block.BlockDefinition.Id)) {
 
                                 Ai ai;
-                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out ai) || !ai.PartBase.ContainsKey(block)) 
+                                if (!GridAIs.TryGetValue(block.CubeGrid, out ai) || !ai.CompBase.ContainsKey(block)) 
                                     _uninitializedBlocks.Add(block);
                             }
                         }
@@ -246,9 +249,10 @@ namespace WeaponCore
                                 {
                                     DsDebugDraw.DrawSphere(restrictedSphere, _restrictionAreaColor);
                                 }
-                                for (int i = 0; i < ai.Comps.Count; i++)
+
+                                for (int i = 0; i < ai.WeaponComps.Count; i++)
                                 {
-                                    var comp = ai.Comps[i];
+                                    var comp = ai.WeaponComps[i];
 
                                     if (comp.IsBlock)
                                     {

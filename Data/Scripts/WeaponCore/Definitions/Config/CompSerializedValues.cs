@@ -19,7 +19,6 @@ namespace WeaponCore
     public class Repo
     {
         [ProtoMember(1)] public int Version = Session.VersionControl;
-        [ProtoMember(2)] public PlayerValues Player;
     }
 
     [ProtoContract]
@@ -51,9 +50,9 @@ namespace WeaponCore
             //Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
             //Base.State.Control = CompStateValues.ControlMode.None;
             //Base.State.PlayerId = -1;
-            Player.TrackingReticle = false;
-            if (Player.TerminalAction == TriggerActions.TriggerOnce)
-                Player.TerminalAction = TriggerActions.TriggerOff;
+            Base.State.TrackingReticle = false;
+            if (Base.State.TerminalAction == TriggerActions.TriggerOnce)
+                Base.State.TerminalAction = TriggerActions.TriggerOff;
             for (int i = 0; i < Ammos.Length; i++)
             {
                 var ws = Base.State.Weapons[i];
@@ -83,50 +82,6 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class PlayerValues
-    {
-        public enum Caller
-        {
-            Direct,
-            PlayerUpdate,
-        }
-
-        public enum ControlMode
-        {
-            None,
-            Ui,
-            Toolbar,
-            Camera
-        }
-
-        [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public bool TrackingReticle; //don't save
-        [ProtoMember(3), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(4), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
-        [ProtoMember(5)] public TriggerActions TerminalAction;
-
-        public void Sync(CoreComponent comp, PlayerValues sync, Caller caller)
-        {
-            if (sync.Revision > Revision)
-            {
-                Revision = sync.Revision;
-                TrackingReticle = sync.TrackingReticle;
-                PlayerId = sync.PlayerId;
-                Control = sync.Control;
-                TerminalAction = sync.TerminalAction;
-                /*
-                for (int i = 0; i < sync.Weapons.Length; i++)
-                {
-                    var w = comp.Platform.Weapons[i];
-                    w.State.Sync(sync.Weapons[i]);
-                }
-                */
-            }
-            //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
-        }
-    }
-    
     [ProtoContract]
     public class AmmoValues
     {
@@ -294,26 +249,32 @@ namespace WeaponCore
 
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public WeaponStateValues[] Weapons;
+        [ProtoMember(3)] public bool TrackingReticle; //don't save
+        [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
+        [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
+        [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(Weapon.WeaponComponent comp, CompStateValues sync, Caller caller)
+        public void Sync(CoreComponent comp, CompStateValues sync, Caller caller)
         {
             if (sync.Revision > Revision)
             {
                 Revision = sync.Revision;
+                TrackingReticle = sync.TrackingReticle;
+                PlayerId = sync.PlayerId;
+                Control = sync.Control;
+                TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Weapons.Length; i++)
-                {
-                    var w = comp.Platform.Weapons[i];
-                    w.State.Sync(sync.Weapons[i]);
-                }
+                    comp.Platform.Weapons[i].State.Sync(sync.Weapons[i]);
             }
             //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
         public void TerminalActionSetter(Weapon.WeaponComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
         {
-            comp.BaseData.RepoBase.Player.TerminalAction = action;
-            
-            if (updateWeapons) {
+            TerminalAction = action;
+
+            if (updateWeapons)
+            {
                 for (int i = 0; i < Weapons.Length; i++)
                     Weapons[i].Action = action;
             }
@@ -321,7 +282,6 @@ namespace WeaponCore
             if (syncWeapons)
                 comp.Session.SendCompState(comp);
         }
-
     }
 
     [ProtoContract]
@@ -341,7 +301,7 @@ namespace WeaponCore
         public void WeaponMode(Weapon.WeaponComponent comp, TriggerActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
-                comp.BaseData.RepoBase.Player.TerminalAction = TriggerActions.TriggerOff;
+                comp.Data.Repo.Base.State.TerminalAction = TriggerActions.TriggerOff;
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)

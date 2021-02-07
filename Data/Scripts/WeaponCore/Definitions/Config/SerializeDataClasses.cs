@@ -232,32 +232,17 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class PlayerStatePacket : Packet
-    {
-        [ProtoMember(1)] internal PlayerValues Data;
-
-
-        public PlayerStatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
     public class PlayerControlRequestPacket : Packet
     {
         [ProtoMember(1)] internal long PlayerId;
-        [ProtoMember(2)] internal PlayerValues.ControlMode Mode;
+        [ProtoMember(2)] internal CompStateValues.ControlMode Mode;
 
         public PlayerControlRequestPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Mode = PlayerValues.ControlMode.None;
+            Mode = CompStateValues.ControlMode.None;
             PlayerId = -1;
         }
     }

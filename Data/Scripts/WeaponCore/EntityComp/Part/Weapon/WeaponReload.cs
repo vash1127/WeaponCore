@@ -82,10 +82,10 @@ namespace WeaponCore.Platform
                     {
                         if (!Comp.Session.MpActive)
                             MyAPIGateway.Utilities.ShowNotification($"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine", 3000, "Red");
-                        else if (Comp.BaseData.RepoBase.Player.PlayerId > 0)
+                        else if (Comp.Data.Repo.Base.State.PlayerId > 0)
                         {
                             var message = $"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine";
-                            Comp.Session.SendClientNotify(Comp.BaseData.RepoBase.Player.PlayerId, message, true, "Red", 3000);
+                            Comp.Session.SendClientNotify(Comp.Data.Repo.Base.State.PlayerId, message, true, "Red", 3000);
                         }
                         MyFloatingObjects.Spawn(ammoChange.Item, Dummies[0].Info.Position, MyPivotFwd, MyPivotUp);
                     }

@@ -111,7 +111,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             Ai ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
+            if (GridAIs.TryGetValue(myGrid, out ai)) {
 
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
@@ -229,29 +229,6 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientPlayerUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var playerPacket = (PlayerStatePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.BaseData.RepoBase.Player.Sync(comp, playerPacket.Data, PlayerValues.Caller.PlayerUpdate);
-            }
-            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
-
-
         private bool ClientFakeTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -260,7 +237,7 @@ namespace WeaponCore
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             Ai ai;
-            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+            if (myGrid != null && GridAIs.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId) {
                     ai.MIds[(int)packet.PType] = packet.MId;

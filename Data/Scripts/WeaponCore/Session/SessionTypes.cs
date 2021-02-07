@@ -112,7 +112,7 @@ namespace WeaponCore
                     return;
                 }
                 
-                if (!Session.GridTargetingAIs.TryGetValue(topMost, out ai) || !ai.PartBase.ContainsKey(targetEntity))
+                if (!Session.GridAIs.TryGetValue(topMost, out ai) || !ai.CompBase.ContainsKey(targetEntity))
                     Log.Line($"Failed to generate user report, either grid does not have Weaponcore or this block this wc block is not initialized.");
                 
                 Log.Line($"Generate User Weapon Report");
@@ -278,7 +278,7 @@ namespace WeaponCore
                 var sessionFields = new Dictionary<string, Func<string>>
                 {
                     {"HasGridMap", () => (GetComp() != null && Session.GridToInfoMap.ContainsKey(GetComp().TopEntity)).ToString()},
-                    {"HasGridAi", () => (GetComp() != null && Session.GridTargetingAIs.ContainsKey(GetComp().TopEntity)).ToString()},
+                    {"HasGridAi", () => (GetComp() != null && Session.GridAIs.ContainsKey(GetComp().TopEntity)).ToString()},
                 };
 
                 return sessionFields;
@@ -298,7 +298,7 @@ namespace WeaponCore
                     {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
-                    {"WeaponBase", () => GetAi()?.PartBase.Count.ToString() ?? string.Empty },
+                    {"WeaponBase", () => GetAi()?.CompBase.Count.ToString() ?? string.Empty },
                     {"PriorityRangeSqr", () => GetAi()?.DetectionInfo.PriorityRangeSqr.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty },
                     {"AiOwner", () => GetAi()?.AiOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
@@ -323,8 +323,8 @@ namespace WeaponCore
                     {"entityIsWorking", () => GetComp()?.FakeIsWorking.ToString() ?? string.Empty },
                     {"MaxDetectDistance", () => GetComp()?.MaxDetectDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
-                    {"ControlType", () => GetComp()?.BaseData.RepoBase.Player.Control.ToString() ?? string.Empty },
-                    {"PlayerId", () => GetComp()?.BaseData.RepoBase.Player.PlayerId.ToString() ?? string.Empty },
+                    //{"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
+                    //{"PlayerId", () => GetComp()?.Data.Repo.Base.State.PlayerId.ToString() ?? string.Empty },
                     //{"FocusSubSystem", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
                     //{"FocusTargets", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                     //{"MaxSize", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
@@ -486,7 +486,7 @@ namespace WeaponCore
             internal Ai GetAi()
             {
                 Ai ai;
-                if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
+                if (Session.GridAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     return ai;
                 }
@@ -497,10 +497,10 @@ namespace WeaponCore
             internal CoreComponent GetComp()
             {
                 Ai ai;
-                if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
+                if (Session.GridAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
-                    if (ai.PartBase.TryGetValue(TargetEntity, out comp))
+                    if (ai.CompBase.TryGetValue(TargetEntity, out comp))
                     {
                         return comp;
                     }
@@ -512,10 +512,10 @@ namespace WeaponCore
             internal CorePlatform GetPlatform()
             {
                 Ai ai;
-                if (Session.GridTargetingAIs.TryGetValue(TargetTopEntity, out ai))
+                if (Session.GridAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
-                    if (ai.PartBase.TryGetValue(TargetEntity, out comp))
+                    if (ai.CompBase.TryGetValue(TargetEntity, out comp))
                     {
                         return comp.Platform;
                     }

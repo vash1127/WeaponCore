@@ -39,7 +39,7 @@ namespace WeaponCore.Platform
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
-                    if (!Comp.BaseData.RepoBase.Player.TrackingReticle)
+                    if (!Comp.Data.Repo.Base.State.TrackingReticle)
                         Target.PushTargetToClient(this);
                 } 
             }
@@ -174,7 +174,6 @@ namespace WeaponCore.Platform
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.Cube.ResourceSink.Update();
         }
-
 
         internal double GetMaxWeaponRange()
         {

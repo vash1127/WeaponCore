@@ -420,7 +420,7 @@ namespace WeaponCore.Api
         {
             Weapon.WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
-                return comp.BaseData.RepoBase.Player.PlayerId;
+                return comp.Data.Repo.Base.State.PlayerId;
 
             return -1;
         }
@@ -472,7 +472,7 @@ namespace WeaponCore.Api
             var grid = victim.GetTopMostParent() as MyCubeGrid;
             Ai ai;
             MyTuple<bool, int, int> tuple;
-            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
+            if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
             {
                 var count = ai.LiveProjectile.Count;
                 tuple = count > 0 ? new MyTuple<bool, int, int>(true, count, (int) (_session.Tick - ai.LiveProjectileTick)) : new MyTuple<bool, int, int>(false, 0, -1);
@@ -485,7 +485,7 @@ namespace WeaponCore.Api
         {
             var grid = shooter.GetTopMostParent() as MyCubeGrid;
             Ai ai;
-            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
+            if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
             {
                 for (int i = 0; i < ai.SortedTargets.Count; i++)
                 {
@@ -750,7 +750,7 @@ namespace WeaponCore.Api
         {
             var grid = entity?.GetTopMostParent() as MyCubeGrid;
 
-            return grid != null && _session.GridTargetingAIs.ContainsKey(grid);
+            return grid != null && _session.GridAIs.ContainsKey(grid);
         }
 
         private static bool HasCoreWeapon(IMyTerminalBlock weaponBlock)
@@ -771,7 +771,7 @@ namespace WeaponCore.Api
             {
                 var grid = entity.GetTopMostParent() as MyCubeGrid;
                 Ai ai;
-                if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
+                if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
                     return ai.OptimalDps;
             }
             return 0f;
@@ -919,7 +919,7 @@ namespace WeaponCore.Api
         {
             var grid = entity?.GetTopMostParent() as MyCubeGrid;
             Ai ai;
-            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
+            if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
             {
                 return new MyTuple<bool, bool>(ai.DetectionInfo.PriorityInRange, ai.DetectionInfo.OtherInRange);
             }

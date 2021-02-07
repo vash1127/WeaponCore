@@ -111,7 +111,7 @@ namespace WeaponCore.Support
             }
 
             Ai removeAi;
-            if (!Session.GridTargetingAIs.ContainsKey(grid))
+            if (!Session.GridAIs.ContainsKey(grid))
                 Session.GridToMasterAi.TryRemove(grid, out removeAi);
         }
 
@@ -171,7 +171,7 @@ namespace WeaponCore.Support
                     foreach (var grid in ai.SubGrids) {
 
                         Ai thisAi;
-                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out thisAi)) {
+                        if (ai.Session.GridAIs.TryGetValue(grid, out thisAi)) {
                             
                             if (leadingAi == null)
                                 leadingAi = thisAi;
@@ -196,7 +196,7 @@ namespace WeaponCore.Support
                     RootAi = leadingAi;
                     LargestAi = largestAi;
                     if (RootAi == null) {
-                        Log.Line($"[rootAi is null in Update] - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridTargetingAIs.ContainsKey(ai.TopEntity)} -  myGridMarked:{ai.TopEntity.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiSpawnTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
+                        Log.Line($"[rootAi is null in Update] - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridAIs.ContainsKey(ai.TopEntity)} -  myGridMarked:{ai.TopEntity.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiSpawnTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
                         RootAi = ai;
                     }
                     
@@ -238,7 +238,7 @@ namespace WeaponCore.Support
                 foreach (var sub in RootAi.SubGrids)
                 {
                     Ai ai;
-                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                    if (RootAi.Session.GridAIs.TryGetValue(sub, out ai))
                     {
                         UpdateActiveControlDictionary(ai, entity, playerId, updateAdd);
                     }
@@ -276,7 +276,7 @@ namespace WeaponCore.Support
                             continue;
 
                         Ai subAi;
-                        if (cAi.Session.GridTargetingAIs.TryGetValue(sub, out subAi))
+                        if (cAi.Session.GridAIs.TryGetValue(sub, out subAi))
                             cAi.Construct.RefreshedAis.Add(subAi);
                     }
                 }
@@ -314,7 +314,7 @@ namespace WeaponCore.Support
                         continue;
 
                     Ai ai;
-                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                    if (RootAi.Session.GridAIs.TryGetValue(sub, out ai))
                     {
                         ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo, true);
                     }
@@ -329,7 +329,7 @@ namespace WeaponCore.Support
                         continue;
 
                     Ai ai;
-                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                    if (RootAi.Session.GridAIs.TryGetValue(sub, out ai))
                         ai.Construct.Data.Repo.FocusData.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
                 }
             }

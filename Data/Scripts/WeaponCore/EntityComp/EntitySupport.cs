@@ -54,7 +54,7 @@ namespace WeaponCore.Support
                     
                     Ai testAi;
                     CoreComponent comp;
-                    if (Ai.PartBase.TryRemove(CoreEntity, out comp)) {
+                    if (Ai.CompBase.TryRemove(CoreEntity, out comp)) {
                         if (Platform.State == CorePlatform.PlatformState.Ready) {
 
                             for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
@@ -68,11 +68,11 @@ namespace WeaponCore.Support
                         }
                         Ai.CompChange(false, this);
                     }
-                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.GridTargetingAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai}");
+                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.GridAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai}");
 
-                    if (Ai.PartBase.Count == 0) {
+                    if (Ai.CompBase.Count == 0) {
                         Ai ai;
-                        Session.GridTargetingAIs.TryRemove(Ai.TopEntity, out ai);
+                        Session.GridAIs.TryRemove(Ai.TopEntity, out ai);
                     }
 
                     Ai = null;

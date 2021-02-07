@@ -169,24 +169,15 @@ namespace WeaponCore.Support
 
                 if (wasFunctional && !IsFunctional && Platform.State == PlatformState.Ready) {
 
-                    for (int i = 0; i < Platform.Weapons.Count; i++) {
+                    if (Type == CompType.Weapon)
+                        ((Weapon.WeaponComponent)this).NotFunctional();
 
-                        var w = Platform.Weapons[i];
-                        PartAnimation[] partArray;
-                        if (w.AnimationsSet.TryGetValue(EventTriggers.TurnOff, out partArray)) {
-                            for (int j = 0; j < partArray.Length; j++) 
-                                w.PlayEmissives(partArray[j]);
-                        }
-                        if (!Session.IsClient && !IsWorking) 
-                            w.Target.Reset(Session.Tick, Target.States.Offline);
-                    }
                 }
+                
                 if (Session.MpActive && Session.IsServer) {
-                    Session.SendCompBaseData(this);
-                    if (IsWorking) {
-                        foreach (var w in Platform.Weapons)
-                            Session.SendWeaponAmmoData(w);
-                    }
+
+                    if (Type == CompType.Weapon)
+                        ((Weapon.WeaponComponent)this).PowerLoss();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }

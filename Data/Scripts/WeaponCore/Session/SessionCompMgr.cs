@@ -28,7 +28,7 @@ namespace WeaponCore
             var grid = cube?.CubeGrid;
 
             Ai ai;
-            if (grid == null || !GridTargetingAIs.TryGetValue(grid, out ai))
+            if (grid == null || !GridAIs.TryGetValue(grid, out ai))
                 return false;
 
             MyOrientedBoundingBoxD b;

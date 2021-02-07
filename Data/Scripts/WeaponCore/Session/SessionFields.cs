@@ -53,7 +53,7 @@ namespace WeaponCore
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;
         internal volatile uint LastDeform;
-        internal volatile uint Tick;
+        internal uint Tick;
 
         internal readonly TargetCompare TargetCompare = new TargetCompare();
         internal readonly WaterModAPI WApi = new WaterModAPI();
@@ -77,7 +77,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<PlayerStatePacket> PacketPlayerPool = new MyConcurrentPool<PlayerStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
@@ -86,18 +85,19 @@ namespace WeaponCore
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
 
+        internal readonly ConcurrentDictionary<MyEntity, Ai> GridToMasterAi = new ConcurrentDictionary<MyEntity, Ai>();
+        internal readonly ConcurrentDictionary<MyEntity, Ai> GridAIs = new ConcurrentDictionary<MyEntity, Ai>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<long, IMyCharacter> Admins = new ConcurrentDictionary<long, IMyCharacter>();
         internal readonly ConcurrentDictionary<IMyCharacter, IMyPlayer> AdminMap = new ConcurrentDictionary<IMyCharacter, IMyPlayer>();
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
-        internal readonly ConcurrentDictionary<MyEntity, Ai> GridTargetingAIs = new ConcurrentDictionary<MyEntity, Ai>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<MyPhysicalInventoryItem>> InventoryItems = new ConcurrentDictionary<MyInventory, MyConcurrentList<MyPhysicalInventoryItem>>();
         internal readonly ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>> CoreInventoryItems = new ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<MyEntity, GridMap> GridToInfoMap = new ConcurrentDictionary<MyEntity, GridMap>();
-        internal readonly ConcurrentDictionary<MyEntity, Ai> GridToMasterAi = new ConcurrentDictionary<MyEntity, Ai>();
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> ConsumableItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Part, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Part, int>();
+        internal readonly ConcurrentDictionary<MyInventory, int> InventoryMonitors = new ConcurrentDictionary<MyInventory, int>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -113,7 +113,6 @@ namespace WeaponCore
 
         internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
 
-        internal readonly ConcurrentDictionary<MyInventory, int> InventoryMonitors = new ConcurrentDictionary<MyInventory, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreDefs = new Dictionary<string, MyDefinitionId>();

@@ -107,11 +107,11 @@ namespace WeaponCore.Support
                 if (!CoreEntity.MarkedForClose && Entity != null)  {
 
                     Ai ai;
-                    if (!Session.GridTargetingAIs.TryGetValue(TopEntity, out ai)) {
+                    if (!Session.GridAIs.TryGetValue(TopEntity, out ai)) {
 
                         var newAi = Session.GridAiPool.Get();
                         newAi.Init(TopEntity, Session);
-                        Session.GridTargetingAIs[TopEntity] = newAi;
+                        Session.GridAIs[TopEntity] = newAi;
                         Ai = newAi;
                     }
                     else {
@@ -148,7 +148,7 @@ namespace WeaponCore.Support
                     }
                 }
                 else {
-                    Log.Line($"BaseComp ReInit() failed stage1! - marked:{CoreEntity.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridTargetingAIs.ContainsKey(TopEntity)}");
+                    Log.Line($"BaseComp ReInit() failed stage1! - marked:{CoreEntity.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridAIs.ContainsKey(TopEntity)}");
                 }
             }
         }
@@ -158,7 +158,7 @@ namespace WeaponCore.Support
             try {
 
                 if (Ai.MarkedForClose)
-                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{SubtypeName} - grid:{TopEntity.DebugName} - CubeMarked:{CoreEntity.MarkedForClose} - GridMarked:{TopEntity.MarkedForClose} - GridMatch:{TopEntity == Ai.TopEntity} - AiContainsMe:{Ai.PartBase.ContainsKey(CoreEntity)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(TopEntity)}[{Ai.Session.GridTargetingAIs.ContainsKey(TopEntity)}]");
+                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{SubtypeName} - grid:{TopEntity.DebugName} - CubeMarked:{CoreEntity.MarkedForClose} - GridMarked:{TopEntity.MarkedForClose} - GridMatch:{TopEntity == Ai.TopEntity} - AiContainsMe:{Ai.CompBase.ContainsKey(CoreEntity)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(TopEntity)}[{Ai.Session.GridAIs.ContainsKey(TopEntity)}]");
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
                 if (IsBlock && !Ai.GridInit) {
@@ -180,7 +180,7 @@ namespace WeaponCore.Support
                     ((Weapon.WeaponComponent)this).OnAddedToSceneWeaponTasks(firstRun);
 
 
-                if (!Ai.PartBase.TryAdd(CoreEntity, this))
+                if (!Ai.CompBase.TryAdd(CoreEntity, this))
                     Log.Line($"failed to add cube to gridAi");
 
                 Ai.CompChange(true, this);

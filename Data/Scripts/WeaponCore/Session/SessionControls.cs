@@ -81,11 +81,11 @@ namespace WeaponCore
 
             var cube = (MyCubeBlock)block;
             Ai ai;
-            if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out ai))
+            if (GridAIs.TryGetValue(cube.CubeGrid, out ai))
             {
                 ai.LastTerminal = block;
                 CoreComponent comp;
-                if (ai.PartBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
+                if (ai.CompBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
                 {
                     TerminalMon.HandleInputUpdate(comp);
                     IMyTerminalControl wcRangeControl = null;
@@ -170,7 +170,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.BaseData.RepoBase.Player.TerminalAction == TriggerOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -187,7 +187,7 @@ namespace WeaponCore
                             if (comp == null) oldAction(blk);
                             return;
                         }
-                        if (comp.BaseData.RepoBase.Player.TerminalAction != TriggerOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOn)
                             comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
@@ -200,7 +200,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.BaseData.RepoBase.Player.TerminalAction == TriggerOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -217,7 +217,7 @@ namespace WeaponCore
                             if (comp == null)  oldAction(blk);
                             return;
                         }
-                        if (comp.BaseData.RepoBase.Player.TerminalAction != TriggerOff)
+                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOff)
                             comp.RequestShootUpdate(TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
@@ -229,7 +229,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.BaseData.RepoBase.Player.TerminalAction == TriggerOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");

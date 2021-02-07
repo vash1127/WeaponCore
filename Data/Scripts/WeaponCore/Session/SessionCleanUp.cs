@@ -257,7 +257,7 @@ namespace WeaponCore
             Projectiles.VirtInfoPool.Clean();
 
             DbsToUpdate.Clear();
-            GridTargetingAIs.Clear();
+            GridAIs.Clear();
 
             DsUtil = null;
             DsUtil2 = null;

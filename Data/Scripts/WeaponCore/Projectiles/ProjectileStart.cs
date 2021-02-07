@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.BaseData.RepoBase.Player.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer =  w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -35,13 +35,13 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.TargetEntity = t != Kind.Client ? w.Target.TargetEntity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.BaseData.RepoBase.Player.TrackingReticle;
+                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
                 p.Info.Target.CoreEntity = w.Comp.CoreEntity;
                 p.Info.Target.CoreCube = w.Comp.Cube;
                 p.Info.Target.CoreParent = w.Comp.TopEntity;
                 p.Info.Target.CoreIsCube = w.Comp.Cube != null;
 
-                p.Info.DummyTarget = w.Comp.BaseData.RepoBase.Player.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.BaseData.RepoBase.Player.PlayerId] : null;
+                p.Info.DummyTarget = w.Comp.Data.Repo.Base.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
 
                 p.Info.PartId = w.PartId;
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;

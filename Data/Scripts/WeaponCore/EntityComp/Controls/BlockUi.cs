@@ -159,7 +159,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "Neutrals", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Neutrals", value, comp.Session.PlayerId);
         }
 
         internal static bool GetUnowned(IMyTerminalBlock block)
@@ -175,7 +175,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "Unowned", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Unowned", value, comp.Session.PlayerId);
         }
 
         internal static bool GetFocusFire(IMyTerminalBlock block)
@@ -190,7 +190,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "FocusTargets", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "FocusTargets", value, comp.Session.PlayerId);
         }
 
         internal static bool GetSubSystems(IMyTerminalBlock block)
@@ -206,7 +206,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             var value = newValue ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "FocusSubSystem", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "FocusSubSystem", value, comp.Session.PlayerId);
         }
 
         internal static bool GetBiologicals(IMyTerminalBlock block)
@@ -221,7 +221,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "Biologicals", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Biologicals", value, comp.Session.PlayerId);
         }
 
         internal static bool GetProjectiles(IMyTerminalBlock block)
@@ -237,7 +237,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "Projectiles", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Projectiles", value, comp.Session.PlayerId);
         }
 
         internal static bool GetMeteors(IMyTerminalBlock block)
@@ -253,7 +253,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "Meteors", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Meteors", value, comp.Session.PlayerId);
         }
 
         internal static bool GetGrids(IMyTerminalBlock block)
@@ -269,14 +269,14 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "Grids", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Grids", value, comp.Session.PlayerId);
         }
 
         internal static bool GetShoot(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.BaseData.RepoBase.Player.TerminalAction == CoreComponent.TriggerActions.TriggerOn;
+            return comp.Data.Repo.Base.State.TerminalAction == CoreComponent.TriggerActions.TriggerOn;
         }
 
         internal static bool GetShowArea(IMyTerminalBlock block)
@@ -293,7 +293,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            CoreComponent.RequestSetValue(comp, "ArmorShowArea", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "ArmorShowArea", value, comp.Session.PlayerId);
         }
 
         internal static void RequestSetShoot(IMyTerminalBlock block, bool newValue)
@@ -317,7 +317,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            CoreComponent.RequestSetValue(comp, "SubSystems", (int) newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "SubSystems", (int) newValue, comp.Session.PlayerId);
         }
 
         internal static void ListSubSystems(List<MyTerminalControlComboBoxItem> subSystemList)
@@ -349,7 +349,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            CoreComponent.RequestSetValue(comp, "MovementModes", (int)newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "MovementModes", (int)newValue, comp.Session.PlayerId);
         }
 
         internal static void ListMovementModes(List<MyTerminalControlComboBoxItem> moveList)
@@ -377,7 +377,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            CoreComponent.RequestSetValue(comp, "ControlModes", (int)newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "ControlModes", (int)newValue, comp.Session.PlayerId);
         }
 
         internal static void ListControlModes(List<MyTerminalControlComboBoxItem> controlList)

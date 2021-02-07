@@ -202,10 +202,10 @@ namespace WeaponCore
         {
             var topMost = lastEnt.GetTopMostParent();
             Ai ai;
-            if (topMost != null && GridTargetingAIs.TryGetValue(topMost, out ai)) {
+            if (topMost != null && GridAIs.TryGetValue(topMost, out ai)) {
 
                 CoreComponent comp;
-                if (ai.PartBase.TryGetValue(lastEnt, out comp)) {
+                if (ai.CompBase.TryGetValue(lastEnt, out comp)) {
                     if (comp.Type == CoreComponent.CompType.Weapon)
                         ((Weapon.WeaponComponent)comp).RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
                 }
@@ -216,7 +216,7 @@ namespace WeaponCore
         {
             var topMost = entity.GetTopMostParent();
             Ai ai;
-            if (topMost != null && GridTargetingAIs.TryGetValue(topMost, out ai))
+            if (topMost != null && GridAIs.TryGetValue(topMost, out ai))
             {
                 if (HandlesInput && ai.AiOwner == 0)
                 {

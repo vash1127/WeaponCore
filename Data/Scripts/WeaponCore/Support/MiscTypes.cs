@@ -121,7 +121,7 @@ namespace WeaponCore.Support
                         if (targetType == Ai.TargetType.None) {
                             if (w.NewTarget.CurrentState != States.NoTargetsSeen)
                                 w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.BaseData.RepoBase.Player.TrackingReticle);
+                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
                         }
                     }
                 }

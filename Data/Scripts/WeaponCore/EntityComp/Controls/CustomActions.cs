@@ -61,7 +61,7 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.Control;
             var value = numValue + 1 <= 2 ? numValue + 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "ControlModes", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "ControlModes", value, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMovementMode(IMyTerminalBlock blk)
@@ -73,7 +73,7 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
             var value = numValue + 1 <= 3 ? numValue + 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "MovementModes", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "MovementModes", value, comp.Session.PlayerId);
         }
 
         internal static void TerminActionCycleSubSystem(IMyTerminalBlock blk)
@@ -85,7 +85,7 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
             var value = numValue + 1 <= 7 ? numValue + 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
@@ -97,7 +97,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Neutrals;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleProjectiles(IMyTerminalBlock blk)
@@ -109,7 +109,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Projectiles;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleBiologicals(IMyTerminalBlock blk)
@@ -121,7 +121,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Biologicals;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleMeteors(IMyTerminalBlock blk)
@@ -133,7 +133,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Meteors;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleGrids(IMyTerminalBlock blk)
@@ -145,7 +145,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Grids;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Grids", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Grids", newValue, comp.Session.PlayerId);
         }
         internal static void TerminalActionToggleArmorShowArea(IMyTerminalBlock blk)
         {
@@ -156,7 +156,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.ArmorShowArea;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "ArmorShowArea", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "ArmorShowArea", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleFriendly(IMyTerminalBlock blk)
@@ -168,7 +168,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Friendly;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleUnowned(IMyTerminalBlock blk)
@@ -180,7 +180,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Unowned;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleFocusTargets(IMyTerminalBlock blk)
@@ -192,7 +192,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusTargets;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleFocusSubSystem(IMyTerminalBlock blk)
@@ -204,7 +204,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
             var newValue = newBool ? 1 : 0;
 
-            CoreComponent.RequestSetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMaxSizeIncrease(IMyTerminalBlock blk)
@@ -216,7 +216,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize * 2;
             var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 16384;
 
-            CoreComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMaxSizeDecrease(IMyTerminalBlock blk)
@@ -228,7 +228,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize / 2;
             var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 1;
 
-            CoreComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMinSizeIncrease(IMyTerminalBlock blk)
@@ -240,7 +240,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize == 0 ? 1 : comp.Data.Repo.Base.Set.Overrides.MinSize * 2;
             var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 128;
 
-            CoreComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMinSizeDecrease(IMyTerminalBlock blk)
@@ -252,7 +252,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize / 2;
             var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 0;
 
-            CoreComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
+            Weapon.WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock block)

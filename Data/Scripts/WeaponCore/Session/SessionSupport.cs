@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -160,7 +161,7 @@ namespace WeaponCore
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
             Log.LineShortDate($"(CPU-T) --- <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PS>{psTime.Median:0.0000}/{psTime.Min:0.0000}/{psTime.Max:0.0000} <PI>{piTIme.Median:0.0000}/{piTIme.Min:0.0000}/{piTIme.Max:0.0000} <PD>{pdTime.Median:0.0000}/{pdTime.Min:0.0000}/{pdTime.Max:0.0000} <PA>{paTime.Median:0.0000}/{paTime.Min:0.0000}/{paTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}>", "perf");
-            Log.LineShortDate($"(STATS) -------- AIs:[{GridTargetingAIs.Count}] - WcBlocks:[{IdToCompMap.Count}] - AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
+            Log.LineShortDate($"(STATS) -------- AIs:[{GridAIs.Count}] - WcBlocks:[{IdToCompMap.Count}] - AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
             TargetRequests = 0;
             TargetChecks = 0;
             BlockChecks = 0;
@@ -276,11 +277,21 @@ namespace WeaponCore
                             isAdmin = true;
                         else {
 
-                            foreach (var gridAi in GridTargetingAIs.Values) {
+                            foreach (var gridAi in GridAIs.Values) {
 
-                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Comps.Count > 0 && ((IMyTerminalBlock)gridAi.Comps[0].CoreEntity).HasPlayerAccess(playerId)) {
+                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.CompBase.Count > 0 && (gridAi.WeaponComps.Count >0 || gridAi.UpgradeComps.Count > 0 || gridAi.SupportComps.Count > 0)) {
+                                    
+                                    var access = false;
+                                    foreach (var comp in gridAi.CompBase) {
 
-                                    if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.AiOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                        if (!comp.Value.IsBlock)
+                                            continue;
+
+                                        access = ((IMyTerminalBlock)comp.Key).HasPlayerAccess(playerId);
+                                        break;
+                                    }
+
+                                    if (access && MyIDModule.GetRelationPlayerBlock(playerId, gridAi.AiOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
                                         isAdmin = true;
                                         break;
                                     }
@@ -782,7 +793,7 @@ namespace WeaponCore
             myGrid.Hierarchy.QuerySphere(ref querySphere, _tmpNearByBlocks);
 
             foreach (var grid in ai.SubGrids) {
-                if (grid == myGrid || !GridTargetingAIs.ContainsKey(grid))
+                if (grid == myGrid || !GridAIs.ContainsKey(grid))
                     continue;
                 grid.Hierarchy.QuerySphere(ref querySphere, _tmpNearByBlocks);
             }

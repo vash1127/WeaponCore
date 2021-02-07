@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
@@ -227,8 +228,8 @@ namespace WeaponCore.Platform
 
             internal void ResetShootState(TriggerActions action, long playerId)
             {
-                var cycleShootClick = BaseData.RepoBase.Player.TerminalAction == TriggerActions.TriggerClick && action == TriggerActions.TriggerClick;
-                var cycleShootOn = BaseData.RepoBase.Player.TerminalAction == TriggerActions.TriggerOn && action == TriggerActions.TriggerOn;
+                var cycleShootClick = Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerClick && action == TriggerActions.TriggerClick;
+                var cycleShootOn = Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOn && action == TriggerActions.TriggerOn;
                 var cycleSomething = cycleShootOn || cycleShootClick;
 
                 Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
@@ -236,15 +237,15 @@ namespace WeaponCore.Platform
                 Data.Repo.Base.State.TerminalActionSetter(this, cycleSomething ? TriggerActions.TriggerOff : action);
 
                 if (action == TriggerActions.TriggerClick && HasTurret)
-                    BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.Ui;
+                    Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
                 else if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOnce || action == TriggerActions.TriggerOn)
-                    BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.Toolbar;
+                    Data.Repo.Base.State.Control = CompStateValues.ControlMode.Toolbar;
                 else
-                    BaseData.RepoBase.Player.Control = PlayerValues.ControlMode.None;
+                    Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
 
                 playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-                var newId = action == TriggerActions.TriggerOff && !BaseData.RepoBase.Player.TrackingReticle ? -1 : playerId;
-                BaseData.RepoBase.Player.PlayerId = newId;
+                var newId = action == TriggerActions.TriggerOff && !Data.Repo.Base.State.TrackingReticle ? -1 : playerId;
+                Data.Repo.Base.State.PlayerId = newId;
             }
 
             internal void RequestShootUpdate(TriggerActions action, long playerId)
@@ -313,7 +314,7 @@ namespace WeaponCore.Platform
                 var targetInrange = DetectOtherSignals ? otherRangeSqr <= MaxDetectDistanceSqr && otherRangeSqr >= MinDetectDistanceSqr || threatRangeSqr <= MaxDetectDistanceSqr && threatRangeSqr >= MinDetectDistanceSqr
                     : threatRangeSqr <= MaxDetectDistanceSqr && threatRangeSqr >= MinDetectDistanceSqr;
 
-                if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !targetInrange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && BaseData.RepoBase.Player.TerminalAction == TriggerActions.TriggerOff)
+                if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !targetInrange && PartTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == TriggerActions.TriggerOff)
                 {
 
                     IsAsleep = true;
@@ -328,6 +329,158 @@ namespace WeaponCore.Platform
                     Ai.AwakeComps++;
             }
 
+            internal void ResetPlayerControl()
+            {
+                Data.Repo.Base.State.PlayerId = -1;
+                Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
+                Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
+
+                var tAction = Data.Repo.Base.State.TerminalAction;
+                if (tAction == TriggerActions.TriggerOnce || tAction == TriggerActions.TriggerClick)
+                    Data.Repo.Base.State.TerminalActionSetter(this, TriggerActions.TriggerOff, Session.MpActive);
+                if (Session.MpActive)
+                    Session.SendCompBaseData(this);
+            }
+
+
+            internal static void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
+            {
+                if (comp.Session.IsServer)
+                {
+                    SetValue(comp, setting, value, playerId);
+                }
+                else if (comp.Session.IsClient)
+                {
+                    comp.Session.SendOverRidesClientComp(comp, setting, value);
+                }
+            }
+
+            internal static void SetValue(WeaponComponent comp, string setting, int v, long playerId)
+            {
+                var o = comp.Data.Repo.Base.Set.Overrides;
+                var enabled = v > 0;
+                var clearTargets = false;
+
+                switch (setting)
+                {
+                    case "MaxSize":
+                        o.MaxSize = v;
+                        break;
+                    case "MinSize":
+                        o.MinSize = v;
+                        break;
+                    case "SubSystems":
+                        o.SubSystem = (PartDefinition.TargetingDef.BlockTypes)v;
+                        break;
+                    case "MovementModes":
+                        o.MoveMode = (GroupOverrides.MoveModes)v;
+                        clearTargets = true;
+                        break;
+                    case "ControlModes":
+                        o.Control = (GroupOverrides.ControlModes)v;
+                        clearTargets = true;
+                        break;
+                    case "FocusSubSystem":
+                        o.FocusSubSystem = enabled;
+                        break;
+                    case "FocusTargets":
+                        o.FocusTargets = enabled;
+                        clearTargets = true;
+                        break;
+                    case "Unowned":
+                        o.Unowned = enabled;
+                        break;
+                    case "Friendly":
+                        o.Friendly = enabled;
+                        clearTargets = true;
+                        break;
+                    case "Meteors":
+                        o.Meteors = enabled;
+                        break;
+                    case "Grids":
+                        o.Grids = enabled;
+                        break;
+                    case "ArmorShowArea":
+                        o.ArmorShowArea = enabled;
+                        break;
+                    case "Biologicals":
+                        o.Biologicals = enabled;
+                        break;
+                    case "Projectiles":
+                        o.Projectiles = enabled;
+                        clearTargets = true;
+                        break;
+                    case "Neutrals":
+                        o.Neutrals = enabled;
+                        clearTargets = true;
+                        break;
+                }
+
+                ResetCompState(comp, playerId, clearTargets);
+
+                if (comp.Session.MpActive)
+                    comp.Session.SendCompBaseData(comp);
+            }
+
+
+            internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
+            {
+                var o = comp.Data.Repo.Base.Set.Overrides;
+                var userControl = o.Control != GroupOverrides.ControlModes.Auto;
+
+                if (userControl)
+                {
+                    comp.Data.Repo.Base.State.PlayerId = playerId;
+                    comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
+                    if (settings != null) settings["ControlModes"] = (int)o.Control;
+                    comp.Data.Repo.Base.State.TerminalActionSetter(comp, TriggerActions.TriggerOff);
+                }
+                else
+                {
+                    comp.Data.Repo.Base.State.PlayerId = -1;
+                    comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
+                }
+
+                if (resetTarget)
+                    ClearTargets(comp);
+            }
+
+            private static void ClearTargets(CoreComponent comp)
+            {
+                for (int i = 0; i < comp.Platform.Weapons.Count; i++)
+                {
+                    var weapon = comp.Platform.Weapons[i];
+                    if (weapon.Target.HasTarget)
+                        comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.ControlReset);
+                }
+            }
+
+            internal void NotFunctional()
+            {
+                for (int i = 0; i < Platform.Weapons.Count; i++)
+                {
+
+                    var w = Platform.Weapons[i];
+                    PartAnimation[] partArray;
+                    if (w.AnimationsSet.TryGetValue(PartDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.TurnOff, out partArray))
+                    {
+                        for (int j = 0; j < partArray.Length; j++)
+                            w.PlayEmissives(partArray[j]);
+                    }
+                    if (!Session.IsClient && !IsWorking)
+                        w.Target.Reset(Session.Tick, Target.States.Offline);
+                }
+            }
+
+            internal void PowerLoss()
+            {
+                Session.SendCompBaseData(this);
+                if (IsWorking)
+                {
+                    foreach (var w in Platform.Weapons)
+                        Session.SendWeaponAmmoData(w);
+                }
+            }
         }
 
         internal class ParallelRayCallBack

@@ -418,12 +418,6 @@ namespace WeaponCore
                         PacketAmmoPool.Return(iPacket);
                         break;
                     }
-                    case PacketType.PlayerState:
-                    {
-                        var iPacket = (PlayerStatePacket)pInfo.Packet;
-                        PacketPlayerPool.Return(iPacket);
-                        break;
-                    }
                 }
             }
             PrunedPacketsToClient.Clear();

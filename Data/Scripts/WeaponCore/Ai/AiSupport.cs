@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.WeaponRandomGenerator;
 
@@ -12,29 +13,124 @@ namespace WeaponCore.Support
     {
         internal void CompChange(bool add, CoreComponent comp)
         {
-            if (add) {
+            int idx;
+            switch (comp.Type)
+            {
+                case CoreComponent.CompType.Weapon:
+                    var wComp = (Weapon.WeaponComponent)comp;
 
-                if (PartsIdx.ContainsKey(comp)) {
-                    Log.Line($"CompAddFailed:<{comp.CoreEntity.EntityId}> - comp({comp.CoreEntity.DebugName}[{comp.SubtypeName}]) already existed in {TopEntity.DebugName}");
-                    return;
-                }
+                    if (add)
+                    {
+                        if (WeaponIdx.ContainsKey(wComp))
+                        {
+                            Log.Line($"CompAddFailed:<{wComp.CoreEntity.EntityId}> - comp({wComp.CoreEntity.DebugName}[{wComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
+                            return;
+                        }
 
-                PartsIdx.Add(comp, Comps.Count);
-                Comps.Add(comp);
-            }
-            else {
+                        WeaponIdx.Add(wComp, WeaponComps.Count);
+                        WeaponComps.Add(wComp);
+                    }
+                    else
+                    {
+                        if (!WeaponIdx.TryGetValue(wComp, out idx)) {
+                            Log.Line($"CompRemoveFailed: <{wComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{WeaponIdx.Count}]({CompBase.Count}) - {WeaponComps.Contains(wComp)}[{WeaponComps.Count}] - {Session.GridAIs[wComp.TopEntity].CompBase.ContainsKey(wComp.CoreEntity)} - {Session.GridAIs[wComp.TopEntity].CompBase.Count} ");
+                            return;
+                        }
 
-                int idx;
-                if (!PartsIdx.TryGetValue(comp, out idx)) {
-                    Log.Line($"CompRemoveFailed: <{comp.CoreEntity.EntityId}> - {Comps.Count}[{PartsIdx.Count}]({PartBase.Count}) - {Comps.Contains(comp)}[{Comps.Count}] - {Session.GridTargetingAIs[comp.TopEntity].PartBase.ContainsKey(comp.CoreEntity)} - {Session.GridTargetingAIs[comp.TopEntity].PartBase.Count} ");
-                    return;
-                }
+                        WeaponComps.RemoveAtFast(idx);
+                        if (idx < WeaponComps.Count)
+                            WeaponIdx[WeaponComps[idx]] = idx;
+                        WeaponIdx.Remove(wComp);
+                    }
 
-                Comps.RemoveAtFast(idx);
-                if (idx < Comps.Count)
-                    PartsIdx[Comps[idx]] = idx;
+                    break;
+                case CoreComponent.CompType.Upgrade:
+                    var uComp = (Upgrade.UpgradeComponent)comp;
 
-                PartsIdx.Remove(comp);
+                    if (add)
+                    {
+                        if (UpgradeIdx.ContainsKey(uComp))
+                        {
+                            Log.Line($"CompAddFailed:<{uComp.CoreEntity.EntityId}> - comp({uComp.CoreEntity.DebugName}[{uComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
+                            return;
+                        }
+
+                        UpgradeIdx.Add(uComp, UpgradeComps.Count);
+                        UpgradeComps.Add(uComp);
+                    }
+                    else
+                    {
+                        if (!UpgradeIdx.TryGetValue(uComp, out idx))
+                        {
+                            Log.Line($"CompRemoveFailed: <{uComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{UpgradeIdx.Count}]({CompBase.Count}) - {UpgradeComps.Contains(uComp)}[{WeaponComps.Count}] - {Session.GridAIs[uComp.TopEntity].CompBase.ContainsKey(uComp.CoreEntity)} - {Session.GridAIs[uComp.TopEntity].CompBase.Count} ");
+                            return;
+                        }
+
+                        UpgradeComps.RemoveAtFast(idx);
+                        if (idx < UpgradeComps.Count)
+                            UpgradeIdx[UpgradeComps[idx]] = idx;
+                        UpgradeIdx.Remove(uComp);
+                    }
+
+
+                    break;
+                case CoreComponent.CompType.Support:
+
+                    var sComp = (SupportSys.SupportComponent)comp;
+                    if (add)
+                    {
+                        if (SupportIdx.ContainsKey(sComp))
+                        {
+                            Log.Line($"CompAddFailed:<{sComp.CoreEntity.EntityId}> - comp({sComp.CoreEntity.DebugName}[{sComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
+                            return;
+                        }
+
+                        SupportIdx.Add(sComp, SupportComps.Count);
+                        SupportComps.Add(sComp);
+                    }
+                    else
+                    {
+                        if (!SupportIdx.TryGetValue(sComp, out idx))
+                        {
+                            Log.Line($"CompRemoveFailed: <{sComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{SupportIdx.Count}]({CompBase.Count}) - {SupportComps.Contains(sComp)}[{SupportComps.Count}] - {Session.GridAIs[sComp.TopEntity].CompBase.ContainsKey(sComp.CoreEntity)} - {Session.GridAIs[sComp.TopEntity].CompBase.Count} ");
+                            return;
+                        }
+
+                        SupportComps.RemoveAtFast(idx);
+                        if (idx < SupportComps.Count)
+                            SupportIdx[SupportComps[idx]] = idx;
+                        SupportIdx.Remove(sComp);
+                    }
+
+                    break;
+                case CoreComponent.CompType.Phantom:
+                    var pComp = (Phantom.PhantomComponent)comp;
+                    if (add)
+                    {
+                        if (PhantomIdx.ContainsKey(pComp))
+                        {
+                            Log.Line($"CompAddFailed:<{pComp.CoreEntity.EntityId}> - comp({pComp.CoreEntity.DebugName}[{pComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
+                            return;
+                        }
+
+                        PhantomIdx.Add(pComp, PhantomComps.Count);
+                        PhantomComps.Add(pComp);
+                    }
+                    else
+                    {
+                        if (!PhantomIdx.TryGetValue(pComp, out idx))
+                        {
+                            Log.Line($"CompRemoveFailed: <{pComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{PhantomIdx.Count}]({CompBase.Count}) - {PhantomComps.Contains(pComp)}[{PhantomComps.Count}] - {Session.GridAIs[pComp.TopEntity].CompBase.ContainsKey(pComp.CoreEntity)} - {Session.GridAIs[pComp.TopEntity].CompBase.Count} ");
+                            return;
+                        }
+
+                        PhantomComps.RemoveAtFast(idx);
+                        if (idx < SupportComps.Count)
+                            PhantomIdx[PhantomComps[idx]] = idx;
+                        PhantomIdx.Remove(pComp);
+                    }
+
+                    break;
             }
         }
         
@@ -93,9 +189,9 @@ namespace WeaponCore.Support
 
         private void WeaponShootOff()
         {
-            for (int i = 0; i < Comps.Count; i++) {
+            for (int i = 0; i < WeaponComps.Count; i++) {
 
-                var comp = Comps[i];
+                var comp = WeaponComps[i];
                 for (int x = 0; x < comp.Platform.Weapons.Count; x++) {
                     var w = comp.Platform.Weapons[x];
                     w.StopReloadSound();
@@ -108,18 +204,27 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (Comps.Count == 0) {
+                if (CompBase.Count == 0) {
                     Log.Line($"no valid weapon in powerDist");
                     return;
                 }
 
                 GridCurrentPower = 0;
                 GridMaxPower = 0;
-                for (int i = -1, j = 0; i < Comps.Count; i++, j++) {
+                var first = true;
+                foreach (var comp in CompBase.Values)
+                {
+                    if (!comp.IsBlock)
+                        continue;
 
-                    var powerBlock = j == 0 ? PowerBlock : Comps[i].Cube;
-                    if (powerBlock == null || j == 0 && PowerDirty) continue;
+                    var powerBlock = first ? PowerBlock : comp.Cube;
 
+                    if (powerBlock == null || first && PowerDirty) {
+                        first = false;
+                        continue;
+                    }
+
+                    first = false;
                     using (powerBlock.Pin()) {
                         using (powerBlock.CubeGrid.Pin()) {
                             try {
@@ -284,9 +389,17 @@ namespace WeaponCore.Support
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
-            Comps.Clear();
-            PartsIdx.Clear();
-            PartBase.Clear();
+
+            WeaponComps.Clear();
+            UpgradeComps.Clear();
+            SupportComps.Clear();
+            PhantomComps.Clear();
+            WeaponIdx.Clear();
+            SupportIdx.Clear();
+            UpgradeIdx.Clear();
+            PhantomIdx.Clear();
+            CompBase.Clear();
+
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
             NearByShieldsTmp.Clear();

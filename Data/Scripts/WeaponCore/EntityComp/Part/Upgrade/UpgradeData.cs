@@ -8,11 +8,14 @@ namespace WeaponCore.Platform
     {
         internal class UpgradeCompData : CompData
         {
-            internal UpgradeComponent Comp;
+            internal readonly UpgradeComponent Comp;
+            internal UpgradeRepo Repo;
+
             internal UpgradeCompData(UpgradeComponent comp)
             {
-                Comp = comp;
                 base.Init(comp);
+                Comp = comp;
+                Repo = (UpgradeRepo)RepoBase;
             }
 
             internal void Load()

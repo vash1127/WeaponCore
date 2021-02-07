@@ -33,7 +33,16 @@ namespace WeaponCore.Support
         internal readonly Constructs Construct = new Constructs();
         internal readonly FastResourceLock DbLock = new FastResourceLock();
 
-        internal readonly ConcurrentDictionary<MyEntity, CoreComponent> PartBase = new ConcurrentDictionary<MyEntity, CoreComponent>();
+        internal readonly ConcurrentDictionary<MyEntity, CoreComponent> CompBase = new ConcurrentDictionary<MyEntity, CoreComponent>();
+        internal readonly List<Weapon.WeaponComponent> WeaponComps = new List<Weapon.WeaponComponent>(32);
+        internal readonly List<Upgrade.UpgradeComponent> UpgradeComps = new List<Upgrade.UpgradeComponent>(32);
+        internal readonly List<SupportSys.SupportComponent> SupportComps = new List<SupportSys.SupportComponent>(32);
+        internal readonly List<Phantom.PhantomComponent> PhantomComps = new List<Phantom.PhantomComponent>(32);
+        internal readonly Dictionary<Weapon.WeaponComponent, int> WeaponIdx = new Dictionary<Weapon.WeaponComponent, int>(32);
+        internal readonly Dictionary<Upgrade.UpgradeComponent, int> UpgradeIdx = new Dictionary<Upgrade.UpgradeComponent, int>(32);
+        internal readonly Dictionary<SupportSys.SupportComponent, int> SupportIdx = new Dictionary<SupportSys.SupportComponent, int>(32);
+        internal readonly Dictionary<Phantom.PhantomComponent, int> PhantomIdx = new Dictionary<Phantom.PhantomComponent, int>(32);
+
         internal readonly Dictionary<MyStringHash, PartCounter> PartCounting = new Dictionary<MyStringHash, PartCounter>(MyStringHash.Comparer);
         internal readonly ConcurrentDictionary<MyEntity, MyInventory> InventoryMonitor = new ConcurrentDictionary<MyEntity, MyInventory>();
 
@@ -47,7 +56,8 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
-        internal readonly List<CoreComponent> Comps = new List<CoreComponent>(32);
+
+
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<Ai> TargetAisTmp = new List<Ai>();
         internal readonly List<Shields> NearByShieldsTmp = new List<Shields>();
@@ -64,7 +74,6 @@ namespace WeaponCore.Support
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly List<MyEntity> NearByEntityCache = new List<MyEntity>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
-        internal readonly Dictionary<CoreComponent, int> PartsIdx = new Dictionary<CoreComponent, int>(32);
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal readonly AiData Data = new AiData();

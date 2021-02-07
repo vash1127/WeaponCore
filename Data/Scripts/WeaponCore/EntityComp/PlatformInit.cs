@@ -71,11 +71,11 @@ namespace WeaponCore.Platform
 
             //Get or init Ai
             var newAi = false;
-            if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.TopEntity, out Comp.Ai)) {
+            if (!Comp.Session.GridAIs.TryGetValue(Comp.TopEntity, out Comp.Ai)) {
                 newAi = true;
                 Comp.Ai = Comp.Session.GridAiPool.Get();
                 Comp.Ai.Init(Comp.TopEntity, Comp.Session);
-                Comp.Session.GridTargetingAIs.TryAdd(Comp.TopEntity, Comp.Ai);
+                Comp.Session.GridAIs.TryAdd(Comp.TopEntity, Comp.Ai);
             }
 
             var blockDef = Comp.SubTypeId; 

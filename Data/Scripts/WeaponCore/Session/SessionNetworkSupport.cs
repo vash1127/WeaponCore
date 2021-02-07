@@ -217,42 +217,6 @@ namespace WeaponCore
             else Log.Line($"SendWeaponAmmoData should never be called on Client");
         }
 
-        internal void SendPlayerState(CoreComponent comp)
-        {
-            if (IsServer)
-            {
-                const PacketType type = PacketType.PlayerState;
-                ++comp.BaseData.RepoBase.Player.Revision;
-
-                PacketInfo oldInfo;
-                PlayerStatePacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(comp.BaseData.RepoBase.Player, out oldInfo))
-                {
-                    iPacket = (PlayerStatePacket)oldInfo.Packet;
-                    iPacket.EntityId = comp.CoreEntity.EntityId;
-                    iPacket.Data = comp.BaseData.RepoBase.Player;
-                }
-                else
-                {
-
-                    iPacket = PacketPlayerPool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
-                    iPacket.EntityId = comp.CoreEntity.EntityId;
-                    iPacket.SenderId = MultiplayerId;
-                    iPacket.PType = type;
-                    iPacket.Data = comp.BaseData.RepoBase.Player;
-                }
-
-
-                PrunedPacketsToClient[comp.BaseData.RepoBase.Player] = new PacketInfo
-                {
-                    Entity = comp.CoreEntity,
-                    Packet = iPacket,
-                };
-            }
-            else Log.Line($"SendWeaponAmmoData should never be called on Client");
-        }
-
         internal void SendCompBaseData(Weapon.WeaponComponent comp)
         {
             if (IsServer) {
@@ -858,7 +822,7 @@ namespace WeaponCore
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
 
-        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, PlayerValues.ControlMode mode)
+        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, CompStateValues.ControlMode mode)
         {
             if (IsClient)
             {
@@ -910,7 +874,7 @@ namespace WeaponCore
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
                         PartId = w.PartId,
-                        PlayerId = w.Comp.BaseData.RepoBase.Player.PlayerId,
+                        PlayerId = w.Comp.Data.Repo.Base.State.PlayerId,
                     }
                 });
             }
@@ -1012,7 +976,7 @@ namespace WeaponCore
             else Log.Line($"SendSetCompBoolRequest should never be called on Non-HandlesInput");
         }
 
-        internal void SendTrackReticleUpdate(CoreComponent comp, bool track)
+        internal void SendTrackReticleUpdate(Weapon.WeaponComponent comp, bool track)
         {
             if (IsClient) {
 
@@ -1031,8 +995,8 @@ namespace WeaponCore
                 else Log.Line($"SendTrackReticleUpdate no player MIds found");
             }
             else if (HandlesInput) {
-                comp.BaseData.RepoBase.Player.TrackingReticle = track;
-                SendPlayerState(comp);
+                comp.Data.Repo.Base.State.TrackingReticle = track;
+                SendCompBaseData(comp);
             }
         }
 

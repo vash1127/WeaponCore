@@ -100,7 +100,7 @@ namespace WeaponCore
                             Ai targetAi = null;
 
                             if (grid != null)
-                                GridTargetingAIs.TryGetValue(grid, out targetAi);
+                                GridAIs.TryGetValue(grid, out targetAi);
 
                             var targetInfo = TargetInfoPool.Get();
                             targetInfo.Init(ref detectInfo, ai, targetAi);

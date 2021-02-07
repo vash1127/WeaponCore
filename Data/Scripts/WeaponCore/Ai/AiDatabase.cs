@@ -102,7 +102,7 @@ namespace WeaponCore.Support
 
                         int partCount;
                         Ai targetAi;
-                        if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi)) {
+                        if (Session.GridAIs.TryGetValue(grid, out targetAi)) {
                             targetAi.TargetAisTmp.Add(this);
                             TargetAisTmp.Add(targetAi);
                             partCount = targetAi.Construct.BlockCount;
