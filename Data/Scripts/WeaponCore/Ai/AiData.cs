@@ -67,7 +67,7 @@ namespace WeaponCore
                 }
                 catch (Exception e)
                 {
-                    //Log.Line("Invalid State Loaded, Re-init");
+                    //Log.Line("Invalid PartState Loaded, Re-init");
                 }
             }
 

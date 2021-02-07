@@ -2,7 +2,7 @@
 
 namespace WeaponCore.Platform
 {
-    internal partial class SupportSys : Part
+    public partial class SupportSys : Part
     {
         internal void RefreshBlocks()
         {

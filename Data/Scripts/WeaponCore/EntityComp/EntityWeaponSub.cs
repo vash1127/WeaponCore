@@ -103,10 +103,10 @@ namespace WeaponCore.Support
             {
                 var w = Platform.Weapons[i];
 
-                if (w.State.Overheated)
+                if (w.PartState.Overheated)
                     return false;
 
-                if ((w.Ammo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
+                if ((w.ProtoWeaponAmmo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;
             }
             if (numOfWeapons == loadedWeapons)

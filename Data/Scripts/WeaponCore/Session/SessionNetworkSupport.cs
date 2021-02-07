@@ -188,14 +188,14 @@ namespace WeaponCore
             if (IsServer) {
 
                 const PacketType type = PacketType.WeaponAmmo;
-                ++w.Ammo.Revision;
+                ++w.ProtoWeaponAmmo.Revision;
 
                 PacketInfo oldInfo;
                 WeaponAmmoPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(w.Ammo, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(w.ProtoWeaponAmmo, out oldInfo)) {
                     iPacket = (WeaponAmmoPacket)oldInfo.Packet;
                     iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
-                    iPacket.Data = w.Ammo;
+                    iPacket.Data = w.ProtoWeaponAmmo;
                 }
                 else {
 
@@ -204,12 +204,12 @@ namespace WeaponCore
                     iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
-                    iPacket.Data = w.Ammo;
+                    iPacket.Data = w.ProtoWeaponAmmo;
                     iPacket.PartId = w.PartId;
                 }
 
 
-                PrunedPacketsToClient[w.Ammo] = new PacketInfo {
+                PrunedPacketsToClient[w.ProtoWeaponAmmo] = new PacketInfo {
                     Entity = w.BaseComp.CoreEntity,
                     Packet = iPacket,
                 };
@@ -222,14 +222,14 @@ namespace WeaponCore
             if (IsServer) {
 
                 const PacketType type = PacketType.CompBase;
-                comp.Data.Repo.Base.UpdateCompBasePacketInfo(comp, true);
+                comp.Data.Repo.Values.UpdateCompBasePacketInfo(comp, true);
 
                 PacketInfo oldInfo;
                 CompBasePacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Base, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo)) {
                     iPacket = (CompBasePacket)oldInfo.Packet;
                     iPacket.EntityId = comp.CoreEntity.EntityId;
-                    iPacket.Data = comp.Data.Repo.Base;
+                    iPacket.Data = comp.Data.Repo.Values;
                 }
                 else {
 
@@ -238,10 +238,10 @@ namespace WeaponCore
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
-                    iPacket.Data = comp.Data.Repo.Base;
+                    iPacket.Data = comp.Data.Repo.Values;
                 }
 
-                PrunedPacketsToClient[comp.Data.Repo.Base] = new PacketInfo {
+                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo {
                     Entity = comp.CoreEntity,
                     Packet = iPacket,
                 };
@@ -253,10 +253,10 @@ namespace WeaponCore
         {
             if (IsServer) {
 
-                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Base)) {
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values)) {
 
                     const PacketType type = PacketType.TargetChange;
-                    comp.Data.Repo.Base.UpdateCompBasePacketInfo(comp);
+                    comp.Data.Repo.Values.UpdateCompBasePacketInfo(comp);
 
                     var w = comp.Platform.Weapons[partId];
                     PacketInfo oldInfo;
@@ -291,17 +291,17 @@ namespace WeaponCore
         {
             if (IsServer) {
 
-                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Base)) {
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values)) {
 
                     const PacketType type = PacketType.CompState;
-                    comp.Data.Repo.Base.UpdateCompBasePacketInfo(comp);
+                    comp.Data.Repo.Values.UpdateCompBasePacketInfo(comp);
 
                     PacketInfo oldInfo;
                     CompStatePacket iPacket;
-                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Base.State, out oldInfo)) {
+                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo)) {
                         iPacket = (CompStatePacket)oldInfo.Packet;
                         iPacket.EntityId = comp.CoreEntity.EntityId;
-                        iPacket.Data = comp.Data.Repo.Base.State;
+                        iPacket.Data = comp.Data.Repo.Values.State;
                     }
                     else {
                         iPacket = PacketStatePool.Get();
@@ -309,10 +309,10 @@ namespace WeaponCore
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
-                        iPacket.Data = comp.Data.Repo.Base.State;
+                        iPacket.Data = comp.Data.Repo.Values.State;
                     }
 
-                    PrunedPacketsToClient[comp.Data.Repo.Base.State] = new PacketInfo {
+                    PrunedPacketsToClient[comp.Data.Repo.Values.State] = new PacketInfo {
                         Entity = comp.CoreEntity,
                         Packet = iPacket,
                     };
@@ -329,10 +329,10 @@ namespace WeaponCore
         {
             if (IsServer) {
 
-                if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Base)) {
+                if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Values)) {
 
                     const PacketType type = PacketType.WeaponReload;
-                    w.Comp.Data.Repo.Base.UpdateCompBasePacketInfo(w.Comp);
+                    w.Comp.Data.Repo.Values.UpdateCompBasePacketInfo(w.Comp);
 
                     PacketInfo oldInfo;
                     WeaponReloadPacket iPacket;
@@ -822,7 +822,7 @@ namespace WeaponCore
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
 
-        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, CompStateValues.ControlMode mode)
+        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, ProtoWeaponState.ControlMode mode)
         {
             if (IsClient)
             {
@@ -874,7 +874,7 @@ namespace WeaponCore
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
                         PartId = w.PartId,
-                        PlayerId = w.Comp.Data.Repo.Base.State.PlayerId,
+                        PlayerId = w.Comp.Data.Repo.Values.State.PlayerId,
                     }
                 });
             }
@@ -995,7 +995,7 @@ namespace WeaponCore
                 else Log.Line($"SendTrackReticleUpdate no player MIds found");
             }
             else if (HandlesInput) {
-                comp.Data.Repo.Base.State.TrackingReticle = track;
+                comp.Data.Repo.Values.State.TrackingReticle = track;
                 SendCompBaseData(comp);
             }
         }

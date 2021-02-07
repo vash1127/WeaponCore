@@ -6,11 +6,10 @@ using VRageMath;
 using WeaponCore.Settings;
 using WeaponCore.Support;
 using static WeaponCore.Support.CoreComponent;
-using static WeaponCore.WeaponStateValues;
+using static WeaponCore.ProtoWeaponPartState;
 
 namespace WeaponCore
 {
-
     public enum PacketType
     {
         Invalid,
@@ -119,7 +118,7 @@ namespace WeaponCore
     [ProtoContract]
     public class OverRidesPacket : Packet
     {
-        [ProtoMember(1)] internal GroupOverrides Data;
+        [ProtoMember(1)] internal ProtoWeaponOverrides Data;
         [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
         [ProtoMember(3), DefaultValue("")] internal string Setting = "";
         [ProtoMember(4)] internal int Value;
@@ -139,7 +138,7 @@ namespace WeaponCore
     [ProtoContract]
     public class TargetPacket : Packet
     {
-        [ProtoMember(1)] internal TransferTarget Target;
+        [ProtoMember(1)] internal ProtoWeaponTransferTarget Target;
 
         public TargetPacket() { }
 
@@ -217,7 +216,7 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponAmmoPacket : Packet
     {
-        [ProtoMember(1)] internal AmmoValues Data;
+        [ProtoMember(1)] internal ProtoWeaponAmmo Data;
         [ProtoMember(2)] internal int PartId;
 
 
@@ -235,14 +234,14 @@ namespace WeaponCore
     public class PlayerControlRequestPacket : Packet
     {
         [ProtoMember(1)] internal long PlayerId;
-        [ProtoMember(2)] internal CompStateValues.ControlMode Mode;
+        [ProtoMember(2)] internal ProtoWeaponState.ControlMode Mode;
 
         public PlayerControlRequestPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Mode = CompStateValues.ControlMode.None;
+            Mode = ProtoWeaponState.ControlMode.None;
             PlayerId = -1;
         }
     }
@@ -250,7 +249,7 @@ namespace WeaponCore
     [ProtoContract]
     public class CompStatePacket : Packet
     {
-        [ProtoMember(1)] internal CompStateValues Data;
+        [ProtoMember(1)] internal ProtoWeaponState Data;
         public CompStatePacket() { }
 
         public override void CleanUp()
@@ -263,7 +262,7 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponReloadPacket : Packet
     {
-        [ProtoMember(1)] internal WeaponReloadValues Data;
+        [ProtoMember(1)] internal ProtoWeaponReload Data;
         [ProtoMember(2)] internal int PartId;
 
         public WeaponReloadPacket() { }
@@ -279,7 +278,7 @@ namespace WeaponCore
     [ProtoContract]
     public class CompBasePacket : Packet
     {
-        [ProtoMember(1)] internal CompBaseValues Data;
+        [ProtoMember(1)] internal ProtoWeaponComp Data;
         public CompBasePacket() { }
 
         public override void CleanUp()
@@ -526,103 +525,4 @@ namespace WeaponCore
 
     #endregion
 
-    #region packet BaseData
-    [ProtoContract]
-    internal class DataReport
-    {
-        [ProtoMember(1)] internal Dictionary<string, string> Session = new Dictionary<string, string>();
-        [ProtoMember(2)] internal Dictionary<string, string> Ai = new Dictionary<string, string>();
-        [ProtoMember(3)] internal Dictionary<string, string> Comp = new Dictionary<string, string>();
-        [ProtoMember(4)] internal Dictionary<string, string> Platform = new Dictionary<string, string>();
-        [ProtoMember(5)] internal Dictionary<string, string> Weapon = new Dictionary<string, string>();
-
-        public DataReport() { }
-    }
-
-    [ProtoContract]
-    internal class InputStateData
-    {
-        [ProtoMember(1)] internal bool MouseButtonLeft;
-        [ProtoMember(2)] internal bool MouseButtonMenu;
-        [ProtoMember(3)] internal bool MouseButtonRight;
-        [ProtoMember(4)] internal bool InMenu;
-
-        internal InputStateData() { }
-
-        internal InputStateData(InputStateData createFrom)
-        {
-            Sync(createFrom);
-        }
-
-        internal void Sync(InputStateData syncFrom)
-        {
-            MouseButtonLeft = syncFrom.MouseButtonLeft;
-            MouseButtonMenu = syncFrom.MouseButtonMenu;
-            MouseButtonRight = syncFrom.MouseButtonRight;
-            InMenu = syncFrom.InMenu;
-        }
-    }
-
-    [ProtoContract]
-    internal class PlayerMouseData
-    {
-        [ProtoMember(1)] internal long PlayerId;
-        [ProtoMember(2)] internal InputStateData MouseStateData;
-    }
-
-
-    [ProtoContract]
-    public class WeaponRandomGenerator
-    {
-        [ProtoMember(1)] public int TurretCurrentCounter;
-        [ProtoMember(2)] public int ClientProjectileCurrentCounter;
-        [ProtoMember(3)] public int AcquireCurrentCounter;
-        [ProtoMember(4)] public int CurrentSeed;
-        public Random TurretRandom;
-        public Random ClientProjectileRandom;
-        public Random AcquireRandom;
-        public int AcquireTmpCounter;
-
-        public enum RandomType
-        {
-            Deviation,
-            ReAcquire,
-            Acquire,
-        }
-
-        public WeaponRandomGenerator() { }
-
-        public void Init(int uniqueId)
-        {
-            CurrentSeed = uniqueId;
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
-        }
-
-        public void Sync(WeaponRandomGenerator syncFrom)
-        {
-            CurrentSeed = syncFrom.CurrentSeed;
-
-            TurretCurrentCounter = syncFrom.TurretCurrentCounter;
-            ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
-            AcquireTmpCounter = syncFrom.AcquireCurrentCounter;
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
-        }
-
-        internal void ReInitRandom()
-        {
-            TurretCurrentCounter = 0;
-            ClientProjectileCurrentCounter = 0;
-            AcquireCurrentCounter = 0;
-            CurrentSeed = TurretRandom.Next(1, int.MaxValue);
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
-        }
-    }
-
-
-    #endregion
 }

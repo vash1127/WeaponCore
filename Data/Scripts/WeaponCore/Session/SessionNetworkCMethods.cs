@@ -139,7 +139,7 @@ namespace WeaponCore
             if (comp.MIds[(int)packet.PType] < packet.MId) {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.Sync(comp, compDataPacket.Data);
+                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
             }
             else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
 
@@ -159,7 +159,7 @@ namespace WeaponCore
             if (comp.MIds[(int)packet.PType] < packet.MId)  {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.Sync(comp, compStatePacket.Data, CompStateValues.Caller.Direct);
+                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoWeaponState.Caller.Direct);
             }
 
             data.Report.PacketValid = true;
@@ -221,7 +221,7 @@ namespace WeaponCore
             if (w.MIds[(int)packet.PType] < packet.MId) {
                 w.MIds[(int)packet.PType] = packet.MId;
 
-                w.Ammo.Sync(w, ammoPacket.Data);
+                w.ProtoWeaponAmmo.Sync(w, ammoPacket.Data);
             }
 
             data.Report.PacketValid = true;

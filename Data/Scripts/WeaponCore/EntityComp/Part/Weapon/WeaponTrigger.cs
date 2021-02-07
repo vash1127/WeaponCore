@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
                 #endregion
 
                 #region Projectile Creation
-                var rnd = Comp.Data.Repo.Base.Targets[PartId].WeaponRandom;
+                var rnd = Comp.Data.Repo.Values.Targets[PartId].WeaponRandom;
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;
@@ -87,11 +87,11 @@ namespace WeaponCore.Platform
                 var selfDamage = 0f;
                 for (int i = 0; i < System.Values.HardPoint.Loading.BarrelsPerShot; i++) {
 
-                    #region Update Ammo state
-                    var skipMuzzle = s.IsClient && Ammo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
+                    #region Update ProtoWeaponAmmo state
+                    var skipMuzzle = s.IsClient && ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
 
-                        if (Ammo.CurrentAmmo == 0) {
+                        if (ProtoWeaponAmmo.CurrentAmmo == 0) {
 
                             if (ShootOnce) 
                                 ShootOnce = false;
@@ -103,8 +103,8 @@ namespace WeaponCore.Platform
                             }
                         }
                         
-                        if (Ammo.CurrentAmmo > 0) {
-                            --Ammo.CurrentAmmo;
+                        if (ProtoWeaponAmmo.CurrentAmmo > 0) {
+                            --ProtoWeaponAmmo.CurrentAmmo;
                             if (ShootOnce)
                                 DequeueShot();
                         }
@@ -170,7 +170,7 @@ namespace WeaponCore.Platform
                         else muzzle.DeviatedDir = muzzle.Direction;
                         #endregion
 
-                        #region Pick Ammo Pattern
+                        #region Pick ProtoWeaponAmmo Pattern
                         var patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
 
                         if (pattern.Enable) {
@@ -257,9 +257,9 @@ namespace WeaponCore.Platform
                             HeatLoopRunning = true;
                         }
 
-                        State.Heat += HeatPShot;
+                        PartState.Heat += HeatPShot;
                         Comp.CurrentHeat += HeatPShot;
-                        if (State.Heat >= System.MaxHeat) {
+                        if (PartState.Heat >= System.MaxHeat) {
                             OverHeat();
                             break;
                         }
@@ -297,14 +297,14 @@ namespace WeaponCore.Platform
 
         private void OverHeat()
         {
-            if (!System.Session.IsClient && Comp.Data.Repo.Base.Set.Overload > 1) {
+            if (!System.Session.IsClient && Comp.Data.Repo.Values.Set.Overload > 1) {
                 var dmg = .02f * Comp.MaxIntegrity;
                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.TopEntity.EntityId);
             }
             EventTriggerStateChanged(EventTriggers.Overheated, true);
 
-            var wasOver = State.Overheated;
-            State.Overheated = true;
+            var wasOver = PartState.Overheated;
+            PartState.Overheated = true;
             if (System.Session.MpActive && System.Session.IsServer && !wasOver)
                 System.Session.SendCompState(Comp);
         }
@@ -375,14 +375,14 @@ namespace WeaponCore.Platform
             if (System.Session.IsServer)
             {
                 if (System.Session.MpActive) System.Session.SendQueuedShot(this);
-                if (State.Action == TriggerActions.TriggerOnce && ShotQueueEmpty())
-                    Comp.Data.Repo.Base.State.TerminalActionSetter(Comp, TriggerActions.TriggerOff, true, false);
+                if (PartState.Action == TriggerActions.TriggerOnce && ShotQueueEmpty())
+                    Comp.Data.Repo.Values.State.TerminalActionSetter(Comp, TriggerActions.TriggerOff, true, false);
             }
         }
 
         private bool ShotQueueEmpty()
         {
-            State.Action = TriggerActions.TriggerOff;
+            PartState.Action = TriggerActions.TriggerOff;
             var hasShot = false;
             for (int i = 0; i < Comp.Platform.Weapons.Count; i++) {
                 var w = Comp.Platform.Weapons[i];

@@ -86,7 +86,7 @@ namespace WeaponCore.Support
                     if (IsBlock)
                         PowerInit();
 
-                    //if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
+                    //if (Type == CompType.Weapon && Platform.PartState == CorePlatform.PlatformState.Inited)
                         //Platform.ResetParts(this);
 
                     Entity.NeedsWorldMatrix = true;

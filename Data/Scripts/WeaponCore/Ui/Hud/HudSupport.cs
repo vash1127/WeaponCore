@@ -181,10 +181,10 @@ namespace WeaponCore
                 for (int i = h; i < length; i += 1)
                 {
                     var tempValue = list[i];
-                    var temp = list[i].State.Heat;
+                    var temp = list[i].PartState.Heat;
 
                     int j;
-                    for (j = i; j >= h && list[j - h].State.Heat < temp; j -= h)
+                    for (j = i; j >= h && list[j - h].PartState.Heat < temp; j -= h)
                     {
                         list[j] = list[j - h];
                     }
@@ -266,7 +266,7 @@ namespace WeaponCore
                             subList.Add(w);
                         else
                         {
-                            if (last.HeatPerc - w.HeatPerc > .05f || last.Reloading != w.Reloading || last.State.Overheated != w.State.Overheated)
+                            if (last.HeatPerc - w.HeatPerc > .05f || last.Reloading != w.Reloading || last.PartState.Overheated != w.PartState.Overheated)
                             {
                                 subLists.Add(subList);
                                 if (!_weaponSortingListPool.TryDequeue(out subList))

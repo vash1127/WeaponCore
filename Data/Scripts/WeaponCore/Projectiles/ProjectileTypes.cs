@@ -25,7 +25,7 @@ namespace WeaponCore.Support
         internal Ai Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
-        internal GroupOverrides Overrides;
+        internal ProtoWeaponOverrides Overrides;
         internal WeaponFrameCache WeaponCache;
         internal AmmoDef AmmoDef;
         internal MyPlanet MyPlanet;
@@ -497,7 +497,7 @@ namespace WeaponCore.Support
         public MyEntity TriggerEntity;
         public MyEntity TargetEntity;
         public MyEntity CoreEntity;
-        public GroupOverrides Overrides;
+        public ProtoWeaponOverrides Overrides;
         public Vector3D Origin;
         public Vector3D OriginUp;
         public Vector3D Direction;

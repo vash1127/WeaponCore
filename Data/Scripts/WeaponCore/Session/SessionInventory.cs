@@ -207,7 +207,7 @@ namespace WeaponCore
                     }
                 }
 
-                part.Ammo.CurrentMags = part.BaseComp.CoreInventory.GetItemAmount(part.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                part.ProtoWeaponAmmo.CurrentMags = part.BaseComp.CoreInventory.GetItemAmount(part.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
 
                 InventoryMoveRequestPool.Return(partConsumableToPull);
             }

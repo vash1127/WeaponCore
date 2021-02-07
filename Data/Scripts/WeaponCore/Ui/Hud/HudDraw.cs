@@ -266,7 +266,7 @@ namespace WeaponCore
         private void HasHeat(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, bool reset)
         {
             int heatBarIndex;
-            if (weapon.State.Overheated)
+            if (weapon.PartState.Overheated)
                 heatBarIndex = _heatBarTexture.Length - 1;
             else
                 heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
@@ -296,7 +296,7 @@ namespace WeaponCore
             if (texture.Length > 0) {
 
                 if (mustCharge)
-                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.Ammo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
+                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.ProtoWeaponAmmo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
 
                 stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                 stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;

@@ -70,7 +70,7 @@ namespace WeaponCore.Platform
 
                 if (Comp.CoreEntity.MarkedForClose || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-                if (State.Action != TriggerActions.TriggerOff || Comp.UserControlled || Target.HasTarget || !ReturingHome) {
+                if (PartState.Action != TriggerActions.TriggerOff || Comp.UserControlled || Target.HasTarget || !ReturingHome) {
                     ReturingHome = false;
                     return;
                 }
@@ -195,15 +195,15 @@ namespace WeaponCore.Platform
             try
             {
                 Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
-                State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
+                PartState.Heat = PartState.Heat >= HsRate ? PartState.Heat - HsRate : 0;
 
-                var set = State.Heat - LastHeat > 0.001 || State.Heat - LastHeat < 0.001;
+                var set = PartState.Heat - LastHeat > 0.001 || PartState.Heat - LastHeat < 0.001;
 
                 LastHeatUpdateTick = Comp.Session.Tick;
 
                 if (!Comp.Session.DedicatedServer)
                 {
-                    var heatOffset = HeatPerc = State.Heat / System.MaxHeat;
+                    var heatOffset = HeatPerc = PartState.Heat / System.MaxHeat;
 
                     if (set && heatOffset > .33)
                     {
@@ -222,31 +222,31 @@ namespace WeaponCore.Platform
                         for(int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
-                    LastHeat = State.Heat;
+                    LastHeat = PartState.Heat;
                 }
 
-                if (set && System.DegRof && State.Heat >= (System.MaxHeat * .8))
+                if (set && System.DegRof && PartState.Heat >= (System.MaxHeat * .8))
                 {
                     CurrentlyDegrading = true;
                     UpdateRof();
                 }
                 else if (set && CurrentlyDegrading)
                 {
-                    if (State.Heat <= (System.MaxHeat * .4)) 
+                    if (PartState.Heat <= (System.MaxHeat * .4)) 
                         CurrentlyDegrading = false;
 
                     UpdateRof();
                 }
 
-                if (State.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
+                if (PartState.Overheated && PartState.Heat <= (System.MaxHeat * System.WepCoolDown))
                 {
                     EventTriggerStateChanged(EventTriggers.Overheated, false);
-                    State.Overheated = false;
+                    PartState.Overheated = false;
                     if (System.Session.MpActive && System.Session.IsServer)
                         System.Session.SendCompState(Comp);
                 }
 
-                if (State.Heat > 0)
+                if (PartState.Heat > 0)
                     Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
                 else
                 {
@@ -254,14 +254,14 @@ namespace WeaponCore.Platform
                     LastHeatUpdateTick = 0;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- BaseComp:{Comp == null} - Repo:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null}  - Weapons:{Comp.Data.Repo?.Base.State.Weapons[PartId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- BaseComp:{Comp == null} - ProtoRepo:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null}  - Weapons:{Comp.Data.Repo?.Values.State.Weapons[PartId] == null}"); }
         }
 
         internal void UpdateRof()
         {
-            var systemRate = System.RateOfFire * Comp.Data.Repo.Base.Set.RofModifier;
-            var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier;
-            var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
+            var systemRate = System.RateOfFire * Comp.Data.Repo.Values.Set.RofModifier;
+            var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Values.Set.RofModifier;
+            var heatModifier = MathHelper.Lerp(1f, .25f, PartState.Heat / System.MaxHeat);
 
             systemRate *= CurrentlyDegrading ? heatModifier : 1;
 
@@ -301,12 +301,12 @@ namespace WeaponCore.Platform
             var newBase = 0f;
 
             if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Base.Set.DpsModifier;
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Values.Set.DpsModifier;
             else
                 newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
 
             if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-                newBase *= Comp.Data.Repo.Base.Set.Overload;
+                newBase *= Comp.Data.Repo.Values.Set.Overload;
 
             if (newBase < 0)
                 newBase = 0;

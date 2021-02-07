@@ -4,18 +4,18 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    internal partial class Phantom : Part
+    public partial class Phantom : Part
     {
         internal class PhantomCompData : CompData
         {
             internal readonly PhantomComponent Comp;
-            internal PhantomRepo Repo;
+            internal PhantomProtoRepo ProtoRepo;
 
             internal PhantomCompData(PhantomComponent comp)
             {
                 base.Init(comp);
                 Comp = comp;
-                Repo = (PhantomRepo)RepoBase;
+                ProtoRepo = (PhantomProtoRepo)ProtoRepoBase;
             }
 
             internal void Load()

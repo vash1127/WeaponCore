@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer =  w.Comp.Data.Repo.Values.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -31,21 +31,21 @@ namespace WeaponCore.Projectiles
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
+                p.Info.Overrides = w.Comp.Data.Repo.Values.Set.Overrides;
                 p.Info.Target.TargetEntity = t != Kind.Client ? w.Target.TargetEntity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
+                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Values.State.TrackingReticle;
                 p.Info.Target.CoreEntity = w.Comp.CoreEntity;
                 p.Info.Target.CoreCube = w.Comp.Cube;
                 p.Info.Target.CoreParent = w.Comp.TopEntity;
                 p.Info.Target.CoreIsCube = w.Comp.Cube != null;
 
-                p.Info.DummyTarget = w.Comp.Data.Repo.Base.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
+                p.Info.DummyTarget = w.Comp.Data.Repo.Values.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Values.State.PlayerId] : null;
 
                 p.Info.PartId = w.PartId;
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;
-                p.Info.EnableGuidance = w.Comp.Data.Repo.Base.Set.Guidance;
+                p.Info.EnableGuidance = w.Comp.Data.Repo.Values.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
                 p.Info.WeaponRng = w.TargetData.WeaponRandom;
                 p.Info.LockOnFireState = w.LockOnFireState;

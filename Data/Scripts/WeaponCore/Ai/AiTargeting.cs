@@ -32,12 +32,12 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
 
-            if (!w.Comp.Data.Repo.Base.State.TrackingReticle)
+            if (!w.Comp.Data.Repo.Values.State.TrackingReticle)
             {
                 w.AimCone.ConeDir = w.MyPivotFwd;
                 w.AimCone.ConeTip = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
-                var shootProjectile = pCount > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles;
+                var shootProjectile = pCount > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Values.Set.Overrides.Projectiles;
                 var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
                 var onlyCheckProjectile = w.ProjectilesNear && !w.Target.TargetChanged && w.Comp.Session.Count != w.Acquire.SlotId && !attemptReset;
 
@@ -59,7 +59,7 @@ namespace WeaponCore.Support
             {
                 Vector3D predictedPos;
                 FakeTarget dummyTarget;
-                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
+                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Values.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || w.Comp.IsBlock && !w.MuzzleHitSelf())
@@ -72,7 +72,7 @@ namespace WeaponCore.Support
                     w.Acquire.Monitoring = false;
 
                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
+                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle);
              
                 w.LastBlockCount = w.Comp.Ai.PartCount;
             }
@@ -96,9 +96,9 @@ namespace WeaponCore.Support
             var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
             var maxTargetRadius = maxRadius < s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
             var moveMode = overRides.MoveMode;
-            var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
-            var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
-            var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
+            var movingMode = moveMode == ProtoWeaponOverrides.MoveModes.Moving;
+            var fireOnStation = moveMode == ProtoWeaponOverrides.MoveModes.Any || moveMode == ProtoWeaponOverrides.MoveModes.Moored;
+            var stationOnly = moveMode == ProtoWeaponOverrides.MoveModes.Moored;
             var acquired = false;
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
@@ -190,7 +190,7 @@ namespace WeaponCore.Support
         private static void AcquireTopMostEntity(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
             var comp = w.Comp;
-            var overRides = comp.Data.Repo.Base.Set.Overrides;
+            var overRides = comp.Data.Repo.Values.Set.Overrides;
             var attackNeutrals =  overRides.Neutrals;
             var attackFriends = overRides.Friendly;
             var attackNoOwner =  overRides.Unowned;
@@ -209,9 +209,9 @@ namespace WeaponCore.Support
             var maxTargetRadius = maxRadius < s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
 
             var moveMode = overRides.MoveMode;
-            var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
-            var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
-            var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
+            var movingMode = moveMode == ProtoWeaponOverrides.MoveModes.Moving;
+            var fireOnStation = moveMode == ProtoWeaponOverrides.MoveModes.Any || moveMode == ProtoWeaponOverrides.MoveModes.Moored;
+            var stationOnly = moveMode == ProtoWeaponOverrides.MoveModes.Moored;
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
             if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
@@ -366,11 +366,11 @@ namespace WeaponCore.Support
                 var subSystems = system.Values.Targeting.SubSystems;
                 var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 var targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                var focusSubSystem = w != null && w.Comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
+                var focusSubSystem = w != null && w.Comp.Data.Repo.Values.Set.Overrides.FocusSubSystem;
                 
                 foreach (var blockType in subSystems)
                 {
-                    var bt = focusSubSystem ? w.Comp.Data.Repo.Base.Set.Overrides.SubSystem : blockType;
+                    var bt = focusSubSystem ? w.Comp.Data.Repo.Values.Set.Overrides.SubSystem : blockType;
 
                     ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     system.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
@@ -392,7 +392,7 @@ namespace WeaponCore.Support
                     if (focusSubSystem) break;
                 }
 
-                if (system.OnlySubSystems || focusSubSystem && w.Comp.Data.Repo.Base.Set.Overrides.SubSystem != Any) return false;
+                if (system.OnlySubSystems || focusSubSystem && w.Comp.Data.Repo.Values.Set.Overrides.SubSystem != Any) return false;
             }
             GridMap gridMap;
             return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);

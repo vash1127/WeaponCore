@@ -420,7 +420,7 @@ namespace WeaponCore.Api
         {
             Weapon.WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
-                return comp.Data.Repo.Base.State.PlayerId;
+                return comp.Data.Repo.Values.State.PlayerId;
 
             return -1;
         }
@@ -562,7 +562,7 @@ namespace WeaponCore.Api
                     if (!allWeapons && i != weaponId) continue;
                     
                     foundWeapon = true;
-                    comp.Platform.Weapons[i].State.WeaponMode(comp, TriggerOnce);
+                    comp.Platform.Weapons[i].PartState.WeaponMode(comp, TriggerOnce);
                 }
 
                 if (foundWeapon)  {
@@ -583,15 +583,15 @@ namespace WeaponCore.Api
 
                     var w = comp.Platform.Weapons[i];
 
-                    if (!on && w.State.Action == TriggerOn)
+                    if (!on && w.PartState.Action == TriggerOn)
                     {
-                        w.State.WeaponMode(comp, TriggerOff);
+                        w.PartState.WeaponMode(comp, TriggerOff);
                         w.StopShooting();
                     }
-                    else if (on && w.State.Action != TriggerOff)
-                        w.State.WeaponMode(comp, TriggerOn);
+                    else if (on && w.PartState.Action != TriggerOff)
+                        w.PartState.WeaponMode(comp, TriggerOn);
                     else if (on)
-                        w.State.WeaponMode(comp, TriggerOn);
+                        w.PartState.WeaponMode(comp, TriggerOn);
                 }
             }
         }
@@ -649,7 +649,7 @@ namespace WeaponCore.Api
                     if (w.MaxTargetDistance > maxTargetDistance) 
                         maxTargetDistance = w.MaxTargetDistance;
                 
-                comp.Data.Repo.Base.Set.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
+                comp.Data.Repo.Values.Set.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
             }
         }
 
@@ -798,7 +798,7 @@ namespace WeaponCore.Api
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         if (comp.Session.IsServer) {
-                            w.Ammo.AmmoTypeId = i;
+                            w.ProtoWeaponAmmo.AmmoTypeId = i;
                             if (comp.Session.MpActive)
                                 comp.Session.SendWeaponReload(w);
                         }
@@ -883,7 +883,7 @@ namespace WeaponCore.Api
                     var isThreat = targetInfo.OffenseRating > 0;
                     var relation = targetInfo.EntInfo.Relationship;
 
-                    var o = comp.Data.Repo.Base.Set.Overrides;
+                    var o = comp.Data.Repo.Values.Set.Overrides;
                     var shootNoOwners = o.Unowned && relation == MyRelationsBetweenPlayerAndBlock.NoOwnership;
                     var shootNeutrals = o.Neutrals && relation == MyRelationsBetweenPlayerAndBlock.Neutral;
                     var shootFriends = o.Friendly && relation == MyRelationsBetweenPlayerAndBlock.Friends;

@@ -101,7 +101,7 @@ namespace WeaponCore.Support
             weapon.System.Session.SendTargetChange(weapon.Comp, weapon.PartId);
         }
 
-        internal void ClientUpdate(Weapon w, TransferTarget tData)
+        internal void ClientUpdate(Weapon w, ProtoWeaponTransferTarget tData)
         {
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
@@ -121,7 +121,7 @@ namespace WeaponCore.Support
                         if (targetType == Ai.TargetType.None) {
                             if (w.NewTarget.CurrentState != States.NoTargetsSeen)
                                 w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
+                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle);
                         }
                     }
                 }

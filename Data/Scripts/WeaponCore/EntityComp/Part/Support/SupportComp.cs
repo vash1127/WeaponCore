@@ -1,21 +1,23 @@
-﻿using VRage.Game;
+﻿using Sandbox.Game.Entities;
+using VRage.Game;
 using VRage.Game.Entity;
 using WeaponCore.Support;
+    ;
 
 namespace WeaponCore.Platform
 {
-    public partial class Phantom : Part
+    public partial class SupportSys : Part
     {
-        public class PhantomComponent : CoreComponent
+        public class SupportComponent : CoreComponent
         {
-            internal PhantomCompData Data;
-            internal PhantomComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
+            internal readonly Support.SupportCompData Data;
+            internal SupportComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
-                Data = new PhantomCompData(this);
-                base.Init(session, coreEntity, false, Data, coreEntity, id);
+                Data = new Support.SupportCompData(this);
+                base.Init(session, coreEntity, true, Data, ((MyCubeBlock)coreEntity).CubeGrid, id);
             }
 
-            internal void OtherDetectStateChanges()
+            internal void DetectStateChanges()
             {
                 if (Platform.State != CorePlatform.PlatformState.Ready)
                     return;
@@ -61,5 +63,7 @@ namespace WeaponCore.Platform
                     Ai.AwakeComps++;
             }
         }
+
     }
+
 }

@@ -9,7 +9,7 @@ namespace WeaponCore.Platform
     internal partial class Upgrades : Part
     {
         internal readonly Upgrade.UpgradeComponent Comp;
-
+        internal ProtoUpgradePartState PartState;
         internal Upgrades(CoreSystem system, Upgrade.UpgradeComponent comp, int partId)
         {
             Comp = comp;

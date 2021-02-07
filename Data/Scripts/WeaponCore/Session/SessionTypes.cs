@@ -323,12 +323,12 @@ namespace WeaponCore
                     {"entityIsWorking", () => GetComp()?.FakeIsWorking.ToString() ?? string.Empty },
                     {"MaxDetectDistance", () => GetComp()?.MaxDetectDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
-                    //{"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
-                    //{"PlayerId", () => GetComp()?.Data.Repo.Base.State.PlayerId.ToString() ?? string.Empty },
-                    //{"FocusSubSystem", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
-                    //{"FocusTargets", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
-                    //{"MaxSize", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
-                   //{"MinSize", () => GetComp()?.BaseData.RepoBase.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
+                    //{"ControlType", () => GetComp()?.Data.ProtoRepo.Values.PartState.Control.ToString() ?? string.Empty },
+                    //{"PlayerId", () => GetComp()?.Data.ProtoRepo.Values.PartState.PlayerId.ToString() ?? string.Empty },
+                    //{"FocusSubSystem", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
+                    //{"FocusTargets", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
+                    //{"MaxSize", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.MaxSize.ToString() ?? string.Empty },
+                   //{"MinSize", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.MinSize.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -338,7 +338,7 @@ namespace WeaponCore
             {
                 var platformFields = new Dictionary<string, Func<string>>
                 {
-                    {"State", () => GetPlatform()?.State.ToString() ?? string.Empty },
+                    {"PartState", () => GetPlatform()?.State.ToString() ?? string.Empty },
                 };
 
                 return platformFields;
@@ -430,11 +430,11 @@ namespace WeaponCore
                     },
                     {"AmmoTypeId", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.AmmoTypeId}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.AmmoTypeId}"); }
                     },
                     {"Action", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Action}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.PartState.Action}"); }
                     },
                     {"ShotsFired", () => {
                             var message = string.Empty;
@@ -446,23 +446,23 @@ namespace WeaponCore
                     },
                     {"Overheated", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Overheated}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.PartState.Overheated}"); }
                     },
                     {"Heat", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Heat}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.PartState.Heat}"); }
                     },
                     {"CurrentAmmo", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.CurrentAmmo}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.CurrentAmmo}"); }
                     },
                     {"CurrentCharge", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.CurrentCharge}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.CurrentCharge}"); }
                     },
                     {"CurrentMags", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.CurrentMags}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ProtoWeaponAmmo.CurrentMags}"); }
                     },
                     {"LastEventCanDelay", () => {
                             var message = string.Empty;

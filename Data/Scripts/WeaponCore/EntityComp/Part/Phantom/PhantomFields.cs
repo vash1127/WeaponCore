@@ -8,6 +8,7 @@ namespace WeaponCore.Platform
     internal partial class Phantoms : Part
     {
         internal readonly Phantom.PhantomComponent Comp;
+        internal ProtoPhantomPartState PartState;
 
         internal Phantoms(CoreSystem system, Phantom.PhantomComponent comp, int partId)
         {

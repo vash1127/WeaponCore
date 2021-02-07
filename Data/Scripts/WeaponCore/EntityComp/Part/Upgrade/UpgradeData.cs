@@ -4,18 +4,18 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    internal partial class Upgrade : Part
+    public partial class Upgrade : Part
     {
         internal class UpgradeCompData : CompData
         {
             internal readonly UpgradeComponent Comp;
-            internal UpgradeRepo Repo;
+            internal ProtoUpgradeRepo ProtoRepo;
 
             internal UpgradeCompData(UpgradeComponent comp)
             {
                 base.Init(comp);
                 Comp = comp;
-                Repo = (UpgradeRepo)RepoBase;
+                ProtoRepo = (ProtoUpgradeRepo)ProtoRepoBase;
             }
 
             internal void Load()

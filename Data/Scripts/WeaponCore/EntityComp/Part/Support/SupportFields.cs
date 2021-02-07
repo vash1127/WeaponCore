@@ -6,11 +6,12 @@ using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    internal partial class SupportSys : Part
+    public partial class SupportSys : Part
     {
         internal readonly Dictionary<MyCube, Vector3I> EnhancedArmorBlocks = new Dictionary<MyCube, Vector3I>();
         private readonly Dictionary<MyCube, Vector3> _blockColorBackup = new Dictionary<MyCube, Vector3>();
         internal readonly SupportComponent Comp;
+        internal ProtoSupportPartState PartState;
 
         internal uint LastBlockRefreshTick;
         internal bool ShowAffectedBlocks;

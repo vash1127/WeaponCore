@@ -58,7 +58,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
             
-            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.Control;
+            var numValue = (int)comp.Data.Repo.Values.Set.Overrides.Control;
             var value = numValue + 1 <= 2 ? numValue + 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "ControlModes", value, comp.Session.PlayerId);
@@ -70,7 +70,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
+            var numValue = (int)comp.Data.Repo.Values.Set.Overrides.MoveMode;
             var value = numValue + 1 <= 3 ? numValue + 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "MovementModes", value, comp.Session.PlayerId);
@@ -82,7 +82,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
+            var numValue = (int)comp.Data.Repo.Values.Set.Overrides.SubSystem;
             var value = numValue + 1 <= 7 ? numValue + 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
@@ -94,7 +94,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Neutrals;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Neutrals;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
@@ -106,7 +106,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Projectiles;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Projectiles;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
@@ -118,7 +118,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Biologicals;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Biologicals;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
@@ -130,7 +130,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Meteors;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Meteors;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
@@ -142,7 +142,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Grids;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Grids;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Grids", newValue, comp.Session.PlayerId);
@@ -153,7 +153,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.ArmorShowArea;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.ArmorShowArea;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "ArmorShowArea", newValue, comp.Session.PlayerId);
@@ -165,7 +165,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Friendly;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Friendly;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
@@ -177,7 +177,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Unowned;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Unowned;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
@@ -189,7 +189,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusTargets;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.FocusTargets;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
@@ -201,7 +201,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.FocusSubSystem;
             var newValue = newBool ? 1 : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
@@ -213,7 +213,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize * 2;
+            var nextValue = comp.Data.Repo.Values.Set.Overrides.MaxSize * 2;
             var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 16384;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
@@ -225,7 +225,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize / 2;
+            var nextValue = comp.Data.Repo.Values.Set.Overrides.MaxSize / 2;
             var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 1;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
@@ -237,7 +237,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize == 0 ? 1 : comp.Data.Repo.Base.Set.Overrides.MinSize * 2;
+            var nextValue = comp.Data.Repo.Values.Set.Overrides.MinSize == 0 ? 1 : comp.Data.Repo.Values.Set.Overrides.MinSize * 2;
             var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 128;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
@@ -249,7 +249,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize / 2;
+            var nextValue = comp.Data.Repo.Values.Set.Overrides.MinSize / 2;
             var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 0;
 
             Weapon.WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
@@ -267,8 +267,8 @@ namespace WeaponCore.Control
                     continue;
 
                 var availAmmo = w.System.AmmoTypes.Length;
-                var currActive = w.System.AmmoTypes[w.Ammo.AmmoTypeId];
-                var next = (w.Ammo.AmmoTypeId + 1) % availAmmo;
+                var currActive = w.System.AmmoTypes[w.ProtoWeaponAmmo.AmmoTypeId];
+                var next = (w.ProtoWeaponAmmo.AmmoTypeId + 1) % availAmmo;
                 var currDef = w.System.AmmoTypes[next];
 
                 var change = false;
@@ -294,7 +294,7 @@ namespace WeaponCore.Control
         #region Writters
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            var on = blk.Components.Get<Weapon.WeaponComponent>()?.Data.Repo?.Base.State.TerminalAction == TriggerClick;
+            var on = blk.Components.Get<Weapon.WeaponComponent>()?.Data.Repo?.Values.State.TerminalAction == TriggerClick;
 
             if (on)
                 sb.Append("On");
@@ -306,7 +306,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+            if (comp.Data.Repo.Values.State.TerminalAction == TriggerOn)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -316,7 +316,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Neutrals)
+            if (comp.Data.Repo.Values.Set.Overrides.Neutrals)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -326,7 +326,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Projectiles)
+            if (comp.Data.Repo.Values.Set.Overrides.Projectiles)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -336,7 +336,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Biologicals)
+            if (comp.Data.Repo.Values.Set.Overrides.Biologicals)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -346,7 +346,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Meteors)
+            if (comp.Data.Repo.Values.Set.Overrides.Meteors)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -356,7 +356,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Grids)
+            if (comp.Data.Repo.Values.Set.Overrides.Grids)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -366,7 +366,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Friendly)
+            if (comp.Data.Repo.Values.Set.Overrides.Friendly)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -376,7 +376,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.Unowned)
+            if (comp.Data.Repo.Values.Set.Overrides.Unowned)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -386,7 +386,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.FocusTargets)
+            if (comp.Data.Repo.Values.Set.Overrides.FocusTargets)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -396,7 +396,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.FocusSubSystem)
+            if (comp.Data.Repo.Values.Set.Overrides.FocusSubSystem)
                 sb.Append("On");
             else
                 sb.Append("Off");
@@ -406,21 +406,21 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            sb.Append(comp.Data.Repo.Base.Set.Overrides.MaxSize);
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.MaxSize);
         }
 
         internal static void MinSizeWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            sb.Append(comp.Data.Repo.Base.Set.Overrides.MinSize);
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.MinSize);
         }
 
         internal static void ControlStateWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
-            sb.Append(comp.Data.Repo.Base.Set.Overrides.Control);
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.Control);
         }
 
         internal static void MovementModeWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -428,7 +428,7 @@ namespace WeaponCore.Control
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            sb.Append(comp.Data.Repo.Base.Set.Overrides.MoveMode);
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.MoveMode);
         }
 
         internal static void SubSystemWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -436,7 +436,7 @@ namespace WeaponCore.Control
             var comp = blk.Components.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            sb.Append(comp.Data.Repo.Base.Set.Overrides.SubSystem);
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.SubSystem);
         }
 
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)

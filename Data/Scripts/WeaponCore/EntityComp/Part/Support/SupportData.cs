@@ -9,13 +9,13 @@ namespace WeaponCore.Platform
         internal class SupportCompData : CompData
         {
             internal readonly SupportSys.SupportComponent Comp;
-            internal SupportRepo Repo;
+            internal SupportProtoRepo ProtoRepo;
 
             internal SupportCompData(SupportSys.SupportComponent comp)
             {
                 base.Init(comp);
                 Comp = comp;
-                Repo = (SupportRepo)RepoBase;
+                ProtoRepo = (SupportProtoRepo)ProtoRepoBase;
             }
 
             internal void Load()

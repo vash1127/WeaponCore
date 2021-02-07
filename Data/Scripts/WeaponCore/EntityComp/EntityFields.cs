@@ -125,7 +125,7 @@ namespace WeaponCore.Support
 
         internal bool FakeIsWorking => !IsBlock || IsWorking;
 
-        public void Init(Session session, MyEntity coreEntity, bool isBlock, MyEntity topEntity, MyDefinitionId id)
+        public void Init(Session session, MyEntity coreEntity, bool isBlock, CompData compData, MyEntity topEntity, MyDefinitionId id)
         {
             Session = session;
             CoreEntity = coreEntity;
@@ -134,7 +134,7 @@ namespace WeaponCore.Support
             SubtypeName = id.SubtypeName;
             SubTypeId = id.SubtypeId;
             TopEntity = topEntity;
-
+            BaseData = compData;
             if (IsBlock) {
 
                 Cube = (MyCubeBlock)CoreEntity;

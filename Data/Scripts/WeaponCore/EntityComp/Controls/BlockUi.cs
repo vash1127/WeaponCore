@@ -15,7 +15,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             if (comp.Session.IsServer) {
-                comp.Data.Repo.Base.Set.RofModifier = newValue;
+                comp.Data.Repo.Values.Set.RofModifier = newValue;
                 Weapon.WeaponComponent.SetRof(comp);
             }
             else
@@ -28,7 +28,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             
             if (comp.Session.IsServer)  {
-                comp.Data.Repo.Base.Set.DpsModifier = newValue;
+                comp.Data.Repo.Values.Set.DpsModifier = newValue;
                 Weapon.WeaponComponent.SetDps(comp, true);
                 if (comp.Session.MpActive)
                     comp.Session.SendCompBaseData(comp);
@@ -45,7 +45,7 @@ namespace WeaponCore
             
             if (comp.Session.IsServer)  {
                 
-                comp.Data.Repo.Base.Set.Range = newValue;
+                comp.Data.Repo.Values.Set.Range = newValue;
                 Weapon.WeaponComponent.SetRange(comp);
                 if (comp.Session.MpActive)
                     comp.Session.SendCompBaseData(comp);
@@ -60,7 +60,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             if (comp.Session.IsServer) {
-                comp.Data.Repo.Base.Set.Guidance = newValue;
+                comp.Data.Repo.Values.Set.Guidance = newValue;
                 if (comp.Session.MpActive)
                     comp.Session.SendCompBaseData(comp);
             }
@@ -75,7 +75,7 @@ namespace WeaponCore
 
             if (comp.Session.IsServer)  {
 
-                comp.Data.Repo.Base.Set.Overload = newValue ? 2 : 1;
+                comp.Data.Repo.Values.Set.Overload = newValue ? 2 : 1;
                 Weapon.WeaponComponent.SetRof(comp);
                 if (comp.Session.MpActive)
                     comp.Session.SendCompBaseData(comp);
@@ -88,34 +88,34 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Guidance;
+            return comp.Data.Repo.Values.Set.Guidance;
         }
 
         internal static float GetDps(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
-            return comp.Data.Repo.Base.Set.DpsModifier;
+            return comp.Data.Repo.Values.Set.DpsModifier;
         }
 
         internal static float GetRof(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
-            return comp.Data.Repo.Base.Set.RofModifier;
+            return comp.Data.Repo.Values.Set.RofModifier;
         }
         internal static bool GetOverload(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overload == 2;
+            return comp.Data.Repo.Values.Set.Overload == 2;
         }
 
 
         internal static float GetRange(IMyTerminalBlock block) {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 100;
-            return comp.Data.Repo.Base.Set.Range;
+            return comp.Data.Repo.Values.Set.Range;
         }
 
         internal static bool ShowRange(IMyTerminalBlock block)
@@ -150,7 +150,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.Neutrals;
+            return comp.Data.Repo.Values.Set.Overrides.Neutrals;
         }
 
         internal static void RequestSetNeutrals(IMyTerminalBlock block, bool newValue)
@@ -166,7 +166,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.Unowned;
+            return comp.Data.Repo.Values.Set.Overrides.Unowned;
         }
 
         internal static void RequestSetUnowned(IMyTerminalBlock block, bool newValue)
@@ -182,7 +182,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.FocusTargets;
+            return comp.Data.Repo.Values.Set.Overrides.FocusTargets;
         }
 
         internal static void RequestSetFocusFire(IMyTerminalBlock block, bool newValue)
@@ -197,7 +197,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
+            return comp.Data.Repo.Values.Set.Overrides.FocusSubSystem;
         }
 
         internal static void RequestSetSubSystems(IMyTerminalBlock block, bool newValue)
@@ -213,7 +213,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.Biologicals;
+            return comp.Data.Repo.Values.Set.Overrides.Biologicals;
         }
 
         internal static void RequestSetBiologicals(IMyTerminalBlock block, bool newValue)
@@ -228,7 +228,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.Projectiles;
+            return comp.Data.Repo.Values.Set.Overrides.Projectiles;
         }
 
         internal static void RequestSetProjectiles(IMyTerminalBlock block, bool newValue)
@@ -244,7 +244,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.Meteors;
+            return comp.Data.Repo.Values.Set.Overrides.Meteors;
         }
 
         internal static void RequestSetMeteors(IMyTerminalBlock block, bool newValue)
@@ -260,7 +260,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.Grids;
+            return comp.Data.Repo.Values.Set.Overrides.Grids;
         }
 
         internal static void RequestSetGrids(IMyTerminalBlock block, bool newValue)
@@ -276,14 +276,14 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.State.TerminalAction == CoreComponent.TriggerActions.TriggerOn;
+            return comp.Data.Repo.Values.State.TerminalAction == CoreComponent.TriggerActions.TriggerOn;
         }
 
         internal static bool GetShowArea(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
-            return comp.Data.Repo.Base.Set.Overrides.ArmorShowArea;
+            return comp.Data.Repo.Values.Set.Overrides.ArmorShowArea;
 
         }
 
@@ -309,7 +309,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
-            return (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
+            return (int)comp.Data.Repo.Values.Set.Overrides.SubSystem;
         }
 
         internal static void RequestSubSystem(IMyTerminalBlock block, long newValue)
@@ -341,7 +341,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
-            return (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
+            return (int)comp.Data.Repo.Values.Set.Overrides.MoveMode;
         }
 
         internal static void RequestMovementMode(IMyTerminalBlock block, long newValue)
@@ -359,17 +359,17 @@ namespace WeaponCore
 
         private static readonly List<MyTerminalControlComboBoxItem> MoveList = new List<MyTerminalControlComboBoxItem>()
         {
-            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)0}") },
-            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)1}") },
-            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)2}") },
-            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)3}") },
+            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.MoveModes)0}") },
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.MoveModes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.MoveModes)2}") },
+            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.MoveModes)3}") },
         };
 
         internal static long GetControlMode(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<Weapon.WeaponComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
-            return (int)comp.Data.Repo.Base.Set.Overrides.Control;
+            return (int)comp.Data.Repo.Values.Set.Overrides.Control;
         }
 
         internal static void RequestControlMode(IMyTerminalBlock block, long newValue)
@@ -387,9 +387,9 @@ namespace WeaponCore
 
         private static readonly List<MyTerminalControlComboBoxItem> ControlList = new List<MyTerminalControlComboBoxItem>()
         {
-            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(GroupOverrides.ControlModes)0}") },
-            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(GroupOverrides.ControlModes)1}") },
-            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(GroupOverrides.ControlModes)2}") },
+            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.ControlModes)0}") },
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.ControlModes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.ControlModes)2}") },
         };
     }
 }

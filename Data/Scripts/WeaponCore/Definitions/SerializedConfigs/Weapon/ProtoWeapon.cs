@@ -1,62 +1,32 @@
 ﻿using System;
 using System.ComponentModel;
 using ProtoBuf;
-using VRage;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartDefinition.TargetingDef;
 using static WeaponCore.Support.CoreComponent;
-using static WeaponCore.WeaponStateValues;
 
 namespace WeaponCore
 {
-    [ProtoInclude(1999, typeof(WeaponRepo))]
-    [ProtoInclude(1998, typeof(UpgradeRepo))]
-    [ProtoInclude(1997, typeof(SupportRepo))]
-    [ProtoInclude(1996, typeof(PhantomRepo))]
     [ProtoContract]
-    public class Repo
+    public class ProtoWeaponRepo : ProtoRepo
     {
-        [ProtoMember(1)] public int Version = Session.VersionControl;
-    }
-
-    [ProtoContract]
-    public class UpgradeRepo : Repo
-    {
-        [ProtoMember(1)] public CompBaseValues Base;
-    }
-
-    [ProtoContract]
-    public class SupportRepo : Repo
-    {
-        [ProtoMember(1)] public CompBaseValues Base;
-    }
-
-    [ProtoContract]
-    public class PhantomRepo : Repo
-    {
-        [ProtoMember(1)] public CompBaseValues Base;
-    }
-
-    [ProtoContract]
-    public class WeaponRepo : Repo
-    {
-        [ProtoMember(1)] public AmmoValues[] Ammos;
-        [ProtoMember(2)] public CompBaseValues Base;
+        [ProtoMember(1)] public ProtoWeaponAmmo[] Ammos;
+        [ProtoMember(2)] public ProtoWeaponComp Values;
 
         public void ResetToFreshLoadState()
         {
-            //Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
-            //Base.State.Control = CompStateValues.ControlMode.None;
-            //Base.State.PlayerId = -1;
-            Base.State.TrackingReticle = false;
-            if (Base.State.TerminalAction == TriggerActions.TriggerOnce)
-                Base.State.TerminalAction = TriggerActions.TriggerOff;
+            //Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
+            //Values.PartState.Control = ProtoWeaponState.ControlMode.None;
+            //Values.PartState.PlayerId = -1;
+            Values.State.TrackingReticle = false;
+            if (Values.State.TerminalAction == TriggerActions.TriggerOnce)
+                Values.State.TerminalAction = TriggerActions.TriggerOff;
             for (int i = 0; i < Ammos.Length; i++)
             {
-                var ws = Base.State.Weapons[i];
-                var wr = Base.Reloads[i];
+                var ws = Values.State.Weapons[i];
+                var wr = Values.Reloads[i];
                 var wa = Ammos[i];
 
                 wa.AmmoCycleId = 0;
@@ -71,19 +41,19 @@ namespace WeaponCore
 
         public void ResetCompBaseRevisions()
         {
-            Base.Revision = 0;
-            Base.State.Revision = 0;
+            Values.Revision = 0;
+            Values.State.Revision = 0;
             for (int i = 0; i < Ammos.Length; i++)
             {
-                Base.Targets[i].Revision = 0;
-                Base.Reloads[i].Revision = 0;
+                Values.Targets[i].Revision = 0;
+                Values.Reloads[i].Revision = 0;
                 Ammos[i].Revision = 0;
             }
         }
     }
 
     [ProtoContract]
-    public class AmmoValues
+    public class ProtoWeaponAmmo
     {
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public int CurrentAmmo; //save
@@ -92,7 +62,7 @@ namespace WeaponCore
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(Weapon w, AmmoValues sync)
+        public void Sync(Weapon w, ProtoWeaponAmmo sync)
         {
             if (sync.Revision > Revision)
             {
@@ -115,23 +85,25 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CompBaseValues
+    public class ProtoWeaponComp
     {
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public CompSettingsValues Set;
-        [ProtoMember(3)] public CompStateValues State;
-        [ProtoMember(4)] public TransferTarget[] Targets;
-        [ProtoMember(5)] public WeaponReloadValues[] Reloads;
+        [ProtoMember(2)] public ProtoCompSettings Set;
+        [ProtoMember(3)] public ProtoWeaponState State;
+        [ProtoMember(4)] public ProtoWeaponTransferTarget[] Targets;
+        [ProtoMember(5)] public ProtoWeaponReload[] Reloads;
 
-        public void Sync(Weapon.WeaponComponent comp, CompBaseValues sync)
+        public void Sync(Weapon.WeaponComponent comp, ProtoWeaponComp sync)
         {
-            if (sync.Revision > Revision) {
+            if (sync.Revision > Revision)
+            {
 
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
-                State.Sync(comp, sync.State, CompStateValues.Caller.CompData);
+                State.Sync(comp, sync.State, ProtoWeaponState.Caller.CompData);
 
-                for (int i = 0; i < Targets.Length; i++) {
+                for (int i = 0; i < Targets.Length; i++)
+                {
                     var w = comp.Platform.Weapons[i];
                     sync.Targets[i].SyncTarget(w);
                     Reloads[i].Sync(w, sync.Reloads[i]);
@@ -146,22 +118,27 @@ namespace WeaponCore
             ++Revision;
             ++State.Revision;
             Session.PacketInfo info;
-            if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Base.State, out info)) {
-                comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Base.State);
+            if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out info))
+            {
+                comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Values.State);
                 comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
             }
 
-            for (int i = 0; i < Targets.Length; i++) {
+            for (int i = 0; i < Targets.Length; i++)
+            {
 
                 var t = Targets[i];
                 var wr = Reloads[i];
-                
-                if (clean) {
-                    if (comp.Session.PrunedPacketsToClient.TryGetValue(t, out info)) {
+
+                if (clean)
+                {
+                    if (comp.Session.PrunedPacketsToClient.TryGetValue(t, out info))
+                    {
                         comp.Session.PrunedPacketsToClient.Remove(t);
                         comp.Session.PacketTargetPool.Return((TargetPacket)info.Packet);
                     }
-                    if (comp.Session.PrunedPacketsToClient.TryGetValue(wr, out info)) {
+                    if (comp.Session.PrunedPacketsToClient.TryGetValue(wr, out info))
+                    {
                         comp.Session.PrunedPacketsToClient.Remove(wr);
                         comp.Session.PacketReloadPool.Return((WeaponReloadPacket)info.Packet);
                     }
@@ -174,13 +151,13 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class WeaponReloadValues
+    public class ProtoWeaponReload
     {
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
 
-        public void Sync(Weapon w, WeaponReloadValues sync)
+        public void Sync(Weapon w, ProtoWeaponReload sync)
         {
             if (sync.Revision > Revision)
             {
@@ -194,22 +171,22 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CompSettingsValues
+    public class ProtoCompSettings
     {
         [ProtoMember(1), DefaultValue(true)] public bool Guidance = true;
         [ProtoMember(2), DefaultValue(1)] public int Overload = 1;
         [ProtoMember(3), DefaultValue(1)] public float DpsModifier = 1;
         [ProtoMember(4), DefaultValue(1)] public float RofModifier = 1;
         [ProtoMember(5), DefaultValue(100)] public float Range = 100;
-        [ProtoMember(6)] public GroupOverrides Overrides;
+        [ProtoMember(6)] public ProtoWeaponOverrides Overrides;
 
 
-        public CompSettingsValues()
+        public ProtoCompSettings()
         {
-            Overrides = new GroupOverrides();
+            Overrides = new ProtoWeaponOverrides();
         }
 
-        public void  Sync(Weapon.WeaponComponent comp, CompSettingsValues sync)
+        public void Sync(Weapon.WeaponComponent comp, ProtoCompSettings sync)
         {
             Guidance = sync.Guidance;
             Range = sync.Range;
@@ -220,7 +197,8 @@ namespace WeaponCore
             var rofChange = Math.Abs(RofModifier - sync.RofModifier) > 0.0001f;
             var dpsChange = Math.Abs(DpsModifier - sync.DpsModifier) > 0.0001f;
 
-            if (Overload != sync.Overload || rofChange || dpsChange) {
+            if (Overload != sync.Overload || rofChange || dpsChange)
+            {
                 Overload = sync.Overload;
                 RofModifier = sync.RofModifier;
                 DpsModifier = sync.DpsModifier;
@@ -231,7 +209,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CompStateValues
+    public class ProtoWeaponState
     {
         public enum Caller
         {
@@ -248,13 +226,13 @@ namespace WeaponCore
         }
 
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public WeaponStateValues[] Weapons;
+        [ProtoMember(2)] public ProtoWeaponPartState[] Weapons;
         [ProtoMember(3)] public bool TrackingReticle; //don't save
         [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(CoreComponent comp, CompStateValues sync, Caller caller)
+        public void Sync(CoreComponent comp, ProtoWeaponState sync, Caller caller)
         {
             if (sync.Revision > Revision)
             {
@@ -264,9 +242,9 @@ namespace WeaponCore
                 Control = sync.Control;
                 TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Weapons.Length; i++)
-                    comp.Platform.Weapons[i].State.Sync(sync.Weapons[i]);
+                    comp.Platform.Weapons[i].PartState.Sync(sync.Weapons[i]);
             }
-            //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            //else Log.Line($"ProtoWeaponState older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
         public void TerminalActionSetter(Weapon.WeaponComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
@@ -285,13 +263,13 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class WeaponStateValues
+    public class ProtoWeaponPartState
     {
         [ProtoMember(1)] public float Heat; // don't save
         [ProtoMember(2)] public bool Overheated; //don't save
         [ProtoMember(3), DefaultValue(TriggerActions.TriggerOff)] public TriggerActions Action = TriggerActions.TriggerOff; // save
 
-        public void Sync(WeaponStateValues sync)
+        public void Sync(ProtoWeaponPartState sync)
         {
             Heat = sync.Heat;
             Overheated = sync.Overheated;
@@ -301,7 +279,7 @@ namespace WeaponCore
         public void WeaponMode(Weapon.WeaponComponent comp, TriggerActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
-                comp.Data.Repo.Base.State.TerminalAction = TriggerActions.TriggerOff;
+                comp.Data.Repo.Values.State.TerminalAction = TriggerActions.TriggerOff;
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)
@@ -311,7 +289,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class TransferTarget
+    public class ProtoWeaponTransferTarget
     {
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public long EntityId;
@@ -335,7 +313,7 @@ namespace WeaponCore
                 target.TargetPos = TargetPos;
                 target.ClientDirty = true;
             }
-            //else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
+            //else Log.Line($"ProtoWeaponTransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
         }
 
         public void WeaponInit(Weapon w)
@@ -382,11 +360,11 @@ namespace WeaponCore
             TargetPos = Vector3.Zero;
         }
 
-        public TransferTarget() { }
+        public ProtoWeaponTransferTarget() { }
     }
 
     [ProtoContract]
-    public class GroupOverrides
+    public class ProtoWeaponOverrides
     {
         public enum MoveModes
         {
@@ -419,9 +397,9 @@ namespace WeaponCore
         [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
         [ProtoMember(15), DefaultValue(true)] public bool ArmorShowArea;
 
-        public GroupOverrides() { }
+        public ProtoWeaponOverrides() { }
 
-        public void Sync(GroupOverrides syncFrom)
+        public void Sync(ProtoWeaponOverrides syncFrom)
         {
             MoveMode = syncFrom.MoveMode;
             MaxSize = syncFrom.MaxSize;

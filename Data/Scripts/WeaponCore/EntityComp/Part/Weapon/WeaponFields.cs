@@ -8,7 +8,6 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.PartDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore.Platform
 {
@@ -33,6 +32,24 @@ namespace WeaponCore.Platform
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
+        internal readonly uint[] BeamSlot;
+        internal readonly MyParticleEffect[] Effects1;
+        internal readonly MyParticleEffect[] Effects2;
+        internal readonly MyParticleEffect[] HitEffects;
+        internal readonly MySoundPair ReloadSound;
+        internal readonly MySoundPair PreFiringSound;
+        internal readonly MySoundPair FiringSound;
+        internal readonly MySoundPair RotateSound;
+        internal readonly WeaponComponent Comp;
+        internal readonly MyEntity3DSoundEmitter ReloadEmitter;
+        internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
+        internal readonly MyEntity3DSoundEmitter FiringEmitter;
+        internal readonly MyEntity3DSoundEmitter RotateEmitter;
+        internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
+        internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
+        internal bool AlternateForward;
+        internal readonly bool PrimaryWeaponGroup;
+        internal readonly bool AiOnlyWeapon;
 
         internal Action<object> CancelableReloadAction = (o) => {};
 
@@ -80,7 +97,6 @@ namespace WeaponCore.Platform
         internal LineD MyShootAlignmentLine;
         internal LineD AzimuthFwdLine;
 
-        internal uint[] BeamSlot;
 
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
@@ -88,30 +104,16 @@ namespace WeaponCore.Platform
 
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
-        internal MyParticleEffect[] Effects1;
-        internal MyParticleEffect[] Effects2;
-        internal MyParticleEffect[] HitEffects;
-        internal MySoundPair ReloadSound;
-        internal MySoundPair PreFiringSound;
-        internal MySoundPair FiringSound;
-        internal MySoundPair RotateSound;
-        internal WeaponStateValues State;
-        internal WeaponReloadValues Reload;
-        internal TransferTarget TargetData;
-        internal AmmoValues Ammo;
+
+
+        internal ProtoWeaponPartState PartState;
+        internal ProtoWeaponReload Reload;
+        internal ProtoWeaponTransferTarget TargetData;
+        internal ProtoWeaponAmmo ProtoWeaponAmmo;
         internal CoreSystem.AmmoType ActiveAmmoDef;
         internal int[] AmmoShufflePattern = {0};
         internal ParallelRayCallBack RayCallBack;
-        internal readonly WeaponComponent Comp;
-        internal readonly MyEntity3DSoundEmitter ReloadEmitter;
-        internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
-        internal readonly MyEntity3DSoundEmitter FiringEmitter;
-        internal readonly MyEntity3DSoundEmitter RotateEmitter;
-        internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
-        internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
 
-        internal readonly bool PrimaryWeaponGroup;
-        internal readonly bool AiOnlyWeapon;
 
         internal IHitInfo LastHitInfo;
         internal EventTriggers LastEvent;
@@ -201,14 +203,13 @@ namespace WeaponCore.Platform
         internal bool ClientStaticShot;
         internal bool ShootOnce;
         internal bool ParentIsSubpart;
-        internal bool AlternateForward;
         internal bool CheckInventorySystem = true;
         internal bool ShotReady
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
-                var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || ProtoWeaponAmmo.CurrentAmmo == 0);
+                var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;
             }
@@ -372,7 +373,6 @@ namespace WeaponCore.Platform
             MyEntity scopePart;
             if (System.HasScope && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Scope, System.AltScopeName, out scopePart, out scopeMatch))
                 Scope = new Dummy(scopePart, this, scopeMatch);
-
 
             comp.Platform.SetupUi(this);
 

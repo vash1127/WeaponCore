@@ -14,7 +14,7 @@ using WeaponCore.Support;
 using static WeaponCore.Support.Ai;
 using static WeaponCore.Support.PartDefinition.TargetingDef;
 using static WeaponCore.Support.PartDefinition.TargetingDef.BlockTypes;
-using static WeaponCore.CompStateValues;
+using static WeaponCore.ProtoWeaponState;
 namespace WeaponCore
 {
     public partial class Session
@@ -90,8 +90,8 @@ namespace WeaponCore
                             if (IsServer)
                             {
                                 var wComp = ((Weapon.WeaponComponent)comp);
-                                wComp.Data.Repo.Base.State.PlayerId = PlayerId;
-                                wComp.Data.Repo.Base.State.Control = ControlMode.Camera;
+                                wComp.Data.Repo.Values.State.PlayerId = PlayerId;
+                                wComp.Data.Repo.Values.State.Control = ControlMode.Camera;
                             }
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -127,8 +127,8 @@ namespace WeaponCore
                                 if (IsServer)
                                 {
                                     var wComp = ((Weapon.WeaponComponent)comp);
-                                    wComp.Data.Repo.Base.State.PlayerId = -1;
-                                    wComp.Data.Repo.Base.State.Control = ControlMode.None;
+                                    wComp.Data.Repo.Values.State.PlayerId = -1;
+                                    wComp.Data.Repo.Values.State.Control = ControlMode.None;
 
                                 }
 

@@ -170,7 +170,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+                        if (comp.Data.Repo.Values.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -187,7 +187,7 @@ namespace WeaponCore
                             if (comp == null) oldAction(blk);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOn)
+                        if (comp.Data.Repo.Values.State.TerminalAction != TriggerOn)
                             comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
@@ -200,7 +200,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+                        if (comp.Data.Repo.Values.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -217,7 +217,7 @@ namespace WeaponCore
                             if (comp == null)  oldAction(blk);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction != TriggerOff)
+                        if (comp.Data.Repo.Values.State.TerminalAction != TriggerOff)
                             comp.RequestShootUpdate(TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
@@ -229,7 +229,7 @@ namespace WeaponCore
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Base.State.TerminalAction == TriggerOn)
+                        if (comp.Data.Repo.Values.State.TerminalAction == TriggerOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");

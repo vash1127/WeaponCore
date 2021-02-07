@@ -252,7 +252,7 @@ namespace WeaponCore
 
                                         if (weaponCsDef.WeaponAmmoDatas[0] == null)
                                         {
-                                            Log.Line($"WeaponAmmoData is null, check the Ammo definition for {subTypeMap.Key}");
+                                            Log.Line($"WeaponAmmoData is null, check the ProtoWeaponAmmo definition for {subTypeMap.Key}");
                                         }
                                         weaponCsDef.WeaponAmmoDatas[0].RateOfFire = partDef.HardPoint.Loading.RateOfFire;
 

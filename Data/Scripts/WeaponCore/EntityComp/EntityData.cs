@@ -10,7 +10,7 @@ namespace WeaponCore
     public class CompData
     {
         public CoreComponent BaseComp;
-        public Repo RepoBase;
+        public ProtoRepo ProtoRepoBase;
 
         public void Init (CoreComponent comp)
         {
@@ -29,9 +29,9 @@ namespace WeaponCore
         {
             if (BaseComp.CoreEntity.Storage == null) return;
 
-            if (RepoBase != null)
+            if (ProtoRepoBase != null)
             {
-                var binary = MyAPIGateway.Utilities.SerializeToBinary(RepoBase);
+                var binary = MyAPIGateway.Utilities.SerializeToBinary(ProtoRepoBase);
                 BaseComp.CoreEntity.Storage[BaseComp.Session.CompDataGuid] = Convert.ToBase64String(binary);
             }
 

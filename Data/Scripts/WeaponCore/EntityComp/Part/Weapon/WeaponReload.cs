@@ -12,27 +12,27 @@ namespace WeaponCore.Platform
         internal void ChangeActiveAmmoServer()
         {
             var proposed = ProposedAmmoId != -1;
-            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[Ammo.AmmoTypeId];
+            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
             ScheduleAmmoChange = false;
 
             if (ActiveAmmoDef == ammoType)
                 return;
             
-            ++Ammo.AmmoCycleId;
+            ++ProtoWeaponAmmo.AmmoCycleId;
 
             if (proposed)
             {
-                Ammo.AmmoTypeId = ProposedAmmoId;
+                ProtoWeaponAmmo.AmmoTypeId = ProposedAmmoId;
                 ProposedAmmoId = -1;
-                Ammo.CurrentAmmo = 0;
-                Ammo.CurrentMags = 0;
+                ProtoWeaponAmmo.CurrentAmmo = 0;
+                ProtoWeaponAmmo.CurrentMags = 0;
             }
 
-            ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
+            ActiveAmmoDef = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
             PrepAmmoShuffle();
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                Ammo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
             
             CheckInventorySystem = true;
 
@@ -46,12 +46,12 @@ namespace WeaponCore.Platform
 
         internal void ChangeActiveAmmoClient()
         {
-            var ammoType = System.AmmoTypes[Ammo.AmmoTypeId];
+            var ammoType = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
 
             if (ActiveAmmoDef == ammoType)
                 return;
 
-            ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
+            ActiveAmmoDef = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
             PrepAmmoShuffle();
 
             UpdateRof();
@@ -82,10 +82,10 @@ namespace WeaponCore.Platform
                     {
                         if (!Comp.Session.MpActive)
                             MyAPIGateway.Utilities.ShowNotification($"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine", 3000, "Red");
-                        else if (Comp.Data.Repo.Base.State.PlayerId > 0)
+                        else if (Comp.Data.Repo.Values.State.PlayerId > 0)
                         {
                             var message = $"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine";
-                            Comp.Session.SendClientNotify(Comp.Data.Repo.Base.State.PlayerId, message, true, "Red", 3000);
+                            Comp.Session.SendClientNotify(Comp.Data.Repo.Values.State.PlayerId, message, true, "Red", 3000);
                         }
                         MyFloatingObjects.Spawn(ammoChange.Item, Dummies[0].Info.Position, MyPivotFwd, MyPivotUp);
                     }
@@ -101,16 +101,16 @@ namespace WeaponCore.Platform
             {
                 ProposedAmmoId = newAmmoId;
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
-                var canReload = Ammo.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var canReload = ProtoWeaponAmmo.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
 
-                var unloadMag = !canReload && !instantChange && !Reloading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Ammo.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                var unloadMag = !canReload && !instantChange && !Reloading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ProtoWeaponAmmo.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                 if (unloadMag && proposedAmmo.AmmoDef.Const.Reloadable)
                 {
-                    Ammo.CurrentAmmo = 0;
+                    ProtoWeaponAmmo.CurrentAmmo = 0;
                     canReload = true;
-                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = Ammo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
+                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = ProtoWeaponAmmo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
                 }
 
                 if (instantChange)
@@ -132,9 +132,9 @@ namespace WeaponCore.Platform
                 return true;
             }
 
-            Ammo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+            ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
             var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-            var nothingToLoad = Ammo.CurrentMags <= 0 && !energyDrainable;
+            var nothingToLoad = ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable;
 
             if (NoMagsToLoad) {
                 if (nothingToLoad)
@@ -170,7 +170,7 @@ namespace WeaponCore.Platform
 
             if (!syncUp) {
                 var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-                if (Ammo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
+                if (ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
                     if (!NoMagsToLoad) 
                         EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                     NoMagsToLoad = true;
@@ -178,8 +178,8 @@ namespace WeaponCore.Platform
                 return false;
             }
             ClientStartId = Reload.StartId;
-            ClientMakeUpShots += Ammo.CurrentAmmo;
-            Ammo.CurrentAmmo = 0;
+            ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
+            ProtoWeaponAmmo.CurrentAmmo = 0;
 
             if (NoMagsToLoad) {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
@@ -209,8 +209,8 @@ namespace WeaponCore.Platform
                     Comp.CurrentInventoryVolume = (float)Comp.CoreInventory.CurrentVolume;
                     var freeVolume = System.MaxAmmoVolume - Comp.CurrentInventoryVolume;
                     var spotsFree = (int)(freeVolume / ActiveAmmoDef.AmmoDef.Const.MagVolume);
-                    Ammo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
-                    CurrentAmmoVolume = Ammo.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                    ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                    CurrentAmmoVolume = ProtoWeaponAmmo.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
                     var magsRequested = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.AmmoDef.Const.MagVolume);
                     var magsGranted = magsRequested > spotsFree ? spotsFree : magsRequested;
@@ -234,7 +234,7 @@ namespace WeaponCore.Platform
                 }
             }
 
-            var invalidStates = Ammo.CurrentAmmo != 0 || Reloading;
+            var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Reloading;
             return !invalidStates && ServerReload();
         }
 
@@ -267,8 +267,8 @@ namespace WeaponCore.Platform
                     Comp.CoreInventory.Remove(ActiveAmmoDef.AmmoDef.Const.AmmoItem, 1);
                 }
 
-                Ammo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
-                if (System.Session.IsServer && Ammo.CurrentMags == 0)
+                ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                if (System.Session.IsServer && ProtoWeaponAmmo.CurrentMags == 0)
                     CheckInventorySystem = true;
             }
 
@@ -304,15 +304,15 @@ namespace WeaponCore.Platform
             using (Comp.CoreEntity.Pin())
             {
 
-                if (State == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose) return;
+                if (PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose) return;
 
 
                 LastLoadedTick = Comp.Session.Tick;
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
-                    Comp.CurrentCharge -= Ammo.CurrentCharge;
-                    Ammo.CurrentCharge = MaxCharge;
+                    Comp.CurrentCharge -= ProtoWeaponAmmo.CurrentCharge;
+                    ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                     Comp.CurrentCharge += MaxCharge;
 
                     ChargeUntilTick = 0;
@@ -325,7 +325,7 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                Ammo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
                 if (System.Session.IsServer) {
                     
@@ -346,9 +346,9 @@ namespace WeaponCore.Platform
         }
         public void ChargeReload(bool syncCharge = false)
         {
-            Comp.CurrentCharge -= Ammo.CurrentCharge;
-            Ammo.CurrentCharge = 0;
-            Ammo.CurrentAmmo = 0;
+            Comp.CurrentCharge -= ProtoWeaponAmmo.CurrentCharge;
+            ProtoWeaponAmmo.CurrentCharge = 0;
+            ProtoWeaponAmmo.CurrentAmmo = 0;
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
 
             if (!Comp.UnlimitedPower)

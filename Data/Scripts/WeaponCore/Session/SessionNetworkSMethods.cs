@@ -157,7 +157,7 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.PlayerId = cyclePacket.PlayerId;
+                comp.Data.Repo.Values.State.PlayerId = cyclePacket.PlayerId;
                 comp.Platform.Weapons[cyclePacket.PartId].ChangeAmmo(cyclePacket.NewAmmoId);
                 data.Report.PacketValid = true;
             }
@@ -179,8 +179,8 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
                 mIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.PlayerId = controlPacket.PlayerId;
-                comp.Data.Repo.Base.State.Control = controlPacket.Mode;
+                comp.Data.Repo.Values.State.PlayerId = controlPacket.PlayerId;
+                comp.Data.Repo.Values.State.Control = controlPacket.Mode;
                 SendCompBaseData(comp);
                 data.Report.PacketValid = true;
             }
@@ -202,7 +202,7 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                comp.Data.Repo.Base.State.TrackingReticle = reticlePacket.Data;
+                comp.Data.Repo.Values.State.TrackingReticle = reticlePacket.Data;
                 SendCompState(comp);
 
                 data.Report.PacketValid = true;
