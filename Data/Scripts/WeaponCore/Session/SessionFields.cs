@@ -73,8 +73,16 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<ConstructPacket> PacketConstructPool = new MyConcurrentPool<ConstructPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<ConstructFociPacket> PacketConstructFociPool = new MyConcurrentPool<ConstructFociPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<AiDataPacket> PacketAiPool = new MyConcurrentPool<AiDataPacket>(64, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<CompBasePacket> PacketCompBasePool = new MyConcurrentPool<CompBasePacket>(64, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<WeaponCompPacket> PacketWeaponCompPool = new MyConcurrentPool<WeaponCompPacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<UpgradeCompPacket> PacketUpgradeCompPool = new MyConcurrentPool<UpgradeCompPacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<SupportCompPacket> PacketSupportCompPool = new MyConcurrentPool<SupportCompPacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<PhantomCompPacket> PacketPhantomCompPool = new MyConcurrentPool<PhantomCompPacket>(64, packet => packet.CleanUp());
+
+        internal readonly MyConcurrentPool<WeaponStatePacket> PacketWeaponStatePool = new MyConcurrentPool<WeaponStatePacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<UpgradeStatePacket> PacketUpgradeStatePool = new MyConcurrentPool<UpgradeStatePacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<SupportStatePacket> PacketSupportStatePool = new MyConcurrentPool<SupportStatePacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<PhantomStatePacket> PacketPhantomStatePool = new MyConcurrentPool<PhantomStatePacket>(64, packet => packet.CleanUp());
+
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());

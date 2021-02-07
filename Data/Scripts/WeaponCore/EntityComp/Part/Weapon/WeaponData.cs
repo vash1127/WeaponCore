@@ -8,19 +8,19 @@ namespace WeaponCore.Platform
         internal class WeaponCompData : CompData
         {
             internal readonly WeaponComponent Comp;
-            internal WeaponRepo Repo;
+            internal ProtoWeaponRepo Repo;
             internal WeaponCompData(WeaponComponent comp)
             {
                 base.Init(comp);
                 Comp = comp;
-                Repo = (WeaponRepo)ProtoRepoBase;
+                Repo = (ProtoWeaponRepo)ProtoRepoBase;
             }
 
             internal void Load()
             {
                 if (Comp.CoreEntity.Storage == null) return;
 
-                WeaponRepo load = null;
+                ProtoWeaponRepo load = null;
                 string rawData;
                 bool validData = false;
                 if (Comp.CoreEntity.Storage.TryGetValue(Comp.Session.CompDataGuid, out rawData))
@@ -28,7 +28,7 @@ namespace WeaponCore.Platform
                     try
                     {
                         var base64 = Convert.FromBase64String(rawData);
-                        load = MyAPIGateway.Utilities.SerializeFromBinary<WeaponRepo>(base64);
+                        load = MyAPIGateway.Utilities.SerializeFromBinary<ProtoWeaponRepo>(base64);
                         validData = load != null;
                     }
                     catch (Exception e)
@@ -71,12 +71,12 @@ namespace WeaponCore.Platform
                 }
                 else
                 {
-                    Repo = new WeaponRepo
+                    Repo = new ProtoWeaponRepo
                     {
                         Values = new ProtoWeaponComp
                         {
                             State = new ProtoWeaponState { Weapons = new ProtoWeaponPartState[Comp.Platform.Weapons.Count] },
-                            Set = new ProtoCompSettings(),
+                            Set = new ProtoWeaponSettings(),
                             Targets = new ProtoWeaponTransferTarget[Comp.Platform.Weapons.Count],
                             Reloads = new ProtoWeaponReload[Comp.Platform.Weapons.Count],
                         },

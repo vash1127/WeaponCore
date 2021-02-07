@@ -12,7 +12,7 @@ namespace WeaponCore
     [ProtoContract]
     public class ProtoSupportRepo : ProtoRepo
     {
-        [ProtoMember(1)] public ProtoSupportComp Base;
+        [ProtoMember(1)] public ProtoSupportComp Values;
     }
 
 
@@ -37,7 +37,7 @@ namespace WeaponCore
 
         }
 
-        public void UpdateCompBasePacketInfo(Weapon.WeaponComponent comp, bool clean = false)
+        public void UpdateCompPacketInfo(SupportSys.SupportComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
@@ -45,7 +45,7 @@ namespace WeaponCore
             if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out info))
             {
                 comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Values.State);
-                comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
+                comp.Session.PacketSupportStatePool.Return((SupportStatePacket)info.Packet);
             }
         }
     }
@@ -128,7 +128,7 @@ namespace WeaponCore
             //else Log.Line($"ProtoWeaponState older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
-        public void TerminalActionSetter(Upgrade.UpgradeComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
+        public void TerminalActionSetter(SupportSys.SupportComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
         {
             TerminalAction = action;
 
@@ -139,7 +139,7 @@ namespace WeaponCore
             }
 
             if (syncWeapons)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
     }
 
@@ -160,11 +160,11 @@ namespace WeaponCore
         public void WeaponMode(SupportSys.SupportComponent comp, TriggerActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
-                comp.Data.ProtoRepo.Values.State.TerminalAction = TriggerActions.TriggerOff;
+                comp.Data.Repo.Values.State.TerminalAction = TriggerActions.TriggerOff;
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
 
     }

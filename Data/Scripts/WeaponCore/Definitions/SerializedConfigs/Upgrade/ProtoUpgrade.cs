@@ -13,7 +13,7 @@ namespace WeaponCore
     [ProtoContract]
     public class ProtoUpgradeRepo : ProtoRepo
     {
-        [ProtoMember(1)] public ProtoUpgradeComp Base;
+        [ProtoMember(1)] public ProtoUpgradeComp Values;
     }
 
 
@@ -38,7 +38,7 @@ namespace WeaponCore
 
         }
 
-        public void UpdateCompBasePacketInfo(Weapon.WeaponComponent comp, bool clean = false)
+        public void UpdateCompPacketInfo(Upgrade.UpgradeComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
@@ -46,7 +46,7 @@ namespace WeaponCore
             if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out info))
             {
                 comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Values.State);
-                comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
+                comp.Session.PacketUpgradeStatePool.Return((UpgradeStatePacket)info.Packet);
             }
         }
     }
@@ -140,7 +140,7 @@ namespace WeaponCore
             }
 
             if (syncWeapons)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
     }
 

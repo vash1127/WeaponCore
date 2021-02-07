@@ -34,7 +34,7 @@ namespace WeaponCore.Platform
             Ready,
             Incomplete
         }
-
+        
         internal void Setup(CoreComponent comp)
         {
             if (!comp.Session.PartPlatforms.ContainsKey(comp.Id))

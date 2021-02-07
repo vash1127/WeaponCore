@@ -64,7 +64,7 @@ namespace WeaponCore.Control
 
         internal static void CreateGenericArmor<T>(Session session) where T : IMyTerminalBlock
         {
-            AddOnOffSwitchNoAction<T>(session, -20, "Show Enhanced Area", "Area Influence", "Show On/Off", WepUi.GetShowArea, WepUi.RequestSetShowArea, true, ArmorEnhancerIsReady);
+            AddOnOffSwitchNoAction<T>(session, -20, "Show Enhanced Area", "Area Influence", "Show On/Off", WepUi.GetShowArea, WepUi.RequestSetShowArea, true, SupportIsReady);
         }
         internal static bool Istrue(IMyTerminalBlock block)
         {
@@ -78,7 +78,7 @@ namespace WeaponCore.Control
             return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Type == CoreComponent.CompType.Weapon;
         }
 
-        internal static bool ArmorEnhancerIsReady(IMyTerminalBlock block)
+        internal static bool SupportIsReady(IMyTerminalBlock block)
         {
 
             var comp = block?.Components?.Get<CoreComponent>();

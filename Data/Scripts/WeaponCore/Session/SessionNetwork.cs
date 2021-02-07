@@ -114,7 +114,7 @@ namespace WeaponCore
                         ClientAiDataUpdate(packetObj);
                         break;
                     }
-                    case PacketType.CompState:
+                    case PacketType.WeaponState:
                     {
                         ClientStateUpdate(packetObj);
                         break;
@@ -129,7 +129,7 @@ namespace WeaponCore
                         ClientWeaponAmmoUpdate(packetObj);
                         break;
                     }
-                    case PacketType.CompBase:
+                    case PacketType.WeaponComp:
                     {
                         ClientCompData(packetObj);
                         break;
@@ -372,50 +372,72 @@ namespace WeaponCore
                 {
                     case PacketType.AiData:
                     {
-                        var iPacket = (AiDataPacket)pInfo.Packet;
-                        PacketAiPool.Return(iPacket);
-                        break;
-                    }
-                    case PacketType.CompBase:
-                    {
-                        var iPacket = (CompBasePacket)pInfo.Packet;
-                        PacketCompBasePool.Return(iPacket);
-                        break;
-                    }
-                    case PacketType.CompState:
-                    {
-                        var iPacket = (CompStatePacket)pInfo.Packet;
-                        PacketStatePool.Return(iPacket);
+                        PacketAiPool.Return((AiDataPacket)pInfo.Packet);
                         break;
                     }
                     case PacketType.TargetChange:
                     {
-                        var iPacket = (TargetPacket)pInfo.Packet;
-                        PacketTargetPool.Return(iPacket);
+                        PacketTargetPool.Return((TargetPacket)pInfo.Packet);
                         break;
                     }
                     case PacketType.WeaponReload:
                     {
-                        var iPacket = (WeaponReloadPacket)pInfo.Packet;
-                        PacketReloadPool.Return(iPacket);
+                        PacketReloadPool.Return((WeaponReloadPacket)pInfo.Packet);
                         break;
                     }
                     case PacketType.Construct:
                     {
-                        var iPacket = (ConstructPacket)pInfo.Packet;
-                        PacketConstructPool.Return(iPacket);
+                        PacketConstructPool.Return((ConstructPacket)pInfo.Packet);
                         break;
                     }
                     case PacketType.ConstructFoci:
                     {
-                        var iPacket = (ConstructFociPacket)pInfo.Packet;
-                        PacketConstructFociPool.Return(iPacket);
+                        PacketConstructFociPool.Return((ConstructFociPacket)pInfo.Packet);
                         break;
                     }
                     case PacketType.WeaponAmmo:
                     {
-                        var iPacket = (WeaponAmmoPacket)pInfo.Packet;
-                        PacketAmmoPool.Return(iPacket);
+                        PacketAmmoPool.Return((WeaponAmmoPacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.WeaponComp:
+                    {
+                        PacketWeaponCompPool.Return((WeaponCompPacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.WeaponState:
+                    {
+                        PacketWeaponStatePool.Return((WeaponStatePacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.UpgradeComp:
+                    {
+                        PacketUpgradeCompPool.Return((UpgradeCompPacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.UpgradeState:
+                    {
+                        PacketUpgradeStatePool.Return((UpgradeStatePacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.SupportComp:
+                    {
+                        PacketSupportCompPool.Return((SupportCompPacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.SupportState:
+                    {
+                        PacketSupportStatePool.Return((SupportStatePacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.PhantomComp:
+                    {
+                        PacketPhantomCompPool.Return((PhantomCompPacket)pInfo.Packet);
+                        break;
+                    }
+                    case PacketType.PhantomState:
+                    {
+                        PacketPhantomStatePool.Return((PhantomStatePacket)pInfo.Packet);
                         break;
                     }
                 }

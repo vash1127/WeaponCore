@@ -9,13 +9,13 @@ namespace WeaponCore.Platform
         internal class UpgradeCompData : CompData
         {
             internal readonly UpgradeComponent Comp;
-            internal ProtoUpgradeRepo ProtoRepo;
+            internal ProtoUpgradeRepo Repo;
 
             internal UpgradeCompData(UpgradeComponent comp)
             {
                 base.Init(comp);
                 Comp = comp;
-                ProtoRepo = (ProtoUpgradeRepo)ProtoRepoBase;
+                Repo = (ProtoUpgradeRepo)ProtoRepoBase;
             }
 
             internal void Load()

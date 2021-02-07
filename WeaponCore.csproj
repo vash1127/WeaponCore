@@ -67,7 +67,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Support\ProtoSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Upgrade\ProtoUpgrade.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Weapon\ProtoWeapon.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityWeaponSub.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportComp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportData.cs" />
@@ -76,7 +75,7 @@
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\PartFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomTypes.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomComp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Upgrade\UpgradeComp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Upgrade\UpgradeData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Upgrade\UpgradeFields.cs" />

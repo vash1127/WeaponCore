@@ -181,7 +181,7 @@ namespace WeaponCore
 
                 comp.Data.Repo.Values.State.PlayerId = controlPacket.PlayerId;
                 comp.Data.Repo.Values.State.Control = controlPacket.Mode;
-                SendCompBaseData(comp);
+                SendComp(comp);
                 data.Report.PacketValid = true;
             }
             else Log.Line($"ServerPlayerControlRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
@@ -203,7 +203,7 @@ namespace WeaponCore
                 mIds[(int) packet.PType] = packet.MId;
 
                 comp.Data.Repo.Values.State.TrackingReticle = reticlePacket.Data;
-                SendCompState(comp);
+                SendState(comp);
 
                 data.Report.PacketValid = true;
             }

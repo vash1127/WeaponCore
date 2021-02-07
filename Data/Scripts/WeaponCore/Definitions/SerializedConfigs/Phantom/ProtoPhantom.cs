@@ -13,7 +13,7 @@ namespace WeaponCore
     [ProtoContract]
     public class ProtoPhantomRepo : ProtoRepo
     {
-        [ProtoMember(1)] public ProtoPhantomComp Base;
+        [ProtoMember(1)] public ProtoPhantomComp Values;
     }
 
 
@@ -31,14 +31,14 @@ namespace WeaponCore
 
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
-                State.Sync(comp, sync.State, ProtoPhantomComp.Caller.CompData);
+                State.Sync(comp, sync.State, ProtoPhantomState.Caller.CompData);
 
             }
             else Log.Line($"CompDynamicValues older revision");
 
         }
 
-        public void UpdateCompBasePacketInfo(Weapon.WeaponComponent comp, bool clean = false)
+        public void UpdateCompPacketInfo(Phantom.PhantomComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
@@ -46,7 +46,7 @@ namespace WeaponCore
             if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out info))
             {
                 comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Values.State);
-                comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
+                comp.Session.PacketPhantomStatePool.Return((PhantomStatePacket)info.Packet);
             }
         }
     }
@@ -68,7 +68,7 @@ namespace WeaponCore
             Overrides = new ProtoPhantomOverrides();
         }
 
-        public void Sync(Weapon.WeaponComponent comp, ProtoPhantomSettings sync)
+        public void Sync(Phantom.PhantomComponent comp, ProtoPhantomSettings sync)
         {
             Guidance = sync.Guidance;
             Range = sync.Range;
@@ -84,7 +84,6 @@ namespace WeaponCore
                 Overload = sync.Overload;
                 RofModifier = sync.RofModifier;
                 DpsModifier = sync.DpsModifier;
-                if (rofChange) Weapon.WeaponComponent.SetRof(comp);
             }
         }
 
@@ -114,7 +113,7 @@ namespace WeaponCore
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(CoreComponent comp, ProtoPhantomState sync, Caller caller)
+        public void Sync(Phantom.PhantomComponent comp, ProtoPhantomState sync, Caller caller)
         {
             if (sync.Revision > Revision)
             {
@@ -140,7 +139,7 @@ namespace WeaponCore
             }
 
             if (syncPhantoms)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
     }
 
@@ -158,14 +157,14 @@ namespace WeaponCore
             Action = sync.Action;
         }
 
-        public void WeaponMode(Phantom.PhantomComponent comp, TriggerActions action, bool resetTerminalAction = true, bool syncCompState = true)
+        public void PhantomMode(Phantom.PhantomComponent comp, TriggerActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
-                comp.Data.ProtoRepo.Values.State.TerminalAction = TriggerActions.TriggerOff;
+                comp.Data.Repo.Values.State.TerminalAction = TriggerActions.TriggerOff;
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
 
     }

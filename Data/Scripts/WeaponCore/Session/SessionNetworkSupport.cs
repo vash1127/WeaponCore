@@ -217,23 +217,23 @@ namespace WeaponCore
             else Log.Line($"SendWeaponAmmoData should never be called on Client");
         }
 
-        internal void SendCompBaseData(Weapon.WeaponComponent comp)
+        internal void SendComp(Weapon.WeaponComponent comp)
         {
             if (IsServer) {
 
-                const PacketType type = PacketType.CompBase;
-                comp.Data.Repo.Values.UpdateCompBasePacketInfo(comp, true);
+                const PacketType type = PacketType.WeaponComp;
+                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
 
                 PacketInfo oldInfo;
-                CompBasePacket iPacket;
+                WeaponCompPacket iPacket;
                 if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo)) {
-                    iPacket = (CompBasePacket)oldInfo.Packet;
+                    iPacket = (WeaponCompPacket)oldInfo.Packet;
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.Data = comp.Data.Repo.Values;
                 }
                 else {
 
-                    iPacket = PacketCompBasePool.Get();
+                    iPacket = PacketWeaponCompPool.Get();
                     iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
@@ -246,65 +246,173 @@ namespace WeaponCore
                     Packet = iPacket,
                 };
             }
-            else Log.Line($"SendCompData should never be called on Client");
+            else Log.Line($"SendComp should never be called on Client");
         }
 
-        internal void SendTargetChange(Weapon.WeaponComponent comp, int partId)
+        internal void SendComp(Upgrade.UpgradeComponent comp)
         {
             if (IsServer) {
 
-                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values)) {
+                const PacketType type = PacketType.UpgradeComp;
+                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
 
-                    const PacketType type = PacketType.TargetChange;
-                    comp.Data.Repo.Values.UpdateCompBasePacketInfo(comp);
+                PacketInfo oldInfo;
+                UpgradeCompPacket iPacket;
+                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo)) {
+                    iPacket = (UpgradeCompPacket)oldInfo.Packet;
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.Data = comp.Data.Repo.Values;
+                }
+                else {
 
-                    var w = comp.Platform.Weapons[partId];
+                    iPacket = PacketUpgradeCompPool.Get();
+                    iPacket.MId = ++comp.MIds[(int)type];
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.SenderId = MultiplayerId;
+                    iPacket.PType = type;
+                    iPacket.Data = comp.Data.Repo.Values;
+                }
+
+                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo {
+                    Entity = comp.CoreEntity,
+                    Packet = iPacket,
+                };
+            }
+            else Log.Line($"SendComp should never be called on Client");
+        }
+
+        internal void SendComp(SupportSys.SupportComponent comp)
+        {
+            if (IsServer)
+            {
+
+                const PacketType type = PacketType.SupportComp;
+                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
+
+                PacketInfo oldInfo;
+                SupportCompPacket iPacket;
+                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo))
+                {
+                    iPacket = (SupportCompPacket)oldInfo.Packet;
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.Data = comp.Data.Repo.Values;
+                }
+                else
+                {
+
+                    iPacket = PacketSupportCompPool.Get();
+                    iPacket.MId = ++comp.MIds[(int)type];
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.SenderId = MultiplayerId;
+                    iPacket.PType = type;
+                    iPacket.Data = comp.Data.Repo.Values;
+                }
+
+                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo
+                {
+                    Entity = comp.CoreEntity,
+                    Packet = iPacket,
+                };
+            }
+            else Log.Line($"SendComp should never be called on Client");
+        }
+
+        internal void SendComp(Phantom.PhantomComponent comp)
+        {
+            if (IsServer)
+            {
+
+                const PacketType type = PacketType.PhantomComp;
+                comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
+
+                PacketInfo oldInfo;
+                PhantomCompPacket iPacket;
+                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo))
+                {
+                    iPacket = (PhantomCompPacket)oldInfo.Packet;
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.Data = comp.Data.Repo.Values;
+                }
+                else
+                {
+
+                    iPacket = PacketPhantomCompPool.Get();
+                    iPacket.MId = ++comp.MIds[(int)type];
+                    iPacket.EntityId = comp.CoreEntity.EntityId;
+                    iPacket.SenderId = MultiplayerId;
+                    iPacket.PType = type;
+                    iPacket.Data = comp.Data.Repo.Values;
+                }
+
+                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo
+                {
+                    Entity = comp.CoreEntity,
+                    Packet = iPacket,
+                };
+            }
+            else Log.Line($"SendComp should never be called on Client");
+        }
+
+        internal void SendState(Weapon.WeaponComponent comp)
+        {
+            if (IsServer)
+            {
+
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values))
+                {
+
+                    const PacketType type = PacketType.WeaponState;
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
+
                     PacketInfo oldInfo;
-                    TargetPacket iPacket;
-                    if (PrunedPacketsToClient.TryGetValue(w.TargetData, out oldInfo)) {
-                        iPacket = (TargetPacket)oldInfo.Packet;
+                    WeaponStatePacket iPacket;
+                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo))
+                    {
+                        iPacket = (WeaponStatePacket)oldInfo.Packet;
                         iPacket.EntityId = comp.CoreEntity.EntityId;
-                        iPacket.Target = w.TargetData;
+                        iPacket.Data = comp.Data.Repo.Values.State;
                     }
-                    else {
-                        iPacket = PacketTargetPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
+                    else
+                    {
+                        iPacket = PacketWeaponStatePool.Get();
+                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
-                        iPacket.Target = w.TargetData;
+                        iPacket.Data = comp.Data.Repo.Values.State;
                     }
 
-
-                    PrunedPacketsToClient[w.TargetData] = new PacketInfo {
+                    PrunedPacketsToClient[comp.Data.Repo.Values.State] = new PacketInfo
+                    {
                         Entity = comp.CoreEntity,
                         Packet = iPacket,
                     };
                 }
                 else
-                    SendCompBaseData(comp);
+                    SendComp(comp);
+
             }
-            else Log.Line($"SendTargetChange should never be called on Client");
+            else Log.Line($"SendState should never be called on Client");
         }
 
-        internal void SendCompState(Weapon.WeaponComponent comp)
+        internal void SendState(SupportSys.SupportComponent comp)
         {
             if (IsServer) {
 
                 if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values)) {
 
-                    const PacketType type = PacketType.CompState;
-                    comp.Data.Repo.Values.UpdateCompBasePacketInfo(comp);
+                    const PacketType type = PacketType.SupportState;
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
 
                     PacketInfo oldInfo;
-                    CompStatePacket iPacket;
+                    SupportStatePacket iPacket;
                     if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo)) {
-                        iPacket = (CompStatePacket)oldInfo.Packet;
+                        iPacket = (SupportStatePacket)oldInfo.Packet;
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.Data = comp.Data.Repo.Values.State;
                     }
                     else {
-                        iPacket = PacketStatePool.Get();
+                        iPacket = PacketSupportStatePool.Get();
                         iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
@@ -318,12 +426,137 @@ namespace WeaponCore
                     };
                 }
                 else
-                    SendCompBaseData(comp);
+                    SendComp(comp);
 
             }
-            else Log.Line($"SendCompState should never be called on Client");
+            else Log.Line($"SendState should never be called on Client");
         }
 
+        internal void SendState(Upgrade.UpgradeComponent comp)
+        {
+            if (IsServer)
+            {
+
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values))
+                {
+
+                    const PacketType type = PacketType.UpgradeState;
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
+
+                    PacketInfo oldInfo;
+                   UpgradeStatePacket iPacket;
+                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo))
+                    {
+                        iPacket = (UpgradeStatePacket)oldInfo.Packet;
+                        iPacket.EntityId = comp.CoreEntity.EntityId;
+                        iPacket.Data = comp.Data.Repo.Values.State;
+                    }
+                    else
+                    {
+                        iPacket = PacketUpgradeStatePool.Get();
+                        iPacket.MId = ++comp.MIds[(int)type];
+                        iPacket.EntityId = comp.CoreEntity.EntityId;
+                        iPacket.SenderId = MultiplayerId;
+                        iPacket.PType = type;
+                        iPacket.Data = comp.Data.Repo.Values.State;
+                    }
+
+                    PrunedPacketsToClient[comp.Data.Repo.Values.State] = new PacketInfo
+                    {
+                        Entity = comp.CoreEntity,
+                        Packet = iPacket,
+                    };
+                }
+                else
+                    SendComp(comp);
+
+            }
+            else Log.Line($"SendState should never be called on Client");
+        }
+        internal void SendState(Phantom.PhantomComponent comp)
+        {
+            if (IsServer)
+            {
+
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values))
+                {
+
+                    const PacketType type = PacketType.PhantomState;
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
+
+                    PacketInfo oldInfo;
+                    PhantomStatePacket iPacket;
+                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo))
+                    {
+                        iPacket = (PhantomStatePacket)oldInfo.Packet;
+                        iPacket.EntityId = comp.CoreEntity.EntityId;
+                        iPacket.Data = comp.Data.Repo.Values.State;
+                    }
+                    else
+                    {
+                        iPacket = PacketPhantomStatePool.Get();
+                        iPacket.MId = ++comp.MIds[(int)type];
+                        iPacket.EntityId = comp.CoreEntity.EntityId;
+                        iPacket.SenderId = MultiplayerId;
+                        iPacket.PType = type;
+                        iPacket.Data = comp.Data.Repo.Values.State;
+                    }
+
+                    PrunedPacketsToClient[comp.Data.Repo.Values.State] = new PacketInfo
+                    {
+                        Entity = comp.CoreEntity,
+                        Packet = iPacket,
+                    };
+                }
+                else
+                    SendComp(comp);
+
+            }
+            else Log.Line($"SendState should never be called on Client");
+        }
+
+        internal void SendTargetChange(Weapon.WeaponComponent comp, int partId)
+        {
+            if (IsServer)
+            {
+
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values))
+                {
+
+                    const PacketType type = PacketType.TargetChange;
+                    comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
+
+                    var w = comp.Platform.Weapons[partId];
+                    PacketInfo oldInfo;
+                    TargetPacket iPacket;
+                    if (PrunedPacketsToClient.TryGetValue(w.TargetData, out oldInfo))
+                    {
+                        iPacket = (TargetPacket)oldInfo.Packet;
+                        iPacket.EntityId = comp.CoreEntity.EntityId;
+                        iPacket.Target = w.TargetData;
+                    }
+                    else
+                    {
+                        iPacket = PacketTargetPool.Get();
+                        iPacket.MId = ++w.MIds[(int)type];
+                        iPacket.EntityId = comp.CoreEntity.EntityId;
+                        iPacket.SenderId = MultiplayerId;
+                        iPacket.PType = type;
+                        iPacket.Target = w.TargetData;
+                    }
+
+
+                    PrunedPacketsToClient[w.TargetData] = new PacketInfo
+                    {
+                        Entity = comp.CoreEntity,
+                        Packet = iPacket,
+                    };
+                }
+                else
+                    SendComp(comp);
+            }
+            else Log.Line($"SendTargetChange should never be called on Client");
+        }
 
         internal void SendWeaponReload(Weapon w)
         {
@@ -332,7 +565,7 @@ namespace WeaponCore
                 if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Values)) {
 
                     const PacketType type = PacketType.WeaponReload;
-                    w.Comp.Data.Repo.Values.UpdateCompBasePacketInfo(w.Comp);
+                    w.Comp.Data.Repo.Values.UpdateCompPacketInfo(w.Comp);
 
                     PacketInfo oldInfo;
                     WeaponReloadPacket iPacket;
@@ -357,7 +590,7 @@ namespace WeaponCore
                     };
                 }
                 else 
-                    SendCompBaseData(w.Comp);
+                    SendComp(w.Comp);
             }
             else Log.Line($"SendWeaponReload should never be called on Client");
         }
@@ -996,7 +1229,7 @@ namespace WeaponCore
             }
             else if (HandlesInput) {
                 comp.Data.Repo.Values.State.TrackingReticle = track;
-                SendCompBaseData(comp);
+                SendComp(comp);
             }
         }
 

@@ -1,24 +1,22 @@
 ﻿using System.Collections.Generic;
-using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
-    public partial class Upgrade : Part
+    public partial class Phantom : Part
     {
-        public class UpgradeComponent : CoreComponent
+        public class PhantomComponent : CoreComponent
         {
-            internal UpgradeCompData Data;
-
-            internal UpgradeComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
+            internal PhantomCompData Data;
+            internal PhantomComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
-                Data = new UpgradeCompData(this);
-                base.Init(session, coreEntity, true, Data, ((MyCubeBlock)coreEntity).CubeGrid, id);
+                Data = new PhantomCompData(this);
+                base.Init(session, coreEntity, false, Data, coreEntity, id);
             }
 
-            internal void DetectStateChanges()
+            internal void OtherDetectStateChanges()
             {
                 if (Platform.State != CorePlatform.PlatformState.Ready)
                     return;
@@ -68,8 +66,8 @@ namespace WeaponCore.Platform
             internal void ResetPlayerControl()
             {
                 Data.Repo.Values.State.PlayerId = -1;
-                Data.Repo.Values.State.Control = ProtoUpgradeState.ControlMode.None;
-                Data.Repo.Values.Set.Overrides.Control = ProtoUpgradeOverrides.ControlModes.Auto;
+                Data.Repo.Values.State.Control = ProtoPhantomState.ControlMode.None;
+                Data.Repo.Values.Set.Overrides.Control = ProtoPhantomOverrides.ControlModes.Auto;
 
                 var tAction = Data.Repo.Values.State.TerminalAction;
                 if (tAction == TriggerActions.TriggerOnce || tAction == TriggerActions.TriggerClick)
@@ -79,7 +77,7 @@ namespace WeaponCore.Platform
             }
 
 
-            internal static void RequestSetValue(UpgradeComponent comp, string setting, int value, long playerId)
+            internal static void RequestSetValue(PhantomComponent comp, string setting, int value, long playerId)
             {
                 if (comp.Session.IsServer)
                 {
@@ -91,7 +89,7 @@ namespace WeaponCore.Platform
                 }
             }
 
-            internal static void SetValue(UpgradeComponent comp, string setting, int v, long playerId)
+            internal static void SetValue(PhantomComponent comp, string setting, int v, long playerId)
             {
                 var o = comp.Data.Repo.Values.Set.Overrides;
                 var enabled = v > 0;
@@ -109,11 +107,11 @@ namespace WeaponCore.Platform
                         o.SubSystem = (PartDefinition.TargetingDef.BlockTypes)v;
                         break;
                     case "MovementModes":
-                        o.MoveMode = (ProtoUpgradeOverrides.MoveModes)v;
+                        o.MoveMode = (ProtoPhantomOverrides.MoveModes)v;
                         clearTargets = true;
                         break;
                     case "ControlModes":
-                        o.Control = (ProtoUpgradeOverrides.ControlModes)v;
+                        o.Control = (ProtoPhantomOverrides.ControlModes)v;
                         clearTargets = true;
                         break;
                     case "FocusSubSystem":
@@ -158,29 +156,29 @@ namespace WeaponCore.Platform
                     comp.Session.SendComp(comp);
             }
 
-            internal static void ResetCompState(UpgradeComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
+            internal static void ResetCompState(PhantomComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
             {
                 var o = comp.Data.Repo.Values.Set.Overrides;
-                var userControl = o.Control != ProtoUpgradeOverrides.ControlModes.Auto;
+                var userControl = o.Control != ProtoPhantomOverrides.ControlModes.Auto;
 
                 if (userControl)
                 {
                     comp.Data.Repo.Values.State.PlayerId = playerId;
-                    comp.Data.Repo.Values.State.Control = ProtoUpgradeState.ControlMode.Ui;
+                    comp.Data.Repo.Values.State.Control = ProtoPhantomState.ControlMode.Ui;
                     if (settings != null) settings["ControlModes"] = (int)o.Control;
                     comp.Data.Repo.Values.State.TerminalActionSetter(comp, TriggerActions.TriggerOff);
                 }
                 else
                 {
                     comp.Data.Repo.Values.State.PlayerId = -1;
-                    comp.Data.Repo.Values.State.Control = ProtoUpgradeState.ControlMode.None;
+                    comp.Data.Repo.Values.State.Control = ProtoPhantomState.ControlMode.None;
                 }
 
                 if (resetTarget)
                     ClearParts(comp);
             }
 
-            private static void ClearParts(UpgradeComponent comp)
+            private static void ClearParts(PhantomComponent comp)
             {
                 for (int i = 0; i < comp.Platform.Upgrades.Count; i++)
                 {

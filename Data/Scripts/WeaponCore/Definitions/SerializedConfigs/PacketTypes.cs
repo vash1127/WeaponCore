@@ -13,9 +13,22 @@ namespace WeaponCore
     public enum PacketType
     {
         Invalid,
+
+        WeaponComp,
+        WeaponState,
+        WeaponReload,
+        WeaponAmmo,
+
+        UpgradeComp,
+        UpgradeState,
+
+        SupportComp,
+        SupportState,
+
+        PhantomComp,
+        PhantomState,
+
         AiData,
-        CompBase,
-        CompState,
         Construct,
         ConstructFoci,
         TargetChange,
@@ -46,8 +59,6 @@ namespace WeaponCore
         TerminalMonitor,
         ClientNotify,
         ServerData,
-        WeaponReload,
-        WeaponAmmo,
         QueueShot,
         PlayerState,
     }
@@ -68,8 +79,8 @@ namespace WeaponCore
     [ProtoInclude(16, typeof(OverRidesPacket))]
     [ProtoInclude(17, typeof(PlayerControlRequestPacket))]
     [ProtoInclude(18, typeof(TerminalMonitorPacket))]
-    [ProtoInclude(19, typeof(CompBasePacket))]
-    [ProtoInclude(20, typeof(CompStatePacket))]
+    [ProtoInclude(19, typeof(WeaponCompPacket))]
+    [ProtoInclude(20, typeof(WeaponStatePacket))]
     [ProtoInclude(21, typeof(TargetPacket))]
     [ProtoInclude(22, typeof(ConstructPacket))]
     [ProtoInclude(23, typeof(ConstructFociPacket))]
@@ -79,6 +90,12 @@ namespace WeaponCore
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
     [ProtoInclude(28, typeof(QueuedShotPacket))]
     [ProtoInclude(29, typeof(WeaponAmmoPacket))]
+    [ProtoInclude(30, typeof(UpgradeCompPacket))]
+    [ProtoInclude(31, typeof(UpgradeStatePacket))]
+    [ProtoInclude(30, typeof(SupportCompPacket))]
+    [ProtoInclude(31, typeof(SupportStatePacket))]
+    [ProtoInclude(30, typeof(PhantomCompPacket))]
+    [ProtoInclude(31, typeof(PhantomStatePacket))]
 
     public class Packet
     {
@@ -247,19 +264,6 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CompStatePacket : Packet
-    {
-        [ProtoMember(1)] internal ProtoWeaponState Data;
-        public CompStatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
     public class WeaponReloadPacket : Packet
     {
         [ProtoMember(1)] internal ProtoWeaponReload Data;
@@ -276,10 +280,101 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CompBasePacket : Packet
+    public class WeaponCompPacket : Packet
     {
         [ProtoMember(1)] internal ProtoWeaponComp Data;
-        public CompBasePacket() { }
+        public WeaponCompPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class WeaponStatePacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoWeaponState Data;
+        public WeaponStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class UpgradeCompPacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoUpgradeComp Data;
+        public UpgradeCompPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class UpgradeStatePacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoUpgradeState Data;
+        public UpgradeStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class SupportCompPacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoSupportComp Data;
+        public SupportCompPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class SupportStatePacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoSupportState Data;
+        public SupportStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class PhantomCompPacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoPhantomComp Data;
+        public PhantomCompPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class PhantomStatePacket : Packet
+    {
+        [ProtoMember(1)] internal ProtoPhantomState Data;
+        public PhantomStatePacket() { }
 
         public override void CleanUp()
         {

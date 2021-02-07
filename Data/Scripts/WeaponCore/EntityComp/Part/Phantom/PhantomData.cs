@@ -9,13 +9,13 @@ namespace WeaponCore.Platform
         internal class PhantomCompData : CompData
         {
             internal readonly PhantomComponent Comp;
-            internal PhantomProtoRepo ProtoRepo;
+            internal ProtoPhantomRepo Repo;
 
             internal PhantomCompData(PhantomComponent comp)
             {
                 base.Init(comp);
                 Comp = comp;
-                ProtoRepo = (PhantomProtoRepo)ProtoRepoBase;
+                Repo = (ProtoPhantomRepo)ProtoRepoBase;
             }
 
             internal void Load()

@@ -306,7 +306,7 @@ namespace WeaponCore.Platform
             var wasOver = PartState.Overheated;
             PartState.Overheated = true;
             if (System.Session.MpActive && System.Session.IsServer && !wasOver)
-                System.Session.SendCompState(Comp);
+                System.Session.SendState(Comp);
         }
 
         private void BurstMode()

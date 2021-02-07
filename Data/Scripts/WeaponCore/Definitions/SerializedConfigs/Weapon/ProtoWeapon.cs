@@ -88,7 +88,7 @@ namespace WeaponCore
     public class ProtoWeaponComp
     {
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public ProtoCompSettings Set;
+        [ProtoMember(2)] public ProtoWeaponSettings Set;
         [ProtoMember(3)] public ProtoWeaponState State;
         [ProtoMember(4)] public ProtoWeaponTransferTarget[] Targets;
         [ProtoMember(5)] public ProtoWeaponReload[] Reloads;
@@ -113,7 +113,7 @@ namespace WeaponCore
 
         }
 
-        public void UpdateCompBasePacketInfo(Weapon.WeaponComponent comp, bool clean = false)
+        public void UpdateCompPacketInfo(Weapon.WeaponComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
@@ -121,7 +121,7 @@ namespace WeaponCore
             if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out info))
             {
                 comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Values.State);
-                comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
+                comp.Session.PacketWeaponStatePool.Return((WeaponStatePacket)info.Packet);
             }
 
             for (int i = 0; i < Targets.Length; i++)
@@ -171,7 +171,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ProtoCompSettings
+    public class ProtoWeaponSettings
     {
         [ProtoMember(1), DefaultValue(true)] public bool Guidance = true;
         [ProtoMember(2), DefaultValue(1)] public int Overload = 1;
@@ -181,12 +181,12 @@ namespace WeaponCore
         [ProtoMember(6)] public ProtoWeaponOverrides Overrides;
 
 
-        public ProtoCompSettings()
+        public ProtoWeaponSettings()
         {
             Overrides = new ProtoWeaponOverrides();
         }
 
-        public void Sync(Weapon.WeaponComponent comp, ProtoCompSettings sync)
+        public void Sync(Weapon.WeaponComponent comp, ProtoWeaponSettings sync)
         {
             Guidance = sync.Guidance;
             Range = sync.Range;
@@ -258,7 +258,7 @@ namespace WeaponCore
             }
 
             if (syncWeapons)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
     }
 
@@ -283,7 +283,7 @@ namespace WeaponCore
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)
-                comp.Session.SendCompState(comp);
+                comp.Session.SendState(comp);
         }
 
     }

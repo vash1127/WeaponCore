@@ -195,10 +195,14 @@ namespace WeaponCore
 
                 if (comp.Platform.State == CorePlatform.PlatformState.Ready)
                 {
-                    comp.GeneralWeaponCleanUp();
-                    comp.StopAllSounds();
-                    comp.CleanCompParticles();
-                    comp.CleanCompSounds();
+                    if (comp.Type == CoreComponent.CompType.Weapon) {
+
+                        var wComp = (Weapon.WeaponComponent)comp;
+                        wComp.GeneralWeaponCleanUp();
+                        wComp.StopAllSounds();
+                        wComp.CleanCompParticles();
+                        wComp.CleanCompSounds();
+                    }
                     comp.Platform.RemoveParts(comp);
                 }
 

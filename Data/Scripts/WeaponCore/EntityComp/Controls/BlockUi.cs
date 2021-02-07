@@ -31,7 +31,7 @@ namespace WeaponCore
                 comp.Data.Repo.Values.Set.DpsModifier = newValue;
                 Weapon.WeaponComponent.SetDps(comp, true);
                 if (comp.Session.MpActive)
-                    comp.Session.SendCompBaseData(comp);
+                    comp.Session.SendComp(comp);
             }
             else
                 comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetDps);
@@ -48,7 +48,7 @@ namespace WeaponCore
                 comp.Data.Repo.Values.Set.Range = newValue;
                 Weapon.WeaponComponent.SetRange(comp);
                 if (comp.Session.MpActive)
-                    comp.Session.SendCompBaseData(comp);
+                    comp.Session.SendComp(comp);
             }
             else
                 comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetRange);
@@ -62,7 +62,7 @@ namespace WeaponCore
             if (comp.Session.IsServer) {
                 comp.Data.Repo.Values.Set.Guidance = newValue;
                 if (comp.Session.MpActive)
-                    comp.Session.SendCompBaseData(comp);
+                    comp.Session.SendComp(comp);
             }
             else
                 comp.Session.SendSetCompBoolRequest(comp, newValue, PacketType.RequestSetGuidance);
@@ -78,7 +78,7 @@ namespace WeaponCore
                 comp.Data.Repo.Values.Set.Overload = newValue ? 2 : 1;
                 Weapon.WeaponComponent.SetRof(comp);
                 if (comp.Session.MpActive)
-                    comp.Session.SendCompBaseData(comp);
+                    comp.Session.SendComp(comp);
             }
             else
                 comp.Session.SendSetCompBoolRequest(comp, newValue, PacketType.RequestSetOverload);
@@ -281,7 +281,7 @@ namespace WeaponCore
 
         internal static bool GetShowArea(IMyTerminalBlock block)
         {
-            var comp = block?.Components?.Get<Weapon.WeaponComponent>();
+            var comp = block?.Components?.Get<SupportSys.SupportComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
             return comp.Data.Repo.Values.Set.Overrides.ArmorShowArea;
 
@@ -289,11 +289,11 @@ namespace WeaponCore
 
         internal static void RequestSetShowArea(IMyTerminalBlock block, bool newValue)
         {
-            var comp = block?.Components?.Get<Weapon.WeaponComponent>();
+            var comp = block?.Components?.Get<SupportSys.SupportComponent>();
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            Weapon.WeaponComponent.RequestSetValue(comp, "ArmorShowArea", value, comp.Session.PlayerId);
+            SupportSys.SupportComponent.RequestSetValue(comp, "ArmorShowArea", value, comp.Session.PlayerId);
         }
 
         internal static void RequestSetShoot(IMyTerminalBlock block, bool newValue)
