@@ -13,6 +13,7 @@ namespace WeaponCore.Platform
             internal readonly Support.SupportCompData Data;
             internal SupportComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
+                Log.Line($"SupportComponent");
                 Data = new Support.SupportCompData(this);
                 base.Init(session, coreEntity, true, Data, ((MyCubeBlock)coreEntity).CubeGrid, id);
             }
@@ -62,7 +63,6 @@ namespace WeaponCore.Platform
                 else
                     Ai.AwakeComps++;
             }
-
 
 
             internal void ResetPlayerControl()
@@ -138,6 +138,7 @@ namespace WeaponCore.Platform
                         break;
                     case "ArmorShowArea":
                         o.ArmorShowArea = enabled;
+                        Log.Line($"state:{o.ArmorShowArea}");
                         break;
                     case "Biologicals":
                         o.Biologicals = enabled;

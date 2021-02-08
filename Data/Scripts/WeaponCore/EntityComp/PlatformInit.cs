@@ -121,6 +121,7 @@ namespace WeaponCore.Platform
             {
                 if (Comp.Type == CoreComponent.CompType.Weapon)
                 {
+                    Log.Line($"weapon");
                     if (Phantoms.Count > 0 || Support.Count > 0 || Upgrades.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
@@ -160,6 +161,8 @@ namespace WeaponCore.Platform
                 }
                 else if (Comp.Type == CoreComponent.CompType.Upgrade)
                 {
+                    Log.Line($"Upgrade");
+
                     if (Weapons.Count > 0 || Support.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
@@ -171,6 +174,8 @@ namespace WeaponCore.Platform
                 }
                 else if (Comp.Type == CoreComponent.CompType.Support)
                 {
+                    Log.Line($"Support");
+
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
@@ -182,6 +187,8 @@ namespace WeaponCore.Platform
                 }
                 else if (Comp.Type == CoreComponent.CompType.Phantom)
                 {
+                    Log.Line($"Phantom");
+
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || Support.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 

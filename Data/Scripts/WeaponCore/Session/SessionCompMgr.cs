@@ -105,6 +105,7 @@ namespace WeaponCore
                             CompsToStart.Add(new Upgrade.UpgradeComponent(this, entity, id.Value));
                             break;
                         case CoreStructure.StructureTypes.Support:
+                            Log.Line($"initcomp support");
                             CompsToStart.Add(new SupportSys.SupportComponent(this, entity, id.Value));
                             break;
                         case CoreStructure.StructureTypes.Phantom:

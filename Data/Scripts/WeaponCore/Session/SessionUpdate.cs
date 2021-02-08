@@ -23,9 +23,10 @@ namespace WeaponCore
                 ai.MyProjectiles = 0;
                 ai.ProInMinCacheRange = 0;
                 ai.AccelChecked = false;
+
                 if (ai.MarkedForClose || !ai.GridInit || ai.TopEntity == null || ai.Construct.RootAi == null || ai.TopEntity.MarkedForClose)
                     continue;
-                
+
                 ai.Concealed = ((uint)ai.TopEntity.Flags & 4) > 0;
                 if (ai.Concealed)
                     continue;
@@ -55,7 +56,6 @@ namespace WeaponCore
                         ai.Construct.RootAi.Construct.CheckEmptyWeapons();
                 }
 
-
                 ///
                 /// Upgrade update section
                 ///
@@ -70,18 +70,19 @@ namespace WeaponCore
                         uComp.DetectStateChanges();
                     }
 
+                    if (uComp.Platform.State != CorePlatform.PlatformState.Ready || uComp.IsAsleep || !uComp.IsWorking || uComp.CoreEntity.MarkedForClose || uComp.IsDisabled || uComp.LazyUpdate && !ai.DbUpdated && Tick > uComp.NextLazyUpdateStart)
+                        continue;
+
                     for (int j = 0; j < uComp.Platform.Upgrades.Count; j++)
                     {
                         var u = uComp.Platform.Upgrades[j];
                     }
                 }
-
                 ///
                 /// Support update section
                 ///
                 for (int i = 0; i < ai.SupportComps.Count; i++)
                 {
-
                     var sComp = ai.SupportComps[i];
                     if (sComp.Status != Started)
                         sComp.HealthCheck();
@@ -91,14 +92,17 @@ namespace WeaponCore
                         sComp.DetectStateChanges();
                     }
 
+                    if (sComp.Platform.State != CorePlatform.PlatformState.Ready || sComp.IsAsleep || !sComp.IsWorking || sComp.CoreEntity.MarkedForClose || sComp.IsDisabled || sComp.LazyUpdate && !ai.DbUpdated && Tick > sComp.NextLazyUpdateStart)
+                        continue;
+
                     for (int j = 0; j < sComp.Platform.Support.Count; j++)
                     {
-                        var a = sComp.Platform.Support[j];
-                        if (a.LastBlockRefreshTick < ai.LastBlockChangeTick)
-                            a.RefreshBlocks();
+                        var s = sComp.Platform.Support[j];
+                        if (s.LastBlockRefreshTick < ai.LastBlockChangeTick)
+                            s.RefreshBlocks();
 
-                        //if (a.ShowAffectedBlocks != sComp.Data.ProtoRepo.Values.Set.Overrides.ArmorShowArea)
-                            //a.ToggleAreaEffectDisplay();
+                        if (s.ShowAffectedBlocks != sComp.Data.Repo.Values.Set.Overrides.ArmorShowArea)
+                            s.ToggleAreaEffectDisplay();
                     }
                 }
 
@@ -110,6 +114,9 @@ namespace WeaponCore
                     var pComp = ai.PhantomComps[i];
                     if (pComp.Status != Started)
                         pComp.HealthCheck();
+
+                    if (pComp.Platform.State != CorePlatform.PlatformState.Ready || pComp.IsAsleep || !pComp.IsWorking || pComp.CoreEntity.MarkedForClose || pComp.IsDisabled)
+                        continue;
 
                     if (ai.DbUpdated || !pComp.UpdatedState)
                     {

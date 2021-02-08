@@ -84,7 +84,7 @@ namespace WeaponCore.Support
                             Log.Line($"CompAddFailed:<{sComp.CoreEntity.EntityId}> - comp({sComp.CoreEntity.DebugName}[{sComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
                             return;
                         }
-
+                        Log.Line($"ai add support");
                         SupportIdx.Add(sComp, SupportComps.Count);
                         SupportComps.Add(sComp);
                     }
@@ -211,7 +211,7 @@ namespace WeaponCore.Support
 
                 GridCurrentPower = 0;
                 GridMaxPower = 0;
-                var first = true;
+                var first = PowerBlock != null;
                 foreach (var comp in CompBase.Values)
                 {
                     if (!comp.IsBlock)

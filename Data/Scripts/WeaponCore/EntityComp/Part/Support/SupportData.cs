@@ -22,6 +22,7 @@ namespace WeaponCore.Platform
 
             internal void Load()
             {
+                Log.Line($"start support load");
                 if (Comp.CoreEntity.Storage == null) return;
 
                 ProtoSupportRepo load = null;
