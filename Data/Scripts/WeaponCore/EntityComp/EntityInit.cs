@@ -6,6 +6,7 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
+using static WeaponCore.CompData;
 namespace WeaponCore.Support
 {
     public partial class CoreComponent
@@ -24,6 +25,12 @@ namespace WeaponCore.Support
             {
                 if (CoreEntity.Storage == null)
                     BaseData.StorageInit();
+
+                BaseData.DataManager(DataState.Load);
+                BaseData.Change(DataState.Load);
+
+                if (Session.IsServer)
+                    BaseData.DataManager(DataState.Reset);
             }
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{BaseData.ProtoRepoBase == null} - cubeMarked:{CoreEntity.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }

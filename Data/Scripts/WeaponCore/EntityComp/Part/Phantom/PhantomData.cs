@@ -1,4 +1,6 @@
-﻿using VRage.Game;
+﻿using System;
+using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using WeaponCore.Support;
 
@@ -20,7 +22,79 @@ namespace WeaponCore.Platform
 
             internal void Load()
             {
+                if (Comp.CoreEntity.Storage == null) return;
 
+                ProtoPhantomRepo load = null;
+                string rawData;
+                bool validData = false;
+                if (Comp.CoreEntity.Storage.TryGetValue(Comp.Session.CompDataGuid, out rawData))
+                {
+                    try
+                    {
+                        var base64 = Convert.FromBase64String(rawData);
+                        load = MyAPIGateway.Utilities.SerializeFromBinary<ProtoPhantomRepo>(base64);
+                        validData = load != null;
+                    }
+                    catch (Exception e)
+                    {
+                        //Log.Line("Invalid PartState Loaded, Re-init");
+                    }
+                }
+
+                if (validData && load.Version == Session.VersionControl)
+                {
+                    Repo = load;
+
+                    for (int i = 0; i < Comp.Platform.Phantoms.Count; i++)
+                    {
+                        var p = Comp.Platform.Phantoms[i];
+
+                        p.PartState = Repo.Values.State.Phantoms[i];
+
+                        if (Comp.Session.IsServer)
+                        {
+                        }
+                        else
+                        {
+                        }
+                    }
+                }
+                else
+                {
+                    Repo = new ProtoPhantomRepo
+                    {
+                        Values = new ProtoPhantomComp
+                        {
+                            State = new ProtoPhantomState { Phantoms = new ProtoPhantomPartState[Comp.Platform.Support.Count] },
+                            Set = new ProtoPhantomSettings(),
+                        },
+                    };
+
+                    for (int i = 0; i < Comp.Platform.Phantoms.Count; i++)
+                    {
+                        var state = Repo.Values.State.Phantoms[i] = new ProtoPhantomPartState();
+                        var p = Comp.Platform.Phantoms[i];
+
+                        if (p != null)
+                        {
+                            p.PartState = state;
+                        }
+                    }
+
+                    Repo.Values.Set.Range = -1;
+                }
+            }
+            internal void Change(DataState state)
+            {
+                switch (state)
+                {
+                    case DataState.Load:
+                        Load();
+                        break;
+                    case DataState.Reset:
+                        Repo.ResetToFreshLoadState();
+                        break;
+                }
             }
         }
     }

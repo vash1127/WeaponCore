@@ -755,7 +755,7 @@ namespace WeaponCore.Api
 
         private static bool HasCoreWeapon(IMyTerminalBlock weaponBlock)
         {
-            return weaponBlock.Components.Has<CoreComponent>();
+            return weaponBlock.Components.Has<Weapon.WeaponComponent>();
         }
 
         private float GetOptimalDps(IMyEntity entity)

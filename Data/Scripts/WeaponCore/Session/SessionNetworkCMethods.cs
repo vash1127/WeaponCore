@@ -133,7 +133,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var compDataPacket = (WeaponCompPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<Weapon.WeaponComponent>();
+            var comp = ent?.Components.Get<CoreComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < packet.MId) {
@@ -153,7 +153,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var compStatePacket = (WeaponStatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<Weapon.WeaponComponent>();
+            var comp = ent?.Components.Get<CoreComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < packet.MId)  {

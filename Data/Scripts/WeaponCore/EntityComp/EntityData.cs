@@ -36,5 +36,29 @@ namespace WeaponCore
             }
 
         }
+        public enum DataState
+        {
+            Load,
+            Reset,
+        }
+
+        public void DataManager (DataState change)
+        {
+            switch (BaseComp.Type)
+            {
+                case CoreComponent.CompType.Upgrade:
+                    ((Upgrade.UpgradeComponent)BaseComp).Data.Change(change);
+                    break;
+                case CoreComponent.CompType.Support:
+                    ((SupportSys.SupportComponent)BaseComp).Data.Change(change);
+                    break;
+                case CoreComponent.CompType.Phantom:
+                    ((Phantom.PhantomComponent)BaseComp).Data.Change(change);
+                    break;
+                case CoreComponent.CompType.Weapon:
+                    ((Weapon.WeaponComponent)BaseComp).Data.Change(change);
+                    break;
+            }
+        }
     }
 }

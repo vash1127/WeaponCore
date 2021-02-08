@@ -138,7 +138,7 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
+                        var comp = blk?.Components?.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null)
                                 oldAction(blk);
@@ -153,7 +153,7 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
+                        var comp = blk?.Components?.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null)
                                 oldAction(blk);
@@ -165,7 +165,7 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => {
 
-                        var comp = blk.Components.Get<Weapon.WeaponComponent>();
+                        var comp = blk.Components.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             oldWriter(blk, sb);
                             return;
@@ -182,7 +182,7 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
+                        var comp = blk?.Components?.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null) oldAction(blk);
                             return;
@@ -194,7 +194,7 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) =>
                     {
-                        var comp = blk.Components.Get<Weapon.WeaponComponent>();
+                        var comp = blk.Components.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                         {
                             oldWriter(blk, sb);
@@ -212,7 +212,7 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<Weapon.WeaponComponent>();
+                        var comp = blk?.Components?.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             if (comp == null)  oldAction(blk);
                             return;
@@ -224,7 +224,7 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => {
 
-                        var comp = blk.Components.Get<Weapon.WeaponComponent>();
+                        var comp = blk.Components.Get<CoreComponent>();
                         if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
                             oldWriter(blk, sb);
                             return;

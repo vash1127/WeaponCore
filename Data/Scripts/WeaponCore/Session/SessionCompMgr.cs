@@ -78,6 +78,7 @@ namespace WeaponCore
                         continue;
                     IdToCompMap[comp.CoreEntity.EntityId] = comp;
                     comp.CoreEntity.Components.Add(comp);
+
                     CompsToStart.Remove(comp);
                 }
                 else {

@@ -181,9 +181,9 @@ namespace WeaponCore.Control
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Grids");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action.Name = new StringBuilder($"Grids On/Off");
-            action.Action = CustomActions.TerminalActionToggleArmorShowArea;
+            action.Action = CustomActions.SupportActionToggleShow;
             action.Writer = CustomActions.GridsWriter;
-            action.Enabled = TerminalHelpers.HasArmorEnhancer;
+            action.Enabled = TerminalHelpers.HasSupport;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

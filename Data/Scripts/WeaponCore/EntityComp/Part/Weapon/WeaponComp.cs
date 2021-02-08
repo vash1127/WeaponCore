@@ -90,11 +90,6 @@ namespace WeaponCore.Platform
 
             internal void OnAddedToSceneWeaponTasks(bool firstRun)
             {
-                Data.Load();
-
-                if (Session.IsServer)
-                    Data.Repo.ResetToFreshLoadState();
-
                 var maxTrajectory1 = 0f;
                 for (int i = 0; i < Platform.Weapons.Count; i++)
                 {

@@ -107,7 +107,19 @@ namespace WeaponCore.Platform
                     Repo.Values.Set.Range = -1;
                 }
             }
-        }
 
+            internal void Change(DataState state)
+            {
+                switch (state)
+                {
+                    case DataState.Load:
+                        Load();
+                        break;
+                    case DataState.Reset:
+                        Repo.ResetToFreshLoadState();
+                        break;
+                }
+            }
+        }
     }
 }

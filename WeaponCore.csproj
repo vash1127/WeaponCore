@@ -67,6 +67,10 @@
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Support\ProtoSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Upgrade\ProtoUpgrade.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Weapon\ProtoWeapon.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Support\SupportActions.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Support\SupportUi.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Upgrade\UpgradeActions.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Upgrade\UpgradeUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportComp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportData.cs" />
@@ -131,7 +135,7 @@
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\CreateCustomActions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\CustomActions.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Weapon\WeaponActions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\ModelSupport\PartInfo.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponReload.cs" />
@@ -140,7 +144,7 @@
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponState.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\BlockUi.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Weapon\WeaponUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponTrigger.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Weapon\WeaponTracking.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MiscTypes.cs" />

@@ -13,6 +13,32 @@ namespace WeaponCore
     public class ProtoSupportRepo : ProtoRepo
     {
         [ProtoMember(1)] public ProtoSupportComp Values;
+
+        public void ResetToFreshLoadState()
+        {
+            Values.State.TrackingReticle = false;
+            if (Values.State.TerminalAction == TriggerActions.TriggerOnce)
+                Values.State.TerminalAction = TriggerActions.TriggerOff;
+            for (int i = 0; i < Values.State.Support.Length; i++)
+            {
+                var ws = Values.State.Support[i];
+                ws.Heat = 0;
+                ws.Overheated = false;
+                if (ws.Action == TriggerActions.TriggerOnce)
+                    ws.Action = TriggerActions.TriggerOff;
+            }
+            ResetCompBaseRevisions();
+        }
+
+        public void ResetCompBaseRevisions()
+        {
+            Values.Revision = 0;
+            Values.State.Revision = 0;
+            for (int i = 0; i < Values.State.Support.Length; i++)
+            {
+                var p = Values.State.Support[i];
+            }
+        }
     }
 
 
