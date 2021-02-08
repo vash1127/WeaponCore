@@ -149,7 +149,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var cyclePacket = (AmmoCycleRequestPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
@@ -171,7 +171,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var controlPacket = (PlayerControlRequestPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
@@ -194,7 +194,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var reticlePacket = (BoolUpdatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
@@ -217,7 +217,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var overRidesPacket = (OverRidesPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             uint[] mIds;
@@ -261,7 +261,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var shootStatePacket = (ShootStatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 

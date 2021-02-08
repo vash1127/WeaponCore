@@ -140,7 +140,7 @@ namespace WeaponCore
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(CoreComponent comp, ProtoUpgradeState sync, Caller caller)
+        public void Sync(Upgrade.UpgradeComponent comp, ProtoUpgradeState sync, Caller caller)
         {
             if (sync.Revision > Revision)
             {

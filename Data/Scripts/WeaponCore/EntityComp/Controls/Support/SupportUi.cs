@@ -11,7 +11,7 @@ namespace WeaponCore
     {
         internal static bool GetShowArea(IMyTerminalBlock block)
         {
-            var comp = block?.Components?.Get<SupportSys.SupportComponent>();
+            var comp = block?.Components?.Get<CoreComponent>() as SupportSys.SupportComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
             return comp.Data.Repo.Values.Set.Overrides.ArmorShowArea;
 
@@ -19,7 +19,7 @@ namespace WeaponCore
 
         internal static void RequestSetShowArea(IMyTerminalBlock block, bool newValue)
         {
-            var comp = block?.Components?.Get<SupportSys.SupportComponent>();
+            var comp = block?.Components?.Get<CoreComponent>() as SupportSys.SupportComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;

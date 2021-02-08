@@ -128,12 +128,12 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientCompData(PacketObj data)
+        private bool ClientWeaponComp(PacketObj data)
         {
             var packet = data.Packet;
             var compDataPacket = (WeaponCompPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < packet.MId) {
@@ -148,18 +148,141 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientStateUpdate(PacketObj data)
+        private bool ClientWeaponState(PacketObj data)
         {
             var packet = data.Packet;
             var compStatePacket = (WeaponStatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < packet.MId)  {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
                 comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoWeaponState.Caller.Direct);
+            }
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientUpgradeComp(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compDataPacket = (UpgradeCompPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>() as Upgrade.UpgradeComponent;
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
+            }
+            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientUpgradeState(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compStatePacket = (UpgradeStatePacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>() as Upgrade.UpgradeComponent;
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoUpgradeState.Caller.Direct);
+            }
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientSupportComp(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compDataPacket = (SupportCompPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>() as SupportSys.SupportComponent;
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
+            }
+            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientSupportState(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compStatePacket = (SupportStatePacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>() as SupportSys.SupportComponent;
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoSupportState.Caller.Direct);
+            }
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientPhantomComp(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compDataPacket = (PhantomCompPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>() as Phantom.PhantomComponent;
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
+            }
+            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientPhantomState(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compStatePacket = (PhantomStatePacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<CoreComponent>() as Phantom.PhantomComponent;
+            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoPhantomState.Caller.Direct);
             }
 
             data.Report.PacketValid = true;

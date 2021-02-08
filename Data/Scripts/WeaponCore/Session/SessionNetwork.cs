@@ -96,8 +96,8 @@ namespace WeaponCore
                     }
                     case PacketType.ClientMouseEvent: 
                     {
-                            ClientClientMouseEvent(packetObj);
-                            break;
+                        ClientClientMouseEvent(packetObj);
+                        break;
                     }
                     case PacketType.Construct:
                     {
@@ -114,9 +114,44 @@ namespace WeaponCore
                         ClientAiDataUpdate(packetObj);
                         break;
                     }
+                    case PacketType.WeaponComp:
+                    {
+                        ClientWeaponComp(packetObj);
+                        break;
+                    }
                     case PacketType.WeaponState:
                     {
-                        ClientStateUpdate(packetObj);
+                        ClientWeaponState(packetObj);
+                        break;
+                    }
+                    case PacketType.UpgradeComp:
+                    {
+                        ClientUpgradeComp(packetObj);
+                        break;
+                    }
+                    case PacketType.UpgradeState:
+                    {
+                        ClientUpgradeState(packetObj);
+                        break;
+                    }
+                    case PacketType.SupportComp:
+                    {
+                        ClientSupportComp(packetObj);
+                        break;
+                    }
+                    case PacketType.SupportState:
+                    {
+                        ClientSupportState(packetObj);
+                        break;
+                    }
+                    case PacketType.PhantomComp:
+                    {
+                        ClientPhantomComp(packetObj);
+                        break;
+                    }
+                    case PacketType.PhantomState:
+                    {
+                        ClientPhantomState(packetObj);
                         break;
                     }
                     case PacketType.WeaponReload:
@@ -127,11 +162,6 @@ namespace WeaponCore
                     case PacketType.WeaponAmmo:
                     {
                         ClientWeaponAmmoUpdate(packetObj);
-                        break;
-                    }
-                    case PacketType.WeaponComp:
-                    {
-                        ClientCompData(packetObj);
                         break;
                     }
                     case PacketType.TargetChange:

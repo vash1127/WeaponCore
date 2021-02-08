@@ -27,7 +27,6 @@ namespace WeaponCore.Support
                     BaseData.StorageInit();
 
                 BaseData.DataManager(DataState.Load);
-                BaseData.Change(DataState.Load);
 
                 if (Session.IsServer)
                     BaseData.DataManager(DataState.Reset);
