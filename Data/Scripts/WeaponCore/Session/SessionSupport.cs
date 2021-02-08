@@ -701,7 +701,7 @@ namespace WeaponCore
             Fats,
         }
 
-        public static void GetCubesInRange(MyCubeGrid grid, MyCubeBlock rootBlock, int cubeDistance, Dictionary<MyCube, Vector3I> resultSet, out Vector3I min, out Vector3I max, CubeTypes types = CubeTypes.All)
+        public static void GetCubesInRange(MyCubeGrid grid, MyCubeBlock rootBlock, int cubeDistance, HashSet<MyCube> resultSet, out Vector3I min, out Vector3I max, CubeTypes types = CubeTypes.All)
         {
             resultSet.Clear();
             min = rootBlock.Min - cubeDistance;
@@ -725,11 +725,11 @@ namespace WeaponCore
                     if (next == slim.Position) {
 
                         if (types == CubeTypes.Slims && slim.FatBlock == null)
-                            resultSet[myCube] = next;
+                            resultSet.Add(myCube);
                         else if (types == CubeTypes.Fats && slim.FatBlock != null)
-                            resultSet[myCube] = next;
+                            resultSet.Add(myCube);
                         else if (types == CubeTypes.All)
-                            resultSet[myCube] = next;
+                            resultSet.Add(myCube);
                     }
                 }
                 iter.GetNext(out next);

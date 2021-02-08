@@ -129,7 +129,7 @@ namespace WeaponCore
                             foreach (var enhancer in DisplayAffectedArmor)
                             {
                                 var grid = enhancer.BaseComp.Ai.GridEntity;
-                                foreach (var myCube in enhancer.EnhancedArmorBlocks.Keys)
+                                foreach (var myCube in enhancer.SuppotedBlocks)
                                 {
                                     grid.ChangeColorAndSkin(myCube.CubeBlock, color);
                                 }
