@@ -257,7 +257,7 @@ namespace WeaponCore.Support
             return new Vector3D?((Vector3D)zero);
         }
 
-        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, PartDefinition.AmmoDef ammoDef, bool forceNoDraw = false)
+        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, bool forceNoDraw = false)
         {
             var af = ammoDef.AreaEffect;
             var justShrapnel = !af.Explosions.NoShrapnel && af.Explosions.NoDeformation;
@@ -317,7 +317,7 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, PartDefinition.AmmoDef ammoDef, Vector3 velocity)
+        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, Vector3 velocity)
         {
             var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;

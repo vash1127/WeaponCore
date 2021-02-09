@@ -7,7 +7,7 @@ using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.CoreComponent.Start;
 using static WeaponCore.Support.CoreComponent.TriggerActions;
-using static WeaponCore.Support.PartDefinition.HardPointDef.HardwareDef;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 using static WeaponCore.ProtoWeaponState;
 namespace WeaponCore
 {
@@ -47,7 +47,11 @@ namespace WeaponCore
 
                 if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
-
+                if (ai.DbUpdated && ai.IsGrid)
+                {
+                    ai.BlockChangeArea.Min *= ai.GridEntity.GridSize;
+                    ai.BlockChangeArea.Max *= ai.GridEntity.GridSize;
+                }
                 if (IsServer) {
 
                     if (ai.Construct.RootAi.Construct.NewInventoryDetected)
@@ -368,7 +372,15 @@ namespace WeaponCore
                     }
                 }
                 ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
-                ai.DbUpdated = false;
+                
+                if (ai.DbUpdated)
+                {
+                    ai.BlockChangeArea = BoundingBox.CreateInvalid();
+                    ai.DbUpdated = false;
+                    ai.AddedBlockPositions.Clear();
+                    ai.RemovedBlockPositions.Clear();
+                }
+
             }
 
             if (DbTask.IsComplete && DbsToUpdate.Count > 0 && !DbUpdating)
@@ -520,7 +532,7 @@ namespace WeaponCore
 
                 var w = ShootingWeapons[i];
                 var invalidWeapon = w.Comp.CoreEntity.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.TopEntity.MarkedForClose || w.Comp.Platform.State != CorePlatform.PlatformState.Ready;
-                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == PartDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
+                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
                 var quickSkip = invalidWeapon || w.Comp.IsBlock && smartTimer && !w.SmartLos() || w.PauseShoot;
                 if (quickSkip) continue;
 

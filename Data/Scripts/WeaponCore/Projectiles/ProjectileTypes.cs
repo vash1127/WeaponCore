@@ -10,7 +10,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-using static WeaponCore.Support.PartDefinition;
+using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.Ai;
 
 namespace WeaponCore.Support
@@ -21,7 +21,7 @@ namespace WeaponCore.Support
         internal readonly List<HitEntity> HitList = new List<HitEntity>(4);
 
         internal AvShot AvShot;
-        internal CoreSystem System;
+        internal WeaponSystem System;
         internal Ai Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
@@ -490,7 +490,7 @@ namespace WeaponCore.Support
 
     internal class Fragment
     {
-        public CoreSystem System;
+        public WeaponSystem System;
         public Ai Ai;
         public AmmoDef AmmoDef;
         public MyEntity PrimeEntity;

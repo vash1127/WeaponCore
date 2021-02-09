@@ -60,7 +60,7 @@ namespace WeaponCore
 
         internal static readonly HashSet<ulong> AuthorIds = new HashSet<ulong> { 76561197969691953, 76561198061737246, 76561198116813162 };
         internal readonly MyStringHash ShieldBypassDamageType = MyStringHash.GetOrCompute("bypass");
-        internal readonly MyConcurrentPool<ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>(64);
+        internal readonly MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>(64);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128, invMove => invMove.Clean());
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100, cList => cList.ClearImmediate());
@@ -100,7 +100,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<long, IMyCharacter> Admins = new ConcurrentDictionary<long, IMyCharacter>();
         internal readonly ConcurrentDictionary<IMyCharacter, IMyPlayer> AdminMap = new ConcurrentDictionary<IMyCharacter, IMyPlayer>();
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
-        internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<MyPhysicalInventoryItem>> InventoryItems = new ConcurrentDictionary<MyInventory, MyConcurrentList<MyPhysicalInventoryItem>>();
         internal readonly ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>> CoreInventoryItems = new ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<MyEntity, GridMap> GridToInfoMap = new ConcurrentDictionary<MyEntity, GridMap>();
@@ -149,7 +149,7 @@ namespace WeaponCore
         internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
-        internal readonly Dictionary<PartDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<PartDefinition.AmmoDef, AmmoModifer>();
+        internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
@@ -213,8 +213,19 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
         private readonly Dictionary<IMySlimBlock, float> _slimHealthClient = new Dictionary<IMySlimBlock, float>();
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
-        private readonly Dictionary<string, List<PartDefinition>> _subTypeIdToPartDefs = new Dictionary<string, List<PartDefinition>>();
+        
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeWeaponMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
+
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeUpgradeMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, List<UpgradeDefinition>> _subTypeIdUpgradeDefs = new Dictionary<string, List<UpgradeDefinition>>();
+
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeSupportMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, List<SupportDefinition>> _subTypeIdSupportDefs = new Dictionary<string, List<SupportDefinition>>();
+
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypePhantomMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, List<PhantomDefinition>> _subTypeIdPhantomDefs = new Dictionary<string, List<PhantomDefinition>>();
+
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
@@ -225,7 +236,11 @@ namespace WeaponCore
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
 
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
-        internal List<PartDefinition> PartDefinitions = new List<PartDefinition>();
+        internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
+        internal List<UpgradeDefinition> UpgradeDefinitions = new List<UpgradeDefinition>();
+        internal List<SupportDefinition> SupportDefinitions = new List<SupportDefinition>();
+        internal List<PhantomDefinition> PhantomDefinitions = new List<PhantomDefinition>();
+
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal Color[] HeatEmissives;

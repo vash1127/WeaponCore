@@ -24,24 +24,36 @@ namespace WeaponCore
 
                 if (baseDefArray != null) {
 
-                    AssemblePartDefinitions(baseDefArray.PartDefs);
-                    AssembleArmorDefinitions(baseDefArray.ArmorDefs);
+                    PickDef(baseDefArray);
                 }
                 else {
-                    var legacyArray = MyAPIGateway.Utilities.SerializeFromBinary<PartDefinition[]>(message);
+                    var legacyArray = MyAPIGateway.Utilities.SerializeFromBinary<WeaponDefinition[]>(message);
                     if (legacyArray != null)
                         AssemblePartDefinitions(legacyArray);
                 }
             }
             catch (Exception ex) { MyLog.Default.WriteLine($"Exception in Handler: {ex}"); }
         }
+        private void PickDef(ContainerDefinition baseDefArray)
+        {
+            if (baseDefArray.WeaponDefs != null)
+                AssemblePartDefinitions(baseDefArray.WeaponDefs);
+            else if (baseDefArray.SupportDefs != null)
+                AssemblePartDefinitions(baseDefArray.SupportDefs);
+            else if (baseDefArray.UpgradeDefs != null)
+                AssemblePartDefinitions(baseDefArray.UpgradeDefs);
+            else if (baseDefArray.PhantomDefs != null)
+                AssemblePartDefinitions(baseDefArray.PhantomDefs);
+            else if (baseDefArray.ArmorDefs != null)
+                AssembleArmorDefinitions(baseDefArray.ArmorDefs);
+        }
 
-        public void AssemblePartDefinitions(PartDefinition[] partDefs)
+        public void AssemblePartDefinitions(WeaponDefinition[] partDefs)
         {
             var subTypes = new HashSet<string>();
             foreach (var wepDef in partDefs)
             {
-                PartDefinitions.Add(wepDef);
+                WeaponDefinitions.Add(wepDef);
 
                 for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                     subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
@@ -63,6 +75,74 @@ namespace WeaponCore
                         weaponDef.ResourceSinkGroup = group;
                     }
                 }
+            }
+        }
+
+        public void AssemblePartDefinitions(UpgradeDefinition[] partDefs)
+        {
+            var subTypes = new HashSet<string>();
+            foreach (var upgradeDef in partDefs)
+            {
+                UpgradeDefinitions.Add(upgradeDef);
+
+                for (int i = 0; i < upgradeDef.Assignments.MountPoints.Length; i++)
+                    subTypes.Add(upgradeDef.Assignments.MountPoints[i].SubtypeId);
+            }
+            var group = MyStringHash.GetOrCompute("Charging");
+
+            foreach (var def in AllDefinitions)
+            {
+                if (subTypes.Contains(def.Id.SubtypeName))
+                {
+                    if (def is MyLargeTurretBaseDefinition)
+                    {
+                        var weaponDef = def as MyLargeTurretBaseDefinition;
+                        weaponDef.ResourceSinkGroup = group;
+                    }
+                    else if (def is MyConveyorSorterDefinition)
+                    {
+                        var weaponDef = def as MyConveyorSorterDefinition;
+                        weaponDef.ResourceSinkGroup = group;
+                    }
+                }
+            }
+        }
+
+        public void AssemblePartDefinitions(SupportDefinition[] partDefs)
+        {
+            var subTypes = new HashSet<string>();
+            foreach (var supportDef in partDefs)
+            {
+                SupportDefinitions.Add(supportDef);
+
+                for (int i = 0; i < supportDef.Assignments.MountPoints.Length; i++)
+                    subTypes.Add(supportDef.Assignments.MountPoints[i].SubtypeId);
+            }
+            var group = MyStringHash.GetOrCompute("Charging");
+
+            foreach (var def in AllDefinitions)
+            {
+                if (subTypes.Contains(def.Id.SubtypeName))
+                {
+                    if (def is MyLargeTurretBaseDefinition)
+                    {
+                        var weaponDef = def as MyLargeTurretBaseDefinition;
+                        weaponDef.ResourceSinkGroup = group;
+                    }
+                    else if (def is MyConveyorSorterDefinition)
+                    {
+                        var weaponDef = def as MyConveyorSorterDefinition;
+                        weaponDef.ResourceSinkGroup = group;
+                    }
+                }
+            }
+        }
+
+        public void AssemblePartDefinitions(PhantomDefinition[] partDefs)
+        {
+            foreach (var phantomDef in partDefs)
+            {
+                PhantomDefinitions.Add(phantomDef);
             }
         }
 

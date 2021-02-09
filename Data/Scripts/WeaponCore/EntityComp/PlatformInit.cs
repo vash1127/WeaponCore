@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Sandbox.ModAPI;
 using static WeaponCore.Support.CoreComponent.Start;
 using static WeaponCore.Support.CoreComponent.CompTypeSpecific;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -126,10 +126,11 @@ namespace WeaponCore.Platform
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
                     var partHashId = Structure.PartHashes[i];
-                    CoreSystem system;
-                    if (!Structure.PartSystems.TryGetValue(partHashId, out system))
+                    CoreSystem coreSystem;
+                    if (!Structure.PartSystems.TryGetValue(partHashId, out coreSystem) || !(coreSystem is WeaponSystem))
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) Invalid weapon system, I am crashing now Dave.");
 
+                    var system = (WeaponSystem)coreSystem;
                     var muzzlePartName = system.MuzzlePartName.String != "Designator" ? system.MuzzlePartName.String : system.ElevationPartName.String;
                     MyEntity muzzlePartEntity;
                     if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
@@ -166,10 +167,10 @@ namespace WeaponCore.Platform
                     if (Weapons.Count > 0 || Support.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
-                    CoreSystem system;
-                    if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
+                    CoreSystem coreSystem;
+                    if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out coreSystem) || !(coreSystem is UpgradeSystem))
                     {
-                        Upgrades.Add(new Upgrades(system, (Upgrade.UpgradeComponent)comp, i));
+                        Upgrades.Add(new Upgrades((UpgradeSystem)coreSystem, (Upgrade.UpgradeComponent)comp, i));
                     }
                 }
                 else if (Comp.Type == CoreComponent.CompType.Support)
@@ -179,10 +180,10 @@ namespace WeaponCore.Platform
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || Phantoms.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
-                    CoreSystem system;
-                    if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
+                    CoreSystem coreSystem;
+                    if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out coreSystem) || !(coreSystem is SupportSystem))
                     {
-                        Support.Add(new SupportSys(system, (SupportSys.SupportComponent)comp, i));
+                        Support.Add(new SupportSys((SupportSystem)coreSystem, (SupportSys.SupportComponent)comp, i));
                     }
                 }
                 else if (Comp.Type == CoreComponent.CompType.Phantom)
@@ -192,16 +193,16 @@ namespace WeaponCore.Platform
                     if (Weapons.Count > 0 || Upgrades.Count > 0 || Support.Count > 0)
                         return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
-                    CoreSystem system;
-                    if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out system))
+                    CoreSystem coreSystem;
+                    if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out coreSystem) || !(coreSystem is PhantomSystem))
                     {
-                        Phantoms.Add(new Phantoms(system, (Phantom.PhantomComponent)comp, i));
+                        Phantoms.Add(new Phantoms((PhantomSystem)coreSystem, (Phantom.PhantomComponent)comp, i));
                     }
                 }
             }
 
             if (Comp.Type == CoreComponent.CompType.Weapon)
-                CompileTurret(comp);
+                CompileTurret((Weapon.WeaponComponent)comp);
             
             _orderToCreate.Clear();
             State = PlatformState.Inited;
@@ -209,361 +210,374 @@ namespace WeaponCore.Platform
             return State;
         }
 
-        private void CompileTurret(CoreComponent comp, bool reset = false)
+        private void CompileTurret(Weapon.WeaponComponent comp, bool reset = false)
         {
             var c = 0;
             foreach (var pair in Structure.PartSystems)
             {
-                MyEntity muzzlePart = null;
-                var mPartName = pair.Value.MuzzlePartName.String;
-                var v = pair.Value;
+                var weaponSystem = pair.Value as WeaponSystem;
 
-                if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || v.DesignatorWeapon)
+                if (weaponSystem != null)
                 {
-                    var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
-                    var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" : v.ElevationPartName.String : v.ElevationPartName.String;
-                    var weapon = Weapons[c];
+                    MyEntity muzzlePart = null;
+                    var mPartName = weaponSystem.MuzzlePartName.String;
+                    var v = pair.Value;
 
-                    if (v.DesignatorWeapon)
+                    if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || weaponSystem.DesignatorWeapon)
                     {
-                        muzzlePart = weapon.ElevationPart.Entity;
-                        mPartName = elevationPartName;
-                    }
+                        var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.AzimuthPartName.String) ? "MissileTurretBase1" : weaponSystem.AzimuthPartName.String : weaponSystem.AzimuthPartName.String;
+                        var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.ElevationPartName.String) ? "MissileTurretBarrels" : weaponSystem.ElevationPartName.String : weaponSystem.ElevationPartName.String;
+                        var weapon = Weapons[c];
 
-                    weapon.MuzzlePart.Entity = muzzlePart;
-                    weapon.HeatingParts = new List<MyEntity> {weapon.MuzzlePart.Entity};
-
-                    if (mPartName != "None")
-                    {
-                        var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + mPartName, muzzlePart.Parent.Model);
-
-                        var muzzlePartPosTo = MatrixD.CreateTranslation(-muzzlePartLocation);
-                        var muzzlePartPosFrom = MatrixD.CreateTranslation(muzzlePartLocation);
-
-                        weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
-                        weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
-                        weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
-                        weapon.MuzzlePart.Entity.NeedsWorldMatrix = true;
-                    }
-
-                    if (weapon.AiOnlyWeapon)
-                    {
-                        var azimuthPart = weapon.AzimuthPart.Entity;
-                        var elevationPart = weapon.ElevationPart.Entity;
-                        if (azimuthPart != null && azimuthPartName != "None" && weapon.System.TurretMovement != CoreSystem.TurretType.ElevationOnly)
+                        if (weaponSystem.DesignatorWeapon)
                         {
+                            muzzlePart = weapon.ElevationPart.Entity;
+                            mPartName = elevationPartName;
+                        }
 
-                            var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
-                            var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
-                            if (partDummy == null)
+                        weapon.MuzzlePart.Entity = muzzlePart;
+                        weapon.HeatingParts = new List<MyEntity> { weapon.MuzzlePart.Entity };
+
+                        if (mPartName != "None")
+                        {
+                            var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + mPartName, muzzlePart.Parent.Model);
+
+                            var muzzlePartPosTo = MatrixD.CreateTranslation(-muzzlePartLocation);
+                            var muzzlePartPosFrom = MatrixD.CreateTranslation(muzzlePartLocation);
+
+                            weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
+                            weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
+                            weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
+                            weapon.MuzzlePart.Entity.NeedsWorldMatrix = true;
+                        }
+
+                        if (weapon.AiOnlyWeapon)
+                        {
+                            var azimuthPart = weapon.AzimuthPart.Entity;
+                            var elevationPart = weapon.ElevationPart.Entity;
+                            if (azimuthPart != null && azimuthPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.ElevationOnly)
                             {
-                                PlatformCrash(comp, true, true, $"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
-                                return;
+
+                                var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
+                                var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
+                                if (partDummy == null)
+                                {
+                                    PlatformCrash(comp, true, true, $"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
+                                    return;
+                                }
+
+                                var azPartPosTo = MatrixD.CreateTranslation(-azimuthPartLocation);
+                                var azPrtPosFrom = MatrixD.CreateTranslation(azimuthPartLocation);
+
+                                var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, -weaponSystem.AzStep) * azPrtPosFrom;
+
+                                var rFullStepAzRotation = MatrixD.Invert(fullStepAzRotation);
+
+                                weapon.AzimuthPart.RotationAxis = partDummy.Matrix.Up;
+
+                                weapon.AzimuthPart.ToTransformation = azPartPosTo;
+                                weapon.AzimuthPart.FromTransformation = azPrtPosFrom;
+                                weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
+                                weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
+                                weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
+                                weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrixRef;
+                                //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
+
                             }
-
-                            var azPartPosTo = MatrixD.CreateTranslation(-azimuthPartLocation);
-                            var azPrtPosFrom = MatrixD.CreateTranslation(azimuthPartLocation);
-
-                            var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, - v.AzStep) * azPrtPosFrom;
-
-                            var rFullStepAzRotation = MatrixD.Invert(fullStepAzRotation);
-
-                            weapon.AzimuthPart.RotationAxis = partDummy.Matrix.Up;
-
-                            weapon.AzimuthPart.ToTransformation = azPartPosTo;
-                            weapon.AzimuthPart.FromTransformation = azPrtPosFrom;
-                            weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
-                            weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
-                            weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
-                            weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrixRef;
-                            //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
-
-                        }
-                        else
-                        {
-                            weapon.AzimuthPart.RotationAxis = Vector3.Zero;
-                            weapon.AzimuthPart.ToTransformation = MatrixD.Zero;
-                            weapon.AzimuthPart.FromTransformation = MatrixD.Zero;
-                            weapon.AzimuthPart.FullRotationStep = MatrixD.Zero;
-                            weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
-                            weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
-                            weapon.AzimuthPart.OriginalPosition = MatrixD.Zero;
-                            //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
-
-                        }
-
-                        if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != CoreSystem.TurretType.AzimuthOnly)
-                        {
-                            var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
-                            var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
-                            if (partDummy == null) {
-                                PlatformCrash(comp, true, true, $"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
-                                return;
-                            }
-                            var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
-                            var elPartPosFrom = MatrixD.CreateTranslation(elevationPartLocation);
-
-                            var fullStepElRotation = elPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Left, v.ElStep) * elPartPosFrom;
-
-                            var rFullStepElRotation = MatrixD.Invert(fullStepElRotation);
-
-                            weapon.ElevationPart.RotationAxis = partDummy.Matrix.Left;
-                            weapon.ElevationPart.ToTransformation = elPartPosTo;
-                            weapon.ElevationPart.FromTransformation = elPartPosFrom;
-                            weapon.ElevationPart.FullRotationStep = fullStepElRotation;
-                            weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
-                            weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
-                            weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrix;
-                            //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
-
-                        }
-                        else if (elevationPartName == "None")
-                        {
-                            weapon.ElevationPart.RotationAxis = Vector3.Zero;
-                            weapon.ElevationPart.ToTransformation = MatrixD.Zero;
-                            weapon.ElevationPart.FromTransformation = MatrixD.Zero;
-                            weapon.ElevationPart.FullRotationStep = MatrixD.Zero;
-                            weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
-                            weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
-                            weapon.ElevationPart.OriginalPosition = MatrixD.Zero;
-                            //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
-                        }
-                    }
-
-                    var barrelCount = v.Barrels.Length;
-
-                    if (mPartName != "Designator")
-                    {
-                        weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
-                        weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
-
-                    }
-                    else
-                    {
-                        if (weapon.ElevationPart.Entity != null)
-                        {
-                            weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
-                            weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
-                            
-                        }
-                        else
-                        {
-                            weapon.AzimuthPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
-                            weapon.AzimuthPart.Entity.OnMarkForClose += weapon.EntPartClose;
-                        }
-                    }
-
-                    for (int i = 0; i < barrelCount; i++)
-                    {
-                        var barrel = v.Barrels[i];
-
-                        weapon.MuzzleIdToName.Add(i, barrel);
-                        if (weapon.Muzzles[i] == null)
-                        {
-                            weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, weapon, barrel);
-                            weapon.Muzzles[i] = new Weapon.Muzzle(weapon, i, comp.Session);
-                        }
-                        else
-                            weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
-                    }
-
-                    for (int i = 0; i < v.HeatingSubparts.Length; i++)
-                    {
-                        var partName = v.HeatingSubparts[i];
-                        MyEntity ent;
-                        if (Parts.NameToEntity.TryGetValue(partName, out ent))
-                        {
-                            weapon.HeatingParts.Add(ent);
-                            try
+                            else
                             {
-                                ent.SetEmissiveParts("Heating", Color.Transparent, 0);
+                                weapon.AzimuthPart.RotationAxis = Vector3.Zero;
+                                weapon.AzimuthPart.ToTransformation = MatrixD.Zero;
+                                weapon.AzimuthPart.FromTransformation = MatrixD.Zero;
+                                weapon.AzimuthPart.FullRotationStep = MatrixD.Zero;
+                                weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
+                                weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
+                                weapon.AzimuthPart.OriginalPosition = MatrixD.Zero;
+                                //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
+
                             }
-                            catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
-                        }
-                    }
 
-                    //was run only on weapon first build, needs to run every reset as well
-                    try
-                    {
-                        foreach (var emissive in weapon.System.WeaponEmissiveSet)
-                        {
-                            if (emissive.Value.EmissiveParts == null) continue;
-
-                            foreach (var part in emissive.Value.EmissiveParts)
+                            if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.AzimuthOnly)
                             {
-                                Parts.SetEmissiveParts(part, Color.Transparent, 0);
+                                var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
+                                var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
+                                if (partDummy == null)
+                                {
+                                    PlatformCrash(comp, true, true, $"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
+                                    return;
+                                }
+                                var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
+                                var elPartPosFrom = MatrixD.CreateTranslation(elevationPartLocation);
+
+                                var fullStepElRotation = elPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Left, weaponSystem.ElStep) * elPartPosFrom;
+
+                                var rFullStepElRotation = MatrixD.Invert(fullStepElRotation);
+
+                                weapon.ElevationPart.RotationAxis = partDummy.Matrix.Left;
+                                weapon.ElevationPart.ToTransformation = elPartPosTo;
+                                weapon.ElevationPart.FromTransformation = elPartPosFrom;
+                                weapon.ElevationPart.FullRotationStep = fullStepElRotation;
+                                weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
+                                weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
+                                weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrix;
+                                //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+
+                            }
+                            else if (elevationPartName == "None")
+                            {
+                                weapon.ElevationPart.RotationAxis = Vector3.Zero;
+                                weapon.ElevationPart.ToTransformation = MatrixD.Zero;
+                                weapon.ElevationPart.FromTransformation = MatrixD.Zero;
+                                weapon.ElevationPart.FullRotationStep = MatrixD.Zero;
+                                weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
+                                weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
+                                weapon.ElevationPart.OriginalPosition = MatrixD.Zero;
+                                //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                             }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        //cant check for emissives so may be null ref
-                    }
 
-                    if (weapon.Comp.FunctionalBlock.Enabled)
-                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
+                        var barrelCount = weaponSystem.Barrels.Length;
+
+                        if (mPartName != "Designator")
+                        {
+                            weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                            weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
+
+                        }
                         else
-                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAv, null, 4);
+                        {
+                            if (weapon.ElevationPart.Entity != null)
+                            {
+                                weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                                weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
 
-                    c++;
+                            }
+                            else
+                            {
+                                weapon.AzimuthPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                                weapon.AzimuthPart.Entity.OnMarkForClose += weapon.EntPartClose;
+                            }
+                        }
+
+                        for (int i = 0; i < barrelCount; i++)
+                        {
+                            var barrel = weaponSystem.Barrels[i];
+
+                            weapon.MuzzleIdToName.Add(i, barrel);
+                            if (weapon.Muzzles[i] == null)
+                            {
+                                weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, weapon, barrel);
+                                weapon.Muzzles[i] = new Weapon.Muzzle(weapon, i, comp.Session);
+                            }
+                            else
+                                weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
+                        }
+
+                        for (int i = 0; i < v.HeatingSubparts.Length; i++)
+                        {
+                            var partName = v.HeatingSubparts[i];
+                            MyEntity ent;
+                            if (Parts.NameToEntity.TryGetValue(partName, out ent))
+                            {
+                                weapon.HeatingParts.Add(ent);
+                                try
+                                {
+                                    ent.SetEmissiveParts("Heating", Color.Transparent, 0);
+                                }
+                                catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
+                            }
+                        }
+
+                        //was run only on weapon first build, needs to run every reset as well
+                        try
+                        {
+                            foreach (var emissive in weapon.System.PartEmissiveSet)
+                            {
+                                if (emissive.Value.EmissiveParts == null) continue;
+
+                                foreach (var part in emissive.Value.EmissiveParts)
+                                {
+                                    Parts.SetEmissiveParts(part, Color.Transparent, 0);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //cant check for emissives so may be null ref
+                        }
+
+                        if (weapon.Comp.FunctionalBlock.Enabled)
+                            if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                                weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
+                            else
+                            if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                                weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAv, null, 4);
+
+                        c++;
+
+                    }
                 }
+
             }
         }
 
-        internal void ResetTurret(CoreComponent comp)
+        internal void ResetTurret(Weapon.WeaponComponent comp)
         {
             var c = 0;
             var registered = false;
             foreach (var pair in Structure.PartSystems)
             {
-                MyEntity muzzlePart = null;
-                var mPartName = pair.Value.MuzzlePartName.String;
-                var v = pair.Value;
-
-                if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || v.DesignatorWeapon)
+                var weaponSystem = pair.Value as WeaponSystem;
+                if (weaponSystem != null)
                 {
-                    if (!registered)
+                    MyEntity muzzlePart = null;
+                    var mPartName = weaponSystem.MuzzlePartName.String;
+                    var v = pair.Value;
+
+                    if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || weaponSystem.DesignatorWeapon)
                     {
-                        Parts.NameToEntity.FirstPair().Value.OnClose += Comp.SubpartClosed;
-                        registered = true;
-                    }
-
-                    var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.AzimuthPartName.String) ? "MissileTurretBase1" : v.AzimuthPartName.String : v.AzimuthPartName.String;
-                    var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(v.ElevationPartName.String) ? "MissileTurretBarrels" :v.ElevationPartName.String : v.ElevationPartName.String;
-                    var weapon = Weapons[c];
-                    MyEntity azimuthPartEntity;
-                    if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
-                    {
-                        weapon.AzimuthPart.Entity = azimuthPartEntity;
-                        weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
-                        weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
-                    }
-
-                    MyEntity elevationPartEntity;
-                    if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
-                    {
-                        weapon.ElevationPart.Entity = elevationPartEntity;
-                        weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
-                    }
-
-                    string ejectorMatch;
-                    MyEntity ejectorPart;
-                    if (weapon.System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Ejector, weapon.System.AltEjectorName, out ejectorPart, out ejectorMatch))
-                        weapon.Ejector.Entity = ejectorPart;
-
-                    string scopeMatch;
-                    MyEntity scopePart;
-                    if ((weapon.System.HasScope) && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Scope, weapon.System.AltScopeName, out scopePart, out scopeMatch))
-                        weapon.Scope.Entity = scopePart;
-
-                    if (v.DesignatorWeapon)
-                        muzzlePart = weapon.ElevationPart.Entity;
-
-                    weapon.MuzzlePart.Entity = muzzlePart;
-
-                    weapon.HeatingParts.Clear();
-                    weapon.HeatingParts.Add(weapon.MuzzlePart.Entity);
-
-                    foreach (var animationSet in weapon.AnimationsSet)
-                    {
-                        for(int i = 0; i < animationSet.Value.Length; i++)
+                        if (!registered)
                         {
-                            var animation = animationSet.Value[i];
-                            MyEntity part;
-                            if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
+                            Parts.NameToEntity.FirstPair().Value.OnClose += Comp.SubpartClosed;
+                            registered = true;
+                        }
+
+                        var azimuthPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.AzimuthPartName.String) ? "MissileTurretBase1" : weaponSystem.AzimuthPartName.String : weaponSystem.AzimuthPartName.String;
+                        var elevationPartName = comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.ElevationPartName.String) ? "MissileTurretBarrels" : weaponSystem.ElevationPartName.String : weaponSystem.ElevationPartName.String;
+                        var weapon = Weapons[c];
+                        MyEntity azimuthPartEntity;
+                        if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
+                        {
+                            weapon.AzimuthPart.Entity = azimuthPartEntity;
+                            weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
+                            weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
+                        }
+
+                        MyEntity elevationPartEntity;
+                        if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
+                        {
+                            weapon.ElevationPart.Entity = elevationPartEntity;
+                            weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+                        }
+
+                        string ejectorMatch;
+                        MyEntity ejectorPart;
+                        if (weapon.System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Ejector, weapon.System.AltEjectorName, out ejectorPart, out ejectorMatch))
+                            weapon.Ejector.Entity = ejectorPart;
+
+                        string scopeMatch;
+                        MyEntity scopePart;
+                        if ((weapon.System.HasScope) && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Scope, weapon.System.AltScopeName, out scopePart, out scopeMatch))
+                            weapon.Scope.Entity = scopePart;
+
+                        if (weaponSystem.DesignatorWeapon)
+                            muzzlePart = weapon.ElevationPart.Entity;
+
+                        weapon.MuzzlePart.Entity = muzzlePart;
+
+                        weapon.HeatingParts.Clear();
+                        weapon.HeatingParts.Add(weapon.MuzzlePart.Entity);
+
+                        foreach (var animationSet in weapon.AnimationsSet)
+                        {
+                            for (int i = 0; i < animationSet.Value.Length; i++)
                             {
-                                animation.Part = part;
-                                //if (animation.Running)
-                                //  animation.Paused = true;
-                                animation.Reset();
+                                var animation = animationSet.Value[i];
+                                MyEntity part;
+                                if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
+                                {
+                                    animation.Part = part;
+                                    //if (animation.Running)
+                                    //  animation.Paused = true;
+                                    animation.Reset();
+                                }
                             }
                         }
-                    }
 
-                    foreach (var particleEvents in weapon.ParticleEvents)
-                    {
-                        for (int i = 0; i < particleEvents.Value.Length; i++)
+                        foreach (var particleEvents in weapon.ParticleEvents)
                         {
-                            var particle = particleEvents.Value[i];
+                            for (int i = 0; i < particleEvents.Value.Length; i++)
+                            {
+                                var particle = particleEvents.Value[i];
 
-                            MyEntity part;
-                            if (Parts.NameToEntity.TryGetValue(particle.PartName, out part))
-                                particle.MyDummy.Entity = part;
+                                MyEntity part;
+                                if (Parts.NameToEntity.TryGetValue(particle.PartName, out part))
+                                    particle.MyDummy.Entity = part;
+                            }
                         }
-                    }
 
-                    if (mPartName != "Designator")
-                    {
-                        weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
-                        weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
-                        
-                    }
-                    else
-                    {
-                        if (weapon.ElevationPart.Entity != null)
+                        if (mPartName != "Designator")
                         {
-                            weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
-                            weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
-                            
+                            weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                            weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
+
                         }
                         else
                         {
-                            weapon.AzimuthPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
-                            weapon.AzimuthPart.Entity.OnMarkForClose += weapon.EntPartClose;
-                        }
-                    }
-
-                    for (int i = 0; i < v.Barrels.Length; i++)
-                        weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
-
-
-                    for (int i = 0; i < v.HeatingSubparts.Length; i++)
-                    {
-                        var partName = v.HeatingSubparts[i];
-                        MyEntity ent;
-                        if (Parts.NameToEntity.TryGetValue(partName, out ent))
-                        {
-                            weapon.HeatingParts.Add(ent);
-                            try
+                            if (weapon.ElevationPart.Entity != null)
                             {
-                                ent.SetEmissiveParts("Heating", Color.Transparent, 0);
+                                weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                                weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
+
                             }
-                            catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
-                        }
-                    }
-
-                    //was run only on weapon first build, needs to run every reset as well
-                    try
-                    {
-                        foreach (var emissive in weapon.System.WeaponEmissiveSet)
-                        {
-                            if (emissive.Value.EmissiveParts == null) continue;
-
-                            foreach (var part in emissive.Value.EmissiveParts)
+                            else
                             {
-                                Parts.SetEmissiveParts(part, Color.Transparent, 0);
+                                weapon.AzimuthPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                                weapon.AzimuthPart.Entity.OnMarkForClose += weapon.EntPartClose;
                             }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        //cant check for emissives so may be null ref
-                    }
 
-                    if (weapon.Comp.IsWorking)
-                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
-                        else
-                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAv, null, 4);
+                        for (int i = 0; i < weaponSystem.Barrels.Length; i++)
+                            weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
+
+
+                        for (int i = 0; i < v.HeatingSubparts.Length; i++)
+                        {
+                            var partName = v.HeatingSubparts[i];
+                            MyEntity ent;
+                            if (Parts.NameToEntity.TryGetValue(partName, out ent))
+                            {
+                                weapon.HeatingParts.Add(ent);
+                                try
+                                {
+                                    ent.SetEmissiveParts("Heating", Color.Transparent, 0);
+                                }
+                                catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
+                            }
+                        }
+
+                        //was run only on weapon first build, needs to run every reset as well
+                        try
+                        {
+                            foreach (var emissive in weapon.System.PartEmissiveSet)
+                            {
+                                if (emissive.Value.EmissiveParts == null) continue;
+
+                                foreach (var part in emissive.Value.EmissiveParts)
+                                {
+                                    Parts.SetEmissiveParts(part, Color.Transparent, 0);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //cant check for emissives so may be null ref
+                        }
+
+                        if (weapon.Comp.IsWorking)
+                            if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                                weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
+                            else
+                            if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                                weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAv, null, 4);
+                    }
+                    c++;
                 }
-                c++;
+
             }
         }
 
-        internal void ResetParts(CoreComponent comp)
+        internal void ResetParts(Weapon.WeaponComponent comp)
         {
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
@@ -589,14 +603,14 @@ namespace WeaponCore.Platform
         {
             var ui = w.System.Values.HardPoint.Ui;
             w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || ui.ToggleGuidance;
-            w.BaseComp.HasStrengthSlider = w.BaseComp.HasStrengthSlider || (!w.CanUseChargeAmmo && ui.StrengthModifier && w.CanUseEnergyAmmo || w.CanUseHybridAmmo);
-            w.Comp.HasRofSlider = w.Comp.HasRofSlider || (ui.CycleRate && !w.CanUseChargeAmmo);
+            w.BaseComp.HasStrengthSlider = w.BaseComp.HasStrengthSlider || (!w.CanUseChargeAmmo && ui.DamageModifier && w.CanUseEnergyAmmo || w.CanUseHybridAmmo);
+            w.Comp.HasRofSlider = w.Comp.HasRofSlider || (ui.RateOfFire && !w.CanUseChargeAmmo);
             w.BaseComp.CanOverload = w.BaseComp.CanOverload || (ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
             w.BaseComp.HasTurret = w.BaseComp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
             w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets;
             w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
             w.Comp.ShootSubmerged = w.Comp.ShootSubmerged || w.System.Values.HardPoint.CanShootSubmerged;
-            if (ui.StrengthModifier || ui.EnableOverload || ui.CycleRate || ui.ToggleGuidance)
+            if (ui.DamageModifier || ui.EnableOverload || ui.RateOfFire || ui.ToggleGuidance)
                 w.BaseComp.UiEnabled = true;
 
             if (w.System.HasAmmoSelection)

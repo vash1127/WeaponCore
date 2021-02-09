@@ -3,7 +3,7 @@ using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.NewProjectile;
-using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 
 namespace WeaponCore.Projectiles
 {

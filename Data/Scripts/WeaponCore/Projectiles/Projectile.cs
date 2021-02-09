@@ -9,8 +9,8 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
-using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 
 namespace WeaponCore.Projectiles
 {

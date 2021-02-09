@@ -1,10 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
@@ -12,8 +10,8 @@ namespace WeaponCore.Platform
     internal class BlockSupports
     {
         internal readonly ConcurrentDictionary<MyStringHash, SupportSys.SupportComponent> ActiveSupports = new ConcurrentDictionary<MyStringHash, SupportSys.SupportComponent>(MyStringHash.Comparer);
-        internal Ai Ai;
         internal IMySlimBlock Block;
+        internal Ai Ai;
 
         internal bool AddSupport(SupportSys.SupportComponent support, MyCube myCube = null, Ai ai = null)
         {
@@ -50,5 +48,12 @@ namespace WeaponCore.Platform
             Log.Line($"cleaning up BlockSupport");
             return removed;
         }
+    }
+
+    internal struct BlockBackup
+    {
+        internal MyCube MyCube;
+        internal Vector3 OriginalColor;
+        internal MyStringHash OriginalSkin;
     }
 }

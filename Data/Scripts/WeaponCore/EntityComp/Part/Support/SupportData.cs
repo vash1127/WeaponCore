@@ -22,7 +22,6 @@ namespace WeaponCore.Platform
 
             internal void Load()
             {
-                Log.Line($"start support load");
                 if (Comp.CoreEntity.Storage == null) return;
 
                 ProtoSupportRepo load = null;
@@ -32,7 +31,6 @@ namespace WeaponCore.Platform
                 {
                     try
                     {
-                        Log.Line($"found something");
                         var base64 = Convert.FromBase64String(rawData);
                         load = MyAPIGateway.Utilities.SerializeFromBinary<ProtoSupportRepo>(base64);
                         validData = load != null;

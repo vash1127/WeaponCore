@@ -81,7 +81,7 @@ namespace WeaponCore.Platform
                         w.Target.ClientDirty = true;
 
                     if (w.ProtoWeaponAmmo.CurrentAmmo == 0 && !w.Reloading)
-                        w.EventTriggerStateChanged(PartDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.EmptyOnGameLoad, true);
+                        w.EventTriggerStateChanged(WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.EmptyOnGameLoad, true);
 
                     if (TypeSpecific == CompTypeSpecific.Rifle)
                         Ai.AiOwner = GunBase.OwnerId;
@@ -366,7 +366,7 @@ namespace WeaponCore.Platform
                         o.MinSize = v;
                         break;
                     case "SubSystems":
-                        o.SubSystem = (PartDefinition.TargetingDef.BlockTypes)v;
+                        o.SubSystem = (WeaponDefinition.TargetingDef.BlockTypes)v;
                         break;
                     case "MovementModes":
                         o.MoveMode = (ProtoWeaponOverrides.MoveModes)v;
@@ -458,7 +458,7 @@ namespace WeaponCore.Platform
 
                     var w = Platform.Weapons[i];
                     PartAnimation[] partArray;
-                    if (w.AnimationsSet.TryGetValue(PartDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.TurnOff, out partArray))
+                    if (w.AnimationsSet.TryGetValue(WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.TurnOff, out partArray))
                     {
                         for (int j = 0; j < partArray.Length; j++)
                             w.PlayEmissives(partArray[j]);
@@ -536,7 +536,7 @@ namespace WeaponCore.Platform
                     foreach (var w in Platform.Weapons)
                     {
 
-                        if (w.AvCapable && w.System.FiringSound == CoreSystem.FiringSoundState.WhenDone)
+                        if (w.AvCapable && w.System.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
                             Session.SoundsToClean.Add(new Session.CleanSound { Force = true, Emitter = w.FiringEmitter, EmitterPool = Session.Emitters, SoundPair = w.FiringSound, SoundPairPool = w.System.FireWhenDonePairs, SpawnTick = Session.Tick });
 
                         if (w.AvCapable && w.System.PreFireSound)

@@ -142,23 +142,29 @@ namespace WeaponCore
 
             foreach (var structure in PartPlatforms.Values)
             {
-                foreach (var system in structure.PartSystems)
+                foreach (var pair in structure.PartSystems)
                 {
-                    system.Value.PreFirePairs.Clear();
-                    system.Value.FireWhenDonePairs.Clear();
-                    system.Value.FirePerShotPairs.Clear();
-                    system.Value.RotatePairs.Clear();
-                    system.Value.ReloadPairs.Clear();
-                    foreach (var ammo in system.Value.AmmoTypes) {
-                        ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
-                        ammo.AmmoDef.Const.HitDefaultSoundPairs.Clear();
-                        ammo.AmmoDef.Const.HitVoxelSoundPairs.Clear();
-                        ammo.AmmoDef.Const.HitShieldSoundPairs.Clear();
-                        ammo.AmmoDef.Const.HitFloatingSoundPairs.Clear();
-                        ammo.AmmoDef.Const.HitPlayerSoundPairs.Clear();
-                        ammo.AmmoDef.Const.TravelSoundPairs.Clear();
-                        ammo.AmmoDef.Const.CustomSoundPairs.Clear();
+                    var system = pair.Value as WeaponSystem;
+                    if (system != null)
+                    {
+                        system.PreFirePairs.Clear();
+                        system.FireWhenDonePairs.Clear();
+                        system.FirePerShotPairs.Clear();
+                        system.RotatePairs.Clear();
+                        system.ReloadPairs.Clear();
+                        foreach (var ammo in system.AmmoTypes)
+                        {
+                            ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
+                            ammo.AmmoDef.Const.HitDefaultSoundPairs.Clear();
+                            ammo.AmmoDef.Const.HitVoxelSoundPairs.Clear();
+                            ammo.AmmoDef.Const.HitShieldSoundPairs.Clear();
+                            ammo.AmmoDef.Const.HitFloatingSoundPairs.Clear();
+                            ammo.AmmoDef.Const.HitPlayerSoundPairs.Clear();
+                            ammo.AmmoDef.Const.TravelSoundPairs.Clear();
+                            ammo.AmmoDef.Const.CustomSoundPairs.Clear();
+                        }
                     }
+
                 }
 
                 structure.PartSystems.Clear();
@@ -204,14 +210,14 @@ namespace WeaponCore
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
-            _subTypeIdToPartDefs.Clear();
-            PartDefinitions.Clear();
+            _subTypeIdWeaponDefs.Clear();
+            WeaponDefinitions.Clear();
             SlimsSortedList.Clear();
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             _slimHealthClient.Clear();
             _slimsSet.Clear();
-            _subTypeMaps.Clear();
+            _subTypeWeaponMaps.Clear();
             _tmpNearByBlocks.Clear();
 
             foreach (var av in Av.AvShots) {
@@ -278,7 +284,7 @@ namespace WeaponCore
             Api = null;
             ApiServer = null;
             Reporter = null;
-            PartDefinitions = null;
+            WeaponDefinitions = null;
             AnimationsToProcess = null;
             ProjectileTree.Clear();
             ProjectileTree = null;

@@ -15,8 +15,8 @@ namespace WeaponCore.Support
 {
     internal class AvShot
     {
-        internal CoreSystem System;
-        internal PartDefinition.AmmoDef AmmoDef;
+        internal WeaponSystem System;
+        internal WeaponDefinition.AmmoDef AmmoDef;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
         internal MySoundPair FireSound;
@@ -29,7 +29,7 @@ namespace WeaponCore.Support
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect FieldEffect;
         internal MyEntity CoreEntity;
-        internal CoreSystem.FiringSoundState FiringSoundState;
+        internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool Offset;
         internal bool AmmoSound;
         internal bool HasTravelSound;
@@ -859,14 +859,14 @@ namespace WeaponCore.Support
                 HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
             }
 
-            if (!IsShrapnel && FiringSoundState == CoreSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr) {
+            if (!IsShrapnel && FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr) {
                 StartSoundActived = true;
 
                 FireEmitter = System.Session.Av.FireEmitters.Count > 0 ? System.Session.Av.FireEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
 
                 FireEmitter.CanPlayLoopSounds = true;
                 FireEmitter.Entity = CoreEntity;
-                FireSound = System.FirePerShotPairs.Count > 0 ? System.FirePerShotPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.TriggerSound, false);
+                FireSound = System.FirePerShotPairs.Count > 0 ? System.FirePerShotPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
 
                 FireEmitter.SetPosition(Origin);
             }

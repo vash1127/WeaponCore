@@ -4,7 +4,7 @@ using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
 {
     public partial class Weapon : Part
@@ -15,7 +15,7 @@ namespace WeaponCore.Platform
             for (int i = 0; i < animation.MoveToSetIndexer.Length; i++)
             {
                 EmissiveState currentEmissive;
-                if (System.WeaponEmissiveSet.TryGetValue(animation.EmissiveIds[animation.MoveToSetIndexer[i][(int)Indexer.EmissiveIndex]], out currentEmissive))
+                if (System.PartEmissiveSet.TryGetValue(animation.EmissiveIds[animation.MoveToSetIndexer[i][(int)Indexer.EmissiveIndex]], out currentEmissive))
                 {
                     currentEmissive.CurrentPart = animation.CurrentEmissivePart[animation.MoveToSetIndexer[i][(int)Indexer.EmissivePartIndex]];
 
@@ -52,8 +52,8 @@ namespace WeaponCore.Platform
 
         public void StopShootingAv(bool power)
         {
-            if (System.Values.HardPoint.Audio.TriggerSoundEndDelay > 0)
-                Comp.Session.FutureEvents.Schedule(StopFiringSound, null, System.Values.HardPoint.Audio.TriggerSoundEndDelay);
+            if (System.Values.HardPoint.Audio.FireSoundEndDelay > 0)
+                Comp.Session.FutureEvents.Schedule(StopFiringSound, null, System.Values.HardPoint.Audio.FireSoundEndDelay);
             else StopFiringSound(false);
 
             StopPreFiringSound();
@@ -292,7 +292,7 @@ namespace WeaponCore.Platform
                     LastEvent = state;
                     LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
 
-                    if (System.WeaponAnimationLengths.TryGetValue(state, out animationLength))
+                    if (System.PartAnimationLengths.TryGetValue(state, out animationLength))
                         AnimationDelayTick += animationLength;
                 }
             }

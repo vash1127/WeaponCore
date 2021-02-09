@@ -8,7 +8,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Part;
 using static WeaponCore.Session;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Support { 
     public class PartAnimation
     {
@@ -160,7 +160,8 @@ namespace WeaponCore.Support {
                     EventIdLookup.Add(trigger, evnt + SubpartId);
                 }
 
-                CheckAffectPivot(part, out MovesPivotPos);
+                if (System.PartType == WeaponDefinition.HardPointDef.HardwareDef.HardwareType.BlockWeapon || System.PartType == WeaponDefinition.HardPointDef.HardwareDef.HardwareType.HandWeapon)
+                    CheckAffectPivot(part, out MovesPivotPos);
             }
 
         }
@@ -200,7 +201,7 @@ namespace WeaponCore.Support {
         internal void GetCurrentMove(out Vector3D translation, out Matrix rotation, out Matrix rotAroundCenter, out AnimationType type, out EmissiveState emissiveState)
         {
             type = TypeSet[MoveToSetIndexer[_currentMove][(int)Indexer.TypeIndex]];
-            var moveSet = System.WeaponLinearMoveSet[AnimationId];
+            var moveSet = System.PartLinearMoveSet[AnimationId];
 
             if (type == AnimationType.Movement)
             {
@@ -220,7 +221,7 @@ namespace WeaponCore.Support {
                 rotAroundCenter = Matrix.Zero;
             }
 
-            if (System.WeaponEmissiveSet.TryGetValue(EmissiveIds[MoveToSetIndexer[_currentMove][(int)Indexer.EmissiveIndex]], out emissiveState))
+            if (System.PartEmissiveSet.TryGetValue(EmissiveIds[MoveToSetIndexer[_currentMove][(int)Indexer.EmissiveIndex]], out emissiveState))
             {
                 emissiveState.CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)Indexer.EmissivePartIndex]];
 
@@ -287,7 +288,7 @@ namespace WeaponCore.Support {
                 {
                     if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))
                     {
-                        if (kv.Key.Contains(System.AzimuthPartName.String) || kv.Key.Contains(System.ElevationPartName.String))
+                        if (kv.Key.Contains(((WeaponSystem)System).AzimuthPartName.String) || kv.Key.Contains(((WeaponSystem)System).ElevationPartName.String))
                             movesPivotPos = true;
 
                         var name = kv.Key.Substring("subpart_".Length);

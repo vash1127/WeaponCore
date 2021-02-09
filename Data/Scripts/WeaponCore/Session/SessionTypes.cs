@@ -883,7 +883,7 @@ namespace WeaponCore
         {
             public double RestrictionRadius = 0;
             public double RestrictionBoxInflation = 0;
-            public bool CheckForAnyWeapon = false;
+            public bool CheckForAnyPart = false;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace WeaponCore.Platform
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal CoreComponent BaseComp;
-        internal CoreSystem System;
+        internal CoreSystem CoreSystem;
         internal PartAcquire Acquire;
         internal uint PartCreatedTick;
         internal int ShortLoadId;
@@ -21,9 +21,9 @@ namespace WeaponCore.Platform
 
         internal void Init(CoreComponent comp, CoreSystem system, int partId)
         {
-            System = system;
+            CoreSystem = system;
             BaseComp = comp;
-            PartCreatedTick = System.Session.Tick;
+            PartCreatedTick = CoreSystem.Session.Tick;
             PartId = partId;
 
             Acquire = new PartAcquire(this);

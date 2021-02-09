@@ -5,7 +5,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.Ai;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -123,7 +123,7 @@ namespace WeaponCore.Support
                         Ai.FirstRun = true;
 
                         if (Type == CompType.Weapon && Platform.State == CorePlatform.PlatformState.Inited)
-                            Platform.ResetParts(this);
+                            Platform.ResetParts((Weapon.WeaponComponent)this);
 
                         Entity.NeedsWorldMatrix = true;
 

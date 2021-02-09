@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
@@ -26,10 +27,17 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
 
+            public override MyObjectBuilder_SessionComponent GetObjectBuilder()
+            {
+                ResetVisualAreas();
+                return base.GetObjectBuilder();
+            }
+
         public override void UpdatingStopped()
         {
             try
             {
+                ResetVisualAreas();
                 if (!SuppressWc)
                     Paused();
 
@@ -120,23 +128,8 @@ namespace WeaponCore
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
 
-                    if (DisplayAffectedArmor.Count > 0)
-                    {
-                        if (Tick120)
-                        {
-                            Log.Line($"test1: {DisplayAffectedArmor.Count} - {ColorArmorToggle}");
-                            var color = ColorArmorToggle ? DsStaticUtils.ColorToHSVOffset(Color.Black) : DsStaticUtils.ColorToHSVOffset(Color.OrangeRed);
-                            foreach (var enhancer in DisplayAffectedArmor)
-                            {
-                                var grid = enhancer.BaseComp.Ai.GridEntity;
-                                foreach (var myCube in enhancer.SuppotedBlocks)
-                                {
-                                    grid.ChangeColorAndSkin(myCube.CubeBlock, color);
-                                }
-                            }
-                            ColorArmorToggle = !ColorArmorToggle;
-                        }
-                    }
+                    if (Tick120 && DisplayAffectedArmor.Count > 0)
+                        ColorAreas();
                 }
 
                 if (GameLoaded) {

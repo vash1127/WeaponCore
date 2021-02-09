@@ -106,7 +106,7 @@ namespace WeaponCore.Platform
                         o.MinSize = v;
                         break;
                     case "SubSystems":
-                        o.SubSystem = (PartDefinition.TargetingDef.BlockTypes)v;
+                        o.SubSystem = (WeaponDefinition.TargetingDef.BlockTypes)v;
                         break;
                     case "MovementModes":
                         o.MoveMode = (ProtoUpgradeOverrides.MoveModes)v;

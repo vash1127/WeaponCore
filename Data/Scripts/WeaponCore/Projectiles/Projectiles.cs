@@ -14,7 +14,7 @@ using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
 using static WeaponCore.Support.NewProjectile;
 using static WeaponCore.Support.AvShot;
-using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 
 namespace WeaponCore.Projectiles
 {

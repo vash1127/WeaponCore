@@ -4,7 +4,7 @@ using ProtoBuf;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.CoreComponent;
 
 namespace WeaponCore

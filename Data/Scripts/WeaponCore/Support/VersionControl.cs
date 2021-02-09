@@ -11,7 +11,7 @@ namespace WeaponCore.Settings
     internal class VersionControl
     {
         public CoreSettings Core;
-        private readonly Dictionary<PartDefinition.AmmoDef, AmmoModifer> _tmpAmmoModiferMap = new Dictionary<PartDefinition.AmmoDef, AmmoModifer>();
+        private readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> _tmpAmmoModiferMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         public bool VersionChange;
         public VersionControl(CoreSettings core)
         {

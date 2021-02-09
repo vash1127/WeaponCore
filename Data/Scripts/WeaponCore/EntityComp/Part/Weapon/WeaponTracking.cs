@@ -7,8 +7,8 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.HardPointDef;
-using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Platform
@@ -657,12 +657,12 @@ namespace WeaponCore.Platform
             MinAzimuthRadians = MinAzToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
             MaxAzimuthRadians = MaxAzToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
 
-            if (System.TurretMovement == CoreSystem.TurretType.AzimuthOnly || System.Values.HardPoint.AddToleranceToTracking)
+            if (System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly || System.Values.HardPoint.AddToleranceToTracking)
             {
                 MinElToleranceRadians -= toleranceRads;
                 MaxElToleranceRadians += toleranceRads;
             }
-            else if (System.TurretMovement == CoreSystem.TurretType.ElevationOnly || System.Values.HardPoint.AddToleranceToTracking)
+            else if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly || System.Values.HardPoint.AddToleranceToTracking)
             {
                 MinAzToleranceRadians -= toleranceRads;
                 MaxAzToleranceRadians += toleranceRads;

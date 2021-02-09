@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using VRage.Audio;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -542,7 +543,7 @@ namespace WeaponCore
             var removeDefs = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
             var keepDefs = new HashSet<string>();
 
-            foreach (var weaponDef in PartDefinitions)
+            foreach (var weaponDef in WeaponDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)
                 {
@@ -736,6 +737,34 @@ namespace WeaponCore
             }
         }
 
+        private void ColorAreas()
+        {
+            var color = ColorArmorToggle ? DsStaticUtils.ColorToHSVOffset(Color.Black) : DsStaticUtils.ColorToHSVOffset(Color.OrangeRed);
+            foreach (var enhancer in DisplayAffectedArmor)
+            {
+                var grid = enhancer.BaseComp.Ai.GridEntity;
+                foreach (var pair in enhancer.BlockColorBackup)
+                {
+                    if (!pair.Key.IsDestroyed)
+                        grid.ChangeColorAndSkin(pair.Value.MyCube.CubeBlock, color);
+                }
+            }
+            ColorArmorToggle = !ColorArmorToggle;
+        }
+
+        private void ResetVisualAreas()
+        {
+            foreach (var enhancer in DisplayAffectedArmor)
+            {
+                var grid = enhancer.BaseComp.Ai.GridEntity;
+                foreach (var pair in enhancer.BlockColorBackup)
+                {
+                    if (!pair.Key.IsDestroyed)
+                        grid.ChangeColorAndSkin(pair.Value.MyCube.CubeBlock, pair.Value.OriginalColor, pair.Value.OriginalSkin);
+                }
+            }
+        }
+
         public void CalculateRestrictedShapes(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
             restrictedSphere = new BoundingSphereD();
@@ -804,7 +833,7 @@ namespace WeaponCore
                 if (cube == null || cube.EntityId == ignoredEntity || !WeaponCoreDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeId.String))
                     continue;
 
-                if (!restriction.CheckForAnyWeapon && cube.BlockDefinition.Id.SubtypeId != subtype)
+                if (!restriction.CheckForAnyPart && cube.BlockDefinition.Id.SubtypeId != subtype)
                     continue;
 
                 if (checkBox) {

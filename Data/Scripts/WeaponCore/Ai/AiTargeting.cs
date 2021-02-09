@@ -15,10 +15,10 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-using static WeaponCore.Support.PartDefinition;
-using static WeaponCore.Support.PartDefinition.TargetingDef;
-using static WeaponCore.Support.PartDefinition.TargetingDef.BlockTypes;
-using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.WeaponRandomGenerator.RandomType;
 using static WeaponCore.WeaponRandomGenerator;
 
@@ -359,7 +359,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(CoreSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
+        private static bool AcquireBlock(WeaponSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -398,7 +398,7 @@ namespace WeaponCore.Support
             return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);
         }
 
-        private static bool FindRandomBlock(CoreSystem system, Ai ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, Ai ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 

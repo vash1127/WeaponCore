@@ -8,27 +8,29 @@ namespace WeaponCore.Platform
 {
     public partial class SupportSys : Part
     {
-        private HashSet<MyCube> _updatedBlocks = new HashSet<MyCube>();
-        private HashSet<MyCube> _newBlocks = new HashSet<MyCube>();
-        private HashSet<MyCube> _lostBlocks = new HashSet<MyCube>();
-        private HashSet<MyCube> _agedBlocks = new HashSet<MyCube>();
-        private readonly Dictionary<MyCube, Vector3> _blockColorBackup = new Dictionary<MyCube, Vector3>();
+
         internal readonly SupportComponent Comp;
         internal ProtoSupportPartState PartState;
-        internal HashSet<MyCube> SuppotedBlocks = new HashSet<MyCube>();
+        internal HashSet<IMySlimBlock> SuppotedBlocks = new HashSet<IMySlimBlock>();
+        internal readonly Dictionary<IMySlimBlock, BlockBackup> BlockColorBackup = new Dictionary<IMySlimBlock, BlockBackup>();
 
+        internal int CubeDistance = 4;
         internal uint LastBlockRefreshTick;
         internal bool ShowAffectedBlocks;
         internal Vector3I Min;
         internal Vector3I Max;
-        internal BoundingBoxI Box = BoundingBoxI.CreateInvalid();
+        internal BoundingBox Box = BoundingBox.CreateInvalid();
+        internal BoundingBox Box2 = BoundingBox.CreateInvalid();
 
-        internal SupportSys(CoreSystem system, SupportComponent comp, int partId)
+        private readonly HashSet<IMySlimBlock> _updatedBlocks = new HashSet<IMySlimBlock>();
+        private readonly HashSet<IMySlimBlock> _newBlocks = new HashSet<IMySlimBlock>();
+        private readonly HashSet<IMySlimBlock> _lostBlocks = new HashSet<IMySlimBlock>();
+        private readonly HashSet<IMySlimBlock> _agedBlocks = new HashSet<IMySlimBlock>();
+
+        internal SupportSys(SupportSystem system, SupportComponent comp, int partId)
         {
             Comp = comp;
             base.Init(comp, system, partId);
-
-            Log.Line($"init armor: {system.PartName} - BlockMonitoring:{BaseComp.Ai.BlockMonitoring}");
 
             if (!BaseComp.Ai.BlockMonitoring)
                 BaseComp.Ai.DelayedEventRegistration(true);

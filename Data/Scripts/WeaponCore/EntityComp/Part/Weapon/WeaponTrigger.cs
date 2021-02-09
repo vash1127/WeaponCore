@@ -10,7 +10,7 @@ using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
 using VRageRender;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.CoreComponent;
 namespace WeaponCore.Platform
 {
@@ -316,7 +316,7 @@ namespace WeaponCore.Platform
                 uint delay = 0;
                 FinishBurst = false;
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-                if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
+                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
 
                     System.Session.FutureEvents.Schedule(o => {
                         EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -397,7 +397,7 @@ namespace WeaponCore.Platform
         {
             var eInfo = Ejector.Info;
             var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-            if (ejectDef.Type == PartDefinition.AmmoDef.EjectionDef.SpawnType.Item)
+            if (ejectDef.Type == WeaponDefinition.AmmoDef.EjectionDef.SpawnType.Item)
             {
                 var delay = (uint)ejectDef.CompDef.Delay;
                 if (delay <= 0)

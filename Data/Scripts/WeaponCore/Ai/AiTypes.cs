@@ -121,13 +121,13 @@ namespace WeaponCore.Support
                 {
                     isGrid = true;
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    ConcurrentDictionary<PartDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
+                    ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
                     {
                         ConcurrentCachingList<MyCubeBlock> weaponBlocks;
-                        if (blockTypeMap.TryGetValue(PartDefinition.TargetingDef.BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
+                        if (blockTypeMap.TryGetValue(WeaponDefinition.TargetingDef.BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
                             armed = true;
-                        else if (blockTypeMap.TryGetValue(PartDefinition.TargetingDef.BlockTypes.Utility, out weaponBlocks) && weaponBlocks.Count > 0)
+                        else if (blockTypeMap.TryGetValue(WeaponDefinition.TargetingDef.BlockTypes.Utility, out weaponBlocks) && weaponBlocks.Count > 0)
                             armed = true;
                     }
                 }

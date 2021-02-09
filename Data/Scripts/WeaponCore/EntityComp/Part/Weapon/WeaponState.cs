@@ -4,7 +4,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
 {
     public partial class Weapon : Part

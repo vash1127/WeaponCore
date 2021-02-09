@@ -9,7 +9,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.PartDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore.Support
 {

@@ -43,6 +43,9 @@ namespace WeaponCore.Support
         internal readonly Dictionary<SupportSys.SupportComponent, int> SupportIdx = new Dictionary<SupportSys.SupportComponent, int>(32);
         internal readonly Dictionary<Phantom.PhantomComponent, int> PhantomIdx = new Dictionary<Phantom.PhantomComponent, int>(32);
 
+        internal readonly Dictionary<Vector3I, IMySlimBlock> AddedBlockPositions = new Dictionary<Vector3I, IMySlimBlock>(Vector3I.Comparer);
+        internal readonly Dictionary<Vector3I, IMySlimBlock> RemovedBlockPositions = new Dictionary<Vector3I, IMySlimBlock>(Vector3I.Comparer);
+
         internal readonly Dictionary<MyStringHash, PartCounter> PartCounting = new Dictionary<MyStringHash, PartCounter>(MyStringHash.Comparer);
         internal readonly ConcurrentDictionary<MyEntity, MyInventory> InventoryMonitor = new ConcurrentDictionary<MyEntity, MyInventory>();
 
@@ -56,7 +59,6 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
-
 
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<Ai> TargetAisTmp = new List<Ai>();
@@ -100,7 +102,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD GridVolume;
         internal BoundingSphereD ScanVolume;
         internal BoundingSphereD WaterVolume;
-
+        internal BoundingBox BlockChangeArea = BoundingBox.CreateInvalid();
         internal long AiOwner;
         internal bool BlockMonitoring;
         internal bool AiSleep;

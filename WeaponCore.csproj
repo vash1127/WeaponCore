@@ -54,6 +54,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\AmmoConstants.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\ConstructValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\AiValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompFields.cs" />
@@ -72,10 +73,11 @@
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Upgrade\UpgradeActions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Upgrade\UpgradeUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomData.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportAv.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportComp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportManager.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Support\SupportFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\PartFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\EntityComp\Part\Phantom\PhantomFields.cs" />

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Engine.Utils;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.Definitions;
@@ -11,12 +10,11 @@ using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRageMath;
 using WeaponCore.Projectiles;
-using WeaponCore.Settings;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef;
-using static WeaponCore.Support.PartDefinition.AmmoDef.DamageScaleDef;
-using static WeaponCore.Support.CoreSystem.TurretType;
-using static WeaponCore.Support.PartDefinition.AmmoDef.TrajectoryDef.GuidanceType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponSystem.TurretType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
 using static WeaponCore.Settings.CoreSettings.ServerSettings;
 using VRage.Utils;
 

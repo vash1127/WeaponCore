@@ -8,9 +8,9 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
-using static WeaponCore.Support.PartDefinition;
-using static WeaponCore.Support.PartDefinition.AnimationDef;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
 {
@@ -31,11 +31,11 @@ namespace WeaponCore
 
             CompileParticles(animations, particleEvents);
 
-            if (animations.WeaponAnimationSets == null)
+            if (animations.AnimationSets == null)
                 return;
 
             var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
-            CompileAnimationSets(system, animations.WeaponAnimationSets, allAnimationSet, animationLengths, animationIdLookup, weaponEmissivesSet, emissiveLookup, weaponLinearMoveSet);
+            CompileAnimationSets(system, animations.AnimationSets, allAnimationSet, animationLengths, animationIdLookup, weaponEmissivesSet, emissiveLookup, weaponLinearMoveSet);
 
             FinalizeAnimationSets(allAnimationSet, weaponAnimationSets);
         }
@@ -546,7 +546,7 @@ namespace WeaponCore
             return rate;
         }
 
-        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(CoreSystem system, RecursiveSubparts parts)
+        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, RecursiveSubparts parts)
         {
             if (!system.AnimationsInited)
             {
@@ -638,7 +638,7 @@ namespace WeaponCore
             return returnAnimations;
         }
 
-        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(CoreSystem system, RecursiveSubparts parts)
+        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(WeaponSystem system, RecursiveSubparts parts)
         {
             var particles = new Dictionary<EventTriggers, ParticleEvent[]>();
 

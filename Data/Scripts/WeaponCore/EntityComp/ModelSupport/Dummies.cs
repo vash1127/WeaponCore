@@ -16,8 +16,8 @@ namespace WeaponCore.Support
             get
             {
                 if (_entity?.Model == null) {
-                    if (_part.System.Session.LocalVersion) Log.Line($"reset parts");
-                    _part.BaseComp.Platform?.ResetParts(_part.BaseComp);
+                    if (_part.CoreSystem.Session.LocalVersion) Log.Line($"reset parts");
+                    _part.BaseComp.Platform?.ResetParts((Weapon.WeaponComponent) _part.BaseComp);
                     if (_entity?.Model == null)
                         Log.Line($"Dummy Entity/Model null");
                 }
@@ -27,7 +27,7 @@ namespace WeaponCore.Support
             set
             {
                 if (value?.Model == null)
-                    Log.Line($"DummyModel null for weapon on set: {_part.System.PartName}");
+                    Log.Line($"DummyModel null for weapon on set: {_part.CoreSystem.PartName}");
                 _entity = value; 
 
             }

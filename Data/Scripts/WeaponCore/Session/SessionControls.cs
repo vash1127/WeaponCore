@@ -8,7 +8,7 @@ using WeaponCore.Support;
 using WeaponCore.Control;
 using WeaponCore.Platform;
 using static WeaponCore.Support.CoreComponent.TriggerActions;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore
 {
     public partial class Session
@@ -333,7 +333,7 @@ namespace WeaponCore
                 else {
 
                     uint delay;
-                    if (w.System.WeaponAnimationLengths.TryGetValue(EventTriggers.TurnOn, out delay))
+                    if (w.System.PartAnimationLengths.TryGetValue(EventTriggers.TurnOn, out delay))
                         w.PartReadyTick = comp.Session.Tick + delay;
 
                     if (w.LastEvent == EventTriggers.TurnOff && w.AnimationDelayTick > comp.Session.Tick)

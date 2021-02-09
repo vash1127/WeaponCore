@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -65,7 +65,7 @@ namespace WeaponCore.Support
                     if (!CoreEntity.MarkedForClose && Platform.State == CorePlatform.PlatformState.Ready)
                     {
                         if (Type == CompType.Weapon)
-                            Platform.ResetParts(this);
+                            Platform.ResetParts((Weapon.WeaponComponent)this);
                         Status = Start.Started;
 
                         foreach (var w in Platform.Weapons)

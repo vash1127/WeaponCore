@@ -367,7 +367,7 @@ namespace WeaponCore.Api
             return GetWeaponScope((IMyTerminalBlock)arg1, arg2);
         }
 
-        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void PbMonitorProjectileCallback(Sandbox.ModAPI.Ingame.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
@@ -375,7 +375,7 @@ namespace WeaponCore.Api
                 comp.Monitors[weaponId].Add(callback);
         }
 
-        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void PbUnMonitorProjectileCallback(Sandbox.ModAPI.Ingame.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
@@ -394,7 +394,7 @@ namespace WeaponCore.Api
         // Non-PB Methods
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
-            foreach (var wepDef in _session.PartDefinitions)
+            foreach (var wepDef in _session.WeaponDefinitions)
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 
@@ -454,13 +454,13 @@ namespace WeaponCore.Api
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
         {
             CoreStructure coreStructure;
-            if (_session.PartPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure))
+            if (_session.PartPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out coreStructure) && (coreStructure is WeaponStructure))
             {
                 foreach (var weaponSystem in coreStructure.PartSystems.Values)
                 {
                     var system = weaponSystem;
                     if (!collection.ContainsKey(system.PartName))
-                        collection.Add(system.PartName, system.WeaponId);
+                        collection.Add(system.PartName, ((WeaponSystem)system).WeaponId);
                 }
                 return true;
             }
@@ -827,7 +827,7 @@ namespace WeaponCore.Api
             }
         }
 
-        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void MonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
@@ -835,7 +835,7 @@ namespace WeaponCore.Api
                 comp.Monitors[weaponId].Add(callback);
         }
 
-        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void UnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;

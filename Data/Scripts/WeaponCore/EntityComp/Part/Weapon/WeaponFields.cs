@@ -7,7 +7,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -22,6 +22,7 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
         
         internal readonly WeaponFrameCache WeaponCache;
+        internal readonly WeaponSystem System;
         internal readonly Target Target;
         internal readonly Target NewTarget;
         internal readonly PartInfo MuzzlePart;
@@ -110,7 +111,7 @@ namespace WeaponCore.Platform
         internal ProtoWeaponReload Reload;
         internal ProtoWeaponTransferTarget TargetData;
         internal ProtoWeaponAmmo ProtoWeaponAmmo;
-        internal CoreSystem.AmmoType ActiveAmmoDef;
+        internal WeaponSystem.AmmoType ActiveAmmoDef;
         internal int[] AmmoShufflePattern = {0};
         internal ParallelRayCallBack RayCallBack;
 
@@ -231,9 +232,10 @@ namespace WeaponCore.Platform
             internal ChangeType Change;
         }
 
-        internal Weapon(MyEntity entity, CoreSystem system, int partId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
+        internal Weapon(MyEntity entity, WeaponSystem system, int partId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
             Comp = comp;
+            System = system;
             base.Init(comp, system, partId);
             
             AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
@@ -272,12 +274,12 @@ namespace WeaponCore.Platform
 
             AvCapable = System.HasBarrelShootAv && !Comp.Session.DedicatedServer || hitParticle;
 
-            if (AvCapable && system.FiringSound == CoreSystem.FiringSoundState.WhenDone)
+            if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
                 FiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
                 FiringEmitter.CanPlayLoopSounds = true;
                 FiringEmitter.Entity = Comp.CoreEntity;
-                FiringSound = System.FireWhenDonePairs.Count > 0 ? System.FireWhenDonePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.TriggerSound, false);
+                FiringSound = System.FireWhenDonePairs.Count > 0 ? System.FireWhenDonePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
             }
 
             if (AvCapable && system.PreFireSound)
@@ -286,7 +288,7 @@ namespace WeaponCore.Platform
                 PreFiringEmitter.CanPlayLoopSounds = true;
 
                 PreFiringEmitter.Entity = Comp.CoreEntity;
-                PreFiringSound = System.PreFirePairs.Count > 0 ? System.PreFirePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.PreTriggerSound, false);
+                PreFiringSound = System.PreFirePairs.Count > 0 ? System.PreFirePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.PreFiringSound, false);
             }
 
             if (AvCapable && system.WeaponReloadSound)
@@ -295,7 +297,7 @@ namespace WeaponCore.Platform
                 ReloadEmitter.CanPlayLoopSounds = true;
 
                 ReloadEmitter.Entity = Comp.CoreEntity;
-                ReloadSound = System.ReloadPairs.Count > 0 ? System.ReloadPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.ReChargeSound, false);
+                ReloadSound = System.ReloadPairs.Count > 0 ? System.ReloadPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.ReloadSound, false);
             }
 
             if (AvCapable && system.BarrelRotationSound)

@@ -4,7 +4,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.CoreComponent;
 
 namespace WeaponCore.Platform
@@ -18,7 +18,7 @@ namespace WeaponCore.Platform
 
             if (AiOnlyWeapon) {
 
-                if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == CoreSystem.TurretType.Full || System.TurretMovement == CoreSystem.TurretType.AzimuthOnly) {
+                if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
                     Matrix azRotMatrix;
                     Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
                     var localMatrix = AzimuthPart.OriginalPosition * azRotMatrix;
@@ -26,7 +26,7 @@ namespace WeaponCore.Platform
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                 }
 
-                if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == CoreSystem.TurretType.Full || System.TurretMovement == CoreSystem.TurretType.ElevationOnly)) {
+                if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
                     Matrix elRotMatrix;
                     Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
                     var localMatrix = ElevationPart.OriginalPosition * elRotMatrix;
@@ -132,7 +132,7 @@ namespace WeaponCore.Platform
             MyPivotUp = azimuthMatrix.Up;
             MyPivotFwd = elevationMatrix.Forward;
 
-            if (System.TurretMovement == CoreSystem.TurretType.ElevationOnly)
+            if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
                 Vector3D forward;
                 var eLeft = elevationMatrix.Left;

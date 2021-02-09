@@ -10,7 +10,7 @@ namespace WeaponCore.Platform
     {
         internal readonly Upgrade.UpgradeComponent Comp;
         internal ProtoUpgradePartState PartState;
-        internal Upgrades(CoreSystem system, Upgrade.UpgradeComponent comp, int partId)
+        internal Upgrades(UpgradeSystem system, Upgrade.UpgradeComponent comp, int partId)
         {
             Comp = comp;
             base.Init(comp, system, partId);

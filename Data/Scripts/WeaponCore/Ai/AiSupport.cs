@@ -84,7 +84,6 @@ namespace WeaponCore.Support
                             Log.Line($"CompAddFailed:<{sComp.CoreEntity.EntityId}> - comp({sComp.CoreEntity.DebugName}[{sComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
                             return;
                         }
-                        Log.Line($"ai add support");
                         SupportIdx.Add(sComp, SupportComps.Count);
                         SupportComps.Add(sComp);
                     }

@@ -94,13 +94,22 @@ namespace WeaponCore.Support
                 Log.Line($"DelayedEventRegistration failed no grid");
         }
 
-        internal void OnBlockAdded(IMySlimBlock mySlimBlock)
+        internal void OnBlockAdded(IMySlimBlock slim)
         {
+            BlockChangeArea.Min = Vector3.Min(BlockChangeArea.Min, slim.Min);
+            BlockChangeArea.Max = Vector3.Max(BlockChangeArea.Max, slim.Max);
+            AddedBlockPositions[slim.Position] = slim;
+
             LastBlockChangeTick = Session.Tick;
         }
 
-        internal void OnBlockRemoved(IMySlimBlock mySlimBlock)
+        internal void OnBlockRemoved(IMySlimBlock slim)
         {
+
+            BlockChangeArea.Min = Vector3.Min(BlockChangeArea.Min, slim.Min);
+            BlockChangeArea.Max = Vector3.Max(BlockChangeArea.Max, slim.Max);
+            RemovedBlockPositions[slim.Position] = slim;
+
             if (Session != null)
                 LastBlockChangeTick = Session.Tick;
         }

@@ -10,7 +10,7 @@ using VRage.Game.Entity;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.CorePlatform;
 using static WeaponCore.Session;
-using static WeaponCore.Support.PartDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -300,7 +300,7 @@ namespace WeaponCore.Support
                 {
                     foreach (var support in Platform.Support)
                     {
-                        stringBuilder.Append($"\n\nPart: {support.System.PartName} - Enabled: {IsWorking}");
+                        stringBuilder.Append($"\n\nPart: {support.CoreSystem.PartName} - Enabled: {IsWorking}");
                         stringBuilder.Append($"\nManual: {support.BaseComp.UserControlled}");
                     }
                 }
@@ -328,7 +328,7 @@ namespace WeaponCore.Support
                 {
                     foreach (var upgrade in Platform.Upgrades)
                     {
-                        stringBuilder.Append($"\n\nPart: {upgrade.System.PartName} - Enabled: {IsWorking}");
+                        stringBuilder.Append($"\n\nPart: {upgrade.CoreSystem.PartName} - Enabled: {IsWorking}");
                         stringBuilder.Append($"\nManual: {upgrade.BaseComp.UserControlled}");
                     }
                 }

@@ -10,11 +10,11 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartDefinition;
-using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef;
-using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
-using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
-using static WeaponCore.Support.PartDefinition.AmmoDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Projectiles.Projectiles;
 
 namespace WeaponCore
@@ -437,7 +437,7 @@ namespace WeaponCore
     internal class GridEffect
     {
         internal Vector3D HitPos;
-        internal CoreSystem System;
+        internal WeaponSystem System;
         internal Ai Ai;
         internal AmmoDef AmmoDef;
         internal long AttackerId;

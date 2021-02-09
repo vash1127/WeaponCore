@@ -14,8 +14,8 @@ using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.HitEntity.Type;
-using static WeaponCore.Support.PartDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
-using static WeaponCore.Support.PartDefinition.AmmoDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Support.DeferedVoxels;
 namespace WeaponCore.Projectiles
 {
@@ -718,7 +718,7 @@ namespace WeaponCore.Projectiles
         }
 
         //TODO: In order to fix SphereShapes collisions with grids, this needs to be adjusted to take into account the Beam of the projectile
-        internal static void GetAndSortBlocksInSphere(PartDefinition.AmmoDef ammoDef, CoreSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
+        internal static void GetAndSortBlocksInSphere(WeaponDefinition.AmmoDef ammoDef, WeaponSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;

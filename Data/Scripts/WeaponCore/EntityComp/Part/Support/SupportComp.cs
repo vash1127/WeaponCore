@@ -13,7 +13,6 @@ namespace WeaponCore.Platform
             internal readonly Support.SupportCompData Data;
             internal SupportComponent(Session session, MyEntity coreEntity, MyDefinitionId id)
             {
-                Log.Line($"SupportComponent");
                 Data = new Support.SupportCompData(this);
                 base.Init(session, coreEntity, true, Data, ((MyCubeBlock)coreEntity).CubeGrid, id);
             }
@@ -106,7 +105,7 @@ namespace WeaponCore.Platform
                         o.MinSize = v;
                         break;
                     case "SubSystems":
-                        o.SubSystem = (PartDefinition.TargetingDef.BlockTypes)v;
+                        o.SubSystem = (WeaponDefinition.TargetingDef.BlockTypes)v;
                         break;
                     case "MovementModes":
                         o.MoveMode = (ProtoSupportOverrides.MoveModes)v;
