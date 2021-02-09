@@ -662,118 +662,119 @@ namespace WeaponCore.Support
             }
         }
 
-        internal class SupportStructure : CoreStructure
+    }
+
+    internal class SupportStructure : CoreStructure
+    {
+        public SupportStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<SupportDefinition> wDefList, string modPath)
         {
-            public SupportStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<SupportDefinition> wDefList, string modPath)
+            Session = session;
+            var map = tDef.Value;
+            var numOfParts = wDefList.Count;
+            MultiParts = numOfParts > 1;
+            ModPath = modPath;
+            var partHashes = new MyStringHash[numOfParts];
+            var partId = 0;
+            PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
+            HashToId = new Dictionary<int, int>();
+            PrimaryPart = -1;
+            var partCap = 0;
+            foreach (var w in map)
             {
-                Session = session;
-                var map = tDef.Value;
-                var numOfParts = wDefList.Count;
-                MultiParts = numOfParts > 1;
-                ModPath = modPath;
-                var partHashes = new MyStringHash[numOfParts];
-                var partId = 0;
-                PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
-                HashToId = new Dictionary<int, int>();
-                PrimaryPart = -1;
-                var partCap = 0;
-                foreach (var w in map)
+                var typeName = w.Value.Item1;
+                SupportDefinition supportDef = null;
+                foreach (var def in wDefList)
+                    if (def.HardPoint.PartName == typeName) supportDef = def;
+
+                if (supportDef == null)
                 {
-                    var typeName = w.Value.Item1;
-                    SupportDefinition supportDef = null;
-                    foreach (var def in wDefList)
-                        if (def.HardPoint.PartName == typeName) supportDef = def;
-
-                    if (supportDef == null)
-                    {
-                        Log.Line($"CoreStructure failed to match PartName to typeName");
-                        return;
-                    }
-
-                    var partNameIdHash = MyStringHash.GetOrCompute(supportDef.HardPoint.PartName + $" {partId}");
-                    partHashes[partId] = partNameIdHash;
-
-                    var cap = supportDef.HardPoint.Other.ConstructPartCap;
-                    if (partCap == 0 && cap > 0) partCap = cap;
-                    else if (cap > 0 && partCap > 0 && cap < partCap) partCap = cap;
-
-                    if (PrimaryPart < 0)
-                        PrimaryPart = partId;
-
-                    var partHash = (tDef.Key + partNameIdHash).GetHashCode();
-                    HashToId.Add(partHash, partId);
-                    var coreSystem = new SupportSystem(Session, partNameIdHash, supportDef, typeName, partHash, partId);
-
-                    PartSystems.Add(partNameIdHash, coreSystem);
-                    partId++;
+                    Log.Line($"CoreStructure failed to match PartName to typeName");
+                    return;
                 }
 
-                if (PrimaryPart == -1)
-                    PrimaryPart = 0;
+                var partNameIdHash = MyStringHash.GetOrCompute(supportDef.HardPoint.PartName + $" {partId}");
+                partHashes[partId] = partNameIdHash;
 
-                ConstructPartCap = partCap;
-                PartHashes = partHashes;
+                var cap = supportDef.HardPoint.Other.ConstructPartCap;
+                if (partCap == 0 && cap > 0) partCap = cap;
+                else if (cap > 0 && partCap > 0 && cap < partCap) partCap = cap;
 
-                StructureType = StructureTypes.Support;
-                EntityType = EnittyTypes.Block;
+                if (PrimaryPart < 0)
+                    PrimaryPart = partId;
+
+                var partHash = (tDef.Key + partNameIdHash).GetHashCode();
+                HashToId.Add(partHash, partId);
+                var coreSystem = new SupportSystem(Session, partNameIdHash, supportDef, typeName, partHash, partId);
+
+                PartSystems.Add(partNameIdHash, coreSystem);
+                partId++;
             }
+
+            if (PrimaryPart == -1)
+                PrimaryPart = 0;
+
+            ConstructPartCap = partCap;
+            PartHashes = partHashes;
+
+            StructureType = StructureTypes.Support;
+            EntityType = EnittyTypes.Block;
         }
+    }
 
-        internal class PhantomStructure : CoreStructure
+    internal class PhantomStructure : CoreStructure
+    {
+        public PhantomStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<PhantomDefinition> wDefList, string modPath)
         {
-            public PhantomStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<PhantomDefinition> wDefList, string modPath)
+            Session = session;
+            var map = tDef.Value;
+            var numOfParts = wDefList.Count;
+            MultiParts = numOfParts > 1;
+            ModPath = modPath;
+            var partHashes = new MyStringHash[numOfParts];
+            var partId = 0;
+            PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
+            HashToId = new Dictionary<int, int>();
+            PrimaryPart = -1;
+            var partCap = 0;
+            foreach (var w in map)
             {
-                Session = session;
-                var map = tDef.Value;
-                var numOfParts = wDefList.Count;
-                MultiParts = numOfParts > 1;
-                ModPath = modPath;
-                var partHashes = new MyStringHash[numOfParts];
-                var partId = 0;
-                PartSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
-                HashToId = new Dictionary<int, int>();
-                PrimaryPart = -1;
-                var partCap = 0;
-                foreach (var w in map)
+                var typeName = w.Value.Item1;
+                PhantomDefinition phantomDef = null;
+                foreach (var def in wDefList)
+                    if (def.HardPoint.PartName == typeName) phantomDef = def;
+
+                if (phantomDef == null)
                 {
-                    var typeName = w.Value.Item1;
-                    PhantomDefinition phantomDef = null;
-                    foreach (var def in wDefList)
-                        if (def.HardPoint.PartName == typeName) phantomDef = def;
-
-                    if (phantomDef == null)
-                    {
-                        Log.Line($"CoreStructure failed to match PartName to typeName");
-                        return;
-                    }
-
-                    var partNameIdHash = MyStringHash.GetOrCompute(phantomDef.HardPoint.PartName + $" {partId}");
-                    partHashes[partId] = partNameIdHash;
-
-                    var cap = phantomDef.HardPoint.Other.ConstructPartCap;
-                    if (partCap == 0 && cap > 0) partCap = cap;
-                    else if (cap > 0 && partCap > 0 && cap < partCap) partCap = cap;
-
-                    if (PrimaryPart < 0)
-                        PrimaryPart = partId;
-
-                    var partHash = (tDef.Key + partNameIdHash).GetHashCode();
-                    HashToId.Add(partHash, partId);
-                    var coreSystem = new PhantomSystem(Session, partNameIdHash, phantomDef, typeName, partHash, partId);
-
-                    PartSystems.Add(partNameIdHash, coreSystem);
-                    partId++;
+                    Log.Line($"CoreStructure failed to match PartName to typeName");
+                    return;
                 }
 
-                if (PrimaryPart == -1)
-                    PrimaryPart = 0;
+                var partNameIdHash = MyStringHash.GetOrCompute(phantomDef.HardPoint.PartName + $" {partId}");
+                partHashes[partId] = partNameIdHash;
 
-                ConstructPartCap = partCap;
-                PartHashes = partHashes;
+                var cap = phantomDef.HardPoint.Other.ConstructPartCap;
+                if (partCap == 0 && cap > 0) partCap = cap;
+                else if (cap > 0 && partCap > 0 && cap < partCap) partCap = cap;
 
-                StructureType = StructureTypes.Support;
-                EntityType = EnittyTypes.Block;
+                if (PrimaryPart < 0)
+                    PrimaryPart = partId;
+
+                var partHash = (tDef.Key + partNameIdHash).GetHashCode();
+                HashToId.Add(partHash, partId);
+                var coreSystem = new PhantomSystem(Session, partNameIdHash, phantomDef, typeName, partHash, partId);
+
+                PartSystems.Add(partNameIdHash, coreSystem);
+                partId++;
             }
+
+            if (PrimaryPart == -1)
+                PrimaryPart = 0;
+
+            ConstructPartCap = partCap;
+            PartHashes = partHashes;
+
+            StructureType = StructureTypes.Support;
+            EntityType = EnittyTypes.Block;
         }
     }
 }

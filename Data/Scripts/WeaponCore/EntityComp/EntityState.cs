@@ -21,7 +21,7 @@ namespace WeaponCore.Support
                     break;
                 case Start.ReInit:
                     if (Type == CompType.Weapon) 
-                        Platform.ResetParts(this);
+                        Platform.ResetParts((Weapon.WeaponComponent)this);
                     Status = Start.Started;
                     break;
             }

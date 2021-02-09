@@ -176,22 +176,20 @@ namespace WeaponCore
 
                     var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId };
 
-                    if (!_subTypeWeaponMaps.ContainsKey(subTypeId))
+                    if (!_subTypeMaps.ContainsKey(subTypeId))
                     {
-
-                        _subTypeWeaponMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
-
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
                         _subTypeIdWeaponDefs[subTypeId] = new List<WeaponDefinition> { x };
                     }
                     else
                     {
-                        _subTypeWeaponMaps[subTypeId][partAttachmentId] = extraInfo;
+                        _subTypeMaps[subTypeId][partAttachmentId] = extraInfo;
                         _subTypeIdWeaponDefs[subTypeId].Add(x);
                     }
                 }
             }
 
-            foreach (var subTypeMap in _subTypeWeaponMaps)
+            foreach (var subTypeMap in _subTypeMaps)
             {
                 var subTypeIdHash = MyStringHash.GetOrCompute(subTypeMap.Key);
                 SubTypeIdHashMap[subTypeMap.Key] = subTypeIdHash;
@@ -356,17 +354,143 @@ namespace WeaponCore
                     }
                 }
             }
-            _subTypeWeaponMaps.Clear();
+            _subTypeMaps.Clear();
             _subTypeIdWeaponDefs.Clear();
         }
 
         private void CompileSupportStructures()
         {
+            foreach (var x in SupportDefinitions)
+            {
+                for (int i = 0; i < x.Assignments.MountPoints.Length; i++)
+                {
+                    var mount = x.Assignments.MountPoints[i];
+                    var subTypeId = mount.SubtypeId;
+                    var partAttachmentId = x.HardPoint.PartName + $" {i}";
 
-        }
-        private void CompilePhantomStructures()
-        {
+                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None" };
 
+                    if (!_subTypeMaps.ContainsKey(subTypeId))
+                    {
+
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+
+                        _subTypeIdSupportDefs[subTypeId] = new List<SupportDefinition> { x };
+                    }
+                    else
+                    {
+                        _subTypeMaps[subTypeId][partAttachmentId] = extraInfo;
+                        _subTypeIdSupportDefs[subTypeId].Add(x);
+                    }
+                }
+            }
+
+            foreach (var subTypeMap in _subTypeMaps)
+            {
+                var subTypeIdHash = MyStringHash.GetOrCompute(subTypeMap.Key);
+                SubTypeIdHashMap[subTypeMap.Key] = subTypeIdHash;
+
+                AreaRestriction areaRestriction;
+                if (AreaRestrictions.ContainsKey(subTypeIdHash))
+                {
+                    areaRestriction = AreaRestrictions[subTypeIdHash];
+                }
+                else
+                {
+                    areaRestriction = new AreaRestriction();
+                    AreaRestrictions[subTypeIdHash] = areaRestriction;
+                }
+
+                var parts = _subTypeIdSupportDefs[subTypeMap.Key];
+                var firstDef = true;
+                string modPath = null;
+
+                foreach (var partDef in parts)
+                {
+
+                    try
+                    {
+                        modPath = partDef.ModPath;
+                        foreach (var def in AllDefinitions)
+                        {
+
+                            MyDefinitionId defid;
+                            var matchingDef = def.Id.SubtypeName == subTypeMap.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeMap.Key), out defid) && defid == def.Id);
+
+                            if (matchingDef)
+                            {
+
+                                if (partDef.HardPoint.Other.RestrictionRadius > 0)
+                                {
+
+                                    if (partDef.HardPoint.Other.CheckForAnySupport && !areaRestriction.CheckForAnyPart)
+                                    {
+                                        areaRestriction.CheckForAnyPart = true;
+                                    }
+
+                                    if (partDef.HardPoint.Other.CheckInflatedBox)
+                                    {
+                                        if (areaRestriction.RestrictionBoxInflation < partDef.HardPoint.Other.RestrictionRadius)
+                                        {
+                                            areaRestriction.RestrictionBoxInflation = partDef.HardPoint.Other.RestrictionRadius;
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        if (areaRestriction.RestrictionRadius < partDef.HardPoint.Other.RestrictionRadius)
+                                            areaRestriction.RestrictionRadius = partDef.HardPoint.Other.RestrictionRadius;
+                                    }
+                                }
+
+                                WeaponCoreDefs[subTypeMap.Key] = def.Id;
+
+                                if (def is MyConveyorSorterDefinition)
+                                {
+                                    if (firstDef)
+                                        ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
+
+                                    var size = Math.Pow(partDef.HardPoint.HardWare.InventorySize, 1d / 3d);
+
+                                    ((MyConveyorSorterDefinition)def).InventorySize += new Vector3(size, size, size);
+                                }
+
+                                firstDef = false;
+
+                                for (int i = 0; i < partDef.Assignments.MountPoints.Length; i++)
+                                {
+                                    var cubeDef = def as MyCubeBlockDefinition;
+                                    if (cubeDef != null)
+                                    {
+                                        for (int x = 0; x < partDef.Assignments.MountPoints.Length; x++)
+                                        {
+                                            var mp = partDef.Assignments.MountPoints[x];
+                                            if (mp.SubtypeId == def.Id.SubtypeName)
+                                            {
+                                                cubeDef.GeneralDamageMultiplier = mp.DurabilityMod > 0 ? mp.DurabilityMod : cubeDef.CubeSize == MyCubeSize.Large ? 0.25f : 0.05f;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
+                }
+
+                MyDefinitionId defId;
+                if (WeaponCoreDefs.TryGetValue(subTypeMap.Key, out defId))
+                {
+
+                    var u = new SupportStructure(this, subTypeMap, parts, modPath);
+                    PartPlatforms[defId] = u;
+                }
+            }
+
+            _subTypeMaps.Clear();
+            _subTypeIdSupportDefs.Clear();
         }
 
         private void CompileUpgradeStructures()
@@ -381,22 +505,22 @@ namespace WeaponCore
 
                     var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None" };
 
-                    if (!_subTypeUpgradeMaps.ContainsKey(subTypeId))
+                    if (!_subTypeMaps.ContainsKey(subTypeId))
                     {
 
-                        _subTypeUpgradeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
 
                         _subTypeIdUpgradeDefs[subTypeId] = new List<UpgradeDefinition> { x };
                     }
                     else
                     {
-                        _subTypeUpgradeMaps[subTypeId][partAttachmentId] = extraInfo;
+                        _subTypeMaps[subTypeId][partAttachmentId] = extraInfo;
                         _subTypeIdUpgradeDefs[subTypeId].Add(x);
                     }
                 }
             }
 
-            foreach (var subTypeMap in _subTypeUpgradeMaps)
+            foreach (var subTypeMap in _subTypeMaps)
             {
                 var subTypeIdHash = MyStringHash.GetOrCompute(subTypeMap.Key);
                 SubTypeIdHashMap[subTypeMap.Key] = subTypeIdHash;
@@ -500,8 +624,143 @@ namespace WeaponCore
                 }
             }
 
-            _subTypeUpgradeMaps.Clear();
+            _subTypeMaps.Clear();
             _subTypeIdUpgradeDefs.Clear();
+        }
+
+        private void CompilePhantomStructures()
+        {
+            foreach (var x in PhantomDefinitions)
+            {
+                for (int i = 0; i < x.Assignments.MountPoints.Length; i++)
+                {
+                    var mount = x.Assignments.MountPoints[i];
+                    var subTypeId = mount.SubtypeId;
+                    var partAttachmentId = x.HardPoint.PartName + $" {i}";
+
+                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None" };
+
+                    if (!_subTypeMaps.ContainsKey(subTypeId))
+                    {
+
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+
+                        _subTypeIdPhantomDefs[subTypeId] = new List<PhantomDefinition> { x };
+                    }
+                    else
+                    {
+                        _subTypeMaps[subTypeId][partAttachmentId] = extraInfo;
+                        _subTypeIdPhantomDefs[subTypeId].Add(x);
+                    }
+                }
+            }
+
+            foreach (var subTypeMap in _subTypeMaps)
+            {
+                var subTypeIdHash = MyStringHash.GetOrCompute(subTypeMap.Key);
+                SubTypeIdHashMap[subTypeMap.Key] = subTypeIdHash;
+
+                AreaRestriction areaRestriction;
+                if (AreaRestrictions.ContainsKey(subTypeIdHash))
+                {
+                    areaRestriction = AreaRestrictions[subTypeIdHash];
+                }
+                else
+                {
+                    areaRestriction = new AreaRestriction();
+                    AreaRestrictions[subTypeIdHash] = areaRestriction;
+                }
+
+                var parts = _subTypeIdPhantomDefs[subTypeMap.Key];
+                var firstDef = true;
+                string modPath = null;
+
+                foreach (var partDef in parts)
+                {
+
+                    try
+                    {
+                        modPath = partDef.ModPath;
+                        foreach (var def in AllDefinitions)
+                        {
+
+                            MyDefinitionId defid;
+                            var matchingDef = def.Id.SubtypeName == subTypeMap.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeMap.Key), out defid) && defid == def.Id);
+
+                            if (matchingDef)
+                            {
+
+                                if (partDef.HardPoint.Other.RestrictionRadius > 0)
+                                {
+
+                                    if (partDef.HardPoint.Other.CheckForAnySupport && !areaRestriction.CheckForAnyPart)
+                                    {
+                                        areaRestriction.CheckForAnyPart = true;
+                                    }
+
+                                    if (partDef.HardPoint.Other.CheckInflatedBox)
+                                    {
+                                        if (areaRestriction.RestrictionBoxInflation < partDef.HardPoint.Other.RestrictionRadius)
+                                        {
+                                            areaRestriction.RestrictionBoxInflation = partDef.HardPoint.Other.RestrictionRadius;
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        if (areaRestriction.RestrictionRadius < partDef.HardPoint.Other.RestrictionRadius)
+                                            areaRestriction.RestrictionRadius = partDef.HardPoint.Other.RestrictionRadius;
+                                    }
+                                }
+
+                                WeaponCoreDefs[subTypeMap.Key] = def.Id;
+
+                                if (def is MyConveyorSorterDefinition)
+                                {
+                                    if (firstDef)
+                                        ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
+
+                                    var size = Math.Pow(partDef.HardPoint.HardWare.InventorySize, 1d / 3d);
+
+                                    ((MyConveyorSorterDefinition)def).InventorySize += new Vector3(size, size, size);
+                                }
+
+                                firstDef = false;
+
+                                for (int i = 0; i < partDef.Assignments.MountPoints.Length; i++)
+                                {
+                                    var cubeDef = def as MyCubeBlockDefinition;
+                                    if (cubeDef != null)
+                                    {
+                                        for (int x = 0; x < partDef.Assignments.MountPoints.Length; x++)
+                                        {
+                                            var mp = partDef.Assignments.MountPoints[x];
+                                            if (mp.SubtypeId == def.Id.SubtypeName)
+                                            {
+                                                cubeDef.GeneralDamageMultiplier = mp.DurabilityMod > 0 ? mp.DurabilityMod : cubeDef.CubeSize == MyCubeSize.Large ? 0.25f : 0.05f;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
+                }
+
+                MyDefinitionId defId;
+                if (WeaponCoreDefs.TryGetValue(subTypeMap.Key, out defId))
+                {
+
+                    var p = new PhantomStructure(this, subTypeMap, parts, modPath);
+                    PartPlatforms[defId] = p;
+                }
+            }
+
+            _subTypeMaps.Clear();
+            _subTypeIdPhantomDefs.Clear();
         }
     }
 }

@@ -214,16 +214,10 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
         private readonly Dictionary<IMySlimBlock, float> _slimHealthClient = new Dictionary<IMySlimBlock, float>();
         
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeWeaponMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
-
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeUpgradeMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<UpgradeDefinition>> _subTypeIdUpgradeDefs = new Dictionary<string, List<UpgradeDefinition>>();
-
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypeSupportMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<SupportDefinition>> _subTypeIdSupportDefs = new Dictionary<string, List<SupportDefinition>>();
-
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _subTypePhantomMaps = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<PhantomDefinition>> _subTypeIdPhantomDefs = new Dictionary<string, List<PhantomDefinition>>();
 
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();

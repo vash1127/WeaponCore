@@ -217,7 +217,7 @@ namespace WeaponCore
             _destroyedSlimsClient.Clear();
             _slimHealthClient.Clear();
             _slimsSet.Clear();
-            _subTypeWeaponMaps.Clear();
+            _subTypeMaps.Clear();
             _tmpNearByBlocks.Clear();
 
             foreach (var av in Av.AvShots) {
