@@ -16,12 +16,24 @@ namespace WeaponCore.Support
     }
 
     [ProtoContract]
+    public class ConsumeableDef
+    {
+        [ProtoMember(1)] internal string ItemName;
+        [ProtoMember(2)] internal string InventoryItem;
+        [ProtoMember(3)] internal int ItemsNeeded;
+        [ProtoMember(4)] internal bool Hybrid;
+        [ProtoMember(5)] internal float EnergyCost;
+        [ProtoMember(6)] internal float Strength;
+    }
+
+    [ProtoContract]
     public class UpgradeDefinition
     {
         [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
         [ProtoMember(2)] internal HardPointDef HardPoint;
         [ProtoMember(3)] internal WeaponDefinition.AnimationDef Animations;
         [ProtoMember(4)] internal string ModPath;
+        [ProtoMember(5)] internal ConsumeableDef[] Consumable;
 
         [ProtoContract]
         public struct ModelAssignmentsDef
@@ -45,7 +57,6 @@ namespace WeaponCore.Support
             [ProtoMember(3)] internal UiDef Ui;
             [ProtoMember(4)] internal OtherDef Other;
 
-
             [ProtoContract]
             public struct UiDef
             {
@@ -62,6 +73,8 @@ namespace WeaponCore.Support
 
                 [ProtoMember(1)] internal float InventorySize;
                 [ProtoMember(2)] internal HardwareType Type;
+                [ProtoMember(3)] internal int BlockDistance;
+
             }
 
             [ProtoContract]
@@ -84,6 +97,7 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal HardPointDef HardPoint;
         [ProtoMember(3)] internal WeaponDefinition.AnimationDef Animations;
         [ProtoMember(4)] internal string ModPath;
+        [ProtoMember(5)] internal ConsumeableDef[] Consumable;
 
         [ProtoContract]
         public struct ModelAssignmentsDef
@@ -106,7 +120,6 @@ namespace WeaponCore.Support
             [ProtoMember(3)] internal UiDef Ui;
             [ProtoMember(4)] internal OtherDef Other;
 
-
             [ProtoContract]
             public struct UiDef
             {
@@ -123,6 +136,7 @@ namespace WeaponCore.Support
 
                 [ProtoMember(1)] internal float InventorySize;
                 [ProtoMember(2)] internal HardwareType Type;
+                [ProtoMember(3)] internal int BlockDistance;
             }
 
             [ProtoContract]
@@ -385,14 +399,21 @@ namespace WeaponCore.Support
         public struct UpgradeValues
         {
             [ProtoMember(1)] internal string[] Ammo;
-            [ProtoMember(2)] internal int RateOfFireMod;
-            [ProtoMember(3)] internal int BarrelsPerShotMod;
-            [ProtoMember(4)] internal int ReloadMod;
-            [ProtoMember(5)] internal int MaxHeatMod;
-            [ProtoMember(6)] internal int HeatSinkRateMod;
-            [ProtoMember(7)] internal int ShotsInBurstMod;
-            [ProtoMember(8)] internal int DelayAfterBurstMod;
-            [ProtoMember(9)] internal int AmmoPriority;
+            [ProtoMember(2)] internal Dependency[] Dependencies;
+            [ProtoMember(3)] internal int RateOfFireMod;
+            [ProtoMember(4)] internal int BarrelsPerShotMod;
+            [ProtoMember(5)] internal int ReloadMod;
+            [ProtoMember(6)] internal int MaxHeatMod;
+            [ProtoMember(7)] internal int HeatSinkRateMod;
+            [ProtoMember(8)] internal int ShotsInBurstMod;
+            [ProtoMember(9)] internal int DelayAfterBurstMod;
+            [ProtoMember(10)] internal int AmmoPriority;
+
+            public struct Dependency
+            {
+                internal string SubtypeId;
+                internal int Quanity;
+            }
         }
 
         [ProtoContract]
