@@ -1,12 +1,7 @@
 ﻿using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
-using VRage.Game;
 using VRage.Game.ModAPI;
-using VRage.Game.Utils;
-using VRage.Game.VisualScripting;
 using VRageMath;
 using WeaponCore.Support;
-using MyVisualScriptLogicProvider = Sandbox.Game.MyVisualScriptLogicProvider;
 
 namespace WeaponCore.Platform
 {
@@ -14,12 +9,12 @@ namespace WeaponCore.Platform
     {
         internal void RefreshBlocks(bool fullUpdate = false)
         {
-            if (Box2 == BoundingBox.Invalid) {
+            if (Box == BoundingBox.Invalid) {
                 fullUpdate = true;
                 PrepArea();
             }
 
-            if (fullUpdate || Box2.Intersects(ref Comp.Ai.BlockChangeArea))
+            if (fullUpdate || Box.Intersects(ref Comp.Ai.BlockChangeArea))
             {
                 Comp.Session.DsUtil2.Start("");
 
@@ -165,8 +160,9 @@ namespace WeaponCore.Platform
 
         private void PrepArea()
         {
-            var min = Comp.Cube.Min - CubeDistance;
-            var max = Comp.Cube.Max + CubeDistance;
+            var cubeDistance = System.Values.HardPoint.HardWare.BlockDistance;
+            var min = Comp.Cube.Min - cubeDistance;
+            var max = Comp.Cube.Max + cubeDistance;
             var gridMin = Comp.Cube.CubeGrid.Min;
             var gridMax = Comp.Cube.CubeGrid.Max;
 
@@ -176,9 +172,9 @@ namespace WeaponCore.Platform
             Min = min;
             Max = max;
 
-            Box2 = new BoundingBox(min, max);
-            Box2.Min *= Comp.Cube.CubeGrid.GridSize;
-            Box2.Max *= Comp.Cube.CubeGrid.GridSize;
+            Box = new BoundingBox(min, max);
+            Box.Min *= Comp.Cube.CubeGrid.GridSize;
+            Box.Max *= Comp.Cube.CubeGrid.GridSize;
         }
 
     }

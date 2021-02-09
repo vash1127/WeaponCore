@@ -13,14 +13,12 @@ namespace WeaponCore.Platform
         internal ProtoSupportPartState PartState;
         internal HashSet<IMySlimBlock> SuppotedBlocks = new HashSet<IMySlimBlock>();
         internal readonly Dictionary<IMySlimBlock, BlockBackup> BlockColorBackup = new Dictionary<IMySlimBlock, BlockBackup>();
-
-        internal int CubeDistance = 4;
+        internal readonly SupportSystem System;
         internal uint LastBlockRefreshTick;
         internal bool ShowAffectedBlocks;
         internal Vector3I Min;
         internal Vector3I Max;
         internal BoundingBox Box = BoundingBox.CreateInvalid();
-        internal BoundingBox Box2 = BoundingBox.CreateInvalid();
 
         private readonly HashSet<IMySlimBlock> _updatedBlocks = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _newBlocks = new HashSet<IMySlimBlock>();
@@ -29,6 +27,7 @@ namespace WeaponCore.Platform
 
         internal SupportSys(SupportSystem system, SupportComponent comp, int partId)
         {
+            System = system;
             Comp = comp;
             base.Init(comp, system, partId);
 
