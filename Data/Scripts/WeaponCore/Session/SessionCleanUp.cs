@@ -248,6 +248,9 @@ namespace WeaponCore
             VanillaCoreIds.Clear();
             WeaponCoreFixedBlockDefs.Clear();
             WeaponCoreTurretBlockDefs.Clear();
+            WeaponCoreUpgradeDefs.Clear();
+            WeaponCoreSupportDefs.Clear();
+            WeaponCorePhantomDefs.Clear();
             VoxelCaches.Clear();
             ArmorCubes.Clear();
 

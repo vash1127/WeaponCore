@@ -151,12 +151,12 @@ namespace WeaponCore.Support
                 }
                 else if (CoreEntity is IMyConveyorSorter)
                 {
-                    if (Session.WeaponCoreArmorEnhancerDefs.Contains(Cube.BlockDefinition.Id))
+                    if (Session.WeaponCoreSupportDefs.Contains(Cube.BlockDefinition.Id))
                     {
                         TypeSpecific = CompTypeSpecific.Support;
                         Type = CompType.Support;
                     }
-                    else if (Session.WeaponCoreUpgradeBlockDefs.Contains(Cube.BlockDefinition.Id))
+                    else if (Session.WeaponCoreUpgradeDefs.Contains(Cube.BlockDefinition.Id))
                     {
                         TypeSpecific = CompTypeSpecific.Upgrade;
                         Type = CompType.Upgrade;

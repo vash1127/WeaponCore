@@ -38,13 +38,17 @@ namespace WeaponCore
         {
             if (baseDefArray.WeaponDefs != null)
                 AssemblePartDefinitions(baseDefArray.WeaponDefs);
-            else if (baseDefArray.SupportDefs != null)
+
+            if (baseDefArray.SupportDefs != null)
                 AssemblePartDefinitions(baseDefArray.SupportDefs);
-            else if (baseDefArray.UpgradeDefs != null)
+
+            if (baseDefArray.UpgradeDefs != null)
                 AssemblePartDefinitions(baseDefArray.UpgradeDefs);
-            else if (baseDefArray.PhantomDefs != null)
+
+            if (baseDefArray.PhantomDefs != null)
                 AssemblePartDefinitions(baseDefArray.PhantomDefs);
-            else if (baseDefArray.ArmorDefs != null)
+
+            if (baseDefArray.ArmorDefs != null)
                 AssembleArmorDefinitions(baseDefArray.ArmorDefs);
         }
 

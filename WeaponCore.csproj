@@ -54,6 +54,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\CoreSystems.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\AmmoConstants.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\ConstructValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\AiValues.cs" />

@@ -419,7 +419,6 @@ namespace WeaponCore
 
                             if (matchingDef)
                             {
-
                                 if (partDef.HardPoint.Other.RestrictionRadius > 0)
                                 {
 
@@ -442,7 +441,6 @@ namespace WeaponCore
                                             areaRestriction.RestrictionRadius = partDef.HardPoint.Other.RestrictionRadius;
                                     }
                                 }
-
                                 WeaponCoreDefs[subTypeMap.Key] = def.Id;
 
                                 if (def is MyConveyorSorterDefinition)
@@ -483,9 +481,9 @@ namespace WeaponCore
                 MyDefinitionId defId;
                 if (WeaponCoreDefs.TryGetValue(subTypeMap.Key, out defId))
                 {
-
                     var u = new SupportStructure(this, subTypeMap, parts, modPath);
                     PartPlatforms[defId] = u;
+                    WeaponCoreSupportDefs.Add(defId);
                 }
             }
 
@@ -618,9 +616,9 @@ namespace WeaponCore
                 MyDefinitionId defId;
                 if (WeaponCoreDefs.TryGetValue(subTypeMap.Key, out defId))
                 {
-
-                    var u = new WeaponStructure.UpgradeStructure(this, subTypeMap, parts, modPath);
+                    var u = new UpgradeStructure(this, subTypeMap, parts, modPath);
                     PartPlatforms[defId] = u;
+                    WeaponCoreUpgradeDefs.Add(defId);
                 }
             }
 
@@ -756,6 +754,7 @@ namespace WeaponCore
 
                     var p = new PhantomStructure(this, subTypeMap, parts, modPath);
                     PartPlatforms[defId] = p;
+                    WeaponCorePhantomDefs.Add(defId);
                 }
             }
 

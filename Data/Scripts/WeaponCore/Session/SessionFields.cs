@@ -172,12 +172,12 @@ namespace WeaponCore
         internal readonly List<Projectile> Hits = new List<Projectile>(16);
         internal readonly List<Weapon> AcquireTargets = new List<Weapon>(128);
         internal readonly List<Weapon> HomingWeapons = new List<Weapon>(128);
-        internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCoreArmorEnhancerDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCorePhantomDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCoreUpgradeBlockDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCoreRifleDefs = new List<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> WeaponCoreFixedBlockDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> WeaponCoreTurretBlockDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> WeaponCoreSupportDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> WeaponCorePhantomDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> WeaponCoreUpgradeDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> WeaponCoreRifleDefs = new HashSet<MyDefinitionId>();
 
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);

@@ -103,6 +103,7 @@ namespace WeaponCore
                     {
                         case CoreStructure.StructureTypes.Upgrade:
                             CompsToStart.Add(new Upgrade.UpgradeComponent(this, entity, id.Value));
+                            Log.Line($"initcomp upgrade");
                             break;
                         case CoreStructure.StructureTypes.Support:
                             Log.Line($"initcomp support");
@@ -113,6 +114,8 @@ namespace WeaponCore
                             break;
                         case CoreStructure.StructureTypes.Weapon:
                             CompsToStart.Add(new Weapon.WeaponComponent(this, entity, id.Value));
+                            Log.Line($"initcomp weapon");
+
                             break;
                     }
 
