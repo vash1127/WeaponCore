@@ -49,135 +49,135 @@
     <None Include="WeaponCore.ruleset" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Scripts\WeaponCore\Api\ApiServer.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCorePbApi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\CoreSystems.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\AmmoConstants.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\ConstructValues.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\AiValues.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiConstruct.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiConstructData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiComp\AiCompRun.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Misc.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Phantom\ProtoPhantom.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Support\ProtoSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Upgrade\ProtoUpgrade.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\Weapon\ProtoWeapon.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Support\SupportActions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Support\SupportUi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Upgrade\UpgradeActions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Upgrade\UpgradeUi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Phantom\PhantomData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Support\SupportAv.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Support\SupportComp.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Support\SupportData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Support\SupportTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Support\SupportManager.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Support\SupportFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\PartFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Phantom\PhantomFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Phantom\PhantomComp.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Upgrade\UpgradeComp.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Upgrade\UpgradeData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Upgrade\UpgradeFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Upgrade\UpgradeTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponComp.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\CoreSettings.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSMethods.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkCMethods.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Api\Water.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Api\WaterModAPI.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\VersionControl.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudText.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudDraw.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudTextMaps.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\SupportClasses.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiDatabase.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiEvents.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\SerializedConfigs\PacketTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionAnimationMgr.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionAreaEffect.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionCleanUp.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionCompMgr.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionDamageMgr.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionEvents.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionInventory.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\CoreDefinitions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\CoreStructure.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionJobs.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionLocalPlayer.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionModHandlers.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\AudioVisual\AvShot.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiDraw.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiSelect.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\UiInput.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityEvents.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityInit.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityRun.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\CreateCustomActions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Weapon\WeaponActions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\PlatformInit.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\ModelSupport\PartInfo.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponReload.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponAv.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponController.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponState.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\Weapon\WeaponUi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponTrigger.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Parts\Weapon\WeaponTracking.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\MiscTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionControls.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionInit.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetwork.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionUpdate.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionRun.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Draw\DebugDraw.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Draw\DrawExts.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\DsAutoResetEvent.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\ModelSupport\Dummies.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\EntityExtentions.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionFutureEvents.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ai\AiTargeting.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Log.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectiles.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\ParallelExt.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\ModelSupport\RecursiveSubparts.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Api\ShieldApi.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\Controls\TerminalHelpers.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Dtree.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\StaticUtils.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Utils.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntityState.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\EntityComp\EntitySupport.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Api\ApiServer.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Api\CoreSystemsPbApi.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Api\CoreSystemsApi.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Api\ApiBackend.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\CoreSystems.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\AmmoConstants.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\ConstructValues.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\AiValues.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiComp\AiCompFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiConstruct.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiConstructData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiComp\AiCompRun.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\Misc.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\Phantom\ProtoPhantom.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\Support\ProtoSupport.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\Upgrade\ProtoUpgrade.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\Weapon\ProtoWeapon.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\Support\SupportActions.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\Support\SupportUi.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\Upgrade\UpgradeActions.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\Upgrade\UpgradeUi.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Phantom\PhantomData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Support\SupportAv.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Support\SupportComp.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Support\SupportData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Support\SupportTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Support\SupportManager.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Support\SupportFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\PartFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Phantom\PhantomFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Phantom\PhantomComp.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Upgrade\UpgradeComp.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Upgrade\UpgradeData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Upgrade\UpgradeFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Upgrade\UpgradeTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponComp.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Projectiles\ProjectileStart.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Projectiles\ProjectileTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\CoreSettings.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionNetworkSMethods.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionNetworkCMethods.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionNetworkSupport.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Api\Water.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Api\WaterModAPI.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\VersionControl.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Hud\HudText.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Hud\HudDraw.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Hud\HudSupport.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Hud\HudTextMaps.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Targeting\SupportClasses.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiDatabase.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\PartAnimation.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiEvents.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiSupport.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Projectiles\ProjectileHits.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Hud\HudFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntityData.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\SerializedConfigs\PacketTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionAnimationMgr.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionAreaEffect.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionCleanUp.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionCompMgr.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionDamageMgr.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionEvents.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionInventory.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\CoreDefinitions.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Definitions\CoreStructure.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionJobs.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionLocalPlayer.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionModHandlers.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\MathFuncs.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Spawn.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\AudioVisual\AvShot.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\VoxelIntersect.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Targeting\TargetUiDraw.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Targeting\TargetUiSelect.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\Targeting\TargetUiFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ui\UiInput.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntityEvents.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntityFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntityInit.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntityRun.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\CreateCustomActions.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\Weapon\WeaponActions.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\PlatformInit.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\ModelSupport\PartInfo.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponReload.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponAv.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponController.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponState.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\Weapon\WeaponUi.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponShoot.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Parts\Weapon\WeaponTracking.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\MiscTypes.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionControls.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionFields.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionInit.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionNetwork.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionUpdate.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionRun.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionSupport.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Draw\DebugDraw.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Draw\DrawExts.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\DsAutoResetEvent.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\ModelSupport\Dummies.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Extensions\EntityExtentions.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Session\SessionFutureEvents.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\GridIntersect.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Ai\AiTargeting.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Log.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Projectiles\Projectile.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Projectiles\Projectiles.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Extensions\ParallelExt.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\ModelSupport\RecursiveSubparts.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Api\ShieldApi.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\Controls\TerminalHelpers.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Projectiles\Dtree.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\StaticUtils.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\Support\Utils.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntityState.cs" />
+    <Compile Include="Data\Scripts\CoreSystems\EntityComp\EntitySupport.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ProtoBuf.Net.Core">
@@ -189,9 +189,6 @@
     <Reference Include="Sandbox.Game">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
     </Reference>
-    <Reference Include="Sandbox.Game.XmlSerializers">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.XmlSerializers.dll</HintPath>
-    </Reference>
     <Reference Include="Sandbox.Graphics">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Graphics.dll</HintPath>
     </Reference>
@@ -201,38 +198,9 @@
     <Reference Include="SpaceEngineers.ObjectBuilders">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.dll</HintPath>
     </Reference>
-    <Reference Include="SpaceEngineers.ObjectBuilders.XmlSerializers">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.XmlSerializers.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Runtime.Serialization.Xml, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Runtime.Serialization.Xml.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.ReaderWriter, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.ReaderWriter.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.XDocument, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.XDocument.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.XmlDocument, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.XmlDocument.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.XmlSerializer, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.XmlSerializer.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.XPath, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.XPath.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.XPath.XDocument, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.XPath.XDocument.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Serialization" />
     <Reference Include="VRage">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>
     </Reference>
@@ -268,9 +236,6 @@
     </Reference>
     <Reference Include="VRage.Render">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Render.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.XmlSerializers">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup />
