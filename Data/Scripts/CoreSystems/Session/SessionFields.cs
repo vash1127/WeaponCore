@@ -108,7 +108,7 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> ConsumableItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Part, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Part, int>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryMonitors = new ConcurrentDictionary<MyInventory, int>();
-        internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys.SupportComponent> ActiveSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys.SupportComponent>();
+        internal readonly ConcurrentDictionary<IMySlimBlock, BlockSupports> ActiveSupports = new ConcurrentDictionary<IMySlimBlock, BlockSupports>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 

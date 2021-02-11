@@ -119,9 +119,9 @@ namespace CoreSystems
             var damageScale = 1 * directDmgGlobal;
             var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
-            var damageType = info.AmmoDef.DamageScales.Shields.Type;
-            var energy = damageType == ShieldDef.ShieldType.Energy;
-            var heal = damageType == ShieldDef.ShieldType.Heal;
+            var damageScales = info.AmmoDef.DamageScales;
+            var energy = damageScales.DamageType.Shield == DamageTypes.Damage.Energy;
+            var heal = damageScales.Shields.Type == ShieldDef.ShieldType.Heal;
             var shieldByPass = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
 
             var areaEffect = info.AmmoDef.AreaEffect;

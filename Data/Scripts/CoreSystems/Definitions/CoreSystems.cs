@@ -68,7 +68,6 @@ namespace CoreSystems.Support
             PartIdHash = partIdHash;
             PartId = partId;
             PartName = partName;
-            PartType = (HardwareDef.HardwareType)Values.HardPoint.HardWare.Type;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 

@@ -228,9 +228,9 @@ namespace CoreSystems.Support
                     return;
                 }
                 if (blockDistance < 0)
-                    blockDistance = supportDef.HardPoint.HardWare.BlockDistance;
+                    blockDistance = supportDef.Effect.BlockRange;
 
-                if (blockDistance != supportDef.HardPoint.HardWare.BlockDistance)
+                if (blockDistance != supportDef.Effect.BlockRange)
                     commonBlockRange = false;
 
                 var partNameIdHash = MyStringHash.GetOrCompute(supportDef.HardPoint.PartName + $" {partId}");

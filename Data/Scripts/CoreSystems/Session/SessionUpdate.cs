@@ -96,17 +96,20 @@ namespace CoreSystems
                         sComp.DetectStateChanges();
                     }
 
-                    if (sComp.Platform.State != CorePlatform.PlatformState.Ready || sComp.IsAsleep || !sComp.IsWorking || sComp.CoreEntity.MarkedForClose || sComp.IsDisabled || sComp.LazyUpdate && !ai.DbUpdated && Tick > sComp.NextLazyUpdateStart)
+                    if (sComp.Platform.State != CorePlatform.PlatformState.Ready || sComp.IsAsleep || !sComp.IsWorking || sComp.CoreEntity.MarkedForClose || sComp.IsDisabled || sComp.LazyUpdate && Tick60)
                         continue;
 
                     for (int j = 0; j < sComp.Platform.Support.Count; j++)
                     {
                         var s = sComp.Platform.Support[j];
-                        if (s.LastBlockRefreshTick < ai.LastBlockChangeTick && s.IsPrime || sComp.Structure.CommonBlockRange)
+                        if (s.LastBlockRefreshTick < ai.LastBlockChangeTick && s.IsPrime || s.LastBlockRefreshTick < ai.LastBlockChangeTick && !sComp.Structure.CommonBlockRange)
                             s.RefreshBlocks();
 
                         if (s.ShowAffectedBlocks != sComp.Data.Repo.Values.Set.Overrides.ArmorShowArea)
                             s.ToggleAreaEffectDisplay();
+
+                        if (Tick60 && s.Active)
+                            s.Charge();
                     }
                 }
 
@@ -373,14 +376,12 @@ namespace CoreSystems
                 }
                 ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
                 
-                if (ai.DbUpdated)
-                {
+                if (Tick60) {
                     ai.BlockChangeArea = BoundingBox.CreateInvalid();
-                    ai.DbUpdated = false;
                     ai.AddedBlockPositions.Clear();
                     ai.RemovedBlockPositions.Clear();
                 }
-
+                ai.DbUpdated = false;
             }
 
             if (DbTask.IsComplete && DbsToUpdate.Count > 0 && !DbUpdating)

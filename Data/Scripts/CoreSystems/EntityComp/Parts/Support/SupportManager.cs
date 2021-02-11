@@ -2,39 +2,31 @@
 using Sandbox.Game.Entities;
 using VRage.Game.ModAPI;
 using VRageMath;
-
+using static CoreSystems.Support.SupportDefinition.SupportEffect;
+using static CoreSystems.Support.SupportDefinition.SupportEffect.AffectedBlocks;
 namespace CoreSystems.Platform
 {
     public partial class SupportSys
     {
-        internal void RefreshBlocks(bool fullUpdate = false)
+        internal void RefreshBlocks()
         {
-            if (Box == BoundingBox.Invalid) {
-                fullUpdate = true;
-                PrepArea();
-            }
+            Comp.Session.DsUtil2.Start("");
 
-            if (fullUpdate || Box.Intersects(ref Comp.Ai.BlockChangeArea))
+            if (Box.Intersects(ref Comp.Ai.BlockChangeArea) && CubesInRange(true, System.Values.Effect.Affected))
             {
-                Comp.Session.DsUtil2.Start("");
-
-                if (fullUpdate) 
-                {
-                    foreach (var block in _updatedBlocks)
-                        _lostBlocks.Add(block);
-
-                    GetCubesInRange(Session.CubeTypes.Slims);
-                    DetectBlockChanges();
-                }
-                else if (UpdateCubesInRange(Session.CubeTypes.Slims))
-                    ProcessBlockChanges(false, true);
-
-                Comp.Session.DsUtil2.Complete("", false, true);
-                Log.Line($"FullUpdate? {fullUpdate} - {SuppotedBlocks.Count}");
-
+                ProcessBlockChanges(false, true);
             }
+            else if (Box == BoundingBox.Invalid)
+            {
+                foreach (var block in _updatedBlocks)
+                    _lostBlocks.Add(block);
+
+                CubesInRange(false, System.Values.Effect.Affected);
+                DetectBlockChanges();
+            }
+
             LastBlockRefreshTick = CoreSystem.Session.Tick;
-            
+            Comp.Session.DsUtil2.Complete("", false, true);
         }
 
         public void DetectBlockChanges()
@@ -62,6 +54,14 @@ namespace CoreSystems.Platform
             foreach (var block in _newBlocks)
             {
                 SuppotedBlocks.Add(block);
+                
+                BlockSupports blockSupports;
+                if (!System.Session.ActiveSupports.TryGetValue(block, out blockSupports)) {
+                    blockSupports = System.Session.BlockSupportsPool.Get();
+                    blockSupports.AddSupport(this, block);
+                }
+                else blockSupports.AddSupport(this);
+
                 if (ShowAffectedBlocks) {
 
                     MyCube myCube;
@@ -75,6 +75,15 @@ namespace CoreSystems.Platform
             foreach (var block in _lostBlocks)
             {
                 SuppotedBlocks.Remove(block);
+
+                BlockSupports blockSupports;
+                if (System.Session.ActiveSupports.TryGetValue(block, out blockSupports))
+                {
+                   if (!blockSupports.RemoveSupport(this))
+                       Log.Line($"failed to remove support");
+                }
+                else Log.Line($"support manager failed to get blockSupport");
+
                 if (ShowAffectedBlocks)
                 {
                     BlockBackup backup;
@@ -94,77 +103,17 @@ namespace CoreSystems.Platform
 
         }
 
-        public void GetCubesInRange(Session.CubeTypes types = Session.CubeTypes.All)
+        public bool CubesInRange(bool update, AffectedBlocks types = Both)
         {
-            _updatedBlocks.Clear();
-
             var cube = Comp.Cube;
             var next = cube.Position;
             var grid = cube.CubeGrid;
-            var iter = new Vector3I_RangeIterator(ref Min, ref Max);
-            while (iter.IsValid()) {
 
-                MyCube myCube;
-                if (grid.TryGetCube(next, out myCube) && myCube.CubeBlock != cube.SlimBlock) {
-
-                    var slim = (IMySlimBlock)myCube.CubeBlock;
-
-                    if (next == slim.Position) {
-
-                        if (types == Session.CubeTypes.Slims && !slim.IsDestroyed && slim.FatBlock == null)
-                            _updatedBlocks.Add(slim);
-                        else if (types == Session.CubeTypes.Fats && slim.FatBlock != null && !slim.IsDestroyed)
-                            _updatedBlocks.Add(slim);
-                        else if (types == Session.CubeTypes.All && !slim.IsDestroyed)
-                            _updatedBlocks.Add(slim);
-                    }
-                }
-                iter.GetNext(out next);
-            }
-        }
-
-        public bool UpdateCubesInRange(Session.CubeTypes types = Session.CubeTypes.All)
-        {
-            var cube = Comp.Cube;
-            var next = cube.Position;
-            var iter = new Vector3I_RangeIterator(ref Min, ref Max);
-            var addedBlocks = Comp.Ai.AddedBlockPositions;
-            var removedBlocks = Comp.Ai.RemovedBlockPositions;
-
-            while (iter.IsValid())
-            {
-                IMySlimBlock slim;
-                if (addedBlocks.TryGetValue(next, out slim) && !slim.IsDestroyed)
-                {
-                    if (types == Session.CubeTypes.Slims && slim.FatBlock == null)
-                        _newBlocks.Add(slim);
-                    else if (types == Session.CubeTypes.Fats && slim.FatBlock != null)
-                        _newBlocks.Add(slim);
-                    else if (types == Session.CubeTypes.All)
-                        _newBlocks.Add(slim);
-                }
-                else if (removedBlocks.TryGetValue(next, out slim))
-                {
-                    if (types == Session.CubeTypes.Slims && slim.FatBlock == null)
-                        _lostBlocks.Add(slim);
-                    else if (types == Session.CubeTypes.Fats && slim.FatBlock != null)
-                        _lostBlocks.Add(slim);
-                    else if (types == Session.CubeTypes.All)
-                        _lostBlocks.Add(slim);
-
-                }
-                iter.GetNext(out next);
-            }
-            return _newBlocks.Count > 0 || _lostBlocks.Count > 0;
-        }
-
-        private void PrepArea()
-        {
-            var cubeDistance = System.Values.HardPoint.HardWare.BlockDistance;
-            var min = Comp.Cube.Min - cubeDistance;
-            var max = Comp.Cube.Max + cubeDistance;
-            var gridMin = Comp.Cube.CubeGrid.Min;
-            var gridMax = Comp.Cube.CubeGrid.Max;
+            var cubeDistance = System.Values.Effect.BlockRange;
+            var min = cube.Min - cubeDistance;
+            var max = cube.Max + cubeDistance;
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
 
             Vector3I.Max(ref min, ref gridMin, out min);
             Vector3I.Min(ref max, ref gridMax, out max);
@@ -173,9 +122,68 @@ namespace CoreSystems.Platform
             Max = max;
 
             Box = new BoundingBox(min, max);
-            Box.Min *= Comp.Cube.CubeGrid.GridSize;
-            Box.Max *= Comp.Cube.CubeGrid.GridSize;
-        }
+            Box.Min *= grid.GridSize;
+            Box.Max *= grid.GridSize;
 
+            var addedBlocks = Comp.Ai.AddedBlockPositions;
+            var removedBlocks = Comp.Ai.RemovedBlockPositions;
+
+            var iter = new Vector3I_RangeIterator(ref Min, ref Max);
+            while (iter.IsValid())
+            {
+                if (update)
+                {
+                    IMySlimBlock slim;
+                    if (addedBlocks.TryGetValue(next, out slim) && !slim.IsDestroyed)
+                    {
+                        if (types == NonLogic && slim.FatBlock == null)
+                            _newBlocks.Add(slim);
+                        else if (types == Logic && slim.FatBlock != null)
+                            _newBlocks.Add(slim);
+                        else if (types == Both)
+                            _newBlocks.Add(slim);
+                    }
+                    else if (removedBlocks.TryGetValue(next, out slim))
+                    {
+                        if (types == NonLogic && slim.FatBlock == null)
+                            _lostBlocks.Add(slim);
+                        else if (types == Logic && slim.FatBlock != null)
+                            _lostBlocks.Add(slim);
+                        else if (types == Both)
+                            _lostBlocks.Add(slim);
+
+                    }
+                }
+                else
+                {
+                    MyCube myCube;
+                    if (grid.TryGetCube(next, out myCube) && myCube.CubeBlock != cube.SlimBlock)
+                    {
+
+                        var slim = (IMySlimBlock)myCube.CubeBlock;
+
+                        if (next == slim.Position && !slim.IsDestroyed)
+                        {
+
+                            if (types == NonLogic && slim.FatBlock == null)
+                                _updatedBlocks.Add(slim);
+                            else if (types == Logic && !slim.IsDestroyed)
+                                _updatedBlocks.Add(slim);
+                            else if (types == Both)
+                                _updatedBlocks.Add(slim);
+                        }
+                    }
+                }
+
+                iter.GetNext(out next);
+            }
+
+            if (!update)
+                Log.Line($"new adds: {_updatedBlocks.Count}");
+            else Log.Line($"update: adds:{_newBlocks.Count} - removes:{_lostBlocks.Count}");
+
+
+            return !update && _updatedBlocks.Count > 0 || _newBlocks.Count > 0 || _lostBlocks.Count > 0;
+        }
     }
 }

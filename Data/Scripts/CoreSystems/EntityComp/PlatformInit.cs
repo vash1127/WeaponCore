@@ -590,6 +590,9 @@ namespace CoreSystems.Platform
 
         internal void ResetParts()
         {
+            if (Structure.StructureType != CoreStructure.StructureTypes.Weapon)
+                return;
+
             Parts.Clean(Comp.Entity as MyEntity);
             Parts.CheckSubparts();
             
