@@ -90,10 +90,21 @@ namespace CoreSystems
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
         internal readonly MyConcurrentPool<MyConcurrentList<BetterInventoryItem>> BetterItemsListPool = new MyConcurrentPool<MyConcurrentList<BetterInventoryItem>>(256, list => list.Clear());
-        internal readonly MyConcurrentPool<BlockSupports> BlockSupportsPool = new MyConcurrentPool<BlockSupports>(256);
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
+
+        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
+
+        internal readonly MyConcurrentHashSet<Weapon> PartToPullConsumable = new MyConcurrentHashSet<Weapon>();
+
+        internal readonly ConcurrentCachingList<CoreComponent> CompsToStart = new ConcurrentCachingList<CoreComponent>();
+        internal readonly ConcurrentCachingList<Ai> DelayedAiClean = new ConcurrentCachingList<Ai>();
+
+        internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
+
+        internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
+        internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
 
         internal readonly ConcurrentDictionary<MyEntity, Ai> GridToMasterAi = new ConcurrentDictionary<MyEntity, Ai>();
         internal readonly ConcurrentDictionary<MyEntity, Ai> GridAIs = new ConcurrentDictionary<MyEntity, Ai>();
@@ -108,21 +119,9 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> ConsumableItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Part, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Part, int>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryMonitors = new ConcurrentDictionary<MyInventory, int>();
-        internal readonly ConcurrentDictionary<IMySlimBlock, BlockSupports> ActiveSupports = new ConcurrentDictionary<IMySlimBlock, BlockSupports>();
-
-        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
-
-        internal readonly MyConcurrentHashSet<Weapon> PartToPullConsumable = new MyConcurrentHashSet<Weapon>();
-
-        internal readonly ConcurrentCachingList<CoreComponent> CompsToStart = new ConcurrentCachingList<CoreComponent>();
-        internal readonly ConcurrentCachingList<Ai> DelayedAiClean = new ConcurrentCachingList<Ai>();
-
-        internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
-
-        internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
-        internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
-
-        internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
+        internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> ProtSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
+        internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> RegenSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
+        internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> StructalSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
 
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
@@ -192,6 +191,7 @@ namespace CoreSystems
         internal readonly HashSet<Ai> GridsToUpdateInventories = new HashSet<Ai>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
+        internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
 
         internal readonly int[] AuthorSettings = new int[6];
 

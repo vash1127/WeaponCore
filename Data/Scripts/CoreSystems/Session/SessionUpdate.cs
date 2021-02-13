@@ -47,11 +47,13 @@ namespace CoreSystems
 
                 if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
-                if (ai.DbUpdated && ai.IsGrid)
+                
+                if (Tick60 && ai.IsGrid && ai.BlockChangeArea != BoundingBox.Invalid)
                 {
                     ai.BlockChangeArea.Min *= ai.GridEntity.GridSize;
                     ai.BlockChangeArea.Max *= ai.GridEntity.GridSize;
                 }
+
                 if (IsServer) {
 
                     if (ai.Construct.RootAi.Construct.NewInventoryDetected)
@@ -96,7 +98,7 @@ namespace CoreSystems
                         sComp.DetectStateChanges();
                     }
 
-                    if (sComp.Platform.State != CorePlatform.PlatformState.Ready || sComp.IsAsleep || !sComp.IsWorking || sComp.CoreEntity.MarkedForClose || sComp.IsDisabled || sComp.LazyUpdate && Tick60)
+                    if (sComp.Platform.State != CorePlatform.PlatformState.Ready || sComp.IsAsleep || !sComp.IsWorking || sComp.CoreEntity.MarkedForClose || sComp.IsDisabled || !Tick60)
                         continue;
 
                     for (int j = 0; j < sComp.Platform.Support.Count; j++)
@@ -108,7 +110,7 @@ namespace CoreSystems
                         if (s.ShowAffectedBlocks != sComp.Data.Repo.Values.Set.Overrides.ArmorShowArea)
                             s.ToggleAreaEffectDisplay();
 
-                        if (Tick60 && s.Active)
+                        if (s.Active)
                             s.Charge();
                     }
                 }
@@ -376,7 +378,7 @@ namespace CoreSystems
                 }
                 ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
                 
-                if (Tick60) {
+                if (ai.IsGrid && Tick60 && ai.BlockChangeArea != BoundingBox.Invalid) {
                     ai.BlockChangeArea = BoundingBox.CreateInvalid();
                     ai.AddedBlockPositions.Clear();
                     ai.RemovedBlockPositions.Clear();
