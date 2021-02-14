@@ -172,7 +172,7 @@ namespace CoreSystems
                 DsUtil.Complete("db", true);
                 DbUpdating = false;
             }
-            catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}", null, true); }
         }
 
         internal void CheckDirtyGridInfos()

@@ -252,7 +252,7 @@ namespace CoreSystems.Platform
                     LastHeatUpdateTick = 0;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- BaseComp:{Comp == null} - ProtoRepo:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null}  - Weapons:{Comp.Data.Repo?.Values.State.Weapons[PartId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- BaseComp:{Comp == null} - ProtoRepo:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null}  - Weapons:{Comp.Data.Repo?.Values.State.Weapons[PartId] == null}", null, true); }
         }
 
         internal void UpdateRof()
@@ -296,25 +296,11 @@ namespace CoreSystems.Platform
         {
             if (System.DesignatorWeapon) return;
 
-            var newBase = 0f;
-
-            if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Values.Set.DpsModifier;
-            else
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
-
-            if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-                newBase *= Comp.Data.Repo.Values.Set.Overload;
-
-            if (newBase < 0)
-                newBase = 0;
-
-            BaseDamage = newBase;
-            var oldRequired = RequiredPower;
+            BaseDamage = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.BaseDamage : (ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Values.Set.DpsModifier) * Comp.Data.Repo.Values.Set.Overload;
+            
             var oldHeatPSec = Comp.HeatPerSecond;
-
             UpdateShotEnergy();
-            UpdateRequiredPower();
+            UpdateDesiredPower();
 
             var multiplier = (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
 
@@ -325,53 +311,24 @@ namespace CoreSystems.Platform
 
             HeatPShot = System.HeatPerShot * multiplier;
 
-            RequiredPower *= multiplier;
+            DesiredPower *= multiplier;
+            
+            MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * multiplier;
 
             TicksPerShot = (uint)(3600f / RateOfFire);
 
             var oldDps = Dps;
-            var oldMaxCharge = MaxCharge;
-
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * multiplier;
-
             Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
 
             var newHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
 
             var heatDif = oldHeatPSec - newHeatPSec;
             var dpsDif = oldDps - Dps;
-            var powerDif = oldRequired - RequiredPower;
-            var chargeDif = oldMaxCharge - MaxCharge;
-
+            
             if (IsShooting)
                 Comp.CurrentDps -= dpsDif;
 
-            if (DrawingPower)
-            {
-                Comp.Ai.RequestedWeaponsDraw -= powerDif;
-                OldUseablePower = UseablePower;
-
-                Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-
-                if (!Comp.Ai.OverPowered)
-                {
-                    UseablePower = RequiredPower;
-                    DrawPower(true);
-                }
-                else
-                {
-                    RecalcPower = true;
-                    ResetPower = true;
-                    ChargeDelayTicks = 0;
-                }
-            }
-            else
-                UseablePower = RequiredPower;
-
             Comp.HeatPerSecond -= heatDif;
-            Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
-            Comp.Ai.UpdatePowerSources = true;
         }
 
         internal bool SpinBarrel(bool spinDown = false)

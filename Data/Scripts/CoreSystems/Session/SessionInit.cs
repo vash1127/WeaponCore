@@ -119,7 +119,73 @@ namespace CoreSystems
             CompileSupportStructures();
             CompilePhantomStructures();
 
+            AssignPowerPriorities();
+
+
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
+        }
+
+        private readonly List<CoreStructure> _tmpStructureSorting = new List<CoreStructure>();
+        private void AssignPowerPriorities()
+        {
+            _tmpStructureSorting.AddRange(PartPlatforms.Values);
+            ShellSort(_tmpStructureSorting);
+
+            for (int i = _tmpStructureSorting.Count - 1; i >= 0; i--)
+            {
+                var t = _tmpStructureSorting[i];
+
+                var powerUser = t.ApproximatePeakPowerCombined >= 2;
+
+                if (!powerUser) {
+                    PowerGroups.Add(t, 0);
+                    _tmpStructureSorting.RemoveAtFast(i);
+                }
+            }
+
+            var total = _tmpStructureSorting.Count;
+            var condition1 = total * 0.5f;
+            var condition2 = total * 0.75f;
+
+            for (int i = 0; i < _tmpStructureSorting.Count; i++)
+            {
+                var t = _tmpStructureSorting[i];
+
+                if (i < condition1)
+                    PowerGroups.Add(t, 0);
+                else if (i < condition2)
+                    PowerGroups.Add(t, 1);
+                else
+                    PowerGroups.Add(t, 2);
+            }
+
+            foreach (var g in PowerGroups)
+            {
+                Log.Line($"ChargePowerRequired: {g.Key.ApproximatePeakPowerCombined} - assingedPowerGroup:{g.Value}");
+            }
+            _tmpStructureSorting.Clear();
+        }
+
+        static void ShellSort(List<CoreStructure> list)
+        {
+            int length = list.Count;
+
+            for (int h = length / 2; h > 0; h /= 2)
+            {
+                for (int i = h; i < length; i += 1)
+                {
+                    var tempValue = list[i];
+                    var temp = tempValue.ApproximatePeakPowerCombined;
+
+                    int j;
+                    for (j = i; j >= h && list[j - h].ApproximatePeakPowerCombined > temp; j -= h)
+                    {
+                        list[j] = list[j - h];
+                    }
+
+                    list[j] = tempValue;
+                }
+            }
         }
 
         private void CompileWeaponStructures()
@@ -332,7 +398,7 @@ namespace CoreSystems
                         }
 
                     }
-                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}", null, true); }
                 }
 
                 MyDefinitionId defId;
@@ -475,7 +541,7 @@ namespace CoreSystems
                         }
 
                     }
-                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}", null, true); }
                 }
 
                 MyDefinitionId defId;
@@ -610,7 +676,7 @@ namespace CoreSystems
                         }
 
                     }
-                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}", null, true); }
                 }
 
                 MyDefinitionId defId;
@@ -745,7 +811,7 @@ namespace CoreSystems
                         }
 
                     }
-                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}"); }
+                    catch (Exception e) { Log.Line($"Failed to load {partDef.HardPoint.PartName}", null, true); }
                 }
 
                 MyDefinitionId defId;

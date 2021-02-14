@@ -406,7 +406,7 @@ namespace CoreSystems.Platform
                         {
                             ent.SetEmissiveParts("Heating", Color.Transparent, 0);
                         }
-                        catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
+                        catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}", null, true); }
                     }
                 }
 
@@ -556,7 +556,7 @@ namespace CoreSystems.Platform
                             {
                                 ent.SetEmissiveParts("Heating", Color.Transparent, 0);
                             }
-                            catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
+                            catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}", null, true); }
                         }
                     }
 

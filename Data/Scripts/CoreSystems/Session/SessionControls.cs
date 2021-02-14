@@ -38,7 +38,7 @@ namespace CoreSystems
 
                 TerminalHelpers.AddTurretOrTrackingControls<T>(session);
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}", null, true); }
         }
 
         internal static void CreateDefaultActions<T>(Session session) where T : IMyTerminalBlock
@@ -328,7 +328,7 @@ namespace CoreSystems
                     if (w.DrawingPower) w.StopPowerDraw();
 
                     if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        w.Reloading = false;
+                        w.Loading = false;
                 }
                 else {
 

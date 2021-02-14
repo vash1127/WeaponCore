@@ -22,7 +22,7 @@ namespace CoreSystems.Platform
                     IsHome = false;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}", null, true); }
         }
 
         internal void TargetChanged()
@@ -33,7 +33,6 @@ namespace CoreSystems.Platform
             if (!Target.HasTarget)
             {
                 if (DrawingPower) {
-                    Charging = false;
                     StopPowerDraw();
                 }
 
@@ -55,15 +54,15 @@ namespace CoreSystems.Platform
                 Comp.Status = CoreComponent.Start.ReInit;
         }
 
-        internal void UpdateRequiredPower()
+        internal void UpdateDesiredPower()
         {
-            if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid)
+            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
             {
                 var rofPerSecond = RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND;
-                RequiredPower = ((ShotEnergyCost * (rofPerSecond * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+                DesiredPower = ((ShotEnergyCost * (rofPerSecond * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
             }
             else
-                RequiredPower = Comp.IdlePower;
+                DesiredPower = Comp.IdlePower;
         }
 
         internal void UpdateShotEnergy()
@@ -104,8 +103,8 @@ namespace CoreSystems.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if ((ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
-                    DrawPower();
+                //if ((ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
+                    //DrawPower();
             }
             IsShooting = true;
         }
@@ -126,53 +125,14 @@ namespace CoreSystems.Platform
                 EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                 Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
 
-                if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
-                    StopPowerDraw();
+                //if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
+                    //StopPowerDraw();
 
             }
 
             if (System.Session.HandlesInput)
                 StopShootingAv(power);
             else IsShooting = false;
-        }
-
-        public void DrawPower(bool adapt = false)
-        {
-            if (!Comp.IsBlock)
-            {
-                Log.Line("DrawPower fix me I am not a block");
-                return;
-            }
-
-            if (DrawingPower && !adapt) return;
-
-            var useableDif = adapt ? OldUseablePower - UseablePower : -UseablePower;
-            DrawingPower = true;
-            //yes they are the right signs, weird math at play :P
-            Comp.Ai.CurrentWeaponsDraw -= useableDif;
-            Comp.SinkPower -= useableDif;
-            Comp.Ai.GridAvailablePower += useableDif;
-            Comp.Cube.ResourceSink.Update();
-        }
-
-        public void StopPowerDraw()
-        {
-            if (!Comp.IsBlock)
-            {
-                Log.Line("StopPowerDraw fix me I am not a block");
-                return;
-            }
-            if (!DrawingPower) return;
-            DrawingPower = false;
-            RequestedPower = false;
-            Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
-            Comp.Ai.CurrentWeaponsDraw -= UseablePower;
-            Comp.SinkPower -= UseablePower;
-            Comp.Ai.GridAvailablePower += UseablePower;
-
-            ChargeDelayTicks = 0;
-            if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
-            Comp.Cube.ResourceSink.Update();
         }
 
         internal double GetMaxWeaponRange()

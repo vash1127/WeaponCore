@@ -5,7 +5,7 @@ using VRageMath;
 
 namespace CoreSystems.Platform
 {
-    public class Part
+    public partial class Part
     {
         internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
@@ -13,13 +13,20 @@ namespace CoreSystems.Platform
         internal CoreComponent BaseComp;
         internal CoreSystem CoreSystem;
         internal PartAcquire Acquire;
+        internal float MaxCharge;
+        internal float DesiredPower;
+        internal float AssignedPower;
+        internal uint ChargeUntilTick;
+        internal uint ChargeDelayTicks;
         internal uint PartCreatedTick;
-        internal int ShortLoadId;
         internal uint PartReadyTick;
+        internal int ShortLoadId;
         internal int UniqueId;
         internal int PartId;
         internal bool IsPrime;
-
+        internal bool DrawingPower;
+        internal bool Loading;
+        internal bool InCharger;
         internal void Init(CoreComponent comp, CoreSystem system, int partId)
         {
             CoreSystem = system;
@@ -48,6 +55,5 @@ namespace CoreSystems.Platform
                 Part = part;
             }
         }
-
     }
 }

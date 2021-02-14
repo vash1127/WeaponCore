@@ -153,6 +153,11 @@ namespace CoreSystems
             MyAPIGateway.Utilities.ShowNotification(notify.Message, notify.Duration > 0 ? notify.Duration : 1000, notify.Color == string.Empty ? "White" : notify.Color);
         }
 
+        internal void ShowLocalNotify(string message, int duration, string color = null)
+        {
+            MyAPIGateway.Utilities.ShowNotification(message, duration, string.IsNullOrEmpty(color) ? "White" : color);
+        }
+
         private readonly Color _restrictionAreaColor = new Color(128, 0, 128, 96);
         private readonly Color _uninitializedColor = new Color(255, 0, 0, 200);
         private BoundingSphereD _nearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);

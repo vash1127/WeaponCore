@@ -23,7 +23,7 @@ namespace CoreSystems
                 if (!SuppressWc)
                     BeforeStartInit();
             }
-            catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}", null, true); }
         }
 
             public override MyObjectBuilder_SessionComponent GetObjectBuilder()
@@ -41,7 +41,7 @@ namespace CoreSystems
                     Paused();
 
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}", null, true); }
         }
 
 
@@ -111,7 +111,7 @@ namespace CoreSystems
                         ProccessClientPacketsForServer();
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}", null, true); }
         }
 
         public override void Simulate()
@@ -138,7 +138,7 @@ namespace CoreSystems
 
 
                     DsUtil.Start("charge");
-                    if (ChargingWeapons.Count > 0) UpdateChargeWeapons();
+                    if (ChargingParts.Count > 0) UpdateChargeWeapons();
                     DsUtil.Complete("charge", true);
 
                     DsUtil.Start("acquire");
@@ -189,7 +189,7 @@ namespace CoreSystems
                 }
 
             }
-            catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}", null, true); }
         }
 
         public override void UpdateAfterSimulation()
@@ -211,7 +211,7 @@ namespace CoreSystems
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}", null, true); }
         }
 
         public override void Draw()
@@ -257,7 +257,7 @@ namespace CoreSystems
                 DrawDisabledGuns();
                 DsUtil.Complete("draw", true);
             }
-            catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}", null, true); }
         }
 
         public override void HandleInput()  
@@ -334,7 +334,7 @@ namespace CoreSystems
 
                 ReallyStupidKeenShit();
             }
-            catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}", null, true); }
         }
 
         protected override void UnloadData()
@@ -387,7 +387,7 @@ namespace CoreSystems
                 Log.Line("Logging stopped.");
                 Log.Close();
             }
-            catch (Exception ex) { Log.Line($"Exception in UnloadData: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in UnloadData: {ex}", null, true); }
         }
     }
 }

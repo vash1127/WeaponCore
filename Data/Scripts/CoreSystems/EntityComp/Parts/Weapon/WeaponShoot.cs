@@ -290,7 +290,7 @@ namespace CoreSystems.Platform
                 #endregion
                 _nextVirtual = _nextVirtual + 1 < System.Values.HardPoint.Loading.BarrelsPerShot ? _nextVirtual + 1 : 0;
             }
-            catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
+            catch (Exception e) { Log.Line($"Error in shoot: {e}", null, true); }
         }
 
         private void OverHeat()
@@ -422,7 +422,7 @@ namespace CoreSystems.Platform
 
         private void EjectionDelayed(object o)
         {
-            if (ActiveAmmoDef?.AmmoDef != null && !Ejector.NullEntity) 
+            if (Comp.IsWorking && ActiveAmmoDef?.AmmoDef != null && ActiveAmmoDef.AmmoDef.Ejection.Type == WeaponDefinition.AmmoDef.EjectionDef.SpawnType.Item && !Ejector.NullEntity) 
                 MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, Ejector.Info.Position, Ejector.Info.Direction, MyPivotUp, null, EjectionSpawnCallback);
         }
 

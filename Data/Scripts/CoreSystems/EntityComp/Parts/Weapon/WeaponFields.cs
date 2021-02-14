@@ -118,10 +118,7 @@ namespace CoreSystems.Platform
 
         internal IHitInfo LastHitInfo;
         internal EventTriggers LastEvent;
-        internal float RequiredPower;
-        internal float MaxCharge;
-        internal float UseablePower;
-        internal float OldUseablePower;
+
         internal float BaseDamage;
         internal float Dps;
         internal float ShotEnergyCost;
@@ -133,8 +130,6 @@ namespace CoreSystems.Platform
         internal uint LastSmartLosCheck;
         internal uint LastLoadedTick;
         internal uint OffDelay;
-        internal uint ChargeUntilTick;
-        internal uint ChargeDelayTicks;
         internal uint AnimationDelayTick;
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
@@ -183,10 +178,7 @@ namespace CoreSystems.Platform
         internal bool NoMagsToLoad;
         internal bool CurrentlyDegrading;
         internal bool FixedOffset;
-        internal bool DrawingPower;
-        internal bool RequestedPower;
-        internal bool ResetPower;
-        internal bool RecalcPower;
+
         internal bool ProjectilesNear;
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;
@@ -199,8 +191,6 @@ namespace CoreSystems.Platform
         internal bool PauseShoot;
         internal bool LastEventCanDelay;
         internal bool ShowBurstDelayAsReload;
-        internal bool Reloading;
-        internal bool Charging;
         internal bool ClientStaticShot;
         internal bool ShootOnce;
         internal bool ParentIsSubpart;
@@ -209,9 +199,9 @@ namespace CoreSystems.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || ProtoWeaponAmmo.CurrentAmmo == 0);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
                 var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
+                var shotReady = canShoot && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;
             }
         }

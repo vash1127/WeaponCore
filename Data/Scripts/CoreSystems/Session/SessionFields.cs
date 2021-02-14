@@ -102,6 +102,7 @@ namespace CoreSystems
         internal readonly ConcurrentCachingList<Ai> DelayedAiClean = new ConcurrentCachingList<Ai>();
 
         internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
+        internal readonly CachingHashSet<AiCharger> ChargingParts = new CachingHashSet<AiCharger>();
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
@@ -117,12 +118,12 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>> CoreInventoryItems = new ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<MyEntity, GridMap> GridToInfoMap = new ConcurrentDictionary<MyEntity, GridMap>();
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> ConsumableItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
-        internal readonly ConcurrentDictionary<Part, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Part, int>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryMonitors = new ConcurrentDictionary<MyInventory, int>();
         internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> ProtSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
         internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> RegenSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
         internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> StructalSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
 
+        internal readonly Dictionary<CoreStructure, int> PowerGroups = new Dictionary<CoreStructure, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> CoreSystemsDefs = new Dictionary<string, MyDefinitionId>();
@@ -146,7 +147,6 @@ namespace CoreSystems
         internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>();
         internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
-        internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
@@ -187,7 +187,6 @@ namespace CoreSystems
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponAmmoMoveRequest> ConsumableToPullQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
-        internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly HashSet<Ai> GridsToUpdateInventories = new HashSet<Ai>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);

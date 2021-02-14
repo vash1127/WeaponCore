@@ -193,9 +193,8 @@ namespace CoreSystems
             RemoveEffectsFromGrid.Clear();
             PartToPullConsumable.Clear();
             ConsumableToPullQueue.Clear();
-            ChargingWeaponsIndexer.Clear();
-            WeaponsToRemoveAmmoIndexer.Clear();
-            ChargingWeapons.Clear();
+
+            ChargingParts.Clear();
             Hits.Clear();
             HomingWeapons.Clear();
             GridToMasterAi.Clear();

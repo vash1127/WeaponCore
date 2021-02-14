@@ -99,7 +99,7 @@ namespace CoreSystems.Support
             }
             catch (Exception e)
             {
-                Log.Line($"Exception in FutureEvent purge, Callback likely null {e}");
+                Log.Line($"Exception in FutureEvent purge, Callback likely null {e}", null, true);
             }
         }
     }

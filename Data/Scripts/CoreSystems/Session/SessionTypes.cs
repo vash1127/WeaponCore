@@ -156,7 +156,7 @@ namespace CoreSystems
                 {
                     BuildData(MyData);
                 }
-                catch (Exception ex) { Log.Line($"Exception in ReportCompile: {ex}"); }
+                catch (Exception ex) { Log.Line($"Exception in ReportCompile: {ex}", null, true); }
             }
 
             internal void BuildData(DataReport data)
@@ -408,9 +408,9 @@ namespace CoreSystems
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.NoMagsToLoad}"); }
                     },
-                    {"Reloading", () => {
+                    {"Loading", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reloading}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Loading}"); }
                     },
                     {"StartId", () => {
                             var message = string.Empty;
@@ -423,10 +423,6 @@ namespace CoreSystems
                     {"WeaponReadyTick", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.System.Session.Tick - w.PartReadyTick}"); }
-                    },
-                    {"Charging", () => {
-                            var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Charging}"); }
                     },
                     {"AmmoTypeId", () => {
                             var message = string.Empty;

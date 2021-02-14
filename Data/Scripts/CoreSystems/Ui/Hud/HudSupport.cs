@@ -265,7 +265,7 @@ namespace CoreSystems
                             subList.Add(w);
                         else
                         {
-                            if (last.HeatPerc - w.HeatPerc > .05f || last.Reloading != w.Reloading || last.PartState.Overheated != w.PartState.Overheated)
+                            if (last.HeatPerc - w.HeatPerc > .05f || last.Loading != w.Loading || last.PartState.Overheated != w.PartState.Overheated)
                             {
                                 subLists.Add(subList);
                                 if (!_weaponSortingListPool.TryDequeue(out subList))

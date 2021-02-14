@@ -21,7 +21,8 @@ namespace CoreSystems.Support
         internal Session Session;
         internal StructureTypes StructureType;
         internal EnittyTypes EntityType;
-
+        internal float ApproximatePeakPowerCombined;
+        internal int PowerPriority;
         internal enum EnittyTypes
         {
             Invalid,
@@ -114,7 +115,8 @@ namespace CoreSystems.Support
 
                     Session.AmmoDefIds.Add(ammoDefId);
                     Session.AmmoDamageMap[ammo] = null;
-                    weaponAmmo[i] = new WeaponSystem.AmmoType { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
+                    var ammoType = new WeaponSystem.AmmoType { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) }; 
+                    weaponAmmo[i] = ammoType;
                 }
 
                 var partHash = (tDef.Key + partNameIdHash + elevationNameHash + muzzletNameHash + azimuthNameHash).GetHashCode();
@@ -123,6 +125,8 @@ namespace CoreSystems.Support
 
                 if (coreSystem.Values.HardPoint.Ai.TurretAttached && !HasTurret)
                     HasTurret = true;
+                
+                ApproximatePeakPowerCombined += coreSystem.ApproximatePeakPower;
 
                 PartSystems.Add(partNameIdHash, coreSystem);
                 partId++;

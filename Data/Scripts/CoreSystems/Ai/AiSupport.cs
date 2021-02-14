@@ -231,30 +231,23 @@ namespace CoreSystems.Support
                                 if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null  || powerBlock.CubeGrid.MarkedForClose) 
                                     continue;
 
-                                try {
-                                    if (PowerBlock != powerBlock || PowerDistributor?.SourcesEnabled == MyMultipleEnabledEnum.NoObjects) {
-                                        PowerBlock = powerBlock;
-                                        FakeShipController.SlimBlock = powerBlock.SlimBlock;
-                                        PowerDistributor = FakeShipController.GridResourceDistributor;
-                                        PowerDirty = false;
-                                    }
+                                if (PowerBlock != powerBlock || PowerDistributor?.SourcesEnabled == MyMultipleEnabledEnum.NoObjects) {
+                                    PowerBlock = powerBlock;
+                                    FakeShipController.SlimBlock = powerBlock.SlimBlock;
+                                    PowerDistributor = FakeShipController.GridResourceDistributor;
+                                    PowerDirty = false;
                                 }
-                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - Changed PowerBlock!"); }
 
                                 if (PowerDistributor == null) {
                                     Log.Line("powerDist is null");
                                     return;
                                 }
 
-                                try {
-                                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
-                                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
-                                    break;
-                                }
-                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
-
+                                GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                                GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                                break;
                             }
-                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch"); }
+                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch", null, true); }
                         }
 
                     }
@@ -291,25 +284,14 @@ namespace CoreSystems.Support
                 GridAvailablePower -= BatteryCurrentInput;
                 UpdatePowerSources = false;
 
-                RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
-                AvailablePowerChanged = Math.Abs(GridMaxPower - LastAvailablePower) > 0.001 && LastAvailablePower > 0;
-
-                RequestIncrease = LastRequestedPower < RequestedWeaponsDraw;
-                PowerIncrease = LastAvailablePower < GridMaxPower;
-
-                LastAvailablePower = GridMaxPower;
-                LastRequestedPower = RequestedWeaponsDraw;
-
                 HadPower = HasPower;
                 HasPower = GridMaxPower > 0;
-
-                LastPowerUpdateTick = Session.Tick;
 
                 if (HasPower) return;
                 if (HadPower)
                     WeaponShootOff();
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{TopEntity == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{TopEntity == null}", null, true); }
         }
 
         private void ForceCloseAiInventories()
@@ -378,6 +360,7 @@ namespace CoreSystems.Support
 
             Data.Repo.ControllingPlayers.Clear();
             Data.Repo.ActiveTerminal = 0;
+            Charger.Clean();
 
             CleanSortedTargets();
             Construct.Clean();
@@ -420,12 +403,7 @@ namespace CoreSystems.Support
             PointDefense = false;
             FadeOut = false;
             SuppressMouseShoot = false;
-            OverPowered = false;
             UpdatePowerSources = false;
-            AvailablePowerChanged = false;
-            PowerIncrease = false;
-            RequestedPowerChanged = false;
-            RequestIncrease = false;
             DbReady = false;
             GridInit = false;
             TouchingWater = false;

@@ -86,7 +86,7 @@ namespace CoreSystems.Platform
                     if (Session.IsClient)
                         w.Target.ClientDirty = true;
 
-                    if (w.ProtoWeaponAmmo.CurrentAmmo == 0 && !w.Reloading)
+                    if (w.ProtoWeaponAmmo.CurrentAmmo == 0 && !w.Loading)
                         w.EventTriggerStateChanged(WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.EmptyOnGameLoad, true);
 
                     if (TypeSpecific == CompTypeSpecific.Rifle)
@@ -223,7 +223,7 @@ namespace CoreSystems.Platform
                 for (int i = 0; i < comp.Platform.Weapons.Count; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-                    if (!change && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
+                    if (!change && (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                     comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
                 }
             }

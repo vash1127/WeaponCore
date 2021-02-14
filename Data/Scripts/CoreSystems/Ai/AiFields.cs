@@ -28,7 +28,6 @@ namespace CoreSystems.Support
         internal volatile uint LastAiDataSave;
         internal readonly AiDetectionInfo DetectionInfo = new AiDetectionInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
-
         internal readonly Constructs Construct = new Constructs();
         internal readonly FastResourceLock DbLock = new FastResourceLock();
 
@@ -80,6 +79,7 @@ namespace CoreSystems.Support
         internal readonly AiData Data = new AiData();
         internal TargetStatus[] TargetState = new TargetStatus[2];
         internal readonly AiComponent AiComp;
+        internal readonly AiCharger Charger;
 
         internal Session Session;
         internal MyEntity TopEntity;
@@ -109,14 +109,9 @@ namespace CoreSystems.Support
         internal bool DetectOtherSignals;
         internal bool PointDefense;
         internal bool SuppressMouseShoot;
-        internal bool OverPowered;
         internal bool IsStatic;
         internal bool DbReady;
         internal bool UpdatePowerSources;
-        internal bool AvailablePowerChanged;
-        internal bool PowerIncrease;
-        internal bool RequestedPowerChanged;
-        internal bool RequestIncrease;
         internal bool StaticEntitiesInRange;
         internal bool StaticGridInRange;
         internal bool FriendlyShieldNear;
@@ -144,7 +139,6 @@ namespace CoreSystems.Support
         internal uint TargetResetTick;
         internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
-        internal uint LastPowerUpdateTick;
         internal uint ProjectileTicker;
         internal uint LastDetectEvent;
         internal uint SubGridInitTick;
@@ -168,13 +162,10 @@ namespace CoreSystems.Support
         internal float GridMaxPower;
         internal float GridCurrentPower;
         internal float GridAvailablePower;
+        internal float GridAssignedPower;
         internal float BatteryMaxPower;
         internal float BatteryCurrentOutput;
         internal float BatteryCurrentInput;
-        internal float CurrentWeaponsDraw;
-        internal float RequestedWeaponsDraw;
-        internal float LastRequestedPower;
-        internal float LastAvailablePower;
         internal float OptimalDps;
         internal float EffectiveDps;
         internal enum TargetType
@@ -193,6 +184,7 @@ namespace CoreSystems.Support
                 TargetState[i] = new TargetStatus();
 
             AiComp = new AiComponent(this);
+            Charger = new AiCharger(this);
         }
 
         internal void Init(MyEntity topEntity, Session session)

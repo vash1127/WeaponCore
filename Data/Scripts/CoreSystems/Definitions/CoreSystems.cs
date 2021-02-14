@@ -188,6 +188,7 @@ namespace CoreSystems.Support
         public readonly float HardPointSoundDistSqr;
         public readonly float NoAmmoSoundDistSqr;
         public readonly float HardPointAvMaxDistSqr;
+        public readonly float ApproximatePeakPower;
 
         public bool AnimationsInited;
 
@@ -269,6 +270,9 @@ namespace CoreSystems.Support
 
                 if (ammo.AmmoDef.Const.IsTurretSelectable)
                     ++ammoSelections;
+
+                if (ammo.AmmoDef.Const.ChargSize > ApproximatePeakPower)
+                    ApproximatePeakPower = ammo.AmmoDef.Const.ChargSize;
             }
             HasAmmoSelection = ammoSelections > 1;
         }

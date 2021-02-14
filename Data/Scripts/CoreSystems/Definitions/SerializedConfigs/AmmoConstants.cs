@@ -258,7 +258,6 @@ namespace CoreSystems.Support
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
 
             if (CollisionSize > 5 && !session.LocalVersion) Log.Line($"{ammo.AmmoDef.AmmoRound} has large largeCollisionSize: {CollisionSize} meters");
-
         }
 
         internal void ComputeTextures(WeaponSystem.AmmoType ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
@@ -692,7 +691,7 @@ namespace CoreSystems.Support
         private void Energy(WeaponSystem.AmmoType ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
-            mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
+            mustCharge = (energyAmmo || IsHybrid);
 
             reloadable = !energyAmmo || mustCharge;
 
@@ -704,16 +703,18 @@ namespace CoreSystems.Support
             {
                 var ewar = (int)ammoPair.AmmoDef.AreaEffect.AreaEffect > 3;
                 var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
-                var requiredPower = (((shotEnergyCost * ((system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel);
+                var shotsPerTick = system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_MINUTE;
 
-                chargeSize = (int)Math.Ceiling(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+                var requiredPowerPerTick = ((shotEnergyCost * shotsPerTick) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel;
+                var requiredPowerPerSec = requiredPowerPerTick * MyEngineConstants.UPDATE_STEPS_PER_SECOND;
+
+                chargeSize = (int)Math.Ceiling(requiredPowerPerSec * system.ReloadTime);
 
                 energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;
                 return;
             }
             chargeSize = 0;
-            energyMagSize = int.MaxValue;
-
+            energyMagSize = 0;
         }
 
         private void Sound(AmmoDef ammoDef, Session session, out bool hitSound, out bool altHitSounds, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)

@@ -231,7 +231,7 @@ namespace CoreSystems
                 if (comp.IsBlock) 
                     comp.Cube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), sinkInfo);
             }
-            catch (Exception ex) { Log.Line($"Exception in DelayedCompClose: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in DelayedCompClose: {ex}", null, true); }
         }
     }
 }

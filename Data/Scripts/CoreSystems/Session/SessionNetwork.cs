@@ -71,7 +71,7 @@ namespace CoreSystems
                 packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report;
                 ProccessClientPacket(packetObj);
             }
-            catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}", null, true); }
         }
 
         private bool ProccessClientPacket(PacketObj packetObj, bool firstRun = true)

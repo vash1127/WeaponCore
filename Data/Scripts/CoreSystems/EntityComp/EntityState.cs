@@ -73,7 +73,7 @@ namespace CoreSystems.Support
                             w.Elevation = 0;
 
                             if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                                w.Reloading = false;
+                                w.Loading = false;
 
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(EventTriggers.TurnOff, true);
@@ -86,7 +86,7 @@ namespace CoreSystems.Support
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}");
+            catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}", null, true);
             }
         }
     }

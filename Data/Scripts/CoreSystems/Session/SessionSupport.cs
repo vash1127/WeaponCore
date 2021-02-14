@@ -528,7 +528,7 @@ namespace CoreSystems
                 
                 return true;
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientInputState != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientInputState != null}", null, true); }
 
             return false;
         }
@@ -689,7 +689,7 @@ namespace CoreSystems
                              $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.BaseComp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
                 }
             }
-            catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }
+            catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
         }
 
         public enum CubeTypes
@@ -900,43 +900,6 @@ namespace CoreSystems
             VanillaSubpartNames.Add("GatlingTurretBase1");
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
-        }
-
-
-        //Would use DSUnique but to many profiler hits
-        internal bool UniqueListRemove<T>(T item, Dictionary<T, int> indexer, List<T> list)
-        {
-            int oldPos;
-            if (indexer.TryGetValue(item, out oldPos))
-            {
-
-                indexer.Remove(item);
-                list.RemoveAtFast(oldPos);
-                var count = list.Count;
-
-                if (count > 0)
-                {
-
-                    count--;
-                    if (oldPos <= count)
-                        indexer[list[oldPos]] = oldPos;
-                    else
-                        indexer[list[count]] = count;
-                }
-
-                return true;
-            }
-            return false;
-        }
-
-        internal bool UniqueListAdd<T>(T item, Dictionary<T, int> indexer, List<T> list)
-        {
-            if (indexer.ContainsKey(item))
-                return false;
-
-            list.Add(item);
-            indexer.Add(item, list.Count - 1);
-            return true;
         }
     }
 }

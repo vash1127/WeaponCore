@@ -58,11 +58,10 @@ namespace CoreSystems.Support
         internal float HeatPerSecond;
         internal float HeatSinkRate;
         internal float SinkPower;
-        internal float MaxRequiredPower;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
-        internal float CurrentCharge;
         internal float CurrentInventoryVolume;
+        internal int PowerGroupId;
         internal bool DetectOtherSignals;
         internal bool IsAsleep;
         internal bool IsFunctional;
@@ -193,6 +192,7 @@ namespace CoreSystems.Support
             for (int i = 0; i < Monitors.Length; i++)
                 Monitors[i] = new List<Action<long, int, ulong, long, Vector3D, bool>>();
 
+            PowerGroupId = Session.PowerGroups[Platform.Structure];
             CoreEntity.OnClose += Session.CloseComps;
         }        
     }

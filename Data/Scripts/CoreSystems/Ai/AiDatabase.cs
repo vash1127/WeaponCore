@@ -374,7 +374,7 @@ namespace CoreSystems.Support
                     return true;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateEntInfo: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in CreateEntInfo: {ex}", null, true); }
             
             entInfo = new MyDetectedEntityInfo();
             return false;

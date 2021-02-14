@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using CoreSystems.Support;
+using Sandbox.Game.Entities;
 using VRage.Utils;
 using VRageMath;
 namespace CoreSystems.Platform
@@ -54,7 +55,7 @@ namespace CoreSystems.Platform
                 TimeStep = 0;
                 RunningTotal[TimeStep] = UsedThisSecond;
             }
-
+            Log.Line($"used: {UsedLastMinute} - {UsedThisSecond}");
             UsedThisSecond = 0;
         }
 

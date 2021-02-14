@@ -349,7 +349,7 @@ namespace CoreSystems
 
                 return;
             }
-            catch (Exception e) { Log.Line("Client Weapon Values Failed To load re-initing... how?"); }
+            catch (Exception e) { Log.Line("Client Weapon Values Failed To load re-initing... how?", null, true); }
 
             WeaponInit(w);
         }

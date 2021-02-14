@@ -64,7 +64,7 @@ namespace CoreSystems
                     InitComp(entity, ref def);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}", null, true); }
         }
 
         private void GridAddedToScene(MyEntity myEntity)
@@ -73,7 +73,7 @@ namespace CoreSystems
             {
                 NewGrids.Enqueue(myEntity as MyCubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in GridAddedToScene: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in GridAddedToScene: {ex}", null, true); }
         }
 
         private void AddGridToMap()
@@ -130,7 +130,7 @@ namespace CoreSystems
                 GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
                 DirtyGridInfos.Add(myCubeBlock.CubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
+            catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}", null, true); }
         }
 
         private void FromGridMap(MyCubeBlock myCubeBlock)
@@ -140,7 +140,7 @@ namespace CoreSystems
                 GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
                 DirtyGridInfos.Add(myCubeBlock.CubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
+            catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}", null, true); }
         }
 
         internal void BeforeDamageHandler(object o, ref MyDamageInformation info)
@@ -181,7 +181,7 @@ namespace CoreSystems
                     //Send updates?
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}", null, true); }
         }
 
         private void MenuClosed(object obj)
@@ -195,7 +195,7 @@ namespace CoreSystems
                     //Send updates?
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}", null, true); }
         }
 
         private void PlayerControlAcquired(MyEntity lastEnt)
@@ -232,7 +232,7 @@ namespace CoreSystems
                 if (Players.ContainsKey(id)) return;
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
             }
-            catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}", null, true); }
         }
 
         private void PlayerDisconnected(long l)
@@ -258,7 +258,7 @@ namespace CoreSystems
                         ConnectedAuthors.Remove(playerId);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}", null, true); }
         }
 
 

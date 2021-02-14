@@ -9,7 +9,7 @@ namespace CoreSystems.Support
     // based on code of Equinox's
     public class Dummy
     {
-        internal bool NullEntity => _entity == null;
+        internal bool NullEntity => _entity == null || _entity.MarkedForClose;
 
         internal MyEntity Entity
         {

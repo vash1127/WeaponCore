@@ -353,7 +353,7 @@ namespace CoreSystems.Support
                 else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
                 
             }
-            catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None;}
+            catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}", null, true); targetType = TargetType.None;}
         }
 
         private static bool AcquireBlock(WeaponSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)

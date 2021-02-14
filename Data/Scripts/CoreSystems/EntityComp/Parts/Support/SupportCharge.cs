@@ -7,7 +7,7 @@ namespace CoreSystems.Platform
         internal void Charge()
         {
             if (_charges > 0 && !Info.Idle)
-                Info.Update(1);
+                Info.Update(_charges);
         }
     }
 }

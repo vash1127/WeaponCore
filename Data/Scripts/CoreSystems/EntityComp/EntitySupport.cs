@@ -78,7 +78,7 @@ namespace CoreSystems.Support
                 }
                 else if (Platform.State != CorePlatform.PlatformState.Delay) Log.Line($"CompRemove: Ai already null - PartState:{Platform.State} - Status:{Status}");
             }
-            catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}", null, true); }
         }
     }
 }

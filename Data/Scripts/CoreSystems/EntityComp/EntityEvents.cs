@@ -178,7 +178,7 @@ namespace CoreSystems.Support
                         ((Weapon.WeaponComponent)this).PowerLoss();
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}", null, true); }
         }
 
         internal string GetSystemStatus()
@@ -218,8 +218,7 @@ namespace CoreSystems.Support
                 if (comp.HasEnergyWeapon)
                 {
                     stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MWs");
-                    if(comp.HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MWs");
-                    stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MWs");
+                    stringBuilder.Append("\nRequired Power: " + Platform.Structure.ApproximatePeakPowerCombined.ToString("0.00") + " MWs");
                 }
                 
                 stringBuilder.Append("\n\n==== Weapons ====");
@@ -231,7 +230,7 @@ namespace CoreSystems.Support
                     string shots;
                     if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                     {
-                        shots = "\nCharging:" + w.Charging;
+                        shots = "\nCharging:" + w.Loading;
                     }
                     else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.ProtoWeaponAmmo.CurrentAmmo;
 
@@ -239,7 +238,7 @@ namespace CoreSystems.Support
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
-                    stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Reloading + endReturn);
+                    stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Loading + endReturn);
 
                     string otherAmmo = null;
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
@@ -267,15 +266,15 @@ namespace CoreSystems.Support
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - ProtoWeaponAmmo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.PartState.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned}");
-                        stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
+                        stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Loading}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting}");
-                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)} - CurrentCharge: {CurrentCharge}({weapon.ProtoWeaponAmmo.CurrentCharge})");
+                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)} ({weapon.ProtoWeaponAmmo.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.BaseComp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
-                        stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
+                        stringBuilder.Append($"\nCharging: {weapon.Loading}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}", null, true); }
         }
 
         private void AppendingCustomInfoSupport(IMyTerminalBlock block, StringBuilder stringBuilder)
@@ -303,7 +302,7 @@ namespace CoreSystems.Support
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in AppendingCustomInfoSupport: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in AppendingCustomInfoSupport: {ex}", null, true); }
         }
 
         private void AppendingCustomInfoUpgrade(IMyTerminalBlock block, StringBuilder stringBuilder)
@@ -331,7 +330,7 @@ namespace CoreSystems.Support
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in AppendingCustomInfoUpgrade: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in AppendingCustomInfoUpgrade: {ex}", null, true); }
         }
     }
 }

@@ -163,7 +163,7 @@ namespace CoreSystems.Support
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null} - RootAiNull: {Construct.RootAi == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null} - RootAiNull: {Construct.RootAi == null}", null, true); }
         }
 
         private void FatBlockRemoved(MyCubeBlock cube)
@@ -193,7 +193,7 @@ namespace CoreSystems.Support
                     UpdatePowerSources = true;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex} - Marked: {MarkedForClose} - Closed:{Closed}"); }
+            catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex} - Marked: {MarkedForClose} - Closed:{Closed}", null, true); }
         }
         
         
@@ -242,7 +242,7 @@ namespace CoreSystems.Support
                     Construct.RootAi?.Construct.RecentItems.Add(itemDef);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName} - BlockMarked:{((MyEntity)inventory?.Entity)?.MarkedForClose} - aiMarked:{MarkedForClose} - Session:{Session != null} - item:{item.Content?.SubtypeName} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName} - BlockMarked:{((MyEntity)inventory?.Entity)?.MarkedForClose} - aiMarked:{MarkedForClose} - Session:{Session != null} - item:{item.Content?.SubtypeName} - RootConstruct:{Construct?.RootAi?.Construct != null}", null, true); }
         }
 
         internal void GridClose(MyEntity myEntity)

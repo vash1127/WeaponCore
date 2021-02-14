@@ -21,10 +21,18 @@ namespace CoreSystems.Support
             internal uint CheckTick;
             internal uint StartTick;
             internal uint Messages;
+            internal int LastExceptionCount;
+            internal int Exceptions;
             internal bool Suppress;
+            internal bool ExceptionReported;
 
             internal bool Paused()
             {
+                if (!ExceptionReported && Session.HandlesInput && Exceptions != LastExceptionCount)
+                {
+                    ExceptionReported = true;
+                    Session.ShowLocalNotify("WeaponCore is crashing, please report your issue/logs to the WeaponCore discord", 10000);
+                }
                 if (Session.Tick < 3600)
                     return false;
 
@@ -36,6 +44,13 @@ namespace CoreSystems.Support
 
                 if (Suppress && StartTick >= Session.Tick)
                     return true;
+
+                if (Suppress && Exceptions > 0 && Exceptions != LastExceptionCount) {
+
+                    LastExceptionCount = Exceptions;
+                    StartTick = Session.Tick + 7200;
+                    return true;
+                }
 
                 ++Messages;
 
@@ -53,6 +68,7 @@ namespace CoreSystems.Support
             {
                 Suppress = true;
                 StartTick = Session.Tick + 7200;
+                LastExceptionCount = Exceptions;
                 var message = $"{DateTime.Now:HH-mm-ss-fff} - " + "Debug flooding detected, supressing logs for two minutes.  Please report the first 500 lines of this file";
                 TextWriter.WriteLine(message);
                 TextWriter.Flush();
@@ -64,6 +80,8 @@ namespace CoreSystems.Support
                 Suppress = false;
                 Messages = 0;
                 CheckTick = Session.Tick;
+                ExceptionReported = false;
+                LastExceptionCount = Exceptions;
             }
 
             internal void Clean()
@@ -150,7 +168,7 @@ namespace CoreSystems.Support
             else MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.StringPacketId, encodedString, directedSteamId, true);
         }
 
-        public static void Line(string text, string instanceName = null)
+        public static void Line(string text, string instanceName = null, bool exception = false)
         {
             try
             {

@@ -217,8 +217,8 @@ namespace CoreSystems
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var showReloadIcon = weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30 ||
-                    (weapon.ShowBurstDelayAsReload && !weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastShootTick > 30 && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst && weapon.ShootTick > weapon.Comp.Session.Tick);
+                var showReloadIcon = weapon.Loading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30 ||
+                    (weapon.ShowBurstDelayAsReload && !weapon.Loading && weapon.Comp.Session.Tick - weapon.LastShootTick > 30 && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst && weapon.ShootTick > weapon.Comp.Session.Tick);
 
 
                 if (!_textDrawPool.TryDequeue(out textInfo))

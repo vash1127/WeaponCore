@@ -20,7 +20,7 @@ namespace CoreSystems.Support
                         PlatformInit();
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}", null, true); }
         }
 
         public override void OnAddedToScene()
@@ -43,7 +43,7 @@ namespace CoreSystems.Support
                     PlatformInit();
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}", null, true); }
         }
         
         public override void OnBeforeRemovedFromContainer()
@@ -192,7 +192,7 @@ namespace CoreSystems.Support
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
-            catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{TopEntity == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{TopEntity == null}", null, true); }
         }
 
         public override void OnRemovedFromScene()
@@ -202,7 +202,7 @@ namespace CoreSystems.Support
                 base.OnRemovedFromScene();
                 RemoveComp();
             }
-            catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}", null, true); }
         }
 
         public override bool IsSerialized()

@@ -153,10 +153,10 @@ namespace CoreSystems
             var sync = MpActive && (DedicatedServer || IsServer);
             foreach (var block in blocks)
             {
-                var cube = block.FatBlock as MyCubeBlock;
+                var cube = block.FatBlock as IMyFunctionalBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
                 if (fieldType != DotField)
-                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !EffectedCubes.ContainsKey(cube.EntityId) || !(cube is IMyFunctionalBlock)) continue;
+                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !EffectedCubes.ContainsKey(cube.EntityId)) continue;
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
@@ -240,7 +240,7 @@ namespace CoreSystems
                     else
                     {
                         damagePool = tmpDamagePool;
-                        blockState.FunctBlock = ((IMyFunctionalBlock)cube);
+                        blockState.FunctBlock = cube;
                         var originState = blockState.FunctBlock.Enabled;
                         blockState.FirstTick = Tick + 1;
                         blockState.FirstState = originState;

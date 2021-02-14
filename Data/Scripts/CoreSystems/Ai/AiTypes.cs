@@ -14,6 +14,89 @@ namespace CoreSystems.Support
 {
     public partial class Ai
     {
+
+        internal class AiCharger
+        {
+            internal readonly List<Part> ChargeGroup0 = new List<Part>();
+            internal readonly List<Part> ChargeGroup1 = new List<Part>();
+            internal readonly List<Part> ChargeGroup2 = new List<Part>();
+            internal float TotalDesired;
+            internal float PowerUsed;
+            internal float GroupRequested0;
+            internal float GroupRequested1;
+            internal float GroupRequested2;
+
+            internal Ai Ai;
+            internal AiCharger(Ai ai)
+            {
+                Ai = ai;
+            }
+
+            internal void Add(Part part)
+            {
+                part.InCharger = true;
+                if (ChargeGroup0.Count == 0 && ChargeGroup1.Count == 0 && ChargeGroup2.Count == 0) {
+                    Ai.Session.ChargingParts.Add(this);
+                    Ai.Session.ChargingParts.ApplyAdditions();
+                }
+
+                switch (part.BaseComp.PowerGroupId)
+                {
+                    case 0:
+                        ChargeGroup0.Add(part);
+                        break;
+                    case 1:
+                        ChargeGroup1.Add(part);
+                        break;
+                    case 2:
+                        ChargeGroup2.Add(part);
+                        break;
+                }
+
+                TotalDesired += part.DesiredPower;
+            }
+
+            internal void Remove(Part part, int i)
+            {
+                switch (part.BaseComp.PowerGroupId)
+                {
+                    case 0:
+                        ChargeGroup0.RemoveAtFast(i);
+                        break;
+                    case 1:
+                        ChargeGroup1.RemoveAtFast(i);
+                        break;
+                    case 2:
+                        ChargeGroup2.RemoveAtFast(i);
+                        break;
+                }
+
+                if (ChargeGroup0.Count == 0 && ChargeGroup1.Count == 0 && ChargeGroup2.Count == 0) {
+
+                    Ai.Session.ChargingParts.Remove(this);
+                    GroupRequested0 = 0;
+                    GroupRequested1 = 0;
+                    GroupRequested2 = 0;
+                    PowerUsed = 0;
+                    TotalDesired = 0;
+                }
+
+                part.InCharger = false;
+            }
+
+            internal void Clean()
+            {
+                ChargeGroup0.Clear();
+                ChargeGroup1.Clear();
+                ChargeGroup2.Clear();
+                GroupRequested0 = 0;
+                GroupRequested1 = 0;
+                GroupRequested2 = 0;
+                PowerUsed = 0;
+                TotalDesired = 0;
+            }
+        }
+
         internal struct DbScan
         {
             internal Ai Ai;   

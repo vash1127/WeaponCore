@@ -89,7 +89,7 @@ namespace CoreSystems.Platform
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in AmmoChange: {ex} - {((AmmoLoad)o).Amount} - {((AmmoLoad)o).Item.Content.SubtypeName}"); }
+            catch (Exception ex) { Log.Line($"Exception in AmmoChange: {ex} - {((AmmoLoad)o).Amount} - {((AmmoLoad)o).Item.Content.SubtypeName}", null, true); }
         }
 
         internal void ChangeAmmo(int newAmmoId)
@@ -102,7 +102,7 @@ namespace CoreSystems.Platform
                 var canReload = ProtoWeaponAmmo.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
 
-                var unloadMag = !canReload && !instantChange && !Reloading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ProtoWeaponAmmo.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                var unloadMag = !canReload && !instantChange && !Loading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ProtoWeaponAmmo.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                 if (unloadMag && proposedAmmo.AmmoDef.Const.Reloadable)
                 {
@@ -185,7 +185,7 @@ namespace CoreSystems.Platform
             }
 
             ClientReloading = true;
-            Reloading = true;
+            Loading = true;
             FinishBurst = false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
@@ -232,7 +232,7 @@ namespace CoreSystems.Platform
                 }
             }
 
-            var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Reloading;
+            var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Loading;
             return !invalidStates && ServerReload();
         }
 
@@ -276,10 +276,10 @@ namespace CoreSystems.Platform
 
         internal void StartReload()
         {
-            Reloading = true;
+            Loading = true;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
 
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
+            if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !InCharger)
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                 if (System.ReloadTime > 0) {
@@ -309,9 +309,7 @@ namespace CoreSystems.Platform
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
-                    Comp.CurrentCharge -= ProtoWeaponAmmo.CurrentCharge;
                     ProtoWeaponAmmo.CurrentCharge = MaxCharge;
-                    Comp.CurrentCharge += MaxCharge;
 
                     ChargeUntilTick = 0;
                     ChargeDelayTicks = 0;
@@ -323,7 +321,7 @@ namespace CoreSystems.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                ProtoWeaponAmmo.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                 if (System.Session.IsServer) {
                     
@@ -338,22 +336,18 @@ namespace CoreSystems.Platform
                 }
 
                 ++ClientEndId;
-                Reloading = false;
+                Loading = false;
             }
 
         }
         public void ChargeReload(bool syncCharge = false)
         {
-            Comp.CurrentCharge -= ProtoWeaponAmmo.CurrentCharge;
             ProtoWeaponAmmo.CurrentCharge = 0;
             ProtoWeaponAmmo.CurrentAmmo = 0;
-            Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
 
-            if (!Comp.UnlimitedPower)
-                Comp.Ai.RequestedWeaponsDraw += RequiredPower;
+            Comp.Ai.Charger.Add(this);
 
             ChargeUntilTick = syncCharge ? ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
-            Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
         }
     }
 }

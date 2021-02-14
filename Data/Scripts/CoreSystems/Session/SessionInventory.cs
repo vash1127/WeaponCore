@@ -164,7 +164,7 @@ namespace CoreSystems
                     InvPullClean.Add(part);
                 }
             }
-            catch (Exception e) { Log.Line($"Error in ConsumablePull: {e}");            }
+            catch (Exception e) { Log.Line($"Error in ConsumablePull: {e}", null, true);            }
         }
 
         internal void ProccessConsumableCallback()

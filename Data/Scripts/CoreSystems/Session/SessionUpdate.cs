@@ -211,7 +211,7 @@ namespace CoreSystems
                                 w.ProtoWeaponAmmo.CurrentAmmo = 0;
                             }
 
-                            w.Reloading = false;
+                            w.Loading = false;
                             w.FinishBurst = false;
 
                             if (w.IsShooting)
@@ -222,7 +222,7 @@ namespace CoreSystems
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Loading) {
 
                             if (IsServer && (w.ProtoWeaponAmmo.CurrentAmmo == 0 || w.CheckInventorySystem))
                                 w.ComputeServerStorage();
@@ -239,8 +239,8 @@ namespace CoreSystems
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Reloading && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
-                        if (HandlesInput && (w.Reloading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Loading && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
+                        if (HandlesInput && (w.Loading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
@@ -322,7 +322,7 @@ namespace CoreSystems
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
                         var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.PartState.Action == TriggerOn || w.AiShooting && w.PartState.Action == TriggerOff;
@@ -343,29 +343,16 @@ namespace CoreSystems
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
 
-                            if ((ai.AvailablePowerChanged || ai.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-
-                                if ((!ai.RequestIncrease || ai.PowerIncrease) && !Tick60)
-                                    w.RecalcPower = true;
-                                else {
-                                    w.RecalcPower = false;
-                                    w.ChargeDelayTicks = 0;
-                                }
-                            }
                             if (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick) {
-
-                                if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge && !w.System.DesignatorWeapon) {
-                                    if (!comp.UnlimitedPower)
-                                        ai.RequestedWeaponsDraw += w.RequiredPower;
-                                    w.RequestedPower = true;
-                                }
 
                                 ShootingWeapons.Add(w);
                             }
+                            /*
                             else if (w.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                                 w.Charging = true;
                                 w.StopShooting(false);
                             }
+                            */
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
@@ -376,7 +363,6 @@ namespace CoreSystems
                             WeaponDebug(w);
                     }
                 }
-                ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
                 
                 if (ai.IsGrid && Tick60 && ai.BlockChangeArea != BoundingBox.Invalid) {
                     ai.BlockChangeArea = BoundingBox.CreateInvalid();
@@ -388,98 +374,6 @@ namespace CoreSystems
 
             if (DbTask.IsComplete && DbsToUpdate.Count > 0 && !DbUpdating)
                 UpdateDbsInQueue();
-        }
-
-        private void UpdateChargeWeapons() //Fully Inlined due to keen's mod profiler
-        {
-            for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
-            {
-                var w = ChargingWeapons[i];
-                var comp = w.BaseComp;
-                var ai = comp.Ai;
-                if (ai == null || ai.TopEntity.MarkedForClose || ai.Concealed || !ai.HasPower || comp.CoreEntity.MarkedForClose || !comp.IsWorking  || comp.Platform.State != CorePlatform.PlatformState.Ready) {
-                    
-                    if (w.DrawingPower)
-                        w.StopPowerDraw();
-
-                    if (ai != null)
-                        ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
-
-                    w.Reloading = false;
-
-                    UniqueListRemove(w, ChargingWeaponsIndexer, ChargingWeapons);
-                    continue;
-                }
-
-                if (Tick60 && w.DrawingPower) {
-
-                    if ((w.ProtoWeaponAmmo.CurrentCharge + w.UseablePower) < w.MaxCharge) {
-                        w.ProtoWeaponAmmo.CurrentCharge += w.UseablePower;
-                        comp.CurrentCharge += w.UseablePower;
-                    }
-                    else {
-                        
-                        comp.CurrentCharge -= (w.ProtoWeaponAmmo.CurrentCharge - w.MaxCharge);
-                        
-                        if (comp.CurrentCharge < 0)
-                            comp.CurrentCharge = 0;
-
-                        w.ProtoWeaponAmmo.CurrentCharge = w.MaxCharge;
-                    }
-                }
-
-                if (!w.Reloading || IsServer && w.ChargeUntilTick <= Tick || IsClient && w.Reload.EndId > w.ClientEndId) {
-
-                    if (w.Reloading)
-                        w.Reloaded();
-
-                    if (w.DrawingPower)
-                        w.StopPowerDraw();
-
-                    ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
-
-                    UniqueListRemove(w, ChargingWeaponsIndexer, ChargingWeapons);
-                    continue;
-                }
-
-                if (!ai.OverPowered) {
-
-                    if (!w.DrawingPower) {
-
-                        w.OldUseablePower = w.UseablePower;
-                        w.UseablePower = w.RequiredPower;
-                        if(!w.BaseComp.UnlimitedPower)
-                            w.DrawPower();
-
-                        w.ChargeDelayTicks = 0;
-                    }
-                    continue;
-                }
-
-                if (!w.DrawingPower || ai.RequestedPowerChanged || ai.AvailablePowerChanged || (w.RecalcPower && Tick60)) {
-
-                    if ((!ai.RequestIncrease || ai.PowerIncrease) && !Tick60) {
-                        w.RecalcPower = true;
-                        continue;
-                    }
-
-                    w.RecalcPower = false;
-
-                    var percUseable = w.RequiredPower / ai.RequestedWeaponsDraw;
-                    w.OldUseablePower = w.UseablePower;
-                    w.UseablePower = (ai.GridMaxPower * .98f) * percUseable;
-
-                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.ProtoWeaponAmmo.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                    w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
-
-                    if (!w.BaseComp.UnlimitedPower) {
-                        if (!w.DrawingPower)
-                            w.DrawPower();
-                        else
-                            w.DrawPower(true);
-                    }
-                }
-            }
         }
 
         private void CheckAcquire()
@@ -538,44 +432,6 @@ namespace CoreSystems
                 var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
                 var quickSkip = invalidWeapon || w.Comp.IsBlock && smartTimer && !w.SmartLos() || w.PauseShoot;
                 if (quickSkip) continue;
-
-                if (!w.Comp.UnlimitedPower) {
-
-                    //TODO add logic for power priority
-                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-
-                        if (w.ChargeDelayTicks == 0) {
-                            var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
-                            w.OldUseablePower = w.UseablePower;
-                            w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
-
-                            if (w.DrawingPower)
-                                w.DrawPower(true);
-                            else
-                                w.DrawPower();
-
-                            w.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
-                            w.Charging = true;
-                        }
-                        else if (w.ChargeUntilTick <= Tick) {
-                            w.Charging = false;
-                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
-                        }
-                    }
-                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
-                        w.OldUseablePower = w.UseablePower;
-                        w.UseablePower = w.RequiredPower;
-                        w.DrawPower(true);
-                        w.ChargeDelayTicks = 0;
-                        w.Charging = false;
-                        w.ResetPower = false;
-                    }
-
-                    if (w.Charging)
-                        continue;
-
-                }
 
                 w.Shoot();
             }
