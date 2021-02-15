@@ -16,17 +16,20 @@ namespace CoreSystems.Platform
         internal float MaxCharge;
         internal float DesiredPower;
         internal float AssignedPower;
+        internal float EstimatedCharge;
         internal uint ChargeUntilTick;
-        internal uint ChargeDelayTicks;
         internal uint PartCreatedTick;
         internal uint PartReadyTick;
         internal int ShortLoadId;
         internal int UniqueId;
         internal int PartId;
         internal bool IsPrime;
-        internal bool DrawingPower;
         internal bool Loading;
+        internal bool ExitCharger;
+        internal bool NewPowerNeeds;
         internal bool InCharger;
+        internal bool Charging;
+
         internal void Init(CoreComponent comp, CoreSystem system, int partId)
         {
             CoreSystem = system;

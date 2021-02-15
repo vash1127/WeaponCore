@@ -325,10 +325,9 @@ namespace CoreSystems
                         w.StopShooting();
                         Log.Line("StopShooting OnOffAnimations");
                     }
-                    if (w.DrawingPower) w.StopPowerDraw();
 
-                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        w.Loading = false;
+                    if (w.InCharger)
+                        w.ExitCharger = true;
                 }
                 else {
 

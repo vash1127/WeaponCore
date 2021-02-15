@@ -299,51 +299,52 @@ namespace CoreSystems.Platform
 
         internal void Reloaded(object o = null)
         {
-            using (Comp.CoreEntity.Pin())
-            {
-
-                if (PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose) return;
-
+            using (Comp.CoreEntity.Pin()) {
 
                 LastLoadedTick = Comp.Session.Tick;
 
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                var invalidStates = PartState == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.CoreEntity.MarkedForClose;
 
-                    ProtoWeaponAmmo.CurrentCharge = MaxCharge;
+                if (!invalidStates) {
 
-                    ChargeUntilTick = 0;
-                    ChargeDelayTicks = 0;
+                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+
+                        ProtoWeaponAmmo.CurrentCharge = MaxCharge;
+                        EstimatedCharge = MaxCharge;
+
+                        ChargeUntilTick = 0;
+                    }
+                    else if (ReloadSubscribed) {
+                        CancelableReloadAction -= Reloaded;
+                        ReloadSubscribed = false;
+                    }
+
+                    EventTriggerStateChanged(EventTriggers.Reloading, false);
+
+                    ProtoWeaponAmmo.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+
+                    if (System.Session.IsServer) {
+
+                        ++Reload.EndId;
+                        ShootOnce = false;
+                        if (System.Session.MpActive)
+                            System.Session.SendWeaponReload(this);
+                    }
+                    else {
+                        ClientReloading = false;
+                        ClientMakeUpShots = 0;
+                    }
                 }
-                else if (ReloadSubscribed) {
-                    CancelableReloadAction -= Reloaded;
-                    ReloadSubscribed = false;
-                }
-
-                EventTriggerStateChanged(EventTriggers.Reloading, false);
-
-                ProtoWeaponAmmo.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
-                if (System.Session.IsServer) {
-                    
-                    ++Reload.EndId;
-                    ShootOnce = false;
-                    if (System.Session.MpActive)
-                        System.Session.SendWeaponReload(this);
-                }
-                else {
-                    ClientReloading = false;
-                    ClientMakeUpShots = 0;
-                }
-
                 ++ClientEndId;
                 Loading = false;
             }
-
         }
+
         public void ChargeReload(bool syncCharge = false)
         {
             ProtoWeaponAmmo.CurrentCharge = 0;
             ProtoWeaponAmmo.CurrentAmmo = 0;
+            EstimatedCharge = 0;
 
             Comp.Ai.Charger.Add(this);
 

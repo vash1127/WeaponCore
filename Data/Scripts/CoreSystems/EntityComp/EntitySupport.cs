@@ -61,8 +61,9 @@ namespace CoreSystems.Support
                                 w.StopShooting();
                                 w.WeaponCache.HitEntity.Clean();
                                 if (!Session.IsClient) w.Target.Reset(Session.Tick, Target.States.AiLost);
-                                if (w.DrawingPower)
-                                    w.StopPowerDraw();
+                                
+                                if (w.InCharger)
+                                    w.ExitCharger = true;
                             }
                         }
                         Ai.CompChange(false, this);

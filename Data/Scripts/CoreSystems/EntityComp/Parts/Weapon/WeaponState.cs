@@ -32,9 +32,8 @@ namespace CoreSystems.Platform
 
             if (!Target.HasTarget)
             {
-                if (DrawingPower) {
-                    StopPowerDraw();
-                }
+                if (InCharger) 
+                    ExitCharger = true;
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
@@ -103,7 +102,7 @@ namespace CoreSystems.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                //if ((ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
+                //if ((ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !ExitCharger)
                     //DrawPower();
             }
             IsShooting = true;
@@ -125,7 +124,7 @@ namespace CoreSystems.Platform
                 EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                 Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
 
-                //if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
+                //if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && ExitCharger)
                     //StopPowerDraw();
 
             }

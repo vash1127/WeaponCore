@@ -44,12 +44,15 @@ namespace CoreSystems.Support
                 {
                     case 0:
                         ChargeGroup0.Add(part);
+                        GroupRequested0 += part.DesiredPower;
                         break;
                     case 1:
                         ChargeGroup1.Add(part);
+                        GroupRequested1 += part.DesiredPower;
                         break;
                     case 2:
                         ChargeGroup2.Add(part);
+                        GroupRequested2 += part.DesiredPower;
                         break;
                 }
 
@@ -62,12 +65,15 @@ namespace CoreSystems.Support
                 {
                     case 0:
                         ChargeGroup0.RemoveAtFast(i);
+                        GroupRequested0 -= part.DesiredPower;
                         break;
                     case 1:
                         ChargeGroup1.RemoveAtFast(i);
+                        GroupRequested1 -= part.DesiredPower;
                         break;
                     case 2:
                         ChargeGroup2.RemoveAtFast(i);
+                        GroupRequested2 -= part.DesiredPower;
                         break;
                 }
 

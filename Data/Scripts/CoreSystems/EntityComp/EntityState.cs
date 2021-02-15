@@ -73,7 +73,7 @@ namespace CoreSystems.Support
                             w.Elevation = 0;
 
                             if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                                w.Loading = false;
+                                w.ExitCharger = true;
 
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(EventTriggers.TurnOff, true);

@@ -230,7 +230,7 @@ namespace CoreSystems.Support
                     string shots;
                     if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                     {
-                        shots = "\nCharging:" + w.Loading;
+                        shots = "\nCharging:" + w.Charging;
                     }
                     else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.ProtoWeaponAmmo.CurrentAmmo;
 
@@ -266,11 +266,11 @@ namespace CoreSystems.Support
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - ProtoWeaponAmmo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.PartState.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned}");
-                        stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Loading}");
+                        stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting}");
                         stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)} ({weapon.ProtoWeaponAmmo.CurrentCharge})");
-                        stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.BaseComp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
-                        stringBuilder.Append($"\nCharging: {weapon.Loading}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
+                        stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.BaseComp.Ai.Session.Tick})");
+                        stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge})");
                     }
                 }
             }

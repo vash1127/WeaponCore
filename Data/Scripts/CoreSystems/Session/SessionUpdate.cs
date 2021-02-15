@@ -211,7 +211,6 @@ namespace CoreSystems
                                 w.ProtoWeaponAmmo.CurrentAmmo = 0;
                             }
 
-                            w.Loading = false;
                             w.FinishBurst = false;
 
                             if (w.IsShooting)
@@ -343,7 +342,7 @@ namespace CoreSystems
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
 
-                            if (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick) {
+                            if (w.ChargeUntilTick <= Tick) {
 
                                 ShootingWeapons.Add(w);
                             }

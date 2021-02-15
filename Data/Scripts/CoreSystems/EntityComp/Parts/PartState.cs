@@ -10,10 +10,10 @@ namespace CoreSystems.Platform
         internal void DrawPower(float assignedPower)
         {
             AssignedPower = assignedPower;
-            DrawingPower = true;
             BaseComp.SinkPower += AssignedPower;
             BaseComp.Ai.GridAssignedPower += AssignedPower;
             BaseComp.Cube.ResourceSink.Update();
+            Charging = true;
         }
 
         internal void AdjustPower(float newValue)
@@ -27,22 +27,22 @@ namespace CoreSystems.Platform
             BaseComp.Ai.GridAssignedPower += AssignedPower;
 
             BaseComp.Cube.ResourceSink.Update();
+            NewPowerNeeds = false;
         }
 
         internal void StopPowerDraw()
         {
-            if (!DrawingPower) {
+            if (!ExitCharger) {
                 Log.Line($"wasnt drawing power");
                 return;
             }
 
-            DrawingPower = false;
             BaseComp.SinkPower -= AssignedPower;
             BaseComp.Ai.GridAssignedPower -= AssignedPower;
 
-            ChargeDelayTicks = 0;
             if (BaseComp.SinkPower < BaseComp.IdlePower) BaseComp.SinkPower = BaseComp.IdlePower;
             BaseComp.Cube.ResourceSink.Update();
+            Charging = false;
         }
 
     }

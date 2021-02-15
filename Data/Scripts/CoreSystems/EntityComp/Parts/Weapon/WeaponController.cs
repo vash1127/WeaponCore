@@ -329,6 +329,9 @@ namespace CoreSystems.Platform
                 Comp.CurrentDps -= dpsDif;
 
             Comp.HeatPerSecond -= heatDif;
+
+            if (InCharger)
+                NewPowerNeeds = true;
         }
 
         internal bool SpinBarrel(bool spinDown = false)

@@ -12,26 +12,29 @@ namespace CoreSystems
 
                 charger.PowerUsed = 0;
                 var ai = charger.Ai;
-                var gridAvail = (ai.GridAvailablePower * 0.98);
+                var gridAvail = (ai.GridAvailablePower * 0.98f);
                 var availMinusDesired = gridAvail - charger.TotalDesired;
                 var powerFree = availMinusDesired > 0;
 
+                var halfAvail = gridAvail * 0.5f;
+                var quarterAvail = gridAvail * 0.25f;
+                var g0LeftOvers = halfAvail - charger.GroupRequested0;
+                var allLeftOvers = gridAvail - (charger.GroupRequested0 + charger.GroupRequested1);
+                var quarterPlusG0Remaining = g0LeftOvers > 0 ? quarterAvail + g0LeftOvers : quarterAvail;
+                var quarterPlusAllRemaining = allLeftOvers > 0 ? quarterAvail + allLeftOvers : quarterAvail;
+
                 var group0Count = charger.ChargeGroup0.Count;
-                var group0Budget = (float)(gridAvail * 0.5f) / group0Count;
+                var group1Count = charger.ChargeGroup1.Count;
+                var group2Count = charger.ChargeGroup2.Count;
+
+                var group0Budget = halfAvail / group0Count;
+                var group1Budget = quarterPlusG0Remaining / group1Count;
+                var group2Budget = quarterPlusAllRemaining / group2Count;
+
+                Log.Line($"{group0Budget} - {group1Budget} - {group2Budget}");
                 for (int i = group0Count - 1; i >= 0; i--)
                 {
                     var part = charger.ChargeGroup0[i];
-                    var comp = part.BaseComp;
-                    if (comp.Ai == null || ai.TopEntity.MarkedForClose || ai.Concealed || !ai.HasPower || comp.CoreEntity.MarkedForClose || !comp.IsWorking || comp.Platform.State != CorePlatform.PlatformState.Ready) {
-
-                        if (part.DrawingPower)
-                            part.StopPowerDraw();
-
-                        part.Loading = false;
-
-                        charger.Remove(part, i);
-                        continue;
-                    }
 
                     var assignedPower = powerFree ? part.DesiredPower : group0Budget;
 
@@ -44,28 +47,17 @@ namespace CoreSystems
                         case CoreComponent.CompType.Phantom:
                             break;
                         case CoreComponent.CompType.Weapon:
-                            if (WeaponCharged((Weapon)part, assignedPower)) 
+                            if (WeaponCharged(ai, (Weapon)part, assignedPower)) 
                                 charger.Remove(part, i);
                             break;
                     }
                 }
 
-                var group1Count = charger.ChargeGroup1.Count;
-                var group1Budget = ((float)(gridAvail * 0.25f) / group1Count);
+
                 for (int i = group1Count - 1; i >= 0; i--)
                 {
                     var part = charger.ChargeGroup1[i];
-                    var comp = part.BaseComp;
-                    if (comp.Ai == null || ai.TopEntity.MarkedForClose || ai.Concealed || !ai.HasPower || comp.CoreEntity.MarkedForClose || !comp.IsWorking || comp.Platform.State != CorePlatform.PlatformState.Ready) {
 
-                        if (part.DrawingPower)
-                            part.StopPowerDraw();
-
-                        part.Loading = false;
-
-                        charger.Remove(part, i);
-                        continue;
-                    }
                     var assignedPower = powerFree ? part.DesiredPower : group1Budget;
 
                     switch (part.BaseComp.Type)
@@ -77,28 +69,16 @@ namespace CoreSystems
                         case CoreComponent.CompType.Phantom:
                             break;
                         case CoreComponent.CompType.Weapon:
-                            if (WeaponCharged((Weapon)part,assignedPower))
+                            if (WeaponCharged(ai, (Weapon)part,assignedPower))
                                 charger.Remove(part, i);
                             break;
                     }
                 }
 
-                var group2Count = charger.ChargeGroup2.Count;
-                var group2Budget = ((float)(gridAvail * 0.25f) / group2Count);
-                for (int i = charger.ChargeGroup2.Count - 1; i >= 0; i--)
+
+                for (int i = group2Count - 1; i >= 0; i--)
                 {
                     var part = charger.ChargeGroup2[i];
-                    var comp = part.BaseComp;
-                    if (comp.Ai == null || ai.TopEntity.MarkedForClose || ai.Concealed || !ai.HasPower || comp.CoreEntity.MarkedForClose || !comp.IsWorking || comp.Platform.State != CorePlatform.PlatformState.Ready) {
-
-                        if (part.DrawingPower)
-                            part.StopPowerDraw();
-
-                        part.Loading = false;
-
-                        charger.Remove(part, i);
-                        continue;
-                    }
                     var assignedPower = powerFree ? part.DesiredPower : group2Budget;
 
                     switch (part.BaseComp.Type)
@@ -110,43 +90,45 @@ namespace CoreSystems
                         case CoreComponent.CompType.Phantom:
                             break;
                         case CoreComponent.CompType.Weapon:
-                            if (WeaponCharged((Weapon)part, assignedPower))
+                            if (WeaponCharged(ai, (Weapon)part, assignedPower))
                                 charger.Remove(part, i);
                             break;
                     }
 
                 }
-
             }
         }
 
-        private bool WeaponCharged(Weapon w, float assignedPower)
+        private bool WeaponCharged(Ai ai, Weapon w, float assignedPower)
         {
-            if (IsServer && w.ChargeUntilTick <= Tick || IsClient && w.Reload.EndId > w.ClientEndId || !w.Loading) {
+            var comp = w.Comp;
+            var complete = IsServer && w.ChargeUntilTick <= Tick || IsClient && w.Reload.EndId > w.ClientEndId || !w.Loading || w.ExitCharger;
+            var weaponFailure = !ai.HasPower || !comp.IsWorking;
+            var invalidStates = ai != comp.Ai || comp.Ai.MarkedForClose || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || comp.Platform.State != CorePlatform.PlatformState.Ready;
+            
+            if (complete || weaponFailure || invalidStates) {
 
+                w.StopPowerDraw();
                 if (w.Loading)
                     w.Reloaded();
-
-                if (w.DrawingPower)
-                    w.StopPowerDraw();
 
                 return true;
             }
 
-            if (!w.DrawingPower) {
+            if (!w.BaseComp.UnlimitedPower) {
 
-                if (!w.BaseComp.UnlimitedPower)
+                if (!w.Charging)
                     w.DrawPower(assignedPower);
-
-                w.ChargeDelayTicks = 0;
+                else if (w.NewPowerNeeds)
+                    w.AdjustPower(assignedPower);
             }
 
-            if (Tick60 && w.DrawingPower) {
+            if (Tick60) {
 
-                if ((w.ProtoWeaponAmmo.CurrentCharge + w.AssignedPower) < w.MaxCharge) 
-                    w.ProtoWeaponAmmo.CurrentCharge += w.AssignedPower;
-                else 
-                    w.ProtoWeaponAmmo.CurrentCharge = w.MaxCharge;
+                if (w.EstimatedCharge + w.AssignedPower < w.MaxCharge)
+                    w.EstimatedCharge += w.AssignedPower;
+                else
+                    w.EstimatedCharge = w.MaxCharge;
             }
             return false;
         }

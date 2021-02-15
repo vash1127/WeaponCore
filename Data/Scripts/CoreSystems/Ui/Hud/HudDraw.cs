@@ -295,7 +295,7 @@ namespace CoreSystems
             if (texture.Length > 0) {
 
                 if (mustCharge)
-                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.ProtoWeaponAmmo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
+                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.EstimatedCharge / weapon.MaxCharge)), 0, texture.Length - 1);
 
                 stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                 stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
