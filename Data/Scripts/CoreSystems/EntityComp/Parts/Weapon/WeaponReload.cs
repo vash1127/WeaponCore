@@ -279,13 +279,14 @@ namespace CoreSystems.Platform
             Loading = true;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
 
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !InCharger)
+            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 ChargeReload();
-            else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+            
+            if (!ActiveAmmoDef.AmmoDef.Const.MustCharge || ActiveAmmoDef.AmmoDef.Const.IsHybrid) {
                 if (System.ReloadTime > 0) {
                     CancelableReloadAction += Reloaded;
                     ReloadSubscribed = true;
-                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, true, (uint)System.ReloadTime);
                 }
                 else Reloaded();
             }
@@ -299,6 +300,8 @@ namespace CoreSystems.Platform
 
         internal void Reloaded(object o = null)
         {
+            var callBack = o as bool? ?? false;
+
             using (Comp.CoreEntity.Pin()) {
 
                 LastLoadedTick = Comp.Session.Tick;
@@ -307,22 +310,27 @@ namespace CoreSystems.Platform
 
                 if (!invalidStates) {
 
-                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !callBack) {
 
                         ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                         EstimatedCharge = MaxCharge;
-
                         ChargeUntilTick = 0;
+                        
+                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadSubscribed)
+                            return;
                     }
                     else if (ReloadSubscribed) {
                         CancelableReloadAction -= Reloaded;
                         ReloadSubscribed = false;
+
+                        if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging)
+                            return;
                     }
 
                     EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                    ProtoWeaponAmmo.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
+                    ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                    
                     if (System.Session.IsServer) {
 
                         ++Reload.EndId;

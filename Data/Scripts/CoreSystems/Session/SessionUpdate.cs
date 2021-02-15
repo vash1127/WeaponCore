@@ -295,10 +295,13 @@ namespace CoreSystems
 
                         if (comp.Data.Repo.Values.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
-                        
+
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
+
+
+ 
                         var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.DetectOtherSignals && ai.DetectionInfo.OtherInRange || ai.DetectionInfo.PriorityInRange) && (!comp.UserControlled || w.PartState.Action == TriggerClick));
                         if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Values.State.Control == ControlMode.None || comp.Data.Repo.Values.State.Control== ControlMode.Ui)) {
                             
@@ -321,7 +324,7 @@ namespace CoreSystems
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && w.ChargeUntilTick != Tick && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
                         var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.PartState.Action == TriggerOn || w.AiShooting && w.PartState.Action == TriggerOff;
@@ -342,16 +345,8 @@ namespace CoreSystems
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
 
-                            if (w.ChargeUntilTick <= Tick) {
-
+                            if (w.ChargeUntilTick <= Tick) 
                                 ShootingWeapons.Add(w);
-                            }
-                            /*
-                            else if (w.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-                                w.Charging = true;
-                                w.StopShooting(false);
-                            }
-                            */
                         }
                         else if (w.IsShooting)
                             w.StopShooting();

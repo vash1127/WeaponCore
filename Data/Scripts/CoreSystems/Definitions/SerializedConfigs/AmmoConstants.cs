@@ -704,10 +704,11 @@ namespace CoreSystems.Support
                 var ewar = (int)ammoPair.AmmoDef.AreaEffect.AreaEffect > 3;
                 var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
                 var shotsPerTick = system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_MINUTE;
+                var energyPerTick = shotEnergyCost * shotsPerTick;
+                var requiredPowerPerTick = (energyPerTick * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel;
 
-                var requiredPowerPerTick = ((shotEnergyCost * shotsPerTick) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel;
-
-                chargeSize = (int)Math.Ceiling(requiredPowerPerTick * system.ReloadTime);
+                var reloadTime = system.ReloadTime > 0 ? system.ReloadTime : 1;
+                chargeSize = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
 
                 energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;
                 return;

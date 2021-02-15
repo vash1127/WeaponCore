@@ -9,19 +9,19 @@ namespace CoreSystems.Platform
     {
         internal void DrawPower(float assignedPower)
         {
-            AssignedPower = assignedPower;
+            AssignedPower = MathHelper.Clamp(assignedPower, 0, DesiredPower);
             BaseComp.SinkPower += AssignedPower;
             BaseComp.Ai.GridAssignedPower += AssignedPower;
             BaseComp.Cube.ResourceSink.Update();
             Charging = true;
         }
 
-        internal void AdjustPower(float newValue)
+        internal void AdjustPower(float assignedPower)
         {
             BaseComp.SinkPower -= AssignedPower;
             BaseComp.Ai.GridAssignedPower -= AssignedPower;
 
-            AssignedPower = newValue;
+            AssignedPower = MathHelper.Clamp(assignedPower, 0, DesiredPower); ;
 
             BaseComp.SinkPower += AssignedPower;
             BaseComp.Ai.GridAssignedPower += AssignedPower;
@@ -30,15 +30,16 @@ namespace CoreSystems.Platform
             NewPowerNeeds = false;
         }
 
-        internal void StopPowerDraw()
+        internal void StopPowerDraw(bool hardStop)
         {
             if (!Charging) {
-                Log.Line($"wasnt drawing power");
+                if (!hardStop) Log.Line($"wasnt drawing power");
                 return;
             }
 
             BaseComp.SinkPower -= AssignedPower;
             BaseComp.Ai.GridAssignedPower -= AssignedPower;
+            AssignedPower = 0;
 
             if (BaseComp.SinkPower < BaseComp.IdlePower) BaseComp.SinkPower = BaseComp.IdlePower;
             BaseComp.Cube.ResourceSink.Update();

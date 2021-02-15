@@ -36,7 +36,6 @@ namespace CoreSystems.Support
             {
                 part.InCharger = true;
                 if (ChargeGroup0.Count == 0 && ChargeGroup1.Count == 0 && ChargeGroup2.Count == 0) {
-                    Log.Line($"add charger");
                     Ai.Session.ChargingParts.Add(this);
                     Ai.Session.ChargingParts.ApplyAdditions();
                 }
@@ -46,18 +45,15 @@ namespace CoreSystems.Support
                     case 0:
                         ChargeGroup0.Add(part);
                         GroupRequested0 += part.DesiredPower;
-                        Log.Line($"0 - add part: {part.DesiredPower}({GroupRequested0})");
 
                         break;
                     case 1:
                         ChargeGroup1.Add(part);
                         GroupRequested1 += part.DesiredPower;
-                        Log.Line($"1 - add part: {part.DesiredPower}({GroupRequested1})");
                         break;
                     case 2:
                         ChargeGroup2.Add(part);
                         GroupRequested2 += part.DesiredPower;
-                        Log.Line($"2 - add part: {part.DesiredPower}({GroupRequested2})");
                         break;
                 }
 
@@ -71,25 +67,21 @@ namespace CoreSystems.Support
                     case 0:
                         ChargeGroup0.RemoveAtFast(i);
                         GroupRequested0 -= part.DesiredPower;
-                        Log.Line($"0 - remove part: {part.DesiredPower}({GroupRequested0})");
 
                         break;
                     case 1:
                         ChargeGroup1.RemoveAtFast(i);
                         GroupRequested1 -= part.DesiredPower;
-                        Log.Line($"1 - remove part: {part.DesiredPower}({GroupRequested1})");
 
                         break;
                     case 2:
                         ChargeGroup2.RemoveAtFast(i);
                         GroupRequested2 -= part.DesiredPower;
-                        Log.Line($"2 - remove part: {part.DesiredPower}({GroupRequested2})");
                         break;
                 }
 
                 if (ChargeGroup0.Count == 0 && ChargeGroup1.Count == 0 && ChargeGroup2.Count == 0) {
 
-                    Log.Line($"remove charger");
                     Ai.Session.ChargingParts.Remove(this);
                     GroupRequested0 = 0;
                     GroupRequested1 = 0;
@@ -98,6 +90,7 @@ namespace CoreSystems.Support
                     TotalDesired = 0;
                 }
 
+                part.ExitCharger = false;
                 part.InCharger = false;
             }
 

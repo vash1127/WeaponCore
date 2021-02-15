@@ -105,13 +105,15 @@ namespace CoreSystems
         private bool WeaponCharged(Ai ai, Weapon w, float assignedPower)
         {
             var comp = w.Comp;
-            var complete = IsServer && w.ChargeUntilTick <= Tick || IsClient && w.Reload.EndId > w.ClientEndId || !w.Loading || w.ExitCharger;
+            
+            w.ProtoWeaponAmmo.CurrentCharge += assignedPower;
+            var complete = IsServer && w.ProtoWeaponAmmo.CurrentCharge >= w.MaxCharge || IsClient && w.Reload.EndId > w.ClientEndId || w.ExitCharger;
             var weaponFailure = !ai.HasPower || !comp.IsWorking;
             var invalidStates = ai != comp.Ai || comp.Ai.MarkedForClose || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || comp.Platform.State != CorePlatform.PlatformState.Ready;
             
             if (complete || weaponFailure || invalidStates) {
 
-                w.StopPowerDraw();
+                w.StopPowerDraw(weaponFailure || invalidStates);
                 if (w.Loading)
                     w.Reloaded();
 
