@@ -12,7 +12,7 @@ namespace CoreSystems
 
                 charger.PowerUsed = 0;
                 var ai = charger.Ai;
-                var gridAvail = (ai.GridAvailablePower * 0.98f);
+                var gridAvail = ((ai.GridAvailablePower * 0.98f) + ai.GridAssignedPower);
                 var availMinusDesired = gridAvail - charger.TotalDesired;
                 var powerFree = availMinusDesired > 0;
 
@@ -27,11 +27,13 @@ namespace CoreSystems
                 var group1Count = charger.ChargeGroup1.Count;
                 var group2Count = charger.ChargeGroup2.Count;
 
-                var group0Budget = halfAvail / group0Count;
-                var group1Budget = quarterPlusG0Remaining / group1Count;
-                var group2Budget = quarterPlusAllRemaining / group2Count;
+                var group0Budget = group0Count > 0 ? halfAvail / group0Count : float.MaxValue;
+                var group1Budget = group1Count > 0 ? quarterPlusG0Remaining / group1Count : float.MaxValue;
+                var group2Budget = group2Count > 0 ? quarterPlusAllRemaining / group2Count : float.MaxValue;
 
-                Log.Line($"{group0Budget} - {group1Budget} - {group2Budget}");
+                if (Tick180)
+                    Log.Line($"[charging] [fullPower:{powerFree} - [{gridAvail}({charger.TotalDesired})]] - g0:{group0Count}({group0Budget}) - g1:{group1Count}({group1Budget}) - g2:{group2Count}({group2Budget})");
+
                 for (int i = group0Count - 1; i >= 0; i--)
                 {
                     var part = charger.ChargeGroup0[i];
@@ -97,6 +99,7 @@ namespace CoreSystems
 
                 }
             }
+            ChargingParts.ApplyRemovals();
         }
 
         private bool WeaponCharged(Ai ai, Weapon w, float assignedPower)

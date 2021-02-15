@@ -32,7 +32,7 @@ namespace CoreSystems.Platform
 
         internal void StopPowerDraw()
         {
-            if (!ExitCharger) {
+            if (!Charging) {
                 Log.Line($"wasnt drawing power");
                 return;
             }
