@@ -405,7 +405,7 @@ namespace CoreSystems.Support
                 var particles = weapon.System.Values.HardPoint.Graphics.Effect1;
                 var renderId = info.Entity.Render.GetRenderObjectID();
                 var matrix = info.DummyMatrix;
-                var pos = info.LocalPosition;
+                var pos = particles.Extras.Loop ? info.LocalPosition : info.Position;
                 pos += Vector3D.Rotate(particles.Offset, matrix);
 
                 if (!effectExists && ticksAgo <= 0) {
@@ -419,7 +419,6 @@ namespace CoreSystems.Support
                     }
                 }
                 else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped) {
-
                     effect.WorldMatrix = matrix;
                     effect.SetTranslation(ref pos);
                     effect.Play();
@@ -473,7 +472,7 @@ namespace CoreSystems.Support
                 var particles = weapon.System.Values.HardPoint.Graphics.Effect2;
                 var renderId = info.Entity.Render.GetRenderObjectID();
                 var matrix = info.DummyMatrix;
-                var pos = info.LocalPosition;
+                var pos = particles.Extras.Loop ? info.LocalPosition : info.Position;
                 pos += Vector3D.Rotate(particles.Offset, matrix);
 
                 if (!effectExists && ticksAgo <= 0)  {
