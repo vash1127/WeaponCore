@@ -304,7 +304,7 @@ namespace CoreSystems.Support
                 if (Values.HardPoint.Loading.BarrelSpinRate > 0) barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate < 3600 ? Values.HardPoint.Loading.BarrelSpinRate : 3599;
                 else barrelSpinRate = RateOfFire < 3699 ? RateOfFire : 3599;
             }
-            hasBarrelRotation = barrelSpinRate > 0;
+            hasBarrelRotation = barrelSpinRate > 0 && HasSpinPart || (MuzzlePartName.String != "None" && !string.IsNullOrEmpty(MuzzlePartName.String));
         }
 
         private void BarrelValues(out int barrelsPerShot, out int rateOfFire, out int shotsPerBurst)
