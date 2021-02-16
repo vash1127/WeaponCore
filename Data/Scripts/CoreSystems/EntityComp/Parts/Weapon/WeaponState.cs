@@ -83,13 +83,13 @@ namespace CoreSystems.Platform
                 switch (System.Values.HardPoint.Other.RotateBarrelAxis) {
 
                     case 1:
-                        BarrelRotationPerShot[i] = MuzzlePart.ToTransformation * Matrix.CreateRotationX(angle) * MuzzlePart.FromTransformation;
+                        BarrelRotationPerShot[i] = SpinPart.ToTransformation * Matrix.CreateRotationX(angle) * SpinPart.FromTransformation;
                         break;
                     case 2:
-                        BarrelRotationPerShot[i] = MuzzlePart.ToTransformation * Matrix.CreateRotationY(angle) * MuzzlePart.FromTransformation;
+                        BarrelRotationPerShot[i] = SpinPart.ToTransformation * Matrix.CreateRotationY(angle) * SpinPart.FromTransformation;
                         break;
                     case 3:
-                        BarrelRotationPerShot[i] = MuzzlePart.ToTransformation * Matrix.CreateRotationZ(angle) * MuzzlePart.FromTransformation;
+                        BarrelRotationPerShot[i] = SpinPart.ToTransformation * Matrix.CreateRotationZ(angle) * SpinPart.FromTransformation;
                         break;
                 }
             }

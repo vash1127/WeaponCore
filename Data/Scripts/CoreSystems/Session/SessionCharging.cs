@@ -32,7 +32,7 @@ namespace CoreSystems
                 var group2Budget = group2Count > 0 ? quarterPlusAllRemaining / group2Count : float.MaxValue;
 
                 if (Tick180)
-                    Log.Line($"[charging] [fullPower:{powerFree} - [{gridAvail}({charger.TotalDesired})]] - g0:{group0Count}({group0Budget}) - g1:{group1Count}({group1Budget}) - g2:{group2Count}({group2Budget})");
+                    Log.Line($"[charging] [fullPower:{powerFree} - [avail:{gridAvail} - desired:{charger.TotalDesired}]]");
 
                 for (int i = group0Count - 1; i >= 0; i--)
                 {
@@ -107,6 +107,9 @@ namespace CoreSystems
             var comp = w.Comp;
             
             w.ProtoWeaponAmmo.CurrentCharge += assignedPower;
+            if (Tick180)
+                Log.Line($"[{w.System.PartName}] [current:{w.ProtoWeaponAmmo.CurrentCharge} >= target:{w.MaxCharge}]]");
+
             var complete = IsServer && w.ProtoWeaponAmmo.CurrentCharge >= w.MaxCharge || IsClient && w.Reload.EndId > w.ClientEndId || w.ExitCharger;
             var weaponFailure = !ai.HasPower || !comp.IsWorking;
             var invalidStates = ai != comp.Ai || comp.Ai.MarkedForClose || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || comp.Platform.State != CorePlatform.PlatformState.Ready;

@@ -707,7 +707,7 @@ namespace CoreSystems.Support
                 var energyPerTick = shotEnergyCost * shotsPerTick;
                 var requiredPowerPerTick = (energyPerTick * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel;
 
-                var reloadTime = system.ReloadTime > 0 ? system.ReloadTime : 1;
+                var reloadTime = system.ReloadTime > 0 ? system.ReloadTime : 0;
                 chargeSize = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
 
                 energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;

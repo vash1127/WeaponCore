@@ -356,8 +356,8 @@ namespace CoreSystems
                                 w.StopShooting();
 
                             if (w.BarrelSpinning) {
-                                var spin = weaponPrimed && ai.CanShoot && w.System.Values.HardPoint.Loading.SpinFree;
-                                w.SpinBarrel(spin);
+                                var spinDown = !(weaponPrimed && ai.CanShoot && w.System.Values.HardPoint.Loading.SpinFree);
+                                w.SpinBarrel(spinDown);
                             }
                         }
 

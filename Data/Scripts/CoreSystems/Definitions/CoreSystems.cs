@@ -220,7 +220,7 @@ namespace CoreSystems.Support
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             SpinPartName = spinPartName;
-            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String);
+            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String) && !SpinPartName.String.Equals("None") && !SpinPartName.String.Equals(ElevationPartName.String) && !SpinPartName.String.Equals(AzimuthPartName.String) && !SpinPartName.String.Equals(MuzzlePartName.String);
             Values = values;
             Muzzles = values.Assignments.Muzzles;
             WeaponIdHash = weaponIdHash;

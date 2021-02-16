@@ -182,8 +182,11 @@ namespace CoreSystems.Platform
                     return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Invalid elevationPart, I am crashing now Dave.");
 
                 MyEntity spinPart = null;
-                if (!system.HasSpinPart || !Parts.NameToEntity.TryGetValue(system.SpinPartName.String, out spinPart))
-                    spinPart = muzzlePartEntity;
+                if (system.HasBarrelRotation)
+                {
+                    if (!(system.HasSpinPart && Parts.NameToEntity.TryGetValue(system.SpinPartName.String, out spinPart)))
+                        spinPart = muzzlePartEntity;
+                }
 
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
@@ -277,6 +280,29 @@ namespace CoreSystems.Platform
                     weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
                     weapon.MuzzlePart.Entity.NeedsWorldMatrix = true;
                 }
+
+                if (weapon.System.HasBarrelRotation && weapon.SpinPart.Entity != null)
+                {
+                    if (weapon.SpinPart.Entity == muzzlePart)
+                    {
+                        weapon.SpinPart.ToTransformation = weapon.MuzzlePart.ToTransformation;
+                        weapon.SpinPart.FromTransformation = weapon.MuzzlePart.FromTransformation;
+                        weapon.SpinPart.PartLocalLocation = weapon.MuzzlePart.PartLocalLocation;
+                    }
+                    else
+                    {
+                        var spinPartLocation = Comp.Session.GetPartLocation("subpart_" + mPartName, weapon.SpinPart.Entity.Parent.Model);
+
+                        var spinPartPosTo = MatrixD.CreateTranslation(-spinPartLocation);
+                        var spinPartPosFrom = MatrixD.CreateTranslation(spinPartLocation);
+                        weapon.SpinPart.ToTransformation = spinPartPosTo;
+                        weapon.SpinPart.FromTransformation = spinPartPosFrom;
+                        weapon.SpinPart.PartLocalLocation = spinPartLocation;
+                        weapon.SpinPart.Entity.NeedsWorldMatrix = true;
+                    }
+                }
+
+
                 if (weapon.AiOnlyWeapon)
                 {
                     var azimuthPart = weapon.AzimuthPart.Entity;
@@ -476,6 +502,19 @@ namespace CoreSystems.Platform
                     {
                         weapon.ElevationPart.Entity = elevationPartEntity;
                         weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+                    }
+
+                    if (weapon.System.HasBarrelRotation) {
+
+                        MyEntity spinPart = null;
+                        if (!(weapon.System.HasSpinPart && Parts.NameToEntity.TryGetValue(weapon.System.SpinPartName.String, out spinPart)))
+                            spinPart = muzzlePart;
+
+                        if (spinPart != null) {
+                            weapon.SpinPart.Entity = spinPart;
+                            if (spinPart != muzzlePart)
+                                weapon.SpinPart.Entity.NeedsWorldMatrix = true;
+                        }
                     }
 
                     string ejectorMatch;
