@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Utils;
@@ -111,6 +112,7 @@ namespace CoreSystems.Support
         public readonly MyStringHash MuzzlePartName;
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
+        public readonly MyStringHash SpinPartName;
         public readonly WeaponDefinition Values;
         public readonly AmmoType[] AmmoTypes;
         public readonly Stack<MySoundPair> PreFirePairs = new Stack<MySoundPair>();
@@ -171,6 +173,7 @@ namespace CoreSystems.Support
         public readonly bool LockOnFocus;
         public readonly bool HasGuidedAmmo;
         public readonly bool SuppressFire;
+        public readonly bool HasSpinPart;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
@@ -207,7 +210,7 @@ namespace CoreSystems.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash partNameIdHash, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string partName, AmmoType[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public WeaponSystem(Session session, MyStringHash partNameIdHash, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, MyStringHash spinPartName, WeaponDefinition values, string partName, AmmoType[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
 
@@ -216,7 +219,8 @@ namespace CoreSystems.Support
             DesignatorWeapon = muzzlePartName.String == "Designator";
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
-
+            SpinPartName = spinPartName;
+            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String);
             Values = values;
             Muzzles = values.Assignments.Muzzles;
             WeaponIdHash = weaponIdHash;

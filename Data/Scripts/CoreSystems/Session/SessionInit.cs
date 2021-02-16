@@ -239,12 +239,13 @@ namespace CoreSystems
                     var partAttachmentId = weapon ? muzzlePartId : x.HardPoint.PartName + $" {i}";
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
+                    var spinPartId = mount.SpinPartId;
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId };
+                    var extraInfo = new MyTuple<string, string, string, string> { Item1 = x.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId, Item4 = spinPartId };
 
                     if (!_subTypeMaps.ContainsKey(subTypeId))
                     {
-                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string, string>> { [partAttachmentId] = extraInfo };
                         _subTypeIdWeaponDefs[subTypeId] = new List<WeaponDefinition> { x };
                     }
                     else
@@ -434,12 +435,12 @@ namespace CoreSystems
                     var subTypeId = mount.SubtypeId;
                     var partAttachmentId = x.HardPoint.PartName + $" {i}";
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None" };
+                    var extraInfo = new MyTuple<string, string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None", Item4 = "None"};
 
                     if (!_subTypeMaps.ContainsKey(subTypeId))
                     {
 
-                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string, string>> { [partAttachmentId] = extraInfo };
 
                         _subTypeIdSupportDefs[subTypeId] = new List<SupportDefinition> { x };
                     }
@@ -567,12 +568,12 @@ namespace CoreSystems
                     var subTypeId = mount.SubtypeId;
                     var partAttachmentId = x.HardPoint.PartName + $" {i}";
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None" };
+                    var extraInfo = new MyTuple<string, string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None", Item4 = "None"};
 
                     if (!_subTypeMaps.ContainsKey(subTypeId))
                     {
 
-                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string, string>> { [partAttachmentId] = extraInfo };
 
                         _subTypeIdUpgradeDefs[subTypeId] = new List<UpgradeDefinition> { x };
                     }
@@ -702,12 +703,12 @@ namespace CoreSystems
                     var subTypeId = mount.SubtypeId;
                     var partAttachmentId = x.HardPoint.PartName + $" {i}";
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None" };
+                    var extraInfo = new MyTuple<string, string, string, string> { Item1 = x.HardPoint.PartName, Item2 = "None", Item3 = "None", Item4 = "None"};
 
                     if (!_subTypeMaps.ContainsKey(subTypeId))
                     {
 
-                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string>> { [partAttachmentId] = extraInfo };
+                        _subTypeMaps[subTypeId] = new Dictionary<string, MyTuple<string, string, string, string>> { [partAttachmentId] = extraInfo };
 
                         _subTypeIdPhantomDefs[subTypeId] = new List<PhantomDefinition> { x };
                     }

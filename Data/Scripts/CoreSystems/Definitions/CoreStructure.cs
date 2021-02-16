@@ -44,7 +44,7 @@ namespace CoreSystems.Support
     internal class WeaponStructure : CoreStructure
     {
         internal bool HasTurret;
-        internal WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
+        internal WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
@@ -75,6 +75,7 @@ namespace CoreSystems.Support
                 muzzleHashes[partId] = muzzletNameHash;
                 var azimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
                 var elevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
+                var spinNameHash = MyStringHash.GetOrCompute(w.Value.Item4);
                 var partNameIdHash = MyStringHash.GetOrCompute(weaponDef.HardPoint.PartName + $" {partId}");
                 partHashes[partId] = partNameIdHash;
 
@@ -121,7 +122,7 @@ namespace CoreSystems.Support
 
                 var partHash = (tDef.Key + partNameIdHash + elevationNameHash + muzzletNameHash + azimuthNameHash).GetHashCode();
                 HashToId.Add(partHash, partId);
-                var coreSystem = new WeaponSystem(Session, partNameIdHash, muzzletNameHash, azimuthNameHash, elevationNameHash, weaponDef, typeName, weaponAmmo, partHash, partId);
+                var coreSystem = new WeaponSystem(Session, partNameIdHash, muzzletNameHash, azimuthNameHash, elevationNameHash, spinNameHash, weaponDef, typeName, weaponAmmo, partHash, partId);
 
                 if (coreSystem.Values.HardPoint.Ai.TurretAttached && !HasTurret)
                     HasTurret = true;
@@ -146,7 +147,7 @@ namespace CoreSystems.Support
 
     internal class UpgradeStructure : CoreStructure
     {
-        internal UpgradeStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<UpgradeDefinition> wDefList, string modPath)
+        internal UpgradeStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string, string>>> tDef, List<UpgradeDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
@@ -204,7 +205,7 @@ namespace CoreSystems.Support
     internal class SupportStructure : CoreStructure
     {
         internal bool CommonBlockRange;
-        internal SupportStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<SupportDefinition> wDefList, string modPath)
+        internal SupportStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string, string>>> tDef, List<SupportDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
@@ -270,7 +271,7 @@ namespace CoreSystems.Support
 
     internal class PhantomStructure : CoreStructure
     {
-        internal PhantomStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<PhantomDefinition> wDefList, string modPath)
+        internal PhantomStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string, string>>> tDef, List<PhantomDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;

@@ -325,14 +325,16 @@ namespace CoreSystems
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && w.ChargeUntilTick != Tick && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
-                        var canShoot = !w.PartState.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
+                        var canShoot = !w.PartState.Overheated  && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.PartState.Action == TriggerOn || w.AiShooting && w.PartState.Action == TriggerOff;
                         var manualShot = (compManualMode || w.PartState.Action == TriggerClick) && canManualShoot && comp.InputState.MouseButtonLeft;
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
-                        var shotReady = canShoot && (shoot || w.LockOnFireState);
+                        var weaponPrimed  = canShoot && (shoot || w.LockOnFireState);
+                        
+                        var shotReady = weaponPrimed && !reloading;
 
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
@@ -348,10 +350,16 @@ namespace CoreSystems
                             if (w.ChargeUntilTick <= Tick) 
                                 ShootingWeapons.Add(w);
                         }
-                        else if (w.IsShooting)
-                            w.StopShooting();
-                        else if (w.BarrelSpinning)
-                            w.SpinBarrel(true);
+                        else {
+
+                            if (w.IsShooting)
+                                w.StopShooting();
+
+                            if (w.BarrelSpinning) {
+                                var spin = weaponPrimed && ai.CanShoot && w.System.Values.HardPoint.Loading.SpinFree;
+                                w.SpinBarrel(spin);
+                            }
+                        }
 
                         if (comp.Debug && !DedicatedServer)
                             WeaponDebug(w);

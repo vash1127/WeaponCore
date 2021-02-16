@@ -181,9 +181,13 @@ namespace CoreSystems.Platform
                 if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
                     return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Invalid elevationPart, I am crashing now Dave.");
 
+                MyEntity spinPart = null;
+                if (!system.HasSpinPart || !Parts.NameToEntity.TryGetValue(system.SpinPartName.String, out spinPart))
+                    spinPart = muzzlePartEntity;
+
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
-                var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
+                var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, spinPart, azimuthPartName, elevationPartName);
                 Weapons.Add(weapon);
                 CompileTurret(weapon);
             }

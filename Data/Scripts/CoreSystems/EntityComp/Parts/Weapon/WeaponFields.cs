@@ -32,6 +32,7 @@ namespace CoreSystems.Platform
         internal readonly Muzzle[] Muzzles;
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
+        internal readonly PartInfo SpinPart;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         internal readonly uint[] BeamSlot;
         internal readonly MyParticleEffect[] Effects1;
@@ -222,7 +223,7 @@ namespace CoreSystems.Platform
             internal ChangeType Change;
         }
 
-        internal Weapon(MyEntity entity, WeaponSystem system, int partId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
+        internal Weapon(MyEntity entity, WeaponSystem system, int partId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, MyEntity spinPart, string azimuthPartName, string elevationPartName)
         {
             Comp = comp;
             System = system;
@@ -239,7 +240,7 @@ namespace CoreSystems.Platform
             ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts); 
 
             MyStringHash subtype;
-            if (comp.CoreEntity.DefinitionId.HasValue && comp.Session.VanillaIds.TryGetValue(comp.CoreEntity.DefinitionId.Value, out subtype)) {
+            if (comp.Session.VanillaIds.TryGetValue(comp.Id, out subtype)) {
                 if (subtype.String.Contains("Gatling"))
                     _numModelBarrels = 6;
                 else
@@ -342,6 +343,7 @@ namespace CoreSystems.Platform
             Acquire = new PartAcquire(this);
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
+            SpinPart = new PartInfo {Entity = spinPart};
             MuzzlePart = new PartInfo { Entity = entity };
             MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
 

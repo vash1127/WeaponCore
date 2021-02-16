@@ -338,7 +338,6 @@ namespace CoreSystems.Platform
         {
             var matrix = MuzzlePart.Entity.PositionComp.LocalMatrixRef * BarrelRotationPerShot[BarrelRate];
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix);
-
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
             { 
                 RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
