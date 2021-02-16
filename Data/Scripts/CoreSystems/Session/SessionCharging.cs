@@ -106,7 +106,7 @@ namespace CoreSystems
         {
             var comp = w.Comp;
             
-            w.ProtoWeaponAmmo.CurrentCharge += assignedPower;
+            w.ProtoWeaponAmmo.CurrentCharge += w.AssignedPower;
             if (Tick180)
                 Log.Line($"[{w.System.PartName}] [current:{w.ProtoWeaponAmmo.CurrentCharge} >= target:{w.MaxCharge}]]");
 

@@ -60,7 +60,6 @@ namespace CoreSystems.Support
         public readonly int PulseChance;
         public readonly int PulseGrowTime;
         public readonly int EnergyMagSize;
-        public readonly int ChargSize;
         public readonly int ShrapnelId = -1;
         public readonly int MaxChaseTime;
         public readonly int MagazineSize;
@@ -121,6 +120,7 @@ namespace CoreSystems.Support
         public readonly bool HasShotFade;
         public readonly bool CustomExplosionSound;
         public readonly bool GuidedAmmoDetected;
+        public readonly float ChargSize;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -688,7 +688,7 @@ namespace CoreSystems.Support
             voxelHitModifer = ammoDef.DamageScales.VoxelHitModifier > 0 ? ammoDef.DamageScales.VoxelHitModifier : 1;
         }
 
-        private void Energy(WeaponSystem.AmmoType ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
+        private void Energy(WeaponSystem.AmmoType ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out float chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid);
@@ -707,10 +707,11 @@ namespace CoreSystems.Support
                 var energyPerTick = shotEnergyCost * shotsPerTick;
                 var requiredPowerPerTick = (energyPerTick * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel;
 
-                var reloadTime = system.ReloadTime > 0 ? system.ReloadTime : 0;
-                chargeSize = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
+                var reloadTime = system.ReloadTime > 0 ? system.ReloadTime : 1;
+                chargeSize = requiredPowerPerTick * reloadTime;
+                var chargeCeil = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
 
-                energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;
+                energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeCeil;
                 return;
             }
             chargeSize = 0;
