@@ -17,6 +17,7 @@ namespace CoreSystems.Support
         public MyStringHash PartNameIdHash;
         public int PartIdHash;
         public int PartId;
+        public bool StayCharged;
         public string PartName;
         public Session Session;
 
@@ -47,7 +48,7 @@ namespace CoreSystems.Support
             PartId = partId;
             PartName = partName;
             PartType = (HardwareDef.HardwareType)Values.HardPoint.HardWare.Type;
-
+            StayCharged = values.HardPoint.Other.StayCharged;
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
         }
@@ -69,6 +70,7 @@ namespace CoreSystems.Support
             PartIdHash = partIdHash;
             PartId = partId;
             PartName = partName;
+            StayCharged = values.HardPoint.Other.StayCharged;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
@@ -92,6 +94,7 @@ namespace CoreSystems.Support
             PartId = partId;
             PartName = partName;
             PartType = (HardwareDef.HardwareType)Values.HardPoint.HardWare.Type;
+            StayCharged = values.HardPoint.Other.StayCharged;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
@@ -222,8 +225,8 @@ namespace CoreSystems.Support
             SpinPartName = spinPartName;
             HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String) && !SpinPartName.String.Contains("None") && !SpinPartName.String.Equals(ElevationPartName.String) && !SpinPartName.String.Equals(AzimuthPartName.String) && !SpinPartName.String.Equals(MuzzlePartName.String);
 
-
             Values = values;
+            StayCharged = values.HardPoint.Loading.StayCharged || values.HardPoint.Loading.ReloadTime == 0;
             Muzzles = values.Assignments.Muzzles;
             WeaponIdHash = weaponIdHash;
             WeaponId = weaponId;

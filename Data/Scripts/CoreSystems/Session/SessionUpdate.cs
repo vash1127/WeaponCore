@@ -221,7 +221,7 @@ namespace CoreSystems
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Loading) {
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Loading) { // does this need StayCharged?
 
                             if (IsServer && (w.ProtoWeaponAmmo.CurrentAmmo == 0 || w.CheckInventorySystem))
                                 w.ComputeServerStorage();
@@ -324,7 +324,7 @@ namespace CoreSystems
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && w.ChargeUntilTick != Tick && (w.Loading || w.ProtoWeaponAmmo.CurrentAmmo == 0);
+                        var ammoEmpty = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && w.ProtoWeaponAmmo.CurrentAmmo == 0 && !(w.Loading && w.System.ReloadTime == 0);
                         var canShoot = !w.PartState.Overheated  && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.PartState.Action == TriggerOn || w.AiShooting && w.PartState.Action == TriggerOff;
@@ -334,7 +334,7 @@ namespace CoreSystems
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var weaponPrimed  = canShoot && (shoot || w.LockOnFireState);
                         
-                        var shotReady = weaponPrimed && !reloading;
+                        var shotReady = weaponPrimed && !ammoEmpty;
 
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
@@ -347,8 +347,7 @@ namespace CoreSystems
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
 
-                            if (w.ChargeUntilTick <= Tick) 
-                                ShootingWeapons.Add(w);
+                            ShootingWeapons.Add(w);
                         }
                         else {
 
@@ -432,7 +431,7 @@ namespace CoreSystems
                 var w = ShootingWeapons[i];
                 var invalidWeapon = w.Comp.CoreEntity.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.TopEntity.MarkedForClose || w.Comp.Platform.State != CorePlatform.PlatformState.Ready;
                 var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
-                var quickSkip = invalidWeapon || w.Comp.IsBlock && smartTimer && !w.SmartLos() || w.PauseShoot || w.Loading;
+                var quickSkip = invalidWeapon || w.Comp.IsBlock && smartTimer && !w.SmartLos() || w.PauseShoot || w.ProtoWeaponAmmo.CurrentAmmo == 0 || !w.StayCharged && w.Loading;
                 if (quickSkip) continue;
 
                 w.Shoot();

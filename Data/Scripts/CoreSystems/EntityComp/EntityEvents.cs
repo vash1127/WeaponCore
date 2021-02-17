@@ -6,6 +6,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using static CoreSystems.Platform.CorePlatform;
 using static CoreSystems.Session;
@@ -230,7 +231,9 @@ namespace CoreSystems.Support
                     string shots;
                     if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                     {
-                        shots = "\nCharging:" + w.Charging;
+                        var chargeTime = w.AssignedPower > 0 ? (int)((w.MaxCharge - w.ProtoWeaponAmmo.CurrentCharge) / w.AssignedPower * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) : 0;
+
+                        shots = "\nCharging: " + w.Charging +" ("+ chargeTime+")";
                     }
                     else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.ProtoWeaponAmmo.CurrentAmmo;
 
@@ -261,6 +264,7 @@ namespace CoreSystems.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
+                        var chargeTime = weapon.AssignedPower > 0 ? (int)((weapon.MaxCharge -weapon.ProtoWeaponAmmo.CurrentCharge) / weapon.AssignedPower * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) : 0;
                         stringBuilder.Append($"\n\nWeapon: {weapon.System.PartName} - Enabled: {IsWorking}");
                         stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.BaseComp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - ProtoWeaponAmmo :{!weapon.NoMagsToLoad}");
@@ -269,7 +273,7 @@ namespace CoreSystems.Support
                         stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting}");
                         stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)} ({weapon.ProtoWeaponAmmo.CurrentCharge})");
-                        stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.BaseComp.Ai.Session.Tick})");
+                        stringBuilder.Append($"\nChargeTime: {chargeTime}");
                         stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge})");
                     }
                 }

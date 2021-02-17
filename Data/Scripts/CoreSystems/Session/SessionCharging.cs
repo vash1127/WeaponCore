@@ -2,6 +2,8 @@
 using CoreSystems.Platform;
 using CoreSystems.Support;
 using VRage.Game;
+using VRageMath;
+
 namespace CoreSystems
 {
     public partial class Session
@@ -114,9 +116,12 @@ namespace CoreSystems
                     w.AdjustPower(assignedPower);
             }
 
-            w.ProtoWeaponAmmo.CurrentCharge += w.AssignedPower;
+            var fullyCharged = !w.StayCharged || w.ProtoWeaponAmmo.CurrentAmmo == w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+
+            w.ProtoWeaponAmmo.CurrentCharge = MathHelper.Clamp(w.ProtoWeaponAmmo.CurrentCharge + w.AssignedPower, 0, w.MaxCharge);
+
             if (Tick180)
-                Log.Line($"[{w.System.PartName}] [current:{w.ProtoWeaponAmmo.CurrentCharge} >= target:{w.MaxCharge}]]");
+                Log.Line($"[{w.System.PartName}] [current:{w.ProtoWeaponAmmo.CurrentCharge} >= target:{w.MaxCharge}]] - CurrentAmmo:{w.ProtoWeaponAmmo.CurrentAmmo} == MaxAmmo:{w.ActiveAmmoDef.AmmoDef.Const.MagazineSize} - ReloadTime:{w.System.ReloadTime} - StayCharged:{w.StayCharged}");
 
             var complete = IsServer && w.ProtoWeaponAmmo.CurrentCharge >= w.MaxCharge || IsClient && w.Reload.EndId > w.ClientEndId || w.ExitCharger;
             var weaponFailure = !ai.HasPower || !comp.IsWorking;
@@ -124,11 +129,16 @@ namespace CoreSystems
             
             if (complete || weaponFailure || invalidStates) {
 
-                w.StopPowerDraw(weaponFailure || invalidStates);
-                if (w.Loading)
+                w.Loading = w.Loading && !fullyCharged;
+
+                if (!fullyCharged && w.Loading)
                     w.Reloaded();
 
-                return true;
+                if (!complete || fullyCharged) {
+                    w.StopPowerDraw(weaponFailure || invalidStates);
+                    return true;
+                }
+                w.Loading = true;
             }
 
             if (Tick60) {

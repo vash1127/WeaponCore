@@ -200,7 +200,7 @@ namespace CoreSystems.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (!StayCharged && Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
                 var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;

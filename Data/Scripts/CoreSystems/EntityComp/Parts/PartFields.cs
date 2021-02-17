@@ -17,7 +17,6 @@ namespace CoreSystems.Platform
         internal float DesiredPower;
         internal float AssignedPower;
         internal float EstimatedCharge;
-        internal uint ChargeUntilTick;
         internal uint PartCreatedTick;
         internal uint PartReadyTick;
         internal int ShortLoadId;
@@ -29,10 +28,13 @@ namespace CoreSystems.Platform
         internal bool NewPowerNeeds;
         internal bool InCharger;
         internal bool Charging;
+        internal bool StayCharged;
+
 
         internal void Init(CoreComponent comp, CoreSystem system, int partId)
         {
             CoreSystem = system;
+            StayCharged = system.StayCharged;
             BaseComp = comp;
             PartCreatedTick = CoreSystem.Session.Tick;
             PartId = partId;

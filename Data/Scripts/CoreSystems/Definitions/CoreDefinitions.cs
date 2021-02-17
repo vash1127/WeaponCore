@@ -86,6 +86,7 @@ namespace CoreSystems.Support
                 [ProtoMember(4)] internal double RestrictionRadius;
                 [ProtoMember(5)] internal bool CheckInflatedBox;
                 [ProtoMember(6)] internal bool CheckForAnySupport;
+                [ProtoMember(7)] internal bool StayCharged;
             }
         }
     }
@@ -142,6 +143,7 @@ namespace CoreSystems.Support
                 [ProtoMember(4)] internal double RestrictionRadius;
                 [ProtoMember(5)] internal bool CheckInflatedBox;
                 [ProtoMember(6)] internal bool CheckForAnySupport;
+                [ProtoMember(7)] internal bool StayCharged;
             }
         }
 
@@ -236,6 +238,7 @@ namespace CoreSystems.Support
                 [ProtoMember(4)] internal double RestrictionRadius;
                 [ProtoMember(5)] internal bool CheckInflatedBox;
                 [ProtoMember(6)] internal bool CheckForAnySupport;
+                [ProtoMember(7)] internal bool StayCharged;
             }
         }
     }
@@ -491,6 +494,7 @@ namespace CoreSystems.Support
                 [ProtoMember(16)] internal bool GiveUpAfterBurst;
                 [ProtoMember(17)] internal bool DeterministicSpin;
                 [ProtoMember(18)] internal bool SpinFree;
+                [ProtoMember(19)] internal bool StayCharged;
             }
 
 

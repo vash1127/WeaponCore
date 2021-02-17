@@ -313,7 +313,6 @@ namespace CoreSystems.Platform
 
                         ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                         EstimatedCharge = MaxCharge;
-                        ChargeUntilTick = 0;
                         
                         if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && ReloadSubscribed)
                             return;
@@ -328,7 +327,8 @@ namespace CoreSystems.Platform
 
                     EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                    ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                    //ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                    ProtoWeaponAmmo.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                     if (System.Session.IsServer) {
 
                         ++Reload.EndId;
@@ -346,15 +346,13 @@ namespace CoreSystems.Platform
             }
         }
 
-        public void ChargeReload(bool syncCharge = false)
+        public void ChargeReload()
         {
             ProtoWeaponAmmo.CurrentCharge = 0;
             ProtoWeaponAmmo.CurrentAmmo = 0;
             EstimatedCharge = 0;
 
             Comp.Ai.Charger.Add(this);
-
-            ChargeUntilTick = syncCharge ? ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
         }
     }
 }
