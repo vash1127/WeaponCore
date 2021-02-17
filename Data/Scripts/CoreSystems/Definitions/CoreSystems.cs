@@ -220,7 +220,9 @@ namespace CoreSystems.Support
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             SpinPartName = spinPartName;
-            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String) && !SpinPartName.String.Equals("None") && !SpinPartName.String.Equals(ElevationPartName.String) && !SpinPartName.String.Equals(AzimuthPartName.String) && !SpinPartName.String.Equals(MuzzlePartName.String);
+            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String) && !SpinPartName.String.Contains("None") && !SpinPartName.String.Equals(ElevationPartName.String) && !SpinPartName.String.Equals(AzimuthPartName.String) && !SpinPartName.String.Equals(MuzzlePartName.String);
+
+
             Values = values;
             Muzzles = values.Assignments.Muzzles;
             WeaponIdHash = weaponIdHash;
@@ -304,7 +306,7 @@ namespace CoreSystems.Support
                 if (Values.HardPoint.Loading.BarrelSpinRate > 0) barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate < 3600 ? Values.HardPoint.Loading.BarrelSpinRate : 3599;
                 else barrelSpinRate = RateOfFire < 3699 ? RateOfFire : 3599;
             }
-            hasBarrelRotation = barrelSpinRate > 0 && HasSpinPart || (MuzzlePartName.String != "None" && !string.IsNullOrEmpty(MuzzlePartName.String));
+            hasBarrelRotation = barrelSpinRate > 0 && (HasSpinPart || (MuzzlePartName.String != "None" && !string.IsNullOrEmpty(MuzzlePartName.String)));
         }
 
         private void BarrelValues(out int barrelsPerShot, out int rateOfFire, out int shotsPerBurst)
