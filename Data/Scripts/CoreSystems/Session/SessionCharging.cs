@@ -105,7 +105,15 @@ namespace CoreSystems
         private bool WeaponCharged(Ai ai, Weapon w, float assignedPower)
         {
             var comp = w.Comp;
-            
+
+            if (!w.BaseComp.UnlimitedPower) {
+
+                if (!w.Charging)
+                    w.DrawPower(assignedPower);
+                else if (w.NewPowerNeeds)
+                    w.AdjustPower(assignedPower);
+            }
+
             w.ProtoWeaponAmmo.CurrentCharge += w.AssignedPower;
             if (Tick180)
                 Log.Line($"[{w.System.PartName}] [current:{w.ProtoWeaponAmmo.CurrentCharge} >= target:{w.MaxCharge}]]");
@@ -121,14 +129,6 @@ namespace CoreSystems
                     w.Reloaded();
 
                 return true;
-            }
-
-            if (!w.BaseComp.UnlimitedPower) {
-
-                if (!w.Charging)
-                    w.DrawPower(assignedPower);
-                else if (w.NewPowerNeeds)
-                    w.AdjustPower(assignedPower);
             }
 
             if (Tick60) {

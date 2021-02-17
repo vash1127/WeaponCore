@@ -231,7 +231,6 @@ namespace CoreSystems.Platform
                         CheckInventorySystem = false;
                 }
             }
-
             var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Loading;
             return !invalidStates && ServerReload();
         }
@@ -330,7 +329,6 @@ namespace CoreSystems.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, false);
 
                     ProtoWeaponAmmo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-                    
                     if (System.Session.IsServer) {
 
                         ++Reload.EndId;
