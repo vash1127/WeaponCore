@@ -32,7 +32,6 @@ namespace CoreSystems.Platform
             internal bool HasEnergyWeapon;
             internal bool HasGuidanceToggle;
             internal bool HasRofSlider;
-            internal bool HasChargeWeapon;
             internal bool ShootSubmerged;
             internal bool HasTracking;
 
@@ -208,7 +207,7 @@ namespace CoreSystems.Platform
                 {
                     var w = comp.Platform.Weapons[i];
 
-                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
+                    //if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
                     w.UpdateRof();
                 }
