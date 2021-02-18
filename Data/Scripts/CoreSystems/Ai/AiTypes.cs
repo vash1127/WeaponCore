@@ -20,11 +20,16 @@ namespace CoreSystems.Support
             internal readonly List<Part> ChargeGroup0 = new List<Part>();
             internal readonly List<Part> ChargeGroup1 = new List<Part>();
             internal readonly List<Part> ChargeGroup2 = new List<Part>();
+            internal readonly float[] G0Power = { 1f, 0.75f, 0.5f, 0f };
+            internal readonly float[] G1Power = { 1f, 0.25f, 0.25f, 0.5f };
+            internal readonly float[] G2Power = { 1f, 0.25f, 0.25f, 0.5f };
+
             internal float TotalDesired;
-            internal float PowerUsed;
             internal float GroupRequested0;
             internal float GroupRequested1;
             internal float GroupRequested2;
+            internal int State;
+            internal bool Rebalance;
 
             internal Ai Ai;
             internal AiCharger(Ai ai)
@@ -58,6 +63,15 @@ namespace CoreSystems.Support
                 }
 
                 TotalDesired += part.DesiredPower;
+                Rebalance = true;
+
+                if (!MyUtils.IsZero(GroupRequested0) && !MyUtils.IsZero(GroupRequested1) && !MyUtils.IsZero(GroupRequested2))
+                    State = 2;
+                else if (!MyUtils.IsZero(GroupRequested0) && (!MyUtils.IsZero(GroupRequested1) || !MyUtils.IsZero(GroupRequested2)))
+                    State = 1;
+                else if (!MyUtils.IsZero(GroupRequested1) && !MyUtils.IsZero(GroupRequested2))
+                    State = 3;
+                else State = 0;
             }
 
             internal void Remove(Part part, int i)
@@ -80,19 +94,30 @@ namespace CoreSystems.Support
                         break;
                 }
 
+                Rebalance = true;
+
                 if (ChargeGroup0.Count == 0 && ChargeGroup1.Count == 0 && ChargeGroup2.Count == 0) {
 
                     Ai.Session.ChargingParts.Remove(this);
                     GroupRequested0 = 0;
                     GroupRequested1 = 0;
                     GroupRequested2 = 0;
-                    PowerUsed = 0;
+                    Rebalance = false;
                     TotalDesired = 0;
                 }
 
                 part.ExitCharger = false;
                 part.InCharger = false;
                 part.Loading = false;
+
+
+                if (!MyUtils.IsZero(GroupRequested0) && !MyUtils.IsZero(GroupRequested1) && !MyUtils.IsZero(GroupRequested2))
+                    State = 2;
+                else if (!MyUtils.IsZero(GroupRequested0) && (!MyUtils.IsZero(GroupRequested1) || !MyUtils.IsZero(GroupRequested2)))
+                    State = 1;
+                else if (!MyUtils.IsZero(GroupRequested1) && !MyUtils.IsZero(GroupRequested2))
+                    State = 3;
+                else State = 0;
             }
 
             internal void Clean()
@@ -103,7 +128,7 @@ namespace CoreSystems.Support
                 GroupRequested0 = 0;
                 GroupRequested1 = 0;
                 GroupRequested2 = 0;
-                PowerUsed = 0;
+                Rebalance = false;
                 TotalDesired = 0;
             }
         }

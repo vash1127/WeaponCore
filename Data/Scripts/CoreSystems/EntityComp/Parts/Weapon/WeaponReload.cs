@@ -311,7 +311,6 @@ namespace CoreSystems.Platform
 
                     if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !callBack) {
 
-                        Log.Line($"charged");
                         ProtoWeaponAmmo.CurrentCharge = MaxCharge;
                         EstimatedCharge = MaxCharge;
                         
@@ -321,7 +320,6 @@ namespace CoreSystems.Platform
                     else if (ReloadSubscribed) {
                         CancelableReloadAction -= Reloaded;
                         ReloadSubscribed = false;
-                        Log.Line($"AmmoLoaded");
 
                         if (ActiveAmmoDef.AmmoDef.Const.IsHybrid && Charging)
                             return;
