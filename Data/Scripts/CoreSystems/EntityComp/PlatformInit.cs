@@ -660,9 +660,9 @@ namespace CoreSystems.Platform
             var ui = w.System.Values.HardPoint.Ui;
             w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || ui.ToggleGuidance;
             w.BaseComp.HasStrengthSlider = w.BaseComp.HasStrengthSlider || ui.DamageModifier;
-            w.Comp.HasRofSlider = w.Comp.HasRofSlider || (ui.RateOfFire);
+            w.Comp.HasRofSlider = w.Comp.HasRofSlider || ui.RateOfFire;
             w.BaseComp.CanOverload = w.BaseComp.CanOverload || ui.EnableOverload ;
-            w.BaseComp.HasTurret = w.BaseComp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
+            w.BaseComp.HasTurret = w.BaseComp.HasTurret || w.System.Values.HardPoint.Ai.TurretAttached;
             w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets;
             w.Comp.ShootSubmerged = w.Comp.ShootSubmerged || w.System.Values.HardPoint.CanShootSubmerged;
             if (ui.DamageModifier || ui.EnableOverload || ui.RateOfFire || ui.ToggleGuidance)

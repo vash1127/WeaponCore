@@ -229,7 +229,7 @@ namespace CoreSystems.Support
                 {
                     var w = Platform.Weapons[i];
                     string shots;
-                    if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                    if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid)
                     {
                         var chargeTime = w.AssignedPower > 0 ? (int)((w.MaxCharge - w.ProtoWeaponAmmo.CurrentCharge) / w.AssignedPower * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) : 0;
 

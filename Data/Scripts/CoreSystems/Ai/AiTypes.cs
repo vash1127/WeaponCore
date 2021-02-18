@@ -92,6 +92,7 @@ namespace CoreSystems.Support
 
                 part.ExitCharger = false;
                 part.InCharger = false;
+                part.Loading = false;
             }
 
             internal void Clean()

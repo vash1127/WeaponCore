@@ -116,7 +116,6 @@ namespace CoreSystems
                     w.AdjustPower(assignedPower);
             }
 
-            var fullyCharged = !w.StayCharged || w.ProtoWeaponAmmo.CurrentAmmo == w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
             w.ProtoWeaponAmmo.CurrentCharge = MathHelper.Clamp(w.ProtoWeaponAmmo.CurrentCharge + w.AssignedPower, 0, w.MaxCharge);
 
@@ -129,8 +128,7 @@ namespace CoreSystems
             
             if (complete || weaponFailure || invalidStates) {
 
-                w.Loading = w.Loading && !fullyCharged;
-
+                var fullyCharged = w.ProtoWeaponAmmo.CurrentAmmo == w.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
                 if (!fullyCharged && w.Loading)
                     w.Reloaded();
 
