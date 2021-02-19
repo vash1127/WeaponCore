@@ -289,13 +289,13 @@ namespace CoreSystems
 
         private void ShowReloadIcon(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, double textOffset, bool reset)
         {
-            var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
+            var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !weapon.ActiveAmmoDef.AmmoDef.Const.IsHybrid;
             var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
             if (texture.Length > 0) {
 
                 if (mustCharge)
-                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.EstimatedCharge / weapon.MaxCharge)), 0, texture.Length - 1);
+                    stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.ProtoWeaponAmmo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
 
                 stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                 stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
