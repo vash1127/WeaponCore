@@ -287,6 +287,13 @@ namespace CoreSystems.Support
                 HadPower = HasPower;
                 HasPower = GridMaxPower > 0;
 
+                if (Session.Tick60 && HasPower) {
+                    var nearMax = GridMaxPower * 0.97;
+                    var halfMax = GridMaxPower * 0.5f;
+                    if (GridCurrentPower > nearMax && GridAssignedPower > halfMax)
+                        Charger.Rebalance = true;
+                }
+
                 if (HasPower) return;
                 if (HadPower)
                     WeaponShootOff();

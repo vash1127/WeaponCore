@@ -11,7 +11,7 @@ namespace CoreSystems
             foreach (var charger in ChargingParts) {
 
                 var ai = charger.Ai;
-                var gridAvail = ((ai.GridAvailablePower + ai.GridAssignedPower) * 0.98f);
+                var gridAvail = ((ai.GridAvailablePower + ai.GridAssignedPower) * 0.94f);
                 var availMinusDesired = gridAvail - charger.TotalDesired;
                 var powerFree = availMinusDesired > 0;
                 var rebalance = !powerFree && charger.Rebalance;
