@@ -14,8 +14,8 @@ using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.HitEntity.Type;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef.AreaEffectType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Support.DeferedVoxels;
 namespace WeaponCore.Projectiles
 {
@@ -31,12 +31,12 @@ namespace WeaponCore.Projectiles
 
                 var p = ValidateHits[x];
 
-                var shieldByPass = p.Info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
-                var shieldFullBypass = shieldByPass && p.Info.ConsumableDef.Const.ShieldBypassMod >= 1;
-                var genericFields = p.Info.EwarActive && (p.Info.ConsumableDef.Const.AreaEffect == DotField || p.Info.ConsumableDef.Const.AreaEffect == PushField || p.Info.ConsumableDef.Const.AreaEffect == PullField);
+                var shieldByPass = p.Info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
+                var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
+                var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 p.FinalizeIntersection = false;
-                var lineCheck = p.Info.ConsumableDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
-                var ewarProjectile = (p.Info.EwarActive || p.Info.ConsumableDef.Const.EwarEffect);
+                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
+                var ewarProjectile = (p.Info.EwarActive || p.Info.AmmoDef.Const.EwarEffect);
 
                 bool projetileInShield = false;
                 var tick = p.Info.System.Session.Tick;
@@ -112,7 +112,7 @@ namespace WeaponCore.Projectiles
                     HitEntity hitEntity = null;
                     var checkShield = Session.ShieldApiLoaded && Session.ShieldHash == ent.DefinitionId?.SubtypeId && ent.Render.Visible;
                     MyTuple<IMyTerminalBlock, MyTuple<bool, bool, float, float, float, int>, MyTuple<MatrixD, MatrixD>>? shieldInfo = null;
-                    if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.ConsumableDef.Const.AreaEffect == DotField || p.Info.ConsumableDef.Const.AreaEffect == EmpField))) {
+                    if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
                         shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
@@ -161,7 +161,7 @@ namespace WeaponCore.Projectiles
 
                                 if (p.LinePlanetCheck) {
 
-                                    if (water != null && !p.Info.ConsumableDef.IgnoreWater) {
+                                    if (water != null && !p.Info.AmmoDef.IgnoreWater) {
                                         var waterSphere = new BoundingSphereD(p.Info.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
                                         var estiamtedSurfaceDistance = ray.Intersects(waterSphere);
 
@@ -245,7 +245,7 @@ namespace WeaponCore.Projectiles
 
                             hitEntity = HitEntityPool.Get();
                             if (entIsSelf) {
-                                if (!p.Info.ConsumableDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2) {
+                                if (!p.Info.AmmoDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2) {
                                     MyCube cube;
                                     if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock)) {
                                         HitEntityPool.Return(hitEntity);
@@ -301,24 +301,24 @@ namespace WeaponCore.Projectiles
                         hitEntity.SphereCheck = !lineCheck;
                         hitEntity.PruneSphere = p.PruneSphere;
                         hitEntity.SelfHit = entIsSelf;
-                        hitEntity.DamageOverTime = p.Info.ConsumableDef.Const.AreaEffect == DotField;
+                        hitEntity.DamageOverTime = p.Info.AmmoDef.Const.AreaEffect == DotField;
 
                         p.Info.HitList.Add(hitEntity);
                     }
                 }
 
-                if (p.Info.Target.IsProjectile && !p.Info.ConsumableDef.Const.EwarEffect && !projetileInShield) {
+                if (p.Info.Target.IsProjectile && !p.Info.AmmoDef.Const.EwarEffect && !projetileInShield) {
                     var detonate = p.State == Projectile.ProjectileState.Detonate;
-                    var hitTolerance = detonate ? p.Info.ConsumableDef.Const.DetonationRadius : p.Info.ConsumableDef.Const.AreaEffectSize > p.Info.ConsumableDef.Const.CollisionSize ? p.Info.ConsumableDef.Const.AreaEffectSize : p.Info.ConsumableDef.Const.CollisionSize;
-                    var useLine = p.Info.ConsumableDef.Const.CollisionIsLine && !detonate && p.Info.ConsumableDef.Const.AreaEffectSize <= 0;
+                    var hitTolerance = detonate ? p.Info.AmmoDef.Const.DetonationRadius : p.Info.AmmoDef.Const.AreaEffectSize > p.Info.AmmoDef.Const.CollisionSize ? p.Info.AmmoDef.Const.AreaEffectSize : p.Info.AmmoDef.Const.CollisionSize;
+                    var useLine = p.Info.AmmoDef.Const.CollisionIsLine && !detonate && p.Info.AmmoDef.Const.AreaEffectSize <= 0;
 
-                    var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.ConsumableDef.Const.CollisionSize);
+                    var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize);
                     sphere.Include(new BoundingSphereD(p.Info.Target.Projectile.LastPosition, 1));
                     
                     bool rayCheck = false;
                     if (useLine) {
                         var dist = sphere.Intersects(new RayD(p.LastPosition, p.Info.Direction));
-                        if (dist <= hitTolerance || p.Info.ConsumableDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
+                        if (dist <= hitTolerance || p.Info.AmmoDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
                             rayCheck = true;
                     }
                     
@@ -396,13 +396,13 @@ namespace WeaponCore.Projectiles
                     FinalHitCheck.Add(p);
                 }
                 var hitEntity = HitEntityPool.Get();
-                var lineCheck = p.Info.ConsumableDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
+                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
                 hitEntity.Info = p.Info;
                 hitEntity.Entity = voxel;
                 hitEntity.Intersection = p.Beam;
                 hitEntity.SphereCheck = !lineCheck;
                 hitEntity.PruneSphere = p.PruneSphere;
-                hitEntity.DamageOverTime = p.Info.ConsumableDef.Const.AreaEffect == DotField;
+                hitEntity.DamageOverTime = p.Info.AmmoDef.Const.AreaEffect == DotField;
 
                 var hitPos = voxelHit.Value;
                 hitEntity.HitPos = hitPos;
@@ -428,7 +428,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.Intersecting) {
 
-                    if (p.Info.ConsumableDef.Const.VirtualBeams) {
+                    if (p.Info.AmmoDef.Const.VirtualBeams) {
 
                         p.Info.WeaponCache.VirtualHit = true;
                         p.Info.WeaponCache.HitEntity.Entity = p.Info.Hit.Entity;
@@ -490,7 +490,7 @@ namespace WeaponCore.Projectiles
                 p.Info.EwarAreaPulse = true;
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                 p.Velocity = Vector3D.Zero;
-                p.Info.Hit.SurfaceHit = p.Position + p.Info.Direction * p.Info.ConsumableDef.Const.EwarTriggerRange;
+                p.Info.Hit.SurfaceHit = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
                 p.Info.Hit.LastHit = p.Info.Hit.SurfaceHit;
                 p.Info.HitList.Clear();
                 return false;
@@ -520,7 +520,7 @@ namespace WeaponCore.Projectiles
                 Vector3D? visualHitPos;
                 if (grid != null)
                 {
-                    if (p.Info.ConsumableDef.Const.VirtualBeams)
+                    if (p.Info.AmmoDef.Const.VirtualBeams)
                         hitBlock = hitEntity.Blocks[0];
 
                     IHitInfo hitInfo = null;
@@ -553,8 +553,8 @@ namespace WeaponCore.Projectiles
             var yDist = double.MaxValue;
             var beam = x.Intersection;
             var count = y != null ? 2 : 1;
-            var eWarPulse = info.ConsumableDef.Const.Ewar && info.ConsumableDef.Const.Pulse;
-            var triggerEvent = eWarPulse && !info.EwarAreaPulse && info.ConsumableDef.Const.EwarTriggerRange > 0;
+            var eWarPulse = info.AmmoDef.Const.Ewar && info.AmmoDef.Const.Pulse;
+            var triggerEvent = eWarPulse && !info.EwarAreaPulse && info.AmmoDef.Const.EwarTriggerRange > 0;
             for (int i = 0; i < count; i++) {
                 var isX = i == 0;
 
@@ -607,7 +607,7 @@ namespace WeaponCore.Projectiles
                                 continue;
 
                             if (!ewarActive)
-                                GetAndSortBlocksInSphere(hitEnt.Info.ConsumableDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
+                                GetAndSortBlocksInSphere(hitEnt.Info.AmmoDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
 
                             if (hitEnt.Blocks.Count > 0 || ewarActive) {
                                 dist = 0;
@@ -707,13 +707,13 @@ namespace WeaponCore.Projectiles
         }
 
         //TODO: In order to fix SphereShapes collisions with grids, this needs to be adjusted to take into account the Beam of the projectile
-        internal static void GetAndSortBlocksInSphere(WeaponDefinition.ConsumableDef consumableDef, CoreSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
+        internal static void GetAndSortBlocksInSphere(WeaponDefinition.AmmoDef ammoDef, WeaponSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;
             Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
             var localSphere = new BoundingSphere(result, (float)sphere.Radius);
-            var fieldType = consumableDef.AreaEffect.AreaEffect;
+            var fieldType = ammoDef.AreaEffect.AreaEffect;
             var hitPos = sphere.Center;
             if (fatOnly)
             {

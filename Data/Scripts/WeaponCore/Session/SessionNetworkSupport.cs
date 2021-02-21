@@ -5,7 +5,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.CoreComponent;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -217,7 +217,7 @@ namespace WeaponCore
             else Log.Line($"SendWeaponAmmoData should never be called on Client");
         }
 
-        internal void SendCompBaseData(CoreComponent comp)
+        internal void SendCompBaseData(WeaponComponent comp)
         {
             if (IsServer) {
 
@@ -249,7 +249,7 @@ namespace WeaponCore
             else Log.Line($"SendCompData should never be called on Client");
         }
 
-        internal void SendTargetChange(CoreComponent comp, int weaponId)
+        internal void SendTargetChange(WeaponComponent comp, int weaponId)
         {
             if (IsServer) {
 
@@ -287,7 +287,7 @@ namespace WeaponCore
             else Log.Line($"SendTargetChange should never be called on Client");
         }
 
-        internal void SendCompState(CoreComponent comp)
+        internal void SendCompState(WeaponComponent comp)
         {
             if (IsServer) {
 
@@ -446,7 +446,7 @@ namespace WeaponCore
             else Log.Line($"SendUpdateRequest should only be called on clients");
         }
 
-        internal void SendOverRidesClientComp(CoreComponent comp, string settings, int value)
+        internal void SendOverRidesClientComp(WeaponComponent comp, string settings, int value)
         {
             if (IsClient)
             {
@@ -472,10 +472,10 @@ namespace WeaponCore
         {
             if (firingCube == null) return;
 
-            var comp = firingCube.Components.Get<CoreComponent>();
+            var comp = firingCube.Components.Get<WeaponComponent>();
 
             int weaponId;
-            if (comp.Ai?.MyGrid != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
+            if (comp.Ai?.MyGrid != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
             {
                 PacketsToServer.Add(new FixedWeaponHitPacket
                 {
@@ -710,7 +710,7 @@ namespace WeaponCore
             else Log.Line($"SendActiveControlUpdate should never be called on Dedicated");
         }
 
-        internal void SendActionShootUpdate(CoreComponent comp, ShootActions action)
+        internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
         {
             if (IsClient)
             {
@@ -748,7 +748,7 @@ namespace WeaponCore
             else Log.Line($"SendActionShootUpdate should never be called on Dedicated");
         }
 
-        internal void SendActiveTerminal(CoreComponent comp)
+        internal void SendActiveTerminal(WeaponComponent comp)
         {
             if (IsClient)
             {
@@ -821,7 +821,7 @@ namespace WeaponCore
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
 
-        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, CompStateValues.ControlMode mode)
+        internal void SendPlayerControlRequest(WeaponComponent comp, long playerId, CompStateValues.ControlMode mode)
         {
             if (IsClient)
             {
@@ -903,7 +903,7 @@ namespace WeaponCore
             else Log.Line($"SendAmmoCycleRequest should never be called on Non-Client");
         }
 
-        internal void SendSetCompFloatRequest(CoreComponent comp, float newDps, PacketType type)
+        internal void SendSetCompFloatRequest(WeaponComponent comp, float newDps, PacketType type)
         {
             if (IsClient)
             {
@@ -939,7 +939,7 @@ namespace WeaponCore
             else Log.Line($"SendSetFloatRequest should never be called on Non-HandlesInput");
         }
 
-        internal void SendSetCompBoolRequest(CoreComponent comp, bool newBool, PacketType type)
+        internal void SendSetCompBoolRequest(WeaponComponent comp, bool newBool, PacketType type)
         {
             if (IsClient)
             {
@@ -975,7 +975,7 @@ namespace WeaponCore
             else Log.Line($"SendSetCompBoolRequest should never be called on Non-HandlesInput");
         }
 
-        internal void SendTrackReticleUpdate(CoreComponent comp, bool track)
+        internal void SendTrackReticleUpdate(WeaponComponent comp, bool track)
         {
             if (IsClient) {
 

@@ -6,7 +6,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
-using static WeaponCore.Support.CoreComponent;
+using static WeaponCore.Support.WeaponComponent;
 using static WeaponCore.WeaponStateValues;
 
 namespace WeaponCore
@@ -98,7 +98,7 @@ namespace WeaponCore
         [ProtoMember(4)] public TransferTarget[] Targets;
         [ProtoMember(5)] public WeaponReloadValues[] Reloads;
 
-        public void Sync(CoreComponent comp, CompBaseValues sync)
+        public void Sync(WeaponComponent comp, CompBaseValues sync)
         {
             if (sync.Revision > Revision) {
 
@@ -116,7 +116,7 @@ namespace WeaponCore
 
         }
 
-        public void UpdateCompBasePacketInfo(CoreComponent comp, bool clean = false)
+        public void UpdateCompBasePacketInfo(WeaponComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
@@ -185,7 +185,7 @@ namespace WeaponCore
             Overrides = new GroupOverrides();
         }
 
-        public void  Sync(CoreComponent comp, CompSettingsValues sync)
+        public void  Sync(WeaponComponent comp, CompSettingsValues sync)
         {
             Guidance = sync.Guidance;
             Range = sync.Range;
@@ -230,7 +230,7 @@ namespace WeaponCore
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public ShootActions TerminalAction;
 
-        public void Sync(CoreComponent comp, CompStateValues sync, Caller caller)
+        public void Sync(WeaponComponent comp, CompStateValues sync, Caller caller)
         {
             if (sync.Revision > Revision)
             {
@@ -245,7 +245,7 @@ namespace WeaponCore
             //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
-        public void TerminalActionSetter(CoreComponent comp, ShootActions action, bool syncWeapons = false, bool updateWeapons = true)
+        public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false, bool updateWeapons = true)
         {
             TerminalAction = action;
             
@@ -274,7 +274,7 @@ namespace WeaponCore
             Action = sync.Action;
         }
 
-        public void WeaponMode(CoreComponent comp, ShootActions action, bool resetTerminalAction = true, bool syncCompState = true)
+        public void WeaponMode(WeaponComponent comp, ShootActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
                 comp.Data.Repo.Base.State.TerminalAction = ShootActions.ShootOff;

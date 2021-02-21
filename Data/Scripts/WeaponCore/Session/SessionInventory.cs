@@ -97,15 +97,15 @@ namespace WeaponCore
                     using (weapon.Comp.Ai?.MyGrid.Pin())
                     using (weapon.Comp.MyCube.Pin()) {
 
-                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             InvPullClean.Add(weapon);
                             continue;
                         }
 
                         var defId = weapon.ActiveAmmoDef.AmmoDefinitionId;
                         var freeSpace = weapon.System.MaxAmmoVolume - weapon.Comp.CurrentInventoryVolume;
-                        var spotsFree = (int)(freeSpace / weapon.ActiveAmmoDef.ConsumableDef.Const.MagVolume);
-                        var magsNeeded = (int)((weapon.System.FullAmmoVolume - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.ConsumableDef.Const.MagVolume);
+                        var spotsFree = (int)(freeSpace / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                        var magsNeeded = (int)((weapon.System.FullAmmoVolume - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
                         magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
 
                         var ammoPullRequests = InventoryMoveRequestPool.Get();
@@ -145,7 +145,7 @@ namespace WeaponCore
                                             items.RemoveAtFast(l);
                                             BetterInventoryItems.Return(item);
                                         }
-                                        weapon.CurrentAmmoVolume = magsAdded * weapon.ActiveAmmoDef.ConsumableDef.Const.MagVolume;
+                                        weapon.CurrentAmmoVolume = magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
                                     }
 
                                     if (magsNeeded <= 0)
@@ -190,7 +190,7 @@ namespace WeaponCore
                 var weapon = weaponAmmoToPull.Weapon;
                 var inventoriesToPull = weaponAmmoToPull.Inventories;
                 
-                if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     InventoryMoveRequestPool.Return(weaponAmmoToPull);
                     continue;
                 }
@@ -201,9 +201,9 @@ namespace WeaponCore
                     var amt = mag.Amount;
                     var item = mag.Item;
                     
-                    if (weapon.Comp.BlockInventory.ItemsCanBeAdded(amt, weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoItem) && mag.Inventory.ItemsCanBeRemoved(amt, item.Item)) {
+                    if (weapon.Comp.BlockInventory.ItemsCanBeAdded(amt, weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem) && mag.Inventory.ItemsCanBeRemoved(amt, item.Item)) {
                         mag.Inventory.RemoveItems(item.Item.ItemId, amt);
-                        weapon.Comp.BlockInventory.Add(weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoItem, amt);
+                        weapon.Comp.BlockInventory.Add(weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem, amt);
                     }
                 }
 

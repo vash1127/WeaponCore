@@ -10,7 +10,7 @@ using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
 using VRageRender;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.CoreComponent;
+using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -27,7 +27,7 @@ namespace WeaponCore.Platform
                     if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)
                         StartPreFiringSound();
 
-                    if (ActiveAmmoDef.ConsumableDef.Const.MustCharge || System.AlwaysFireFullBurst)
+                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge || System.AlwaysFireFullBurst)
                         FinishBurst = true;
 
                     if (!PreFired)
@@ -60,11 +60,11 @@ namespace WeaponCore.Platform
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
-                if (ActiveAmmoDef.ConsumableDef.Const.BurstMode && ++ShotsFired > System.ShotsPerBurst) {
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++ShotsFired > System.ShotsPerBurst) {
                     ShotsFired = 1;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
-                else if (ActiveAmmoDef.ConsumableDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst) {
+                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst) {
                     ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
                 }
@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
 
                 #region Projectile Creation
                 var rnd = Comp.Data.Repo.Base.Targets[WeaponId].WeaponRandom;
-                var pattern = ActiveAmmoDef.ConsumableDef.Pattern;
+                var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;
                 List<NewVirtual> vProList = null;
@@ -88,7 +88,7 @@ namespace WeaponCore.Platform
 
                     #region Update Ammo state
                     var skipMuzzle = s.IsClient && Ammo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
-                    if (ActiveAmmoDef.ConsumableDef.Const.Reloadable) {
+                    if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
 
                         if (Ammo.CurrentAmmo == 0) {
 
@@ -109,8 +109,8 @@ namespace WeaponCore.Platform
                         }
                         else if (ClientMakeUpShots > 0)
                             --ClientMakeUpShots;
-                        if (System.HasEjector && ActiveAmmoDef.ConsumableDef.Const.HasEjectEffect)  {
-                            if (ActiveAmmoDef.ConsumableDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.ConsumableDef.Ejection.SpawnChance)
+                        if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
+                            if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
                             {
                                 SpawnEjection();
                             }
@@ -130,8 +130,8 @@ namespace WeaponCore.Platform
                     }
                     #endregion
 
-                    if (ActiveAmmoDef.ConsumableDef.Const.HasBackKickForce && !Comp.Ai.IsStatic && s.IsServer)
-                        Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.ConsumableDef.BackKickForce, muzzle.Position, Vector3D.Zero);
+                    if (ActiveAmmoDef.AmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic && s.IsServer)
+                        Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.AmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     if (PlayTurretAv) {
                         if (System.BarrelEffect1 && muzzle.LastAv1Tick == 0 && !muzzle.Av1Looping) {
@@ -170,7 +170,7 @@ namespace WeaponCore.Platform
                         #endregion
 
                         #region Pick Ammo Pattern
-                        var patternIndex = ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt;
+                        var patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
 
                         if (pattern.Enable) {
 
@@ -183,17 +183,17 @@ namespace WeaponCore.Platform
                                 else
                                     rnd.TurretCurrentCounter++;
 
-                                for (int w = 0; w < ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt; w++) {
+                                for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt; w++) {
                                     var y = rnd.TurretRandom.Next(w + 1);
                                     AmmoShufflePattern[w] = AmmoShufflePattern[y];
                                     AmmoShufflePattern[y] = w;
                                 }
                             }
-                            else if (pattern.PatternSteps > 0 && pattern.PatternSteps <= ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt) {
+                            else if (pattern.PatternSteps > 0 && pattern.PatternSteps <= ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt) {
 
                                 patternIndex = pattern.PatternSteps;
-                                for (int p = 0; p < ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt; ++p)
-                                    AmmoShufflePattern[p] = (AmmoShufflePattern[p] + patternIndex) % ActiveAmmoDef.ConsumableDef.Const.PatternIndexCnt;
+                                for (int p = 0; p < ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt; ++p)
+                                    AmmoShufflePattern[p] = (AmmoShufflePattern[p] + patternIndex) % ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
                             }
                         }
                         #endregion
@@ -201,7 +201,7 @@ namespace WeaponCore.Platform
                         #region Generate Projectiles
                         for (int k = 0; k < patternIndex; k++) {
 
-                            var ammoPattern = ActiveAmmoDef.ConsumableDef.Const.AmmoPattern[AmmoShufflePattern[k]];
+                            var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[AmmoShufflePattern[k]];
 
                             selfDamage += ammoPattern.DecayPerShot;
 
@@ -213,7 +213,7 @@ namespace WeaponCore.Platform
 
                                 if (i == 0) {
                                     vProList = s.Projectiles.VirtInfoPools.Get();
-                                    s.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, ConsumableDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Virtual });
+                                    s.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Virtual });
                                 }
 
                                 MyEntity primeE = null;
@@ -243,7 +243,7 @@ namespace WeaponCore.Platform
                                 vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Muzzle = muzzle, VirtualId = _nextVirtual });
                             }
                             else
-                                s.Projectiles.NewProjectiles.Add(new NewProjectile {ConsumableDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Normal});
+                                s.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Normal});
                         }
                         #endregion
                     }
@@ -275,7 +275,7 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (ActiveAmmoDef.ConsumableDef.Const.BurstMode && (s.IsServer && !ComputeServerStorage() || s.IsClient && !ClientReload()))
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (s.IsServer && !ComputeServerStorage() || s.IsClient && !ClientReload()))
                     BurstMode();
 
                 _muzzlesToFire.Clear();
@@ -388,18 +388,18 @@ namespace WeaponCore.Platform
         private void SpawnEjection()
         {
             var eInfo = Ejector.Info;
-            var ejectDef = ActiveAmmoDef.ConsumableDef.Ejection;
-            if (ejectDef.Type == WeaponDefinition.ConsumableDef.AmmoEjectionDef.SpawnType.Item)
+            var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
+            if (ejectDef.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item)
             {
                 var delay = (uint)ejectDef.CompDef.Delay;
                 if (delay <= 0)
-                    MyFloatingObjects.Spawn(ActiveAmmoDef.ConsumableDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
+                    MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
                 else 
                     System.Session.FutureEvents.Schedule(EjectionDelayed, null, delay);
             }
             else if (System.Session.HandlesInput) {
                 
-                var particle = ActiveAmmoDef.ConsumableDef.AmmoGraphics.Particles.Eject;
+                var particle = ActiveAmmoDef.AmmoDef.AmmoGraphics.Particles.Eject;
                 MyParticleEffect ejectEffect;
                 var matrix = MatrixD.CreateTranslation(eInfo.Position);
                 
@@ -409,22 +409,22 @@ namespace WeaponCore.Platform
                     ejectEffect.UserRadiusMultiplier = particle.Extras.Scale * scaler;
                     var scale = particle.ShrinkByDistance ? MathHelper.Clamp(MathHelper.Lerp(1, 0, Vector3D.Distance(System.Session.CameraPos, eInfo.Position) / particle.Extras.MaxDistance), 0.05f, 1) : 1;
                     ejectEffect.UserScale = (float)scale * scaler;
-                    ejectEffect.Velocity = eInfo.Direction * ActiveAmmoDef.ConsumableDef.Ejection.Speed;
+                    ejectEffect.Velocity = eInfo.Direction * ActiveAmmoDef.AmmoDef.Ejection.Speed;
                 }
             }
         }
 
         private void EjectionDelayed(object o)
         {
-            if (ActiveAmmoDef?.ConsumableDef != null && !Ejector.NullEntity) 
-                MyFloatingObjects.Spawn(ActiveAmmoDef.ConsumableDef.Const.EjectItem, Ejector.Info.Position, Ejector.Info.Direction, MyPivotUp, null, EjectionSpawnCallback);
+            if (ActiveAmmoDef?.AmmoDef != null && !Ejector.NullEntity) 
+                MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, Ejector.Info.Position, Ejector.Info.Direction, MyPivotUp, null, EjectionSpawnCallback);
         }
 
         private void EjectionSpawnCallback(MyEntity entity)
         {
-            if (ActiveAmmoDef?.ConsumableDef != null) {
+            if (ActiveAmmoDef?.AmmoDef != null) {
                 
-                var ejectDef = ActiveAmmoDef.ConsumableDef.Ejection;
+                var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
                 var itemTtl = ejectDef.CompDef.ItemLifeTime;
 
                 if (ejectDef.Speed > 0) 
@@ -439,9 +439,9 @@ namespace WeaponCore.Platform
         {
             var entity = (MyEntity)o;
 
-            if (entity?.Physics != null && ActiveAmmoDef?.ConsumableDef != null && !entity.MarkedForClose) {
+            if (entity?.Physics != null && ActiveAmmoDef?.AmmoDef != null && !entity.MarkedForClose) {
                 
-                var ejectDef = ActiveAmmoDef.ConsumableDef.Ejection;
+                var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
                 entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed), Vector3.Zero);
             }
         }

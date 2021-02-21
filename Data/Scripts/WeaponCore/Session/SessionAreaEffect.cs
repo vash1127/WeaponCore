@@ -11,10 +11,10 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef.AreaEffectType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Projectiles.Projectiles;
 
 namespace WeaponCore
@@ -31,14 +31,14 @@ namespace WeaponCore
 
         private static void PushPull(HitEntity hitEnt, ProInfo info)
         {
-            var depletable = info.ConsumableDef.AreaEffect.EwarFields.Depletable;
+            var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
             if (healthPool <= 0) return;
 
             if (hitEnt.Entity.Physics == null || !hitEnt.Entity.Physics.Enabled || hitEnt.Entity.Physics.IsStatic || !hitEnt.HitPos.HasValue)
                 return;
 
-            var forceDef = info.ConsumableDef.AreaEffect.EwarFields.Force;
+            var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
 
             Vector3D forceFrom = Vector3D.Zero;
             Vector3D forceTo = Vector3D.Zero;
@@ -67,8 +67,8 @@ namespace WeaponCore
             Vector3D normHitDir;
             Vector3D.Normalize(ref hitDir, out normHitDir);
 
-            normHitDir = info.ConsumableDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
-            hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.ConsumableDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), forcePosition, Vector3.Zero);
+            normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
+            hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), forcePosition, Vector3.Zero);
             
             if (depletable) 
                 info.BaseHealthPool -= healthPool;
@@ -76,7 +76,7 @@ namespace WeaponCore
 
         private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
-            if (info.ConsumableDef.Const.AreaEffect == PullField || info.ConsumableDef.Const.AreaEffect == PushField) {
+            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField) {
                 PushPull(hitEnt, info);
                 return;
             }
@@ -84,12 +84,12 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid?.Physics == null || grid.MarkedForClose) return;
 
-            var attackerId = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
-            GetAndSortBlocksInSphere(info.ConsumableDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
+            var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            GetAndSortBlocksInSphere(info.AmmoDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
 
-            var depletable = info.ConsumableDef.AreaEffect.EwarFields.Depletable;
+            var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
-            ComputeEffects(grid, info.ConsumableDef, info.ConsumableDef.Const.AreaEffectDamage, ref healthPool, attackerId, hitEnt.Blocks);
+            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, ref healthPool, attackerId, hitEnt.Blocks);
 
             if (depletable) 
                 info.BaseHealthPool -= healthPool;
@@ -97,7 +97,7 @@ namespace WeaponCore
 
         private void UpdateEffect(HitEntity hitEnt, ProInfo info)
         {
-            if (info.ConsumableDef.Const.AreaEffect == PullField || info.ConsumableDef.Const.AreaEffect == PushField) {
+            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField) {
                 PushPull(hitEnt, info);
                 return;
             }
@@ -105,13 +105,13 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaEffectType, GridEffect> effects;
-            var attackerId = info.ConsumableDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
             if (_gridEffects.TryGetValue(grid, out effects))
             {
                 GridEffect gridEffect;
-                if (effects.TryGetValue(info.ConsumableDef.AreaEffect.AreaEffect, out gridEffect))
+                if (effects.TryGetValue(info.AmmoDef.AreaEffect.AreaEffect, out gridEffect))
                 {
-                    gridEffect.Damage += info.ConsumableDef.Const.AreaEffectDamage;
+                    gridEffect.Damage += info.AmmoDef.Const.AreaEffectDamage;
                     gridEffect.Ai = info.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
@@ -125,15 +125,15 @@ namespace WeaponCore
                 effects = GridEffectsPool.Get();
                 var gridEffect = GridEffectPool.Get();
                 gridEffect.System = info.System;
-                gridEffect.Damage = info.ConsumableDef.Const.AreaEffectDamage;
+                gridEffect.Damage = info.AmmoDef.Const.AreaEffectDamage;
                 gridEffect.Ai = info.Ai;
-                gridEffect.ConsumableDef = info.ConsumableDef;
+                gridEffect.AmmoDef = info.AmmoDef;
                 gridEffect.AttackerId = attackerId;
                 gridEffect.Hits++;
                 var hitPos = hitEnt.HitPos ?? info.Hit.SurfaceHit;
 
                 gridEffect.HitPos = hitPos;
-                effects.Add(info.ConsumableDef.AreaEffect.AreaEffect, gridEffect);
+                effects.Add(info.AmmoDef.AreaEffect.AreaEffect, gridEffect);
                 _gridEffects.Add(grid, effects);
             }
             info.BaseHealthPool = 0;
@@ -141,16 +141,16 @@ namespace WeaponCore
         }
 
 
-        private void ComputeEffects(MyCubeGrid grid, ConsumableDef consumableDef, float damagePool, ref float healthPool, long attackerId, List<IMySlimBlock> blocks)
+        private void ComputeEffects(MyCubeGrid grid, AmmoDef ammoDef, float damagePool, ref float healthPool, long attackerId, List<IMySlimBlock> blocks)
         {
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-            var eWarInfo = consumableDef.AreaEffect.EwarFields;
+            var eWarInfo = ammoDef.AreaEffect.EwarFields;
             var duration = (uint)eWarInfo.Duration;
             var stack = eWarInfo.StackDuration;
             var maxStack = eWarInfo.MaxStacks;
             var nextTick = Tick + 1;
             var maxTick = stack ? (uint)(nextTick + (duration * maxStack)) : nextTick + duration;
-            var fieldType = consumableDef.AreaEffect.AreaEffect;
+            var fieldType = ammoDef.AreaEffect.AreaEffect;
             var sync = MpActive && (DedicatedServer || IsServer);
             foreach (var block in blocks)
             {
@@ -162,16 +162,16 @@ namespace WeaponCore
                 var blockHp = block.Integrity;
                 float damageScale = 1;
                 var tmpDamagePool = damagePool;
-                if (consumableDef.Const.DamageScaling)
+                if (ammoDef.Const.DamageScaling)
                 {
-                    var d = consumableDef.DamageScales;
+                    var d = ammoDef.DamageScales;
                     if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity) continue;
 
                     if (d.Grids.Large >= 0 && largeGrid) damageScale *= d.Grids.Large;
                     else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
 
                     MyDefinitionBase blockDef = null;
-                    if (consumableDef.Const.ArmorScaling)
+                    if (ammoDef.Const.ArmorScaling)
                     {
                         blockDef = block.BlockDefinition;
                         var isArmor = AllArmorBaseDefinitions.Contains(blockDef) || CustomArmorSubtypes.Contains(blockDef.Id.SubtypeId);
@@ -185,14 +185,14 @@ namespace WeaponCore
                             else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
                         }
                     }
-                    if (consumableDef.Const.CustomDamageScales)
+                    if (ammoDef.Const.CustomDamageScales)
                     {
                         if (blockDef == null) blockDef = block.BlockDefinition;
                         float modifier;
-                        var found = consumableDef.Const.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
+                        var found = ammoDef.Const.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
 
                         if (found) damageScale *= modifier;
-                        else if (consumableDef.DamageScales.Custom.IgnoreAllOthers) continue;
+                        else if (ammoDef.DamageScales.Custom.IgnoreAllOthers) continue;
                     }
                 }
 
@@ -248,7 +248,7 @@ namespace WeaponCore
                         blockState.NextTick = nextTick;
                         blockState.Endtick = Tick + (duration + 1);
                         blockState.Session = this;
-                        blockState.ConsumableDef = consumableDef;
+                        blockState.AmmoDef = ammoDef;
                         if (!blockDisabled) blockState.Health = blockHp - scaledDamage;
                         else
                         {
@@ -267,8 +267,8 @@ namespace WeaponCore
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    var healthPool = v.Value.ConsumableDef.Health;
-                    ComputeEffects(ge.Key, v.Value.ConsumableDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, _tmpEffectCubes);
+                    var healthPool = v.Value.AmmoDef.Health;
+                    ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     GridEffectPool.Return(v.Value);
                 }
@@ -304,7 +304,7 @@ namespace WeaponCore
                             functBlock.RefreshCustomInfo();
                         }
 
-                        if (!blockInfo.ConsumableDef.AreaEffect.EwarFields.DisableParticleEffect)
+                        if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
                             functBlock.SetDamageEffect(true);
                     }
                 }
@@ -321,7 +321,7 @@ namespace WeaponCore
                             functBlock.EnabledChanged -= ForceDisable;
                             functBlock.Enabled = blockInfo.FirstState;
                             
-                            if (!blockInfo.ConsumableDef.AreaEffect.EwarFields.DisableParticleEffect)
+                            if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
                                 functBlock.SetDamageEffect(false);
 
                             _effectPurge.Enqueue(cubeid);
@@ -339,7 +339,7 @@ namespace WeaponCore
 
                     functBlock.Enabled = blockInfo.FirstState;
                     
-                    if (!blockInfo.ConsumableDef.AreaEffect.EwarFields.DisableParticleEffect)
+                    if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
                         functBlock.SetDamageEffect(false);
 
                     _effectPurge.Enqueue(cubeid);
@@ -416,7 +416,7 @@ namespace WeaponCore
     internal struct BlockState
     {
         public Session Session;
-        public ConsumableDef ConsumableDef;
+        public AmmoDef AmmoDef;
         public IMyFunctionalBlock FunctBlock;
         public bool FirstState;
         public uint FirstTick;
@@ -437,9 +437,9 @@ namespace WeaponCore
     internal class GridEffect
     {
         internal Vector3D HitPos;
-        internal CoreSystem System;
+        internal WeaponSystem System;
         internal GridAi Ai;
-        internal ConsumableDef ConsumableDef;
+        internal AmmoDef AmmoDef;
         internal long AttackerId;
         internal float Damage;
         internal int Hits;
@@ -449,7 +449,7 @@ namespace WeaponCore
             System = null;
             HitPos = Vector3D.Zero;
             Ai = null;
-            ConsumableDef = null;
+            AmmoDef = null;
             AttackerId = 0;
             Damage = 0;
             Hits = 0;

@@ -150,14 +150,14 @@ namespace WeaponCore
                     system.Value.RotatePairs.Clear();
                     system.Value.ReloadPairs.Clear();
                     foreach (var ammo in system.Value.AmmoTypes) {
-                        ammo.ConsumableDef.Const.PrimeEntityPool?.Clean();
-                        ammo.ConsumableDef.Const.HitDefaultSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitVoxelSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitShieldSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitFloatingSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.HitPlayerSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.TravelSoundPairs.Clear();
-                        ammo.ConsumableDef.Const.CustomSoundPairs.Clear();
+                        ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
+                        ammo.AmmoDef.Const.HitDefaultSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitVoxelSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitShieldSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitFloatingSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitPlayerSoundPairs.Clear();
+                        ammo.AmmoDef.Const.TravelSoundPairs.Clear();
+                        ammo.AmmoDef.Const.CustomSoundPairs.Clear();
                     }
                 }
 

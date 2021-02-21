@@ -251,9 +251,9 @@ namespace WeaponCore.Support
             return new Vector3D?((Vector3D)zero);
         }
 
-        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponDefinition.ConsumableDef consumableDef, bool forceNoDraw = false)
+        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, bool forceNoDraw = false)
         {
-            var af = consumableDef.AreaEffect;
+            var af = ammoDef.AreaEffect;
             var justShrapnel = !af.Explosions.NoShrapnel && af.Explosions.NoDeformation;
             var justDeform = af.Explosions.NoShrapnel && !af.Explosions.NoDeformation;
 
@@ -311,9 +311,9 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, WeaponDefinition.ConsumableDef consumableDef, Vector3 velocity)
+        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, Vector3 velocity)
         {
-            var af = consumableDef.AreaEffect;
+            var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;
             if (radius > 10) radius = 10;
             var sphere = new BoundingSphereD(position, radius);
@@ -327,9 +327,9 @@ namespace WeaponCore.Support
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
 
             MySoundPair customSound = null;
-            if (consumableDef.Const.CustomExplosionSound && !eInfo.NoSound) {
-                customSound = consumableDef.Const.CustomSoundPairs.Count > 0 ? consumableDef.Const.CustomSoundPairs.Pop() : new MySoundPair(eInfo.CustomSound, false);
-                session.FutureEvents.Schedule(consumableDef.Const.ReturnSoundPair, customSound, 1800);
+            if (ammoDef.Const.CustomExplosionSound && !eInfo.NoSound) {
+                customSound = ammoDef.Const.CustomSoundPairs.Count > 0 ? ammoDef.Const.CustomSoundPairs.Pop() : new MySoundPair(eInfo.CustomSound, false);
+                session.FutureEvents.Schedule(ammoDef.Const.ReturnSoundPair, customSound, 1800);
             }
 
             MyExplosionInfo explosionInfo = new MyExplosionInfo

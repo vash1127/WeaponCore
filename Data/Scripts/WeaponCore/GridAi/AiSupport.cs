@@ -10,7 +10,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal void CompChange(bool add, CoreComponent comp)
+        internal void CompChange(bool add, WeaponComponent comp)
         {
             if (add) {
 

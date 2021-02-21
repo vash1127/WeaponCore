@@ -18,7 +18,7 @@ using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.WeaponRandomGenerator.RandomType;
 using static WeaponCore.WeaponRandomGenerator;
 
@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                 if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
-                    if (w.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
+                    if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
             }
@@ -102,7 +102,7 @@ namespace WeaponCore.Support
             var acquired = false;
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
-            if (s.Session.WaterApiLoaded && !p.Info.ConsumableDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
+            if (s.Session.WaterApiLoaded && !p.Info.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
                 waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
 
             TargetInfo alphaInfo = null;
@@ -215,7 +215,7 @@ namespace WeaponCore.Support
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
-            if (session.WaterApiLoaded && !w.ActiveAmmoDef.ConsumableDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
+            if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
                 waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
 
             TargetInfo alphaInfo = null;
@@ -292,7 +292,7 @@ namespace WeaponCore.Support
                         if (!w.AiEnabled) {
 
                             var validEstimate = true;
-                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && w.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
+                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!validEstimate || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
@@ -364,7 +364,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(CoreSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -403,7 +403,7 @@ namespace WeaponCore.Support
             return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);
         }
 
-        private static bool FindRandomBlock(CoreSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -561,7 +561,7 @@ namespace WeaponCore.Support
                     var bestTest = false;
                     if (best) {
 
-                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.ConsumableDef.Trajectory.Smarts.OverideTarget)) {
+                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.AmmoDef.Trajectory.Smarts.OverideTarget)) {
 
                             ai.Session.CanShoot++;
                             Vector3D predictedPos;

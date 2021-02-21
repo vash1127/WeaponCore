@@ -8,7 +8,7 @@ using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 namespace WeaponCore.Support
 {
-    public partial class CoreComponent
+    public partial class WeaponComponent
     {
         private void PowerInit()
         {
@@ -39,8 +39,8 @@ namespace WeaponCore.Support
                         weapon.ChangeActiveAmmoServer();
                     else weapon.ChangeActiveAmmoClient();
 
-                    if (weapon.ActiveAmmoDef.ConsumableDef == null || !weapon.ActiveAmmoDef.ConsumableDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
-                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.ConsumableDef == null}), I am crashing now Dave.");
+                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
+                        Platform.PlatformCrash(this, false, true, $"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
                         return;
                     }
 
@@ -73,8 +73,8 @@ namespace WeaponCore.Support
 
             if (!weapon.System.DesignatorWeapon)
             {
-                var patternSize = weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoPattern.Length;
-                foreach (var ammo in weapon.ActiveAmmoDef.ConsumableDef.Const.AmmoPattern)
+                var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
+                foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
                 {
                     PeakDps += ammo.Const.PeakDps / (float) patternSize;
                     EffectiveDps += ammo.Const.EffectiveDps / (float) patternSize;
@@ -86,8 +86,8 @@ namespace WeaponCore.Support
             }
 
             maxTrajectory = 0;
-            if (weapon.ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory > maxTrajectory)
-                maxTrajectory = weapon.ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory;
+            if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
+                maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
             if (weapon.System.TrackProjectile)
                 Ai.PointDefense = true;
@@ -118,9 +118,9 @@ namespace WeaponCore.Support
         {
             using (MyCube.Pin())
             {
-                if (InventoryInited || !MyCube.HasInventory || MyCube.MarkedForClose || (Platform.State != CorePlatform.PlatformState.Inited && Platform.State != CorePlatform.PlatformState.Incomplete) || BlockInventory == null)
+                if (InventoryInited || !MyCube.HasInventory || MyCube.MarkedForClose || (Platform.State != MyWeaponPlatform.PlatformState.Inited && Platform.State != MyWeaponPlatform.PlatformState.Incomplete) || BlockInventory == null)
                 {
-                    Platform.PlatformCrash(this, false, true, $"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!MyCube.HasInventory} - Marked:{MyCube.MarkedForClose} - PlatformNotReady:{Platform.State != CorePlatform.PlatformState.Ready}({Platform.State}) - nullInventory:{BlockInventory == null}");
+                    Platform.PlatformCrash(this, false, true, $"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!MyCube.HasInventory} - Marked:{MyCube.MarkedForClose} - PlatformNotReady:{Platform.State != MyWeaponPlatform.PlatformState.Ready}({Platform.State}) - nullInventory:{BlockInventory == null}");
                     return;
                 }
 
@@ -146,8 +146,8 @@ namespace WeaponCore.Support
                     }
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
                     {
-                        if (w.System.AmmoTypes[j].ConsumableDef.Const.MagazineDef != null)
-                            BlockInventory.Constraint.Add(w.System.AmmoTypes[j].ConsumableDef.Const.MagazineDef.Id);
+                        if (w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef != null)
+                            BlockInventory.Constraint.Add(w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
                     }
                 }
                 BlockInventory.Refresh();

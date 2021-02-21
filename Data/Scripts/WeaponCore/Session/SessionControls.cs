@@ -7,7 +7,7 @@ using Sandbox.ModAPI.Interfaces.Terminal;
 using WeaponCore.Support;
 using WeaponCore.Control;
 using WeaponCore.Platform;
-using static WeaponCore.Support.CoreComponent.ShootActions;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore
 {
@@ -77,8 +77,8 @@ namespace WeaponCore
             if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
             {
                 gridAi.LastTerminal = block;
-                CoreComponent comp;
-                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == CorePlatform.PlatformState.Ready)
+                WeaponComponent comp;
+                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
                     TerminalMon.HandleInputUpdate(comp);
                     IMyTerminalControl wcRangeControl = null;
@@ -131,8 +131,8 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             if (comp == null)
                                 oldAction(blk);
                             return;
@@ -146,8 +146,8 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             if (comp == null)
                                 oldAction(blk);
                             return;
@@ -158,8 +158,8 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => {
 
-                        var comp = blk.Components.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             oldWriter(blk, sb);
                             return;
                         }
@@ -175,8 +175,8 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             if (comp == null) oldAction(blk);
                             return;
                         }
@@ -187,8 +187,8 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) =>
                     {
-                        var comp = blk.Components.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             oldWriter(blk, sb);
                             return;
@@ -205,8 +205,8 @@ namespace WeaponCore
                     var oldAction = a.Action;
                     a.Action = blk => {
 
-                        var comp = blk?.Components?.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             if (comp == null)  oldAction(blk);
                             return;
                         }
@@ -217,8 +217,8 @@ namespace WeaponCore
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => {
 
-                        var comp = blk.Components.Get<CoreComponent>();
-                        if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             oldWriter(blk, sb);
                             return;
                         }
@@ -285,14 +285,14 @@ namespace WeaponCore
 
         private static void OnOffSetter(IMyTerminalBlock block, bool on)
         {
-            var comp = block?.Components?.Get<CoreComponent>();
-            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             OnOffAnimations(comp, on);
         }
 
-        private static void OnOffAnimations(CoreComponent comp, bool on)
+        private static void OnOffAnimations(WeaponComponent comp, bool on)
         {
-            if (comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
 
@@ -320,7 +320,7 @@ namespace WeaponCore
                     }
                     if (w.DrawingPower) w.StopPowerDraw();
 
-                    if (w.ActiveAmmoDef.ConsumableDef.Const.MustCharge)
+                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         w.Reloading = false;
                 }
                 else {

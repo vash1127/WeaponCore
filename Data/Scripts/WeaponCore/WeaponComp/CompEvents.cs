@@ -7,13 +7,13 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
-using static WeaponCore.Platform.CorePlatform;
+using static WeaponCore.Platform.MyWeaponPlatform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
-    public partial class CoreComponent
+    public partial class WeaponComponent
     {
         internal void RegisterEvents(bool register = true)
         {
@@ -115,7 +115,7 @@ namespace WeaponCore.Support
         {
             var cube = (MyCubeBlock)myEntity;
             
-            var comp = cube.Components.Get<CoreComponent>();
+            var comp = cube.Components.Get<WeaponComponent>();
             if (comp?.Ai != null && comp.Slim == comp.Ai.FakeShipController.SlimBlock)
             {
                 comp.Ai.PowerDirty = true;
@@ -219,13 +219,13 @@ namespace WeaponCore.Support
                 {
                     var w = Platform.Weapons[i];
                     string shots;
-                    if (w.ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo)
+                    if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                     {
                         shots = "\nCharging:" + w.Charging;
                     }
-                    else shots = "\n" + w.ActiveAmmoDef.ConsumableDef.AmmoMagazine + ": " + w.Ammo.CurrentAmmo;
+                    else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.Ammo.CurrentAmmo;
 
-                    var burst = w.ActiveAmmoDef.ConsumableDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
+                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
@@ -235,13 +235,13 @@ namespace WeaponCore.Support
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
                     {
                         var ammo = w.System.AmmoTypes[j];
-                        if (ammo == w.ActiveAmmoDef || !ammo.ConsumableDef.Const.IsTurretSelectable || string.IsNullOrEmpty(ammo.ConsumableDef.AmmoMagazine) || ammo.AmmoName == "Blank" || ammo.AmmoName == "Energy")
+                        if (ammo == w.ActiveAmmoDef || !ammo.AmmoDef.Const.IsTurretSelectable || string.IsNullOrEmpty(ammo.AmmoDef.AmmoMagazine) || ammo.AmmoName == "Blank" || ammo.AmmoName == "Energy")
                             continue;
                         
                         if (otherAmmo == null)
                             otherAmmo = "\n\nAlternate Magazines:";
 
-                        otherAmmo += $"\n{ammo.ConsumableDef.AmmoMagazine}";
+                        otherAmmo += $"\n{ammo.AmmoDef.AmmoMagazine}";
                     }
 
                     if (otherAmmo != null)
@@ -259,9 +259,9 @@ namespace WeaponCore.Support
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting}");
-                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.ConsumableDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.ConsumableDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.Ammo.CurrentCharge})");
+                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.Ammo.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
-                        stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.ConsumableDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
+                        stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }
                 }
             }

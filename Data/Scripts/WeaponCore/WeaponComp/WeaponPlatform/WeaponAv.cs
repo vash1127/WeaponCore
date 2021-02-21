@@ -130,7 +130,7 @@ namespace WeaponCore.Platform
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            if (Comp?.Data.Repo == null || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (Comp?.Data.Repo == null || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             try
             {
                 var session = Comp.Session;
