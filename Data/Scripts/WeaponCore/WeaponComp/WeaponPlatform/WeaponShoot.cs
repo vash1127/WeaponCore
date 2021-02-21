@@ -416,7 +416,7 @@ namespace WeaponCore.Platform
 
         private void EjectionDelayed(object o)
         {
-            if (ActiveAmmoDef?.AmmoDef != null && !Ejector.NullEntity) 
+            if (Comp.IsWorking && ActiveAmmoDef?.AmmoDef != null && ActiveAmmoDef.AmmoDef.Ejection.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item && !Ejector.NullEntity) 
                 MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, Ejector.Info.Position, Ejector.Info.Direction, MyPivotUp, null, EjectionSpawnCallback);
         }
 

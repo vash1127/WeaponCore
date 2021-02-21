@@ -475,8 +475,14 @@ namespace WeaponCore.Support
                     blocksSighted++;
 
                     system.Session.RandomRayCasts++;
+					
+					var targetDir = blockPos - w.BarrelOrigin;
+                    Vector3D targetDirNorm;
+                    Vector3D.Normalize(ref targetDir, out targetDirNorm);
+                    var testPos = w.BarrelOrigin + (targetDirNorm * w.MuzzleDistToBarrelCenter);
+					
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15);
+                    physics.CastRay(testPos, blockPos, out hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase)
                         continue;
@@ -484,7 +490,7 @@ namespace WeaponCore.Support
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
                     if (hitGrid != null)
                     {
-                        if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && (hitGrid.IsSameConstructAs(ai.MyGrid) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
+                        if (hitGrid.MarkedForClose || (hitGrid != block.CubeGrid && hitGrid.IsSameConstructAs(ai.MyGrid)) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0) continue;
                         bool enemy;
 
                         var bigOwners = hitGrid.BigOwners;
@@ -568,7 +574,14 @@ namespace WeaponCore.Support
                             if (Weapon.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
 
                                 ai.Session.ClosestRayCasts++;
-                                if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
+								
+								var targetDir = cubePos - w.BarrelOrigin;
+                                Vector3D targetDirNorm;
+                                Vector3D.Normalize(ref targetDir, out targetDirNorm);
+
+                                var rayStart = w.BarrelOrigin + (targetDirNorm * w.MuzzleDistToBarrelCenter);
+								
+                                if (ai.Session.Physics.CastRay(rayStart, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
                                     var hitEnt = hit.HitEntity?.GetTopMostParent() as MyEntity;
                                     var hitGrid = hitEnt as MyCubeGrid;
 

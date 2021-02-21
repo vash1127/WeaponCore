@@ -46,7 +46,7 @@ namespace WeaponCore.Platform
             weapon.LastHitInfo = null;
             if (checkSelfHit && target != null) {
 
-                var testLine = new LineD(targetPos, weapon.BarrelOrigin);
+                var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
                 var predictedMuzzlePos = testLine.To + (-testLine.Direction * weapon.MuzzleDistToBarrelCenter);
                 var ai = weapon.Comp.Ai;
                 var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.MyGrid.PositionComp.WorldMatrixNormalizedInv) * ai.MyGrid.GridSizeR);

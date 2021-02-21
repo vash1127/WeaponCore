@@ -326,7 +326,7 @@ namespace WeaponCore.Support
                     var bigOwners = grid.BigOwners;
                     var topOwner = bigOwners.Count > 0 ? bigOwners[0] : long.MaxValue;
 
-                    relationship = topOwner != long.MinValue ? MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
+                    relationship = topOwner != long.MaxValue ? MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
 
                     var type = grid.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
                     entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(grid.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);

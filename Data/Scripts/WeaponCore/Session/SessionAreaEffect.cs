@@ -154,10 +154,17 @@ namespace WeaponCore
             var sync = MpActive && (DedicatedServer || IsServer);
             foreach (var block in blocks)
             {
-                var cube = block.FatBlock as MyCubeBlock;
+                var cubeBlock = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
                 if (fieldType != DotField)
-                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !EffectedCubes.ContainsKey(cube.EntityId) || !(cube is IMyFunctionalBlock)) continue;
+                    if (cubeBlock == null || cubeBlock.MarkedForClose || !cubeBlock.IsWorking && !EffectedCubes.ContainsKey(cubeBlock.EntityId)) continue;
+
+                if (cubeBlock is MyConveyor)
+                    continue;
+
+                var cube = cubeBlock as IMyFunctionalBlock;
+                if (cube == null)
+                    continue;
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
@@ -241,7 +248,7 @@ namespace WeaponCore
                     else
                     {
                         damagePool = tmpDamagePool;
-                        blockState.FunctBlock = ((IMyFunctionalBlock)cube);
+                        blockState.FunctBlock = cube;
                         var originState = blockState.FunctBlock.Enabled;
                         blockState.FirstTick = Tick + 1;
                         blockState.FirstState = originState;
