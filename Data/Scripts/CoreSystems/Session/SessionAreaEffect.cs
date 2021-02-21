@@ -153,10 +153,17 @@ namespace CoreSystems
             var sync = MpActive && (DedicatedServer || IsServer);
             foreach (var block in blocks)
             {
-                var cube = block.FatBlock as IMyFunctionalBlock;
+                var cubeBlock = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
                 if (fieldType != DotField)
-                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !EffectedCubes.ContainsKey(cube.EntityId)) continue;
+                    if (cubeBlock == null || cubeBlock.MarkedForClose || !cubeBlock.IsWorking && !EffectedCubes.ContainsKey(cubeBlock.EntityId)) continue;
+
+                if (cubeBlock is MyConveyor)
+                    continue;
+
+                var cube = cubeBlock as IMyFunctionalBlock; 
+                if (cube == null)
+                    continue;
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;

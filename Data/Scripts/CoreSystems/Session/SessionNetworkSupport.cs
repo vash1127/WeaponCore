@@ -39,8 +39,17 @@ namespace CoreSystems
             return new NetResult { Message = message, Valid = valid };
         }
 
+        private long _lastFakeTargetUpdateErrorId = long.MinValue;
         private bool Error(PacketObj data, params NetResult[] messages)
         {
+            var fakeTargetUpdateError = data.Packet.PType == PacketType.FakeTargetUpdate;
+            
+            if (fakeTargetUpdateError) {
+                if (data.Packet.EntityId == _lastFakeTargetUpdateErrorId)
+                    return false;
+                _lastFakeTargetUpdateErrorId = data.Packet.EntityId;
+            }
+
             var message = $"[{data.Packet.PType.ToString()} - PacketError] - ";
 
             for (int i = 0; i < messages.Length; i++)

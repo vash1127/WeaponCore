@@ -67,14 +67,20 @@ namespace CoreSystems.Projectiles
                 CheckHits();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start($"ConfirmHit: {ValidateHits.Count}", 11);
             if (!ValidateHits.IsEmpty) {
 
+                Session.StallReporter.Start($"InitialHitCheck: {ValidateHits.Count} - beamCount:{_beamCount}", 11);
                 InitialHitCheck();
+                Session.StallReporter.End();
+
+                Session.StallReporter.Start($"DeferedVoxelCheck: {ValidateHits.Count} - beamCount:{_beamCount} ", 11);
                 DeferedVoxelCheck();
+                Session.StallReporter.End();
+
+                Session.StallReporter.Start($"FinalizeHits: {ValidateHits.Count} - beamCount:{_beamCount}", 11);
                 FinalizeHits();
+                Session.StallReporter.End();
             }
-            Session.StallReporter.End();
         }
 
         internal void Damage()
@@ -92,7 +98,7 @@ namespace CoreSystems.Projectiles
         {
             if (!Session.DedicatedServer)
             {
-                Session.StallReporter.Start("AvUpdate", 17);
+                Session.StallReporter.Start($"AvUpdate: {ActiveProjetiles.Count}", 11);
                 UpdateAv();
                 DeferedAvStateUpdates(Session);
                 Session.StallReporter.End();
@@ -251,14 +257,19 @@ namespace CoreSystems.Projectiles
             }
         }
 
+        private int _beamCount;
         private void CheckHits()
         {
+            _beamCount = 0;
             for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
 
                 var p = ActiveProjetiles[x];
                 
                 if ((int) p.State > 3)
                     continue;
+
+                if (p.Info.AmmoDef.Const.IsBeamWeapon)
+                    ++_beamCount;
 
                 if (p.Info.Ai.ProInMinCacheRange > 99999 && !p.Info.Ai.AccelChecked)
                     p.Info.Ai.ComputeAccelSphere();

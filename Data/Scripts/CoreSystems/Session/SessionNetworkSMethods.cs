@@ -120,8 +120,7 @@ namespace CoreSystems
             var targetPacket = (FakeTargetPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
-            if (myGrid == null) return Error(data, Msg("Grid"));
-
+            if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
 
             Ai ai;
             long playerId;
