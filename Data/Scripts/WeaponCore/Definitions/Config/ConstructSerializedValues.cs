@@ -34,7 +34,7 @@ namespace WeaponCore
         [ProtoMember(6)] public LockModes[] Locked;
 
 
-        public void Sync(GridAi ai, FocusData sync, bool localCall = false)
+        public bool Sync(GridAi ai, FocusData sync, bool localCall = false)
         {
             if (ai.Session.IsServer || sync.Revision > Revision)
             {
@@ -50,8 +50,9 @@ namespace WeaponCore
 
                 if (ai == ai.Construct.RootAi && localCall)
                     ai.Construct.UpdateLeafFoci();
+                return true;
             }
-            //else Log.Line($"FocusData older revision:  {sync.Revision}  > {Revision}");
+            return false;
         }
     }
 }

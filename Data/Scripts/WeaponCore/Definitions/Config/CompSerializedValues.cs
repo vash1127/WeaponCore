@@ -67,7 +67,7 @@ namespace WeaponCore
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(Weapon w, AmmoValues sync)
+        public bool Sync(Weapon w, AmmoValues sync)
         {
             if (sync.Revision > Revision)
             {
@@ -85,7 +85,9 @@ namespace WeaponCore
                     w.ChangeActiveAmmoClient();
 
                 AmmoCycleId = sync.AmmoCycleId;
+                return true;
             }
+            return false;
         }
     }
 
@@ -98,7 +100,7 @@ namespace WeaponCore
         [ProtoMember(4)] public TransferTarget[] Targets;
         [ProtoMember(5)] public WeaponReloadValues[] Reloads;
 
-        public void Sync(WeaponComponent comp, CompBaseValues sync)
+        public bool Sync(WeaponComponent comp, CompBaseValues sync)
         {
             if (sync.Revision > Revision) {
 
@@ -108,12 +110,13 @@ namespace WeaponCore
 
                 for (int i = 0; i < Targets.Length; i++) {
                     var w = comp.Platform.Weapons[i];
-                    sync.Targets[i].SyncTarget(w);
-                    Reloads[i].Sync(w, sync.Reloads[i]);
+                    sync.Targets[i].SyncTarget(w, true);
+                    Reloads[i].Sync(w, sync.Reloads[i], true);
                 }
-            }
-            else Log.Line($"CompDynamicValues older revision");
 
+                return true;
+            }
+            return false;
         }
 
         public void UpdateCompBasePacketInfo(WeaponComponent comp, bool clean = false)
@@ -155,9 +158,9 @@ namespace WeaponCore
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
 
-        public void Sync(Weapon w, WeaponReloadValues sync)
+        public void Sync(Weapon w, WeaponReloadValues sync, bool force)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || force)
             {
                 Revision = sync.Revision;
                 StartId = sync.StartId;
@@ -230,9 +233,9 @@ namespace WeaponCore
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public ShootActions TerminalAction;
 
-        public void Sync(WeaponComponent comp, CompStateValues sync, Caller caller)
+        public bool Sync(WeaponComponent comp, CompStateValues sync, Caller caller)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || caller == Caller.CompData)
             {
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
@@ -241,8 +244,10 @@ namespace WeaponCore
                 TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Weapons.Length; i++) 
                     comp.Platform.Weapons[i].State.Sync(sync.Weapons[i]);
+
+                return true;
             }
-            //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            return false;
         }
 
         public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false, bool updateWeapons = true)
@@ -295,7 +300,7 @@ namespace WeaponCore
         [ProtoMember(4)] public int WeaponId;
         [ProtoMember(5)] public WeaponRandomGenerator WeaponRandom; // save
 
-        internal void SyncTarget(Weapon w)
+        internal bool SyncTarget(Weapon w, bool force)
         {
             if (Revision > w.TargetData.Revision)
             {
@@ -310,8 +315,9 @@ namespace WeaponCore
                 target.IsFakeTarget = EntityId == -2;
                 target.TargetPos = TargetPos;
                 target.ClientDirty = true;
+                return true;
             }
-            //else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
+            return false;
         }
 
         public void WeaponInit(Weapon w)

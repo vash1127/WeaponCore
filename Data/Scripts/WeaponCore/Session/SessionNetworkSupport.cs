@@ -112,7 +112,6 @@ namespace WeaponCore
                 }
                 else {
                     iPacket = PacketConstructPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.Construct];
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = PacketType.Construct;
@@ -143,7 +142,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketConstructFociPool.Get();
-                        iPacket.MId = ++ai.MIds[(int)PacketType.ConstructFoci];
                         iPacket.EntityId = ai.MyGrid.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = PacketType.ConstructFoci;
@@ -175,7 +173,6 @@ namespace WeaponCore
                 else {
 
                     iPacket = PacketAiPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.AiData];
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = PacketType.AiData;
@@ -209,7 +206,6 @@ namespace WeaponCore
                 else {
 
                     iPacket = PacketAmmoPool.Get();
-                    iPacket.MId = ++w.MIds[(int)type];
                     iPacket.EntityId = w.Comp.MyCube.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -243,7 +239,6 @@ namespace WeaponCore
                 else {
 
                     iPacket = PacketCompBasePool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.MyCube.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -277,7 +272,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketTargetPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
                         iPacket.EntityId = comp.MyCube.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -314,7 +308,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketStatePool.Get();
-                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.MyCube.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -351,7 +344,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketReloadPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
                         iPacket.EntityId = w.Comp.MyCube.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -532,7 +524,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FocusUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusUpdate,
@@ -567,7 +558,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FocusLockUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusLockUpdate,
@@ -602,7 +592,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.NextActiveUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.NextActiveUpdate,
@@ -636,7 +625,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ReleaseActiveUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ReleaseActiveUpdate
@@ -708,7 +696,6 @@ namespace WeaponCore
                     Entity = controlBlock,
                     Packet = new BoolUpdatePacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ActiveControlUpdate],
                         EntityId = controlBlock.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ActiveControlUpdate,
@@ -745,7 +732,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new ShootStatePacket
                     {
-                        MId = ++comp.MIds[(int)PacketType.RequestShootUpdate],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = comp.Session.MultiplayerId,
                         PType = PacketType.RequestShootUpdate,
@@ -786,7 +772,6 @@ namespace WeaponCore
                         PType = PacketType.TerminalMonitor,
                         EntityId = comp.MyCube.EntityId,
                         State = TerminalMonitorPacket.Change.Update,
-                        MId = ++comp.MIds[(int)PacketType.TerminalMonitor],
                     }
                 });
             }
@@ -856,7 +841,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new PlayerControlRequestPacket
                     {
-                        MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.PlayerControlRequest,
@@ -877,7 +861,6 @@ namespace WeaponCore
                     Entity = w.Comp.MyCube,
                     Packet = new QueuedShotPacket
                     {
-                        MId = ++w.MIds[(int)PacketType.QueueShot],
                         EntityId = w.Comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
@@ -937,7 +920,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new FloatUpdatePacket
                     {
-                        MId = ++comp.MIds[(int)type],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = type,
@@ -973,7 +955,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new BoolUpdatePacket
                     {
-                        MId = ++comp.MIds[(int)type],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = type,

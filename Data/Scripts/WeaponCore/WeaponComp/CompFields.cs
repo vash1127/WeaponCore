@@ -29,7 +29,6 @@ namespace WeaponCore.Support
         internal readonly IMyFunctionalBlock FunctionalBlock;
         internal readonly IMyLargeTurretBase TurretBase;
         internal readonly CompData Data;
-        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 

@@ -288,6 +288,9 @@ namespace WeaponCore.Support
 
             MyGrid.Components.Remove<AiComponent>();
 
+            for (int i = 0; i < MIds.Length; i++)
+                MIds[i] = 0;
+
             if (Session.IsClient)
                 Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiRemove);
 
