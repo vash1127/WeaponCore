@@ -302,7 +302,7 @@ namespace WeaponCore
 
         internal bool SyncTarget(Weapon w, bool force)
         {
-            if (Revision > w.TargetData.Revision)
+            if (Revision > w.TargetData.Revision || force)
             {
                 w.TargetData.Revision = Revision;
                 w.TargetData.EntityId = EntityId;
