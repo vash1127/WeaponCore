@@ -362,6 +362,9 @@ namespace CoreSystems.Support
 
             TopEntity.Components.Remove<AiComponent>();
 
+            for (int i = 0; i < MIds.Length; i++)
+                MIds[i] = 0;
+
             if (Session.IsClient)
                 Session.SendUpdateRequest(TopEntity.EntityId, PacketType.ClientAiRemove);
 

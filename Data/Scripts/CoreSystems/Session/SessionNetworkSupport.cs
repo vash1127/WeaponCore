@@ -111,7 +111,6 @@ namespace CoreSystems
                 }
                 else {
                     iPacket = PacketConstructPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.Construct];
                     iPacket.EntityId = ai.TopEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = PacketType.Construct;
@@ -142,7 +141,6 @@ namespace CoreSystems
                     }
                     else {
                         iPacket = PacketConstructFociPool.Get();
-                        iPacket.MId = ++ai.MIds[(int)PacketType.ConstructFoci];
                         iPacket.EntityId = ai.TopEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = PacketType.ConstructFoci;
@@ -174,7 +172,6 @@ namespace CoreSystems
                 else {
 
                     iPacket = PacketAiPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.AiData];
                     iPacket.EntityId = ai.TopEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = PacketType.AiData;
@@ -208,7 +205,6 @@ namespace CoreSystems
                 else {
 
                     iPacket = PacketAmmoPool.Get();
-                    iPacket.MId = ++w.MIds[(int)type];
                     iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -242,7 +238,6 @@ namespace CoreSystems
                 else {
 
                     iPacket = PacketWeaponCompPool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -274,7 +269,6 @@ namespace CoreSystems
                 else {
 
                     iPacket = PacketUpgradeCompPool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -309,7 +303,6 @@ namespace CoreSystems
                 {
 
                     iPacket = PacketSupportCompPool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -345,7 +338,6 @@ namespace CoreSystems
                 {
 
                     iPacket = PacketPhantomCompPool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -383,7 +375,6 @@ namespace CoreSystems
                     else
                     {
                         iPacket = PacketWeaponStatePool.Get();
-                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -421,7 +412,6 @@ namespace CoreSystems
                     }
                     else {
                         iPacket = PacketSupportStatePool.Get();
-                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -462,7 +452,6 @@ namespace CoreSystems
                     else
                     {
                         iPacket = PacketUpgradeStatePool.Get();
-                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -503,7 +492,6 @@ namespace CoreSystems
                     else
                     {
                         iPacket = PacketPhantomStatePool.Get();
-                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -546,7 +534,6 @@ namespace CoreSystems
                     else
                     {
                         iPacket = PacketTargetPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -584,7 +571,6 @@ namespace CoreSystems
                     }
                     else {
                         iPacket = PacketReloadPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
                         iPacket.EntityId = w.Comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -765,7 +751,6 @@ namespace CoreSystems
                     Entity = ai.TopEntity,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FocusUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusUpdate,
@@ -800,7 +785,6 @@ namespace CoreSystems
                     Entity = ai.TopEntity,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FocusLockUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusLockUpdate,
@@ -835,7 +819,6 @@ namespace CoreSystems
                     Entity = ai.TopEntity,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.NextActiveUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.NextActiveUpdate,
@@ -869,7 +852,6 @@ namespace CoreSystems
                     Entity = ai.TopEntity,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ReleaseActiveUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ReleaseActiveUpdate
@@ -941,7 +923,6 @@ namespace CoreSystems
                     Entity = entity,
                     Packet = new BoolUpdatePacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ActiveControlUpdate],
                         EntityId = entity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ActiveControlUpdate,
@@ -978,7 +959,6 @@ namespace CoreSystems
                     Entity = comp.CoreEntity,
                     Packet = new ShootStatePacket
                     {
-                        MId = ++comp.MIds[(int)PacketType.RequestShootUpdate],
                         EntityId = comp.CoreEntity.EntityId,
                         SenderId = comp.Session.MultiplayerId,
                         PType = PacketType.RequestShootUpdate,
@@ -1019,7 +999,6 @@ namespace CoreSystems
                         PType = PacketType.TerminalMonitor,
                         EntityId = comp.CoreEntity.EntityId,
                         State = TerminalMonitorPacket.Change.Update,
-                        MId = ++comp.MIds[(int)PacketType.TerminalMonitor],
                     }
                 });
             }
@@ -1089,7 +1068,6 @@ namespace CoreSystems
                     Entity = comp.CoreEntity,
                     Packet = new PlayerControlRequestPacket
                     {
-                        MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
                         EntityId = comp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.PlayerControlRequest,
@@ -1110,7 +1088,6 @@ namespace CoreSystems
                     Entity = w.BaseComp.CoreEntity,
                     Packet = new QueuedShotPacket
                     {
-                        MId = ++w.MIds[(int)PacketType.QueueShot],
                         EntityId = w.BaseComp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
@@ -1170,7 +1147,6 @@ namespace CoreSystems
                     Entity = comp.CoreEntity,
                     Packet = new FloatUpdatePacket
                     {
-                        MId = ++comp.MIds[(int)type],
                         EntityId = comp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = type,
@@ -1206,7 +1182,6 @@ namespace CoreSystems
                     Entity = comp.CoreEntity,
                     Packet = new BoolUpdatePacket
                     {
-                        MId = ++comp.MIds[(int)type],
                         EntityId = comp.CoreEntity.EntityId,
                         SenderId = MultiplayerId,
                         PType = type,

@@ -34,7 +34,7 @@ namespace CoreSystems
         [ProtoMember(6)] public LockModes[] Locked;
 
 
-        public void Sync(Ai ai, FocusData sync, bool localCall = false)
+        public bool Sync(Ai ai, FocusData sync, bool localCall = false)
         {
             if (ai.Session.IsServer || sync.Revision > Revision)
             {
@@ -50,8 +50,10 @@ namespace CoreSystems
 
                 if (ai == ai.Construct.RootAi && localCall)
                     ai.Construct.UpdateLeafFoci();
+
+                return true;
             }
-            //else Log.Line($"FocusData older revision:  {sync.Revision}  > {Revision}");
+            return false;
         }
     }
 }

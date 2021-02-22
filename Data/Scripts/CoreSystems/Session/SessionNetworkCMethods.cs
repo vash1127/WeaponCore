@@ -135,12 +135,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId) {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
-            }
-            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+            if (!comp.Data.Repo.Values.Sync(comp, compDataPacket.Data))
+                Log.Line($"ClientWeaponComp: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compDataPacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -155,11 +151,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)  {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoWeaponState.Caller.Direct);
-            }
+            if (!comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoWeaponState.Caller.Direct))
+                Log.Line($"ClientWeaponState: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compStatePacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -174,13 +167,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as Upgrade.UpgradeComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
-            }
-            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+            if (!comp.Data.Repo.Values.Sync(comp, compDataPacket.Data))
+                Log.Line($"ClientUpgradeComp: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compDataPacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -195,12 +183,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as Upgrade.UpgradeComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoUpgradeState.Caller.Direct);
-            }
+            if (!comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoUpgradeState.Caller.Direct))
+                Log.Line($"ClientUpgradeState: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compStatePacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -215,13 +199,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as SupportSys.SupportComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
-            }
-            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+            if (!comp.Data.Repo.Values.Sync(comp, compDataPacket.Data))
+                Log.Line($"ClientSupportComp: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compDataPacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -236,12 +215,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as SupportSys.SupportComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoSupportState.Caller.Direct);
-            }
+            if (!comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoSupportState.Caller.Direct))
+                Log.Line($"ClientSupportState: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compStatePacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -256,13 +231,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as Phantom.PhantomComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.Sync(comp, compDataPacket.Data);
-            }
-            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+            if (!comp.Data.Repo.Values.Sync(comp, compDataPacket.Data))
+                Log.Line($"ClientPhantomComp: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compDataPacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -277,12 +247,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>() as Phantom.PhantomComponent;
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoPhantomState.Caller.Direct);
-            }
+            if (!comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoPhantomState.Caller.Direct))
+                Log.Line($"ClientPhantomState: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compStatePacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -298,11 +264,7 @@ namespace CoreSystems
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
             
             var w = comp.Platform.Weapons[weaponReloadPacket.PartId];
-            if (w.MIds[(int)packet.PType] < packet.MId)  {
-                w.MIds[(int)packet.PType] = packet.MId;
-
-                w.Reload.Sync(w, weaponReloadPacket.Data);
-            }
+            w.Reload.Sync(w, weaponReloadPacket.Data, false);
 
             data.Report.PacketValid = true;
 
@@ -319,11 +281,7 @@ namespace CoreSystems
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready ) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[targetPacket.Target.PartId];
-            if (w.MIds[(int)packet.PType] < packet.MId)  {
-                w.MIds[(int)packet.PType] = packet.MId;
-
-                targetPacket.Target.SyncTarget(w);
-            }
+            targetPacket.Target.SyncTarget(w, false);
 
             data.Report.PacketValid = true;
 
@@ -340,11 +298,7 @@ namespace CoreSystems
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[ammoPacket.PartId];
-            if (w.MIds[(int)packet.PType] < packet.MId) {
-                w.MIds[(int)packet.PType] = packet.MId;
-
-                w.ProtoWeaponAmmo.Sync(w, ammoPacket.Data);
-            }
+            w.ProtoWeaponAmmo.Sync(w, ammoPacket.Data);
 
             data.Report.PacketValid = true;
 

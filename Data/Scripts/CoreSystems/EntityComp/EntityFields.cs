@@ -18,7 +18,6 @@ namespace CoreSystems.Support
     {
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
         internal readonly List<int> ConsumableSelectionPartIds = new List<int>();
-        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
         internal List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;

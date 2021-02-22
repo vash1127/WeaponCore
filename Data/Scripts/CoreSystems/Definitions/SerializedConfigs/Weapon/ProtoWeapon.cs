@@ -62,7 +62,7 @@ namespace CoreSystems
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(Weapon w, ProtoWeaponAmmo sync)
+        public bool Sync(Weapon w, ProtoWeaponAmmo sync)
         {
             if (sync.Revision > Revision)
             {
@@ -80,7 +80,9 @@ namespace CoreSystems
                     w.ChangeActiveAmmoClient();
 
                 AmmoCycleId = sync.AmmoCycleId;
+                return true;
             }
+            return false;
         }
     }
 
@@ -93,7 +95,7 @@ namespace CoreSystems
         [ProtoMember(4)] public ProtoWeaponTransferTarget[] Targets;
         [ProtoMember(5)] public ProtoWeaponReload[] Reloads;
 
-        public void Sync(Weapon.WeaponComponent comp, ProtoWeaponComp sync)
+        public bool Sync(Weapon.WeaponComponent comp, ProtoWeaponComp sync)
         {
             if (sync.Revision > Revision)
             {
@@ -105,11 +107,12 @@ namespace CoreSystems
                 for (int i = 0; i < Targets.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-                    sync.Targets[i].SyncTarget(w);
-                    Reloads[i].Sync(w, sync.Reloads[i]);
+                    sync.Targets[i].SyncTarget(w, true);
+                    Reloads[i].Sync(w, sync.Reloads[i], true);
                 }
+                return true;
             }
-            else Log.Line("CompDynamicValues older revision");
+            return false;
 
         }
 
@@ -157,9 +160,9 @@ namespace CoreSystems
         [ProtoMember(2)] public int StartId; //save
         [ProtoMember(3)] public int EndId; //save
 
-        public void Sync(Weapon w, ProtoWeaponReload sync)
+        public void Sync(Weapon w, ProtoWeaponReload sync, bool force)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || force)
             {
                 Revision = sync.Revision;
                 StartId = sync.StartId;
@@ -232,9 +235,9 @@ namespace CoreSystems
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(CoreComponent comp, ProtoWeaponState sync, Caller caller)
+        public bool Sync(CoreComponent comp, ProtoWeaponState sync, Caller caller)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || caller == Caller.CompData)
             {
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
@@ -243,8 +246,9 @@ namespace CoreSystems
                 TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Weapons.Length; i++)
                     comp.Platform.Weapons[i].PartState.Sync(sync.Weapons[i]);
+                return true;
             }
-            //else Log.Line($"ProtoWeaponState older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            return false;
         }
 
         public void TerminalActionSetter(Weapon.WeaponComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
@@ -297,9 +301,9 @@ namespace CoreSystems
         [ProtoMember(4)] public int PartId;
         [ProtoMember(5)] public WeaponRandomGenerator WeaponRandom; // save
 
-        internal void SyncTarget(Weapon w)
+        internal bool SyncTarget(Weapon w, bool force)
         {
-            if (Revision > w.TargetData.Revision)
+            if (Revision > w.TargetData.Revision || force)
             {
                 w.TargetData.Revision = Revision;
                 w.TargetData.EntityId = EntityId;
@@ -312,8 +316,9 @@ namespace CoreSystems
                 target.IsFakeTarget = EntityId == -2;
                 target.TargetPos = TargetPos;
                 target.ClientDirty = true;
+                return true;
             }
-            //else Log.Line($"ProtoWeaponTransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
+            return false;
         }
 
         public void WeaponInit(Weapon w)

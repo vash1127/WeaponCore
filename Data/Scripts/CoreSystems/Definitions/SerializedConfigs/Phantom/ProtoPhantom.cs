@@ -50,7 +50,7 @@ namespace CoreSystems
         [ProtoMember(2)] public ProtoPhantomSettings Set;
         [ProtoMember(3)] public ProtoPhantomState State;
 
-        public void Sync(Phantom.PhantomComponent comp, ProtoPhantomComp sync)
+        public bool Sync(Phantom.PhantomComponent comp, ProtoPhantomComp sync)
         {
             if (sync.Revision > Revision)
             {
@@ -58,10 +58,9 @@ namespace CoreSystems
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State, ProtoPhantomState.Caller.CompData);
-
+                return true;
             }
-            else Log.Line("CompDynamicValues older revision");
-
+            return false;
         }
 
         public void UpdateCompPacketInfo(Phantom.PhantomComponent comp, bool clean = false)
@@ -139,9 +138,9 @@ namespace CoreSystems
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(Phantom.PhantomComponent comp, ProtoPhantomState sync, Caller caller)
+        public bool Sync(Phantom.PhantomComponent comp, ProtoPhantomState sync, Caller caller)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || caller == Caller.CompData)
             {
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
@@ -150,8 +149,10 @@ namespace CoreSystems
                 TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Phantoms.Length; i++)
                     comp.Platform.Phantoms[i].PartState.Sync(sync.Phantoms[i]);
+
+                return true;
             }
-            //else Log.Line($"ProtoWeaponState older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            return false;
         }
 
         public void TerminalActionSetter(Phantom.PhantomComponent comp, TriggerActions action, bool syncPhantoms = false, bool updatePhantoms = true)

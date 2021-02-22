@@ -49,7 +49,7 @@ namespace CoreSystems
         [ProtoMember(2)] public ProtoSupportSettings Set;
         [ProtoMember(3)] public ProtoSupportState State;
 
-        public void Sync(SupportSys.SupportComponent comp, ProtoSupportComp sync)
+        public bool Sync(SupportSys.SupportComponent comp, ProtoSupportComp sync)
         {
             if (sync.Revision > Revision)
             {
@@ -57,10 +57,9 @@ namespace CoreSystems
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State, ProtoSupportState.Caller.CompData);
-
+                return true;
             }
-            else Log.Line("CompDynamicValues older revision");
-
+            return false;
         }
 
         public void UpdateCompPacketInfo(SupportSys.SupportComponent comp, bool clean = false)
@@ -139,9 +138,9 @@ namespace CoreSystems
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(CoreComponent comp, ProtoSupportState sync, Caller caller)
+        public bool Sync(CoreComponent comp, ProtoSupportState sync, Caller caller)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || caller == Caller.CompData)
             {
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
@@ -150,8 +149,10 @@ namespace CoreSystems
                 TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Support.Length; i++)
                     comp.Platform.Support[i].PartState.Sync(sync.Support[i]);
+
+                return true;
             }
-            //else Log.Line($"ProtoWeaponState older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            return false;
         }
 
         public void TerminalActionSetter(SupportSys.SupportComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)

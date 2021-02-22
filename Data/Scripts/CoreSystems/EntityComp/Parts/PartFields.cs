@@ -8,7 +8,6 @@ namespace CoreSystems.Platform
     public partial class Part
     {
         internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
-        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal CoreComponent BaseComp;
         internal CoreSystem CoreSystem;

@@ -49,7 +49,7 @@ namespace CoreSystems
         [ProtoMember(2)] public ProtoUpgradeSettings Set;
         [ProtoMember(3)] public ProtoUpgradeState State;
 
-        public void Sync(Upgrade.UpgradeComponent comp, ProtoUpgradeComp sync)
+        public bool Sync(Upgrade.UpgradeComponent comp, ProtoUpgradeComp sync)
         {
             if (sync.Revision > Revision)
             {
@@ -57,10 +57,9 @@ namespace CoreSystems
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State, ProtoUpgradeState.Caller.CompData);
-
+                return true;
             }
-            else Log.Line("CompDynamicValues older revision");
-
+            return false;
         }
 
         public void UpdateCompPacketInfo(Upgrade.UpgradeComponent comp, bool clean = false)
@@ -139,9 +138,9 @@ namespace CoreSystems
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
 
-        public void Sync(Upgrade.UpgradeComponent comp, ProtoUpgradeState sync, Caller caller)
+        public bool Sync(Upgrade.UpgradeComponent comp, ProtoUpgradeState sync, Caller caller)
         {
-            if (sync.Revision > Revision)
+            if (sync.Revision > Revision || caller == Caller.CompData)
             {
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
@@ -150,8 +149,9 @@ namespace CoreSystems
                 TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Upgrades.Length; i++)
                     comp.Platform.Upgrades[i].PartState.Sync(sync.Upgrades[i]);
+                return true;
             }
-            //else Log.Line($"ProtoWeaponState older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            return false;
         }
 
         public void TerminalActionSetter(Upgrade.UpgradeComponent comp, TriggerActions action, bool syncWeapons = false, bool updateWeapons = true)
