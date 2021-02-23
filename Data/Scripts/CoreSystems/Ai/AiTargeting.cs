@@ -479,22 +479,17 @@ namespace CoreSystems.Support
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase)
                         continue;
 
-                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                    var hitEnt = hitInfo.HitEntity?.GetTopMostParent() as MyEntity;
+                    var hitGrid = hitEnt as MyCubeGrid;
                     if (hitGrid != null)
                     {
                         if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && (ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
-                        bool enemy;
-
                         var bigOwners = hitGrid.BigOwners;
-                        if (bigOwners.Count == 0) enemy = true;
-                        else
-                        {
-                            var relationship = info.EntInfo.Relationship;
-                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner &&
-                                    relationship != MyRelationsBetweenPlayerAndBlock.FactionShare && relationship != MyRelationsBetweenPlayerAndBlock.Friends;
-                        }
-
-                        if (!enemy)
+                        TargetInfo otherInfo;
+                        var isTarget = hitGrid == block.CubeGrid || hitGrid.IsSameConstructAs(block.CubeGrid);
+                        var noOwner = bigOwners.Count == 0;
+                        var validTarget = isTarget || noOwner || ai.Targets.TryGetValue(hitEnt, out otherInfo) && (otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership);
+                        if (!validTarget)
                             continue;
                     }
 
@@ -578,20 +573,12 @@ namespace CoreSystems.Support
 
                                     if (hitGrid != null) {
                                         if (hitGrid.MarkedForClose || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0 || (hitGrid != cube.CubeGrid && ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity))) continue;
-
-
-
-                                        bool enemy;
-
                                         var bigOwners = hitGrid.BigOwners;
-
-                                        if (bigOwners.Count == 0) enemy = true;
-                                        else {
-                                            var relationship = info.EntInfo.Relationship;
-                                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare && relationship != MyRelationsBetweenPlayerAndBlock.Friends;
-                                        }
-
-                                        if (!enemy)
+                                        TargetInfo otherInfo;
+                                        var isTarget = hitGrid == cube.CubeGrid || hitGrid.IsSameConstructAs(cube.CubeGrid);
+                                        var noOwner = bigOwners.Count == 0;
+                                        var validTarget = isTarget || noOwner || ai.Targets.TryGetValue(hitEnt, out otherInfo) && (otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership);
+                                        if (!validTarget)
                                             continue;
                                         bestTest = true;
                                     }
