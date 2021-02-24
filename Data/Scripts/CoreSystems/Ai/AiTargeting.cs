@@ -195,7 +195,6 @@ namespace CoreSystems.Support
             var session = comp.Session;
             var ai = comp.Ai;
             session.TargetRequests++;
-            var physics = session.Physics;
             var weaponPos = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
             var target = w.NewTarget;
             var s = w.System;
@@ -330,6 +329,7 @@ namespace CoreSystems.Support
                         TargetInfo hitInfo;
                         if (w.LastHitInfo.HitEntity == info.Target || ai.Targets.TryGetValue((MyEntity)w.LastHitInfo.HitEntity, out hitInfo) && (hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)) {
 
+                            Log.Line("something");
                             double rayDist;
                             Vector3D.Distance(ref weaponPos, ref targetCenter, out rayDist);
                             var shortDist = rayDist * (1 - w.LastHitInfo.Fraction);
@@ -478,20 +478,22 @@ namespace CoreSystems.Support
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase)
                         continue;
-
                     var hitEnt = hitInfo.HitEntity?.GetTopMostParent() as MyEntity;
                     var hitGrid = hitEnt as MyCubeGrid;
+                    TargetInfo otherInfo;
                     if (hitGrid != null)
                     {
                         if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && (ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
                         var bigOwners = hitGrid.BigOwners;
-                        TargetInfo otherInfo;
                         var isTarget = hitGrid == block.CubeGrid || hitGrid.IsSameConstructAs(block.CubeGrid);
                         var noOwner = bigOwners.Count == 0;
                         var validTarget = isTarget || noOwner || ai.Targets.TryGetValue(hitEnt, out otherInfo) && (otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership);
                         if (!validTarget)
                             continue;
+
                     }
+                    else if (hitEnt is IMyCharacter && (!ai.Targets.TryGetValue(hitEnt, out otherInfo) || !(otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)))
+                        continue;
 
                     Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
                     var shortDist = rayDist * (1 - hitInfo.Fraction);
@@ -501,7 +503,6 @@ namespace CoreSystems.Support
                     foundBlock = true;
                     break;
                 }
-
                 Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
                 target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
                 foundBlock = true;
@@ -570,11 +571,11 @@ namespace CoreSystems.Support
                                 if (ai.Session.Physics.CastRay(adjustedPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
                                     var hitEnt = hit.HitEntity?.GetTopMostParent() as MyEntity;
                                     var hitGrid = hitEnt as MyCubeGrid;
+                                    TargetInfo otherInfo;
 
                                     if (hitGrid != null) {
                                         if (hitGrid.MarkedForClose || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0 || (hitGrid != cube.CubeGrid && ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity))) continue;
                                         var bigOwners = hitGrid.BigOwners;
-                                        TargetInfo otherInfo;
                                         var isTarget = hitGrid == cube.CubeGrid || hitGrid.IsSameConstructAs(cube.CubeGrid);
                                         var noOwner = bigOwners.Count == 0;
                                         var validTarget = isTarget || noOwner || ai.Targets.TryGetValue(hitEnt, out otherInfo) && (otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership);
@@ -582,6 +583,8 @@ namespace CoreSystems.Support
                                             continue;
                                         bestTest = true;
                                     }
+                                    else if (hitEnt is IMyCharacter && (!ai.Targets.TryGetValue(hitEnt, out otherInfo) || !(otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)))
+                                        continue;
                                 }
                             }
                         }
