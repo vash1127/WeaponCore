@@ -8,7 +8,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Platform
@@ -23,7 +23,7 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
             var validEstimate = true;
-            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0)
+            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
                 targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel, out validEstimate);
             else
                 targetPos = targetCenter;
@@ -46,7 +46,7 @@ namespace WeaponCore.Platform
             weapon.LastHitInfo = null;
             if (checkSelfHit && target != null) {
 
-                var testLine = new LineD(targetPos, weapon.BarrelOrigin);
+                var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
                 var predictedMuzzlePos = testLine.To + (-testLine.Direction * weapon.MuzzleDistToBarrelCenter);
                 var ai = weapon.Comp.Ai;
                 var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.MyGrid.PositionComp.WorldMatrixNormalizedInv) * ai.MyGrid.GridSizeR);
@@ -113,7 +113,7 @@ namespace WeaponCore.Platform
             var obb = new MyOrientedBoundingBoxD(box, entity.PositionComp.WorldMatrixRef);
 
             var validEstimate = true;
-            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0)
+            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
                 targetPos = TrajectoryEstimation(weapon, obb.Center, targetLinVel, targetAccel, out validEstimate);
             else
                 targetPos = obb.Center;
@@ -152,7 +152,7 @@ namespace WeaponCore.Platform
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
                     if (weapon.Comp.Debug)
-                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.ConsumableDef.Const.MaxTrajectory));
+                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
                 }
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
@@ -176,7 +176,7 @@ namespace WeaponCore.Platform
                 targetCenter = Vector3D.Zero;
 
             var validEstimate = true;
-            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0))
+            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
 
                 if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
@@ -250,7 +250,7 @@ namespace WeaponCore.Platform
                 targetCenter = Vector3D.Zero;
 
             var validEstimate = true;
-            if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0) {
+            if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
                 if (weapon.Comp.Data.Repo.Base.State.TrackingReticle) {
                     targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
@@ -321,7 +321,7 @@ namespace WeaponCore.Platform
 
             targetLock = isTracking && weapon.Target.IsAligned;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && targetLock && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            var rayCheckTest = !weapon.Comp.Session.IsClient && targetLock && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
@@ -517,7 +517,7 @@ namespace WeaponCore.Platform
             valid = true;
             var ai = weapon.Comp.Ai;
             var session = ai.Session;
-            var ammoDef = weapon.ActiveAmmoDef.ConsumableDef;
+            var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick) {
                 ai.GridVel = ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                 ai.IsStatic = ai.MyGrid.Physics?.IsStatic ?? false;
@@ -657,7 +657,7 @@ namespace WeaponCore.Platform
             valid = true;
             var ai = weapon.Comp.Ai;
             var session = ai.Session;
-            var ammoDef = weapon.ActiveAmmoDef.ConsumableDef;
+            var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick)
             {
                 ai.GridVel = ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
@@ -822,15 +822,15 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
 
-            if (ActiveAmmoDef.ConsumableDef.Const.FeelsGravity && Comp.Ai.Session.Tick - GravityTick > 119)
+            if (ActiveAmmoDef.AmmoDef.Const.FeelsGravity && Comp.Ai.Session.Tick - GravityTick > 119)
             {
                 GravityTick = Comp.Ai.Session.Tick;
                 float interference;
                 GravityPoint = System.Session.Physics.CalculateNaturalGravityAt(MyPivotPos, out interference);
             }
-            var gravityMultiplier = ActiveAmmoDef.ConsumableDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.ConsumableDef.Trajectory.GravityMultiplier : 0f;
+            var gravityMultiplier = ActiveAmmoDef.AmmoDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.AmmoDef.Trajectory.GravityMultiplier : 0f;
 
-            var predictedPos = Old2TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.ConsumableDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.ConsumableDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
+            var predictedPos = Old2TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
 
             return predictedPos;
         }
@@ -1105,7 +1105,7 @@ namespace WeaponCore.Platform
             }
 
             Water water = null;
-            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.ConsumableDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
+            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
             {
                 var waterSphere = new BoundingSphereD(Comp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
                 if (waterSphere.Contains(targetPos) != ContainmentType.Disjoint)
@@ -1198,12 +1198,12 @@ namespace WeaponCore.Platform
             MinAzimuthRadians = MinAzToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
             MaxAzimuthRadians = MaxAzToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
 
-            if (System.TurretMovement == CoreSystem.TurretType.AzimuthOnly || System.Values.HardPoint.AddToleranceToTracking)
+            if (System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly || System.Values.HardPoint.AddToleranceToTracking)
             {
                 MinElToleranceRadians -= toleranceRads;
                 MaxElToleranceRadians += toleranceRads;
             }
-            else if (System.TurretMovement == CoreSystem.TurretType.ElevationOnly || System.Values.HardPoint.AddToleranceToTracking)
+            else if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly || System.Values.HardPoint.AddToleranceToTracking)
             {
                 MinAzToleranceRadians -= toleranceRads;
                 MaxAzToleranceRadians += toleranceRads;

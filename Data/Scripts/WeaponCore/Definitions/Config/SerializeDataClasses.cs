@@ -5,7 +5,7 @@ using System.ComponentModel;
 using VRageMath;
 using WeaponCore.Settings;
 using WeaponCore.Support;
-using static WeaponCore.Support.CoreComponent;
+using static WeaponCore.Support.WeaponComponent;
 using static WeaponCore.WeaponStateValues;
 
 namespace WeaponCore

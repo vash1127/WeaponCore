@@ -67,7 +67,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
         internal readonly MyConcurrentPool<GridAi> GridAiPool = new MyConcurrentPool<GridAi>(128, ai => ai.CleanUp());
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
-        internal readonly MyConcurrentPool<CorePlatform> PlatFormPool = new MyConcurrentPool<CorePlatform>(256, platform => platform.Clean());
+        internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
         internal readonly MyConcurrentPool<ConstructPacket> PacketConstructPool = new MyConcurrentPool<ConstructPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<ConstructFociPacket> PacketConstructFociPool = new MyConcurrentPool<ConstructFociPacket>(64, packet => packet.CleanUp());
@@ -101,7 +101,7 @@ namespace WeaponCore
 
         internal readonly MyConcurrentHashSet<Weapon> WeaponToPullAmmo = new MyConcurrentHashSet<Weapon>();
 
-        internal readonly ConcurrentCachingList<CoreComponent> CompsToStart = new ConcurrentCachingList<CoreComponent>();
+        internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedAiClean = new ConcurrentCachingList<GridAi>();
 
         internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
@@ -113,7 +113,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryMonitors = new ConcurrentDictionary<MyInventory, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
-        internal readonly Dictionary<MyDefinitionId, CoreStructure> WeaponPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
+        internal readonly Dictionary<MyDefinitionId, WeaponStructure> WeaponPlatforms = new Dictionary<MyDefinitionId, WeaponStructure>(MyDefinitionId.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
@@ -127,18 +127,18 @@ namespace WeaponCore
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<ulong, AvInfoCache> AvShotCache = new Dictionary<ulong, AvInfoCache>();
         internal readonly Dictionary<ulong, VoxelCache> VoxelCaches = new Dictionary<ulong, VoxelCache>();
-        internal readonly Dictionary<MyCubeBlock, CoreComponent> ArmorCubes = new Dictionary<MyCubeBlock, CoreComponent>();
+        internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyInventory, MyFixedPoint> InventoryVolume = new Dictionary<MyInventory, MyFixedPoint>();
         internal readonly Dictionary<ulong, uint[]> PlayerMIds = new Dictionary<ulong, uint[]>();
         internal readonly Dictionary<object, PacketInfo> PrunedPacketsToClient = new Dictionary<object, PacketInfo>();
-        internal readonly Dictionary<long, CoreComponent> IdToCompMap = new Dictionary<long, CoreComponent>();
+        internal readonly Dictionary<long, WeaponComponent> IdToCompMap = new Dictionary<long, WeaponComponent>();
         internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>();
         internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
-        internal readonly Dictionary<WeaponDefinition.ConsumableDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.ConsumableDef, AmmoModifer>();
+        internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
@@ -156,7 +156,7 @@ namespace WeaponCore
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
-        internal readonly List<CoreComponent> CompsDelayed = new List<CoreComponent>();
+        internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();
         internal readonly List<Projectile> Hits = new List<Projectile>(16);
         internal readonly List<Weapon> AcquireTargets = new List<Weapon>(128);

@@ -5,7 +5,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.CoreComponent;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -40,8 +40,17 @@ namespace WeaponCore
             return new NetResult { Message = message, Valid = valid };
         }
 
+        private long _lastFakeTargetUpdateErrorId = long.MinValue;
         private bool Error(PacketObj data, params NetResult[] messages)
         {
+            var fakeTargetUpdateError = data.Packet.PType == PacketType.FakeTargetUpdate; // why does this happen so often
+           
+            if (fakeTargetUpdateError) {
+                if (data.Packet.EntityId == _lastFakeTargetUpdateErrorId)
+                    return false;
+                _lastFakeTargetUpdateErrorId = data.Packet.EntityId;
+            }
+
             var message = $"[{data.Packet.PType.ToString()} - PacketError] - ";
 
             for (int i = 0; i < messages.Length; i++)
@@ -103,7 +112,6 @@ namespace WeaponCore
                 }
                 else {
                     iPacket = PacketConstructPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.Construct];
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = PacketType.Construct;
@@ -134,7 +142,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketConstructFociPool.Get();
-                        iPacket.MId = ++ai.MIds[(int)PacketType.ConstructFoci];
                         iPacket.EntityId = ai.MyGrid.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = PacketType.ConstructFoci;
@@ -166,7 +173,6 @@ namespace WeaponCore
                 else {
 
                     iPacket = PacketAiPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.AiData];
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = PacketType.AiData;
@@ -200,7 +206,6 @@ namespace WeaponCore
                 else {
 
                     iPacket = PacketAmmoPool.Get();
-                    iPacket.MId = ++w.MIds[(int)type];
                     iPacket.EntityId = w.Comp.MyCube.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -217,7 +222,7 @@ namespace WeaponCore
             else Log.Line($"SendWeaponAmmoData should never be called on Client");
         }
 
-        internal void SendCompBaseData(CoreComponent comp)
+        internal void SendCompBaseData(WeaponComponent comp)
         {
             if (IsServer) {
 
@@ -234,7 +239,6 @@ namespace WeaponCore
                 else {
 
                     iPacket = PacketCompBasePool.Get();
-                    iPacket.MId = ++comp.MIds[(int)type];
                     iPacket.EntityId = comp.MyCube.EntityId;
                     iPacket.SenderId = MultiplayerId;
                     iPacket.PType = type;
@@ -249,7 +253,7 @@ namespace WeaponCore
             else Log.Line($"SendCompData should never be called on Client");
         }
 
-        internal void SendTargetChange(CoreComponent comp, int weaponId)
+        internal void SendTargetChange(WeaponComponent comp, int weaponId)
         {
             if (IsServer) {
 
@@ -268,7 +272,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketTargetPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
                         iPacket.EntityId = comp.MyCube.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -287,7 +290,7 @@ namespace WeaponCore
             else Log.Line($"SendTargetChange should never be called on Client");
         }
 
-        internal void SendCompState(CoreComponent comp)
+        internal void SendCompState(WeaponComponent comp)
         {
             if (IsServer) {
 
@@ -305,7 +308,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketStatePool.Get();
-                        iPacket.MId = ++comp.MIds[(int)type];
                         iPacket.EntityId = comp.MyCube.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -342,7 +344,6 @@ namespace WeaponCore
                     }
                     else {
                         iPacket = PacketReloadPool.Get();
-                        iPacket.MId = ++w.MIds[(int)type];
                         iPacket.EntityId = w.Comp.MyCube.EntityId;
                         iPacket.SenderId = MultiplayerId;
                         iPacket.PType = type;
@@ -446,7 +447,7 @@ namespace WeaponCore
             else Log.Line($"SendUpdateRequest should only be called on clients");
         }
 
-        internal void SendOverRidesClientComp(CoreComponent comp, string settings, int value)
+        internal void SendOverRidesClientComp(WeaponComponent comp, string settings, int value)
         {
             if (IsClient)
             {
@@ -472,10 +473,10 @@ namespace WeaponCore
         {
             if (firingCube == null) return;
 
-            var comp = firingCube.Components.Get<CoreComponent>();
+            var comp = firingCube.Components.Get<WeaponComponent>();
 
             int weaponId;
-            if (comp.Ai?.MyGrid != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
+            if (comp.Ai?.MyGrid != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
             {
                 PacketsToServer.Add(new FixedWeaponHitPacket
                 {
@@ -523,7 +524,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FocusUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusUpdate,
@@ -558,7 +558,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FocusLockUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusLockUpdate,
@@ -593,7 +592,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.NextActiveUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.NextActiveUpdate,
@@ -627,7 +625,6 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ReleaseActiveUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ReleaseActiveUpdate
@@ -699,7 +696,6 @@ namespace WeaponCore
                     Entity = controlBlock,
                     Packet = new BoolUpdatePacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ActiveControlUpdate],
                         EntityId = controlBlock.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ActiveControlUpdate,
@@ -710,7 +706,7 @@ namespace WeaponCore
             else Log.Line($"SendActiveControlUpdate should never be called on Dedicated");
         }
 
-        internal void SendActionShootUpdate(CoreComponent comp, ShootActions action)
+        internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
         {
             if (IsClient)
             {
@@ -736,7 +732,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new ShootStatePacket
                     {
-                        MId = ++comp.MIds[(int)PacketType.RequestShootUpdate],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = comp.Session.MultiplayerId,
                         PType = PacketType.RequestShootUpdate,
@@ -748,7 +743,7 @@ namespace WeaponCore
             else Log.Line($"SendActionShootUpdate should never be called on Dedicated");
         }
 
-        internal void SendActiveTerminal(CoreComponent comp)
+        internal void SendActiveTerminal(WeaponComponent comp)
         {
             if (IsClient)
             {
@@ -777,7 +772,6 @@ namespace WeaponCore
                         PType = PacketType.TerminalMonitor,
                         EntityId = comp.MyCube.EntityId,
                         State = TerminalMonitorPacket.Change.Update,
-                        MId = ++comp.MIds[(int)PacketType.TerminalMonitor],
                     }
                 });
             }
@@ -821,7 +815,7 @@ namespace WeaponCore
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
 
-        internal void SendPlayerControlRequest(CoreComponent comp, long playerId, CompStateValues.ControlMode mode)
+        internal void SendPlayerControlRequest(WeaponComponent comp, long playerId, CompStateValues.ControlMode mode)
         {
             if (IsClient)
             {
@@ -847,7 +841,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new PlayerControlRequestPacket
                     {
-                        MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.PlayerControlRequest,
@@ -868,7 +861,6 @@ namespace WeaponCore
                     Entity = w.Comp.MyCube,
                     Packet = new QueuedShotPacket
                     {
-                        MId = ++w.MIds[(int)PacketType.QueueShot],
                         EntityId = w.Comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.QueueShot,
@@ -903,7 +895,7 @@ namespace WeaponCore
             else Log.Line($"SendAmmoCycleRequest should never be called on Non-Client");
         }
 
-        internal void SendSetCompFloatRequest(CoreComponent comp, float newDps, PacketType type)
+        internal void SendSetCompFloatRequest(WeaponComponent comp, float newDps, PacketType type)
         {
             if (IsClient)
             {
@@ -928,7 +920,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new FloatUpdatePacket
                     {
-                        MId = ++comp.MIds[(int)type],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = type,
@@ -939,7 +930,7 @@ namespace WeaponCore
             else Log.Line($"SendSetFloatRequest should never be called on Non-HandlesInput");
         }
 
-        internal void SendSetCompBoolRequest(CoreComponent comp, bool newBool, PacketType type)
+        internal void SendSetCompBoolRequest(WeaponComponent comp, bool newBool, PacketType type)
         {
             if (IsClient)
             {
@@ -964,7 +955,6 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new BoolUpdatePacket
                     {
-                        MId = ++comp.MIds[(int)type],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = type,
@@ -975,7 +965,7 @@ namespace WeaponCore
             else Log.Line($"SendSetCompBoolRequest should never be called on Non-HandlesInput");
         }
 
-        internal void SendTrackReticleUpdate(CoreComponent comp, bool track)
+        internal void SendTrackReticleUpdate(WeaponComponent comp, bool track)
         {
             if (IsClient) {
 

@@ -22,7 +22,8 @@ namespace WeaponCore.Platform
                 Weapon.Casting = false;
                 var masterWeapon = Weapon.TrackTarget ? Weapon : Weapon.Comp.TrackingWeapon;
                 var ignoreTargets = Weapon.Target.IsProjectile || Weapon.Target.Entity is IMyCharacter;
-                var trackingCheckPosition = Weapon.GetScope.CachedPos;
+				var scope = Weapon.GetScope;
+                var trackingCheckPosition = scope.CachedPos;
                 double rayDist = 0;
 
 
@@ -75,19 +76,14 @@ namespace WeaponCore.Platform
 
                     if (topAsGrid == null)
                         return;
-                    if (Weapon.Target.Entity != null && (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid) || !topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0))
+                    if (Weapon.Target.Entity != null && (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid)))
                     {
-                        var hitPos = Weapon.Target.Entity.PositionComp.WorldAABB.Center;
-                        Vector3D pos; 
-                        if (CheckSelfHit(Weapon, ref trackingCheckPosition, ref hitPos, out pos))
-                        {
-                            masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
-                            if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
-                            return;
-                        }
-                        return;
+						masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+						if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+						return;
+
                     }
-                    if (!Session.GridEnemy(Weapon.Comp.Ai.AiOwner, topAsGrid))
+                    if (!topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0 || !Session.GridEnemy(Weapon.Comp.Ai.AiOwner, topAsGrid))
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);

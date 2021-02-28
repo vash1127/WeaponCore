@@ -161,7 +161,7 @@ namespace WeaponCore
                     return;
                 }
 
-                CoreComponent comp;
+                WeaponComponent comp;
                 if (cube != null && ArmorCubes.TryGetValue(cube, out comp)) {
 
                     Log.Line($"BeforeDamageHandler2");
@@ -207,9 +207,9 @@ namespace WeaponCore
             GridAi gridAi;
             if (cube != null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi)) {
 
-                CoreComponent comp;
+                WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp))
-                    comp.RequestShootUpdate(CoreComponent.ShootActions.ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                    comp.RequestShootUpdate(WeaponComponent.ShootActions.ShootOff, comp.Session.DedicatedServer ? 0 : -1);
             }
         }
 

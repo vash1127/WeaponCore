@@ -5,8 +5,8 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
 using static WeaponCore.Support.Target;
-using static WeaponCore.Support.CoreComponent.Start;
-using static WeaponCore.Support.CoreComponent.ShootActions;
+using static WeaponCore.Support.WeaponComponent.Start;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 using static WeaponCore.CompStateValues;
 namespace WeaponCore
@@ -68,7 +68,7 @@ namespace WeaponCore
 
                     if (ai.DbUpdated || !comp.UpdatedState) 
                         comp.DetectStateChanges();
-                    if (comp.Platform.State != CorePlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose || comp.IsDisabled) 
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose || comp.IsDisabled) 
                         continue;
 
                     if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
@@ -115,7 +115,7 @@ namespace WeaponCore
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
 
-                        if (!ai.HadPower && w.ActiveAmmoDef.ConsumableDef.Const.MustCharge && w.State.Action != ShootOff) {
+                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.Action != ShootOff) {
 
                             if (IsServer) {
                                 w.State.WeaponMode(comp, ShootOff);
@@ -133,7 +133,7 @@ namespace WeaponCore
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.ConsumableDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
 
                             if (IsServer && (w.Ammo.CurrentAmmo == 0 || w.CheckInventorySystem))
                                 w.ComputeServerStorage();
@@ -166,7 +166,7 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
                         bool targetLock = false;
-                        var noAmmo =  w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && w.ActiveAmmoDef.ConsumableDef.Const.Reloadable && !w.System.DesignatorWeapon && Tick - w.LastMagSeenTick > 600;
+                        var noAmmo =  w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && Tick - w.LastMagSeenTick > 600;
                         if (w.Target.HasTarget) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
@@ -232,7 +232,7 @@ namespace WeaponCore
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
-                        var reloading = w.ActiveAmmoDef.ConsumableDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
@@ -253,7 +253,7 @@ namespace WeaponCore
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
 
-                            if ((ai.AvailablePowerChanged || ai.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
+                            if ((ai.AvailablePowerChanged || ai.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
                                 if ((!ai.RequestIncrease || ai.PowerIncrease) && !Tick60)
                                     w.RecalcPower = true;
@@ -264,7 +264,7 @@ namespace WeaponCore
                             }
                             if (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick) {
 
-                                if (!w.RequestedPower && !w.ActiveAmmoDef.ConsumableDef.Const.MustCharge && !w.System.DesignatorWeapon) {
+                                if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge && !w.System.DesignatorWeapon) {
                                     if (!comp.UnlimitedPower)
                                         ai.RequestedWeaponsDraw += w.RequiredPower;
                                     w.RequestedPower = true;
@@ -272,7 +272,7 @@ namespace WeaponCore
 
                                 ShootingWeapons.Add(w);
                             }
-                            else if (w.ChargeUntilTick > Tick && !w.ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
+                            else if (w.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                                 w.Charging = true;
                                 w.StopShooting(false);
                             }
@@ -301,7 +301,7 @@ namespace WeaponCore
                 var w = ChargingWeapons[i];
                 var comp = w.Comp;
                 var ai = comp.Ai;
-                if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking  || comp.Platform.State != CorePlatform.PlatformState.Ready) {
+                if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking  || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     
                     if (w.DrawingPower)
                         w.StopPowerDraw();
@@ -373,7 +373,7 @@ namespace WeaponCore
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = (ai.GridMaxPower * .98f) * percUseable;
 
-                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.ConsumableDef.Const.ChargSize - w.Ammo.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.Ammo.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
 
                     if (!w.Comp.UnlimitedPower) {
@@ -437,15 +437,15 @@ namespace WeaponCore
             for (int i = ShootingWeapons.Count - 1; i >= 0; i--) {
 
                 var w = ShootingWeapons[i];
-                var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != CorePlatform.PlatformState.Ready;
-                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance == WeaponDefinition.ConsumableDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
+                var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
+                var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
                 var quickSkip = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot;
                 if (quickSkip) continue;
 
                 if (!w.Comp.UnlimitedPower) {
 
                     //TODO add logic for power priority
-                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.ConsumableDef.Const.EnergyAmmo || w.ActiveAmmoDef.ConsumableDef.Const.IsHybrid) && !w.ActiveAmmoDef.ConsumableDef.Const.MustCharge) {
+                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
                         if (w.ChargeDelayTicks == 0) {
                             var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
@@ -466,7 +466,7 @@ namespace WeaponCore
                             w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.ActiveAmmoDef.ConsumableDef.Const.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
+                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         w.DrawPower(true);

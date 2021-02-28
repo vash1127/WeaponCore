@@ -59,15 +59,14 @@ namespace WeaponCore
             GridAi ai;
             if (GridToMasterAi.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
+                var rootConstruct = ai.Construct.RootAi.Construct;
 
-                    var rootConstruct = ai.Construct.RootAi.Construct;
-
+                if (rootConstruct.Data.Repo.FocusData.Revision < cgPacket.Data.FocusData.Revision)
+                {
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
                     rootConstruct.UpdateLeafs();
                 }
-                else Log.Line($"ClientConstructGroups MID failure - mId:{packet.MId}");
+                else Log.Line($"ClientConstructGroups Version failure - Version:{rootConstruct.Data.Repo.Version}({cgPacket.Data.Version})");
             
                 data.Report.PacketValid = true;
             }
@@ -87,13 +86,13 @@ namespace WeaponCore
             GridAi ai;
             if (GridToMasterAi.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
+                var rootConstruct = ai.Construct.RootAi.Construct;
 
-                    var rootConstruct = ai.Construct.RootAi.Construct;
+                if (rootConstruct.Data.Repo.FocusData.Revision < fociPacket.Data.Revision)
+                {
                     rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data);
                 }
-                else Log.Line($"ClientConstructFoci MID failure - mId:{packet.MId}");
+                else Log.Line($"ClientConstructFoci Version failure - Version:{rootConstruct.Data.Repo.FocusData.Revision}({fociPacket.Data.Revision})");
 
                 data.Report.PacketValid = true;
             }
@@ -113,12 +112,8 @@ namespace WeaponCore
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    ai.Data.Repo.Sync(aiSyncPacket.Data);
-                }
-                else Log.Line($"ClientAiDataUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
+                if (!ai.Data.Repo.Sync(aiSyncPacket.Data))
+                    Log.Line($"ClientAiDataUpdate: version fail - senderId:{packet.SenderId} - Version{ai.Data.Repo.Version}({aiSyncPacket.Data.Version})");
 
                 data.Report.PacketValid = true;
             }
@@ -133,15 +128,11 @@ namespace WeaponCore
             var packet = data.Packet;
             var compDataPacket = (CompBasePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId) {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Base.Sync(comp, compDataPacket.Data);
-            }
-            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
+            if (!comp.Data.Repo.Base.Sync(comp, compDataPacket.Data)) 
+                Log.Line($"compDataSync: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Base.Revision}({compDataPacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -153,14 +144,11 @@ namespace WeaponCore
             var packet = data.Packet;
             var compStatePacket = (CompStatePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)  {
-                comp.MIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Base.State.Sync(comp, compStatePacket.Data, CompStateValues.Caller.Direct);
-            }
+            if (!comp.Data.Repo.Base.State.Sync(comp, compStatePacket.Data, CompStateValues.Caller.Direct))
+                Log.Line($"ClientStateUpdate: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Base.State.Revision}({compStatePacket.Data.Revision})");
 
             data.Report.PacketValid = true;
 
@@ -172,15 +160,11 @@ namespace WeaponCore
             var packet = data.Packet;
             var weaponReloadPacket = (WeaponReloadPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             
             var w = comp.Platform.Weapons[weaponReloadPacket.WeaponId];
-            if (w.MIds[(int)packet.PType] < packet.MId)  {
-                w.MIds[(int)packet.PType] = packet.MId;
-
-                w.Reload.Sync(w, weaponReloadPacket.Data);
-            }
+            w.Reload.Sync(w, weaponReloadPacket.Data, false);
 
             data.Report.PacketValid = true;
 
@@ -192,16 +176,12 @@ namespace WeaponCore
             var packet = data.Packet;
             var targetPacket = (TargetPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<WeaponComponent>();
 
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready ) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready ) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[targetPacket.Target.WeaponId];
-            if (w.MIds[(int)packet.PType] < packet.MId)  {
-                w.MIds[(int)packet.PType] = packet.MId;
-
-                targetPacket.Target.SyncTarget(w);
-            }
+            targetPacket.Target.SyncTarget(w, false);
 
             data.Report.PacketValid = true;
 
@@ -213,16 +193,12 @@ namespace WeaponCore
             var packet = data.Packet;
             var ammoPacket = (WeaponAmmoPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>();
+            var comp = ent?.Components.Get<WeaponComponent>();
 
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[ammoPacket.WeaponId];
-            if (w.MIds[(int)packet.PType] < packet.MId) {
-                w.MIds[(int)packet.PType] = packet.MId;
-
-                w.Ammo.Sync(w, ammoPacket.Data);
-            }
+            w.Ammo.Sync(w, ammoPacket.Data); 
 
             data.Report.PacketValid = true;
 
@@ -240,7 +216,10 @@ namespace WeaponCore
             GridAi ai;
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId) {
+                var mid = ai.MIds[(int)packet.PType];
+                var newUpdate = mid == 0 || mid < packet.MId;
+
+                if (newUpdate) {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     long playerId;
@@ -281,7 +260,10 @@ namespace WeaponCore
             long playerId;
             if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
+                var mid = ai.MIds[(int)packet.PType];
+                var newUpdate = mid == 0 || mid < packet.MId;
+
+                if (newUpdate)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     PlayerMouseStates[playerId] = mousePacket.Data;
@@ -372,8 +354,8 @@ namespace WeaponCore
             var packet = data.Packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var queueShot = (QueuedShotPacket) packet;
-            var comp = ent?.Components.Get<CoreComponent>();
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[queueShot.WeaponId];
             w.ShootOnce = true;

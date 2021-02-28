@@ -10,7 +10,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal void CompChange(bool add, CoreComponent comp)
+        internal void CompChange(bool add, WeaponComponent comp)
         {
             if (add) {
 
@@ -287,6 +287,9 @@ namespace WeaponCore.Support
             AiCloseTick = Session.Tick;
 
             MyGrid.Components.Remove<AiComponent>();
+
+            for (int i = 0; i < MIds.Length; i++)
+                MIds[i] = 0;
 
             if (Session.IsClient)
                 Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiRemove);

@@ -18,7 +18,7 @@ using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.WeaponRandomGenerator.RandomType;
 using static WeaponCore.WeaponRandomGenerator;
 
@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                 if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
-                    if (w.ActiveAmmoDef.ConsumableDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
+                    if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
             }
@@ -102,7 +102,7 @@ namespace WeaponCore.Support
             var acquired = false;
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
-            if (s.Session.WaterApiLoaded && !p.Info.ConsumableDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
+            if (s.Session.WaterApiLoaded && !p.Info.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
                 waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
 
             TargetInfo alphaInfo = null;
@@ -215,7 +215,7 @@ namespace WeaponCore.Support
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
-            if (session.WaterApiLoaded && !w.ActiveAmmoDef.ConsumableDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
+            if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
                 waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
 
             TargetInfo alphaInfo = null;
@@ -292,7 +292,7 @@ namespace WeaponCore.Support
                         if (!w.AiEnabled) {
 
                             var validEstimate = true;
-                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon && w.ActiveAmmoDef.ConsumableDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
+                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!validEstimate || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
@@ -364,7 +364,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(CoreSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -403,7 +403,7 @@ namespace WeaponCore.Support
             return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);
         }
 
-        private static bool FindRandomBlock(CoreSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -475,31 +475,37 @@ namespace WeaponCore.Support
                     blocksSighted++;
 
                     system.Session.RandomRayCasts++;
+					
+					var targetDir = blockPos - w.BarrelOrigin;
+                    Vector3D targetDirNorm;
+                    Vector3D.Normalize(ref targetDir, out targetDirNorm);
+                    var testPos = w.BarrelOrigin + (targetDirNorm * w.MuzzleDistToBarrelCenter);
+					
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15);
+                    physics.CastRay(testPos, blockPos, out hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase)
                         continue;
 
-                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                    var hitEnt = hitInfo.HitEntity?.GetTopMostParent() as MyEntity;
+                    var hitGrid = hitEnt as MyCubeGrid;
+                    TargetInfo otherInfo;
+
                     if (hitGrid != null)
                     {
-                        if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && (hitGrid.IsSameConstructAs(ai.MyGrid) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
-                        bool enemy;
-
+                        if (hitGrid.MarkedForClose || (hitGrid != block.CubeGrid && hitGrid.IsSameConstructAs(ai.MyGrid)) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0) continue;
+                        var isTarget = hitGrid == block.CubeGrid || hitGrid.IsSameConstructAs(block.CubeGrid);
+                        
                         var bigOwners = hitGrid.BigOwners;
-                        if (bigOwners.Count == 0) enemy = true;
-                        else
-                        {
-                            var relationship = info.EntInfo.Relationship;
-                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner &&
-                                    relationship != MyRelationsBetweenPlayerAndBlock.FactionShare && relationship != MyRelationsBetweenPlayerAndBlock.Friends;
-                        }
-
-                        if (!enemy)
+                        var noOwner = bigOwners.Count == 0;
+                        
+                        var validTarget = isTarget || noOwner || ai.Targets.TryGetValue(hitEnt, out otherInfo) && (otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership);
+                        if (!validTarget)
                             continue;
                     }
-
+                    else if (hitEnt is IMyCharacter && (!ai.Targets.TryGetValue(hitEnt, out otherInfo) || !(otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)))
+                        continue;
+                    
                     Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
                     var shortDist = rayDist * (1 - hitInfo.Fraction);
                     var origDist = rayDist * hitInfo.Fraction;
@@ -561,34 +567,39 @@ namespace WeaponCore.Support
                     var bestTest = false;
                     if (best) {
 
-                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.ConsumableDef.Trajectory.Smarts.OverideTarget)) {
+                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.AmmoDef.Trajectory.Smarts.OverideTarget)) {
 
                             ai.Session.CanShoot++;
                             Vector3D predictedPos;
                             if (Weapon.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
 
                                 ai.Session.ClosestRayCasts++;
-                                if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
+								
+								var targetDir = cubePos - w.BarrelOrigin;
+                                Vector3D targetDirNorm;
+                                Vector3D.Normalize(ref targetDir, out targetDirNorm);
+
+                                var rayStart = w.BarrelOrigin + (targetDirNorm * w.MuzzleDistToBarrelCenter);
+								
+                                if (ai.Session.Physics.CastRay(rayStart, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
                                     var hitEnt = hit.HitEntity?.GetTopMostParent() as MyEntity;
                                     var hitGrid = hitEnt as MyCubeGrid;
+                                    TargetInfo otherInfo;
 
                                     if (hitGrid != null) {
 
                                         if (hitGrid.MarkedForClose || hitGrid != cube.CubeGrid && (hitGrid.IsSameConstructAs(ai.MyGrid) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
-                                        bool enemy;
-
                                         var bigOwners = hitGrid.BigOwners;
-
-                                        if (bigOwners.Count == 0) enemy = true;
-                                        else {
-                                            var relationship = info.EntInfo.Relationship;
-                                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare && relationship != MyRelationsBetweenPlayerAndBlock.Friends;
-                                        }
-
-                                        if (!enemy)
+                                        var isTarget = hitGrid == cube.CubeGrid || hitGrid.IsSameConstructAs(cube.CubeGrid);
+                                        var noOwner = bigOwners.Count == 0;
+                                        var validTarget = isTarget || noOwner || ai.Targets.TryGetValue(hitEnt, out otherInfo) && (otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership);
+                                        if (!validTarget)
                                             continue;
+
                                         bestTest = true;
                                     }
+                                    else if (hitEnt is IMyCharacter && (!ai.Targets.TryGetValue(hitEnt, out otherInfo) || !(otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || otherInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)))
+                                        continue;
                                 }
                             }
                         }

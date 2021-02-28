@@ -9,7 +9,7 @@ using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDe
 
 namespace WeaponCore.Support
 {
-    public partial class CoreComponent : MyEntityComponentBase
+    public partial class WeaponComponent : MyEntityComponentBase
     {
         public override void OnAddedToContainer()
         {
@@ -18,7 +18,7 @@ namespace WeaponCore.Support
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene) {
 
-                    if (Platform.State == CorePlatform.PlatformState.Fresh)
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                         PlatformInit();
                 }
             }
@@ -30,14 +30,14 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-                if (Platform.State == CorePlatform.PlatformState.Inited || Platform.State == CorePlatform.PlatformState.Ready)
+                if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     ReInit();
                 else {
 
-                    if (Platform.State == CorePlatform.PlatformState.Delay)
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Delay)
                         return;
                     
-                    if (Platform.State != CorePlatform.PlatformState.Fresh)
+                    if (Platform.State != MyWeaponPlatform.PlatformState.Fresh)
                         Log.Line($"OnAddedToScene != Fresh, Inited or Ready: {Platform.State}");
 
                     PlatformInit();
@@ -55,16 +55,16 @@ namespace WeaponCore.Support
         {
             switch (Platform.Init(this)) {
 
-                case CorePlatform.PlatformState.Invalid:
+                case MyWeaponPlatform.PlatformState.Invalid:
                     Platform.PlatformCrash(this, false, false, $"Platform PreInit is in an invalid state: {MyCube.BlockDefinition.Id.SubtypeName}");
                     break;
-                case CorePlatform.PlatformState.Valid:
+                case MyWeaponPlatform.PlatformState.Valid:
                     Platform.PlatformCrash(this, false, true, $"Something went wrong with Platform PreInit: {MyCube.BlockDefinition.Id.SubtypeName}");
                     break;
-                case CorePlatform.PlatformState.Delay:
+                case MyWeaponPlatform.PlatformState.Delay:
                     Session.CompsDelayed.Add(this);
                     break;
-                case CorePlatform.PlatformState.Inited:
+                case MyWeaponPlatform.PlatformState.Inited:
                     Init();
                     break;
             }
@@ -82,7 +82,7 @@ namespace WeaponCore.Support
                     InventoryInit();
                     PowerInit();
 
-                    if (Platform.State == CorePlatform.PlatformState.Inited)
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                         Platform.ResetParts(this);
 
                     Entity.NeedsWorldMatrix = true;
@@ -90,7 +90,7 @@ namespace WeaponCore.Support
                     if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                     else OnAddedToSceneTasks();
 
-                    Platform.State = CorePlatform.PlatformState.Ready;
+                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
 
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
@@ -130,7 +130,7 @@ namespace WeaponCore.Support
 
                         Ai.FirstRun = true;
 
-                        if (Platform.State == CorePlatform.PlatformState.Inited)
+                        if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                             Platform.ResetParts(this);
 
                         Entity.NeedsWorldMatrix = true;
@@ -197,8 +197,8 @@ namespace WeaponCore.Support
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
 
-                    if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.ConsumableDef.Const.MagazineSize)
-                        weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.ConsumableDef.Const.MagazineSize;
+                    if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                        weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                     if (Session.IsServer && weapon.TrackTarget)
                         Session.AcqManager.Monitor(weapon.Acquire);
@@ -245,7 +245,7 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            if (Session.IsServer && Platform.State == CorePlatform.PlatformState.Ready) {
+            if (Session.IsServer && Platform.State == MyWeaponPlatform.PlatformState.Ready) {
 
                 if (MyCube?.Storage != null) {
                     Data.Save();

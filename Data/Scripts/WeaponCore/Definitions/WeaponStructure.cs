@@ -16,18 +16,18 @@ using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.TrajectoryDef.GuidanceType;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.AreaDamageDef;
-using static WeaponCore.Support.WeaponDefinition.ConsumableDef.ShapeDef.Shapes;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.ShapeDef.Shapes;
 namespace WeaponCore.Support
 {
-    internal class CoreSystem
+    internal class WeaponSystem
     {
-        internal class ConsumableTypes
+        internal class WeaponAmmoTypes
         {
             public MyDefinitionId AmmoDefinitionId;
             public MyDefinitionId EjectionDefinitionId;
-            public ConsumableDef ConsumableDef;
+            public AmmoDef AmmoDef;
             public string AmmoName;
             public bool IsShrapnel;
         }
@@ -38,7 +38,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
         public readonly WeaponDefinition Values;
-        public readonly ConsumableTypes[] AmmoTypes;
+        public readonly WeaponAmmoTypes[] AmmoTypes;
         public readonly Stack<MySoundPair> PreFirePairs = new Stack<MySoundPair>();
         public readonly Stack<MySoundPair> FirePerShotPairs = new Stack<MySoundPair>();
         public readonly Stack<MySoundPair> FireWhenDonePairs = new Stack<MySoundPair>();
@@ -142,7 +142,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public CoreSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, ConsumableTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -196,11 +196,11 @@ namespace WeaponCore.Support
             for (int i = 0; i < AmmoTypes.Length; i++) {
 
                 var ammo = AmmoTypes[i];
-                ammo.ConsumableDef.Const = new ConsumableConstants(ammo, Values, Session, this, i);
-                if (ammo.ConsumableDef.Const.GuidedAmmoDetected)
+                ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
+                if (ammo.AmmoDef.Const.GuidedAmmoDetected)
                     HasGuidedAmmo = true;
 
-                if (ammo.ConsumableDef.Const.IsTurretSelectable)
+                if (ammo.AmmoDef.Const.IsTurretSelectable)
                     ++ammoSelections;
             }
             HasAmmoSelection = ammoSelections > 1;
@@ -344,7 +344,7 @@ namespace WeaponCore.Support
                 hardPointAvMaxDistSqr = Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance * Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance;
         }
 
-        private void HardPointSoundDistMaxSqr(ConsumableTypes[] weaponAmmo, out float firingSoundDistSqr, out float reloadSoundDistSqr, out float barrelSoundDistSqr, out float hardPointSoundDistSqr, out float noAmmoSoundDistSqr, out float hardPointAvMaxDistSqr)
+        private void HardPointSoundDistMaxSqr(WeaponAmmoTypes[] weaponAmmo, out float firingSoundDistSqr, out float reloadSoundDistSqr, out float barrelSoundDistSqr, out float hardPointSoundDistSqr, out float noAmmoSoundDistSqr, out float hardPointAvMaxDistSqr)
         {
             var fireSound = string.Concat(Arc, Values.HardPoint.Audio.FiringSound);
             var reloadSound = string.Concat(Arc, Values.HardPoint.Audio.ReloadSound);
@@ -398,12 +398,12 @@ namespace WeaponCore.Support
 
             if (firingSoundDistSqr <= 0)
                 foreach (var ammoType in weaponAmmo)
-                    if (ammoType.ConsumableDef.Trajectory.MaxTrajectory * ammoType.ConsumableDef.Trajectory.MaxTrajectory > firingSoundDistSqr)
-                        firingSoundDistSqr = ammoType.ConsumableDef.Trajectory.MaxTrajectory * ammoType.ConsumableDef.Trajectory.MaxTrajectory;
+                    if (ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory > firingSoundDistSqr)
+                        firingSoundDistSqr = ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory;
         }
     }
 
-    public class ConsumableConstants
+    public class AmmoConstants
     {
         public enum Texture
         {
@@ -426,7 +426,7 @@ namespace WeaponCore.Support
         public readonly Stack<MySoundPair> TravelSoundPairs = new Stack<MySoundPair>();
         public readonly Stack<MySoundPair> CustomSoundPairs = new Stack<MySoundPair>();
         public readonly MyAmmoMagazineDefinition MagazineDef;
-        public readonly ConsumableDef[] AmmoPattern;
+        public readonly AmmoDef[] AmmoPattern;
         public readonly MyStringId[] TracerTextures;
         public readonly MyStringId[] TrailTextures;
         public readonly MyStringId[] SegmentTextures;
@@ -544,7 +544,7 @@ namespace WeaponCore.Support
         public readonly double HealthHitModifier;
         public readonly double VoxelHitModifier;
 
-        internal ConsumableConstants(CoreSystem.ConsumableTypes ammo, WeaponDefinition wDef, Session session, CoreSystem system, int ammoIndex)
+        internal AmmoConstants(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
         {
             AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
@@ -556,12 +556,12 @@ namespace WeaponCore.Support
 
             if (!string.IsNullOrEmpty(ammo.EjectionDefinitionId.SubtypeId.String))
             {
-                var itemEffect = ammo.ConsumableDef.Ejection.Type == ConsumableDef.AmmoEjectionDef.SpawnType.Item;
+                var itemEffect = ammo.AmmoDef.Ejection.Type == AmmoDef.AmmoEjectionDef.SpawnType.Item;
                 if (itemEffect) 
                     EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Component>(ammo.EjectionDefinitionId.SubtypeId.String) };
                 HasEjectEffect = itemEffect && EjectItem.Content != null;
             }
-            else if (ammo.ConsumableDef.Ejection.Type == ConsumableDef.AmmoEjectionDef.SpawnType.Particle && !string.IsNullOrEmpty(ammo.ConsumableDef.AmmoGraphics.Particles.Eject.Name))
+            else if (ammo.AmmoDef.Ejection.Type == AmmoDef.AmmoEjectionDef.SpawnType.Particle && !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Eject.Name))
                 HasEjectEffect = true;
 
             if (AmmoItem.Content != null && !session.AmmoItems.ContainsKey(AmmoItem.ItemId)) 
@@ -574,143 +574,143 @@ namespace WeaponCore.Support
                 if (ammoType.Trajectory.Guidance != None)
                     guidedAmmo = true;
 
-                if (ammoType.AmmoRound.Equals(ammo.ConsumableDef.Shrapnel.AmmoRound))
+                if (ammoType.AmmoRound.Equals(ammo.AmmoDef.Shrapnel.AmmoRound))
                     ShrapnelId = i;
             }
 
-            IsMine = ammo.ConsumableDef.Trajectory.Guidance == DetectFixed || ammo.ConsumableDef.Trajectory.Guidance == DetectSmart || ammo.ConsumableDef.Trajectory.Guidance == DetectTravelTo;
-            IsField = ammo.ConsumableDef.Trajectory.FieldTime > 0;
-            IsHybrid = ammo.ConsumableDef.HybridRound;
-            IsTurretSelectable = !ammo.IsShrapnel && ammo.ConsumableDef.HardPointUsable;
+            IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
+            IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
+            IsHybrid = ammo.AmmoDef.HybridRound;
+            IsTurretSelectable = !ammo.IsShrapnel && ammo.AmmoDef.HardPointUsable;
 
-            AmmoParticleShrinks = ammo.ConsumableDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
-            HitParticleShrinks = ammo.ConsumableDef.AmmoGraphics.Particles.Hit.ShrinkByDistance;
-            FieldParticleShrinks = ammo.ConsumableDef.AreaEffect.Pulse.Particle.ShrinkByDistance;
+            AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
+            HitParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Hit.ShrinkByDistance;
+            FieldParticleShrinks = ammo.AmmoDef.AreaEffect.Pulse.Particle.ShrinkByDistance;
 
-            AmmoParticle = !string.IsNullOrEmpty(ammo.ConsumableDef.AmmoGraphics.Particles.Ammo.Name);
-            HitParticle = !string.IsNullOrEmpty(ammo.ConsumableDef.AmmoGraphics.Particles.Hit.Name);
-            FieldParticle = !string.IsNullOrEmpty(ammo.ConsumableDef.AreaEffect.Pulse.Particle.Name);
-            CustomExplosionSound = !string.IsNullOrEmpty(ammo.ConsumableDef.AreaEffect.Explosions.CustomSound);
-            DrawLine = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Enable;
-            LineColorVariance = ammo.ConsumableDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.ConsumableDef.AmmoGraphics.Lines.ColorVariance.End > 0;
-            LineWidthVariance = ammo.ConsumableDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.ConsumableDef.AmmoGraphics.Lines.WidthVariance.End > 0;
-            SegmentColorVariance = TracerMode == Texture.Resize && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.Start > 0 && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.End > 0;
-            SegmentWidthVariance = TracerMode == Texture.Resize && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.Start > 0 || ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.End > 0;
+            AmmoParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name);
+            HitParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name);
+            FieldParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AreaEffect.Pulse.Particle.Name);
+            CustomExplosionSound = !string.IsNullOrEmpty(ammo.AmmoDef.AreaEffect.Explosions.CustomSound);
+            DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
+            LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
+            LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;
+            SegmentColorVariance = TracerMode == Texture.Resize && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.End > 0;
+            SegmentWidthVariance = TracerMode == Texture.Resize && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.End > 0;
 
-            SegmentStep = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-            SpeedVariance = ammo.ConsumableDef.Trajectory.SpeedVariance.Start > 0 || ammo.ConsumableDef.Trajectory.SpeedVariance.End > 0;
-            RangeVariance = ammo.ConsumableDef.Trajectory.RangeVariance.Start > 0 || ammo.ConsumableDef.Trajectory.RangeVariance.End > 0;
-            TrailWidth = ammo.ConsumableDef.AmmoGraphics.Lines.Trail.CustomWidth > 0 ? ammo.ConsumableDef.AmmoGraphics.Lines.Trail.CustomWidth : ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Width;
-            TargetOffSet = ammo.ConsumableDef.Trajectory.Smarts.Inaccuracy > 0;
-            TargetLossTime = ammo.ConsumableDef.Trajectory.TargetLossTime > 0 ? ammo.ConsumableDef.Trajectory.TargetLossTime : int.MaxValue;
+            SegmentStep = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+            SpeedVariance = ammo.AmmoDef.Trajectory.SpeedVariance.Start > 0 || ammo.AmmoDef.Trajectory.SpeedVariance.End > 0;
+            RangeVariance = ammo.AmmoDef.Trajectory.RangeVariance.Start > 0 || ammo.AmmoDef.Trajectory.RangeVariance.End > 0;
+            TrailWidth = ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth > 0 ? ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth : ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Width;
+            TargetOffSet = ammo.AmmoDef.Trajectory.Smarts.Inaccuracy > 0;
+            TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
             CanZombie = TargetLossTime > 0 && TargetLossTime != int.MaxValue && !IsMine;
-            MaxLifeTime = ammo.ConsumableDef.Trajectory.MaxLifeTime > 0 ? ammo.ConsumableDef.Trajectory.MaxLifeTime : int.MaxValue;
+            MaxLifeTime = ammo.AmmoDef.Trajectory.MaxLifeTime > 0 ? ammo.AmmoDef.Trajectory.MaxLifeTime : int.MaxValue;
 
-            MaxChaseTime = ammo.ConsumableDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.ConsumableDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
-            MaxObjectsHit = ammo.ConsumableDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.ConsumableDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            BaseDamage = ammo.ConsumableDef.BaseDamage;
-            MaxTargets = ammo.ConsumableDef.Trajectory.Smarts.MaxTargets;
-            TargetLossDegree = ammo.ConsumableDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.ConsumableDef.Trajectory.TargetLossDegree)) : 0;
+            MaxChaseTime = ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
+            MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
+            BaseDamage = ammo.AmmoDef.BaseDamage;
+            MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
+            TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
-            ShieldModifier = ammo.ConsumableDef.DamageScales.Shields.Modifier > 0 ? ammo.ConsumableDef.DamageScales.Shields.Modifier : 1;
-            ShieldBypassMod = ammo.ConsumableDef.DamageScales.Shields.BypassModifier > 0 && ammo.ConsumableDef.DamageScales.Shields.BypassModifier < 1 ? ammo.ConsumableDef.DamageScales.Shields.BypassModifier : 1;
-            AmmoSkipAccel = ammo.ConsumableDef.Trajectory.AccelPerSec <= 0;
-            FeelsGravity = ammo.ConsumableDef.Trajectory.GravityMultiplier > 0;
+            ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
+            ShieldBypassMod = ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier < 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 1;
+            AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
+            FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
-            MaxTrajectory = ammo.ConsumableDef.Trajectory.MaxTrajectory;
-            HasBackKickForce = ammo.ConsumableDef.BackKickForce > 0;
+            MaxTrajectory = ammo.AmmoDef.Trajectory.MaxTrajectory;
+            HasBackKickForce = ammo.AmmoDef.BackKickForce > 0;
 
-            MaxLateralThrust = MathHelperD.Clamp(ammo.ConsumableDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
+            MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
 
             ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out GuidedAmmoDetected);
 
-            Fields(ammo.ConsumableDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
-            AreaEffects(ammo.ConsumableDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out DetonationRadius, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
+            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
+            AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out DetonationRadius, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
 
-            DamageScales(ammo.ConsumableDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage, out HealthHitModifier, out VoxelHitModifier);
-            Beams(ammo.ConsumableDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
-            CollisionShape(ammo.ConsumableDef, out CollisionIsLine, out CollisionSize, out TracerLength);
-            SmartsDelayDistSqr = (CollisionSize * ammo.ConsumableDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.ConsumableDef.Trajectory.Smarts.TrackingDelay);
-            PrimeEntityPool = Models(ammo.ConsumableDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
+            DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage, out HealthHitModifier, out VoxelHitModifier);
+            Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
+            CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
+            SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
+            PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out ChargSize, out BurstMode, out HasShotReloadDelay);
-            Sound(ammo.ConsumableDef, session, out HitSound, out AltHitSounds, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
+            Sound(ammo.AmmoDef, session, out HitSound, out AltHitSounds, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
 
-            DesiredProjectileSpeed = (!IsBeamWeapon ? ammo.ConsumableDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-            Trail = ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Enable;
-            HasShotFade =  ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
-            MaxTrajectoryGrows = ammo.ConsumableDef.Trajectory.MaxTrajectoryTime > 1;
+            DesiredProjectileSpeed = (!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+            Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
+            HasShotFade =  ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
+            MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
         }
 
-        internal void ComputeTextures(CoreSystem.ConsumableTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
+        internal void ComputeTextures(WeaponSystem.WeaponAmmoTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
         {
-            var lineSegments = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0;
+            var lineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0;
 
             if (lineSegments)
                 tracerTexture = Texture.Resize;
-            else if (ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.TextureMode == ConsumableDef.GraphicDef.LineDef.Texture.Normal)
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Normal)
                 tracerTexture = Texture.Normal;
-            else if (ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.TextureMode == ConsumableDef.GraphicDef.LineDef.Texture.Cycle)
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Cycle)
                 tracerTexture = Texture.Cycle;
-            else if (ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.TextureMode == ConsumableDef.GraphicDef.LineDef.Texture.Wave)
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Wave)
                 tracerTexture = Texture.Wave;
             else tracerTexture = Texture.Chaos;
-            trailTexture = (Texture) ammo.ConsumableDef.AmmoGraphics.Lines.Trail.TextureMode;
+            trailTexture = (Texture) ammo.AmmoDef.AmmoGraphics.Lines.Trail.TextureMode;
 
-            if (ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Textures != null && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Textures.Length > 0)
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length > 0)
             {
-                tracerTextures = new MyStringId[ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Textures.Length];
-                for (int i = 0; i < ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Textures.Length; i++)
+                tracerTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length; i++)
                 {
-                    var value = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Textures[i];
+                    var value = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures[i];
                     if (string.IsNullOrEmpty(value))
-                        value = ammo.ConsumableDef.AmmoGraphics.Lines.TracerMaterial;
+                        value = ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial;
                     tracerTextures[i] = MyStringId.GetOrCompute(value);
                 }
             }
-            else tracerTextures = new[] { MyStringId.GetOrCompute(ammo.ConsumableDef.AmmoGraphics.Lines.TracerMaterial) };
+            else tracerTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial) };
 
-            if (ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures != null && ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length > 0)
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length > 0)
             {
-                segmentTextures = new MyStringId[ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length];
-                for (int i = 0; i < ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length; i++)
+                segmentTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length; i++)
                 {
-                    var value = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures[i];
+                    var value = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures[i];
                     if (string.IsNullOrEmpty(value))
-                        value = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Material;
+                        value = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material;
                     segmentTextures[i] = MyStringId.GetOrCompute(value);
                 }
             }
-            else segmentTextures = new[] { MyStringId.GetOrCompute(ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.Segmentation.Material) };
+            else segmentTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material) };
 
-            if (ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Textures != null && ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Textures.Length > 0)
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length > 0)
             {
-                trailTextures = new MyStringId[ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Textures.Length];
-                for (int i = 0; i < ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Textures.Length; i++)
+                trailTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length; i++)
                 {
-                    var value = ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Textures[i];
+                    var value = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures[i];
                     if (string.IsNullOrEmpty(value))
-                        value = ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Material;
+                        value = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material;
                     trailTextures[i] = MyStringId.GetOrCompute(value);
                 }
             }
-            else trailTextures = new[] { MyStringId.GetOrCompute(ammo.ConsumableDef.AmmoGraphics.Lines.Trail.Material) };
+            else trailTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material) };
         }
 
 
-        private void ComputeSteps(CoreSystem.ConsumableTypes ammo, out float shotFadeStep, out float trajectoryStep)
+        private void ComputeSteps(WeaponSystem.WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
         {
-            var changeFadeSteps = ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.ConsumableDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
+            var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
             shotFadeStep = 1f / changeFadeSteps;
 
-            trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.ConsumableDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
+            trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
-        private void ComputeAmmoPattern(CoreSystem.ConsumableTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out ConsumableDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
+        private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
         {
-            var pattern = ammo.ConsumableDef.Pattern;
+            var pattern = ammo.AmmoDef.Pattern;
             var indexPos = 0;
             
             int indexCount;
@@ -723,19 +723,19 @@ namespace WeaponCore.Support
 
             patternIndex = indexCount;
 
-            ammoPattern = new ConsumableDef[indexCount];
+            ammoPattern = new AmmoDef[indexCount];
 
             if (!pattern.Enable || !pattern.SkipParent)
-                ammoPattern[indexPos++] = ammo.ConsumableDef;
+                ammoPattern[indexPos++] = ammo.AmmoDef;
 
             if (pattern.Enable) {
 
                 for (int i = 0; i < wDef.Ammos.Length; i++) {
 
                     var ammoDef = wDef.Ammos[i];
-                    for (int j = 0; j < ammo.ConsumableDef.Pattern.Ammos.Length; j++) {
+                    for (int j = 0; j < ammo.AmmoDef.Pattern.Ammos.Length; j++) {
 
-                        var aPattern = ammo.ConsumableDef.Pattern.Ammos[j];
+                        var aPattern = ammo.AmmoDef.Pattern.Ammos[j];
 
                         if (aPattern.Equals(ammoDef.AmmoRound)) {
                             ammoPattern[indexPos++] = ammoDef;
@@ -748,7 +748,7 @@ namespace WeaponCore.Support
             guidedDetected = guidedAmmo;
         }
 
-        internal void GetParticleInfo(CoreSystem.ConsumableTypes ammo, WeaponDefinition wDef, Session session)
+        internal void GetParticleInfo(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
         {
             var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
             var comparer = new Session.HackEqualityComparer();
@@ -766,7 +766,7 @@ namespace WeaponCore.Support
                             foreach (var particle in hacked.ParticleEffects)
                             {
                                 if (particle.Id.SubtypeId.Contains("Spark"))
-                                    Log.Line($"test: {particle.Id.SubtypeId} - {ammo.ConsumableDef.AmmoGraphics.Particles.Hit.Name}");
+                                    Log.Line($"test: {particle.Id.SubtypeId} - {ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name}");
                             }
                         }
                     }
@@ -775,10 +775,10 @@ namespace WeaponCore.Support
         }
 
         private int mexLogLevel = 0;
-        private void GetPeakDps(CoreSystem.ConsumableTypes ammoDef, CoreSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        private void GetPeakDps(WeaponSystem.WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
-            var a = ammoDef.ConsumableDef;
+            var a = ammoDef.AmmoDef;
             var hasShrapnel = ShrapnelId > -1;
             var l = wDef.HardPoint.Loading;
 
@@ -943,7 +943,7 @@ namespace WeaponCore.Support
             return (float) shotsPerSecond * (float)trajectilesPerBarrel * (float)barrelsPerShot;
         }
 
-        private float GetAreaDmg(ConsumableDef a)
+        private float GetAreaDmg(AmmoDef a)
         {
             if (a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
                 return 0;
@@ -957,7 +957,7 @@ namespace WeaponCore.Support
             return (float)(areaEffectDamage * (areaEffectSize * 0.5d));
         }
 
-        private float GetDetDmg(ConsumableDef a)
+        private float GetDetDmg(AmmoDef a)
         {
             if (!a.AreaEffect.Detonation.DetonateOnEnd || a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
             {
@@ -970,62 +970,62 @@ namespace WeaponCore.Support
             return (float)(a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d));
         }
 
-        private void Fields(ConsumableDef consumableDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
+        private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
         {
-            pulseInterval = consumableDef.AreaEffect.Pulse.Interval;
-            growTime = consumableDef.AreaEffect.Pulse.GrowTime == 0 && pulseInterval > 0 ? 60 : consumableDef.AreaEffect.Pulse.GrowTime;
-            pulseChance = consumableDef.AreaEffect.Pulse.PulseChance;
-            pulse = pulseInterval > 0 && pulseChance > 0 && !consumableDef.Beams.Enable;
+            pulseInterval = ammoDef.AreaEffect.Pulse.Interval;
+            growTime = ammoDef.AreaEffect.Pulse.GrowTime == 0 && pulseInterval > 0 ? 60 : ammoDef.AreaEffect.Pulse.GrowTime;
+            pulseChance = ammoDef.AreaEffect.Pulse.PulseChance;
+            pulse = pulseInterval > 0 && pulseChance > 0 && !ammoDef.Beams.Enable;
         }
 
-        private void AreaEffects(ConsumableDef consumableDef, out AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out float detonationRadius, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange, out int minArmingTime)
+        private void AreaEffects(AmmoDef ammoDef, out AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out float detonationRadius, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange, out int minArmingTime)
         {
-            areaEffect = consumableDef.AreaEffect.AreaEffect;
-            areaEffectDamage = consumableDef.AreaEffect.Base.EffectStrength > 0 ? consumableDef.AreaEffect.Base.EffectStrength : consumableDef.AreaEffect.AreaEffectDamage;
-            areaEffectSize = consumableDef.AreaEffect.Base.Radius > 0 ? consumableDef.AreaEffect.Base.Radius : consumableDef.AreaEffect.AreaEffectRadius;
-            detonationDamage = consumableDef.AreaEffect.Detonation.DetonationDamage;
-            detonationRadius = consumableDef.AreaEffect.Detonation.DetonationRadius;
+            areaEffect = ammoDef.AreaEffect.AreaEffect;
+            areaEffectDamage = ammoDef.AreaEffect.Base.EffectStrength > 0 ? ammoDef.AreaEffect.Base.EffectStrength : ammoDef.AreaEffect.AreaEffectDamage;
+            areaEffectSize = ammoDef.AreaEffect.Base.Radius > 0 ? ammoDef.AreaEffect.Base.Radius : ammoDef.AreaEffect.AreaEffectRadius;
+            detonationDamage = ammoDef.AreaEffect.Detonation.DetonationDamage;
+            detonationRadius = ammoDef.AreaEffect.Detonation.DetonationRadius;
 
-            ammoAreaEffect = consumableDef.AreaEffect.AreaEffect != AreaEffectType.Disabled;
+            ammoAreaEffect = ammoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled;
             areaRadiusSmall = Session.ModRadius(areaEffectSize, false);
             areaRadiusLarge = Session.ModRadius(areaEffectSize, true);
             detonateRadiusSmall = Session.ModRadius(detonationRadius, false);
             detonateRadiusLarge = Session.ModRadius(detonationRadius, true);
             eWar = areaEffect > (AreaEffectType)2;
             eWarEffect = areaEffect > (AreaEffectType)3;
-            eWarTriggerRange = eWar && Pulse && consumableDef.AreaEffect.EwarFields.TriggerRange > 0 ? consumableDef.AreaEffect.EwarFields.TriggerRange : 0;
-            minArmingTime = consumableDef.AreaEffect.Detonation.MinArmingTime;
+            eWarTriggerRange = eWar && Pulse && ammoDef.AreaEffect.EwarFields.TriggerRange > 0 ? ammoDef.AreaEffect.EwarFields.TriggerRange : 0;
+            minArmingTime = ammoDef.AreaEffect.Detonation.MinArmingTime;
         }
 
 
-        private MyConcurrentPool<MyEntity> Models(ConsumableDef consumableDef, WeaponDefinition wDef, out bool primeModel, out bool triggerModel, out string primeModelPath)
+        private MyConcurrentPool<MyEntity> Models(AmmoDef ammoDef, WeaponDefinition wDef, out bool primeModel, out bool triggerModel, out string primeModelPath)
         {
-            if (consumableDef.AreaEffect.AreaEffect > (AreaEffectType)3 && IsField) triggerModel = true;
+            if (ammoDef.AreaEffect.AreaEffect > (AreaEffectType)3 && IsField) triggerModel = true;
             else triggerModel = false;
-            primeModel = consumableDef.AmmoGraphics.ModelName != string.Empty;
-            primeModelPath = primeModel ? wDef.ModPath + consumableDef.AmmoGraphics.ModelName : string.Empty;
+            primeModel = ammoDef.AmmoGraphics.ModelName != string.Empty;
+            primeModelPath = primeModel ? wDef.ModPath + ammoDef.AmmoGraphics.ModelName : string.Empty;
             return primeModel ? new MyConcurrentPool<MyEntity>(256, PrimeEntityClear, 10000, PrimeEntityActivator) : null;
         }
 
 
-        private void Beams(ConsumableDef consumableDef, out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle, out bool offsetEffect)
+        private void Beams(AmmoDef ammoDef, out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle, out bool offsetEffect)
         {
-            isBeamWeapon = consumableDef.Beams.Enable;
-            virtualBeams = consumableDef.Beams.VirtualBeams && IsBeamWeapon;
-            rotateRealBeam = consumableDef.Beams.RotateRealBeam && VirtualBeams;
-            convergeBeams = !RotateRealBeam && consumableDef.Beams.ConvergeBeams && VirtualBeams;
-            oneHitParticle = consumableDef.Beams.OneParticle && IsBeamWeapon && VirtualBeams;
-            offsetEffect = consumableDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset > 0;
+            isBeamWeapon = ammoDef.Beams.Enable;
+            virtualBeams = ammoDef.Beams.VirtualBeams && IsBeamWeapon;
+            rotateRealBeam = ammoDef.Beams.RotateRealBeam && VirtualBeams;
+            convergeBeams = !RotateRealBeam && ammoDef.Beams.ConvergeBeams && VirtualBeams;
+            oneHitParticle = ammoDef.Beams.OneParticle && IsBeamWeapon && VirtualBeams;
+            offsetEffect = ammoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset > 0;
         }
 
-        private void CollisionShape(ConsumableDef consumableDef, out bool collisionIsLine, out double collisionSize, out double tracerLength)
+        private void CollisionShape(AmmoDef ammoDef, out bool collisionIsLine, out double collisionSize, out double tracerLength)
         {
-            var isLine = consumableDef.Shape.Shape == LineShape;
-            var size = consumableDef.Shape.Diameter;
+            var isLine = ammoDef.Shape.Shape == LineShape;
+            var size = ammoDef.Shape.Diameter;
 
             if (IsBeamWeapon)
                 tracerLength = MaxTrajectory;
-            else tracerLength = consumableDef.AmmoGraphics.Lines.Tracer.Length > 0 ? consumableDef.AmmoGraphics.Lines.Tracer.Length : 0.1;
+            else tracerLength = ammoDef.AmmoGraphics.Lines.Tracer.Length > 0 ? ammoDef.AmmoGraphics.Lines.Tracer.Length : 0.1;
 
             if (size <= 0)
             {
@@ -1033,17 +1033,17 @@ namespace WeaponCore.Support
                 size = 1;
             }
             else if (!isLine) size *= 0.5;
-            if (size > 5) Log.Line($"{consumableDef.AmmoRound} has large largeCollisionSize: {size} meters");
+            if (size > 5) Log.Line($"{ammoDef.AmmoRound} has large largeCollisionSize: {size} meters");
             collisionIsLine = isLine;
             collisionSize = size;
         }
 
-        private void DamageScales(ConsumableDef consumableDef, out bool damageScaling, out bool fallOffScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage, out double healthHitModifer, out double voxelHitModifer)
+        private void DamageScales(AmmoDef ammoDef, out bool damageScaling, out bool fallOffScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage, out double healthHitModifer, out double voxelHitModifer)
         {
             armorScaling = false;
             customDamageScales = false;
             fallOffScaling = false;
-            var d = consumableDef.DamageScales;
+            var d = ammoDef.DamageScales;
             customBlockDef = null;
             if (d.Custom.Types != null && d.Custom.Types.Length > 0)
             {
@@ -1062,13 +1062,13 @@ namespace WeaponCore.Support
                 armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
                 fallOffScaling = d.FallOff.MinMultipler > 0;
             }
-            selfDamage = consumableDef.DamageScales.SelfDamage && !IsBeamWeapon;
-            voxelDamage = consumableDef.DamageScales.DamageVoxels;
-            healthHitModifer = consumableDef.DamageScales.HealthHitModifier > 0 ? consumableDef.DamageScales.HealthHitModifier : 1;
-            voxelHitModifer = consumableDef.DamageScales.VoxelHitModifier > 0 ? consumableDef.DamageScales.VoxelHitModifier : 1;
+            selfDamage = ammoDef.DamageScales.SelfDamage && !IsBeamWeapon;
+            voxelDamage = ammoDef.DamageScales.DamageVoxels;
+            healthHitModifer = ammoDef.DamageScales.HealthHitModifier > 0 ? ammoDef.DamageScales.HealthHitModifier : 1;
+            voxelHitModifer = ammoDef.DamageScales.VoxelHitModifier > 0 ? ammoDef.DamageScales.VoxelHitModifier : 1;
         }
 
-        private void Energy(CoreSystem.ConsumableTypes ammoPair, CoreSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
+        private void Energy(WeaponSystem.WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
@@ -1081,13 +1081,13 @@ namespace WeaponCore.Support
 
             if (mustCharge)
             {
-                var ewar = (int)ammoPair.ConsumableDef.AreaEffect.AreaEffect > 3;
-                var shotEnergyCost = ewar ? ammoPair.ConsumableDef.EnergyCost * AreaEffectDamage : ammoPair.ConsumableDef.EnergyCost * BaseDamage;
+                var ewar = (int)ammoPair.AmmoDef.AreaEffect.AreaEffect > 3;
+                var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
                 var requiredPower = (((shotEnergyCost * ((system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel);
 
                 chargeSize = (int)Math.Ceiling(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
 
-                energyMagSize = ammoPair.ConsumableDef.EnergyMagazineSize > 0 ? ammoPair.ConsumableDef.EnergyMagazineSize : chargeSize;
+                energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;
                 return;
             }
             chargeSize = 0;
@@ -1095,13 +1095,13 @@ namespace WeaponCore.Support
 
         }
 
-        private void Sound(ConsumableDef consumableDef, Session session, out bool hitSound, out bool altHitSounds, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)
+        private void Sound(AmmoDef ammoDef, Session session, out bool hitSound, out bool altHitSounds, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)
         {
-            hitSound = consumableDef.AmmoAudio.HitSound != string.Empty;
+            hitSound = ammoDef.AmmoAudio.HitSound != string.Empty;
             altHitSounds = true; //ammoDef.AmmoAudio.VoxelHitSound != string.Empty || ammoDef.AmmoAudio.PlayerHitSound != string.Empty || ammoDef.AmmoAudio.FloatingHitSound != string.Empty;
-            ammoTravelSound = consumableDef.AmmoAudio.TravelSound != string.Empty;
-            var hitSoundStr = string.Concat(Arc, consumableDef.AmmoAudio.HitSound);
-            var travelSoundStr = string.Concat(Arc, consumableDef.AmmoAudio.TravelSound);
+            ammoTravelSound = ammoDef.AmmoAudio.TravelSound != string.Empty;
+            var hitSoundStr = string.Concat(Arc, ammoDef.AmmoAudio.HitSound);
+            var travelSoundStr = string.Concat(Arc, ammoDef.AmmoAudio.TravelSound);
             hitSoundDistSqr = 0;
             ammoTravelSoundDistSqr = 0;
             ammoSoundMaxDistSqr = 0;
@@ -1153,9 +1153,9 @@ namespace WeaponCore.Support
     }
 
 
-    internal class CoreStructure
+    internal class WeaponStructure
     {
-        public readonly Dictionary<MyStringHash, CoreSystem> WeaponSystems;
+        public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<int, int> HashToId;
 
         public readonly MyStringHash[] MuzzlePartNames;
@@ -1165,7 +1165,7 @@ namespace WeaponCore.Support
         public readonly string ModPath;
         public readonly Session Session;
 
-        public CoreStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
+        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
@@ -1174,7 +1174,7 @@ namespace WeaponCore.Support
             ModPath = modPath;
             var muzzlePartNames = new MyStringHash[numOfParts];
             var weaponId = 0;
-            WeaponSystems = new Dictionary<MyStringHash, CoreSystem>(MyStringHash.Comparer);
+            WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             HashToId = new Dictionary<int, int>();
             PrimaryWeapon = -1;
             var gridWeaponCap = 0;
@@ -1209,7 +1209,7 @@ namespace WeaponCore.Support
                 }
                     
 
-                var weaponAmmo = new CoreSystem.ConsumableTypes[weaponDef.Ammos.Length];
+                var weaponAmmo = new WeaponSystem.WeaponAmmoTypes[weaponDef.Ammos.Length];
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
                     var ammo = weaponDef.Ammos[i];
@@ -1222,19 +1222,19 @@ namespace WeaponCore.Support
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine)
                             ammoDefId = def.Id;
 
-                        if (ammo.Ejection.Type == ConsumableDef.AmmoEjectionDef.SpawnType.Item && !string.IsNullOrEmpty(ammo.Ejection.CompDef.ItemName) && def.Id.SubtypeId.String == ammo.Ejection.CompDef.ItemName)
+                        if (ammo.Ejection.Type == AmmoDef.AmmoEjectionDef.SpawnType.Item && !string.IsNullOrEmpty(ammo.Ejection.CompDef.ItemName) && def.Id.SubtypeId.String == ammo.Ejection.CompDef.ItemName)
                             ejectionDefId = def.Id;
                     }
 
 
                     Session.AmmoDefIds.Add(ammoDefId);
                     Session.AmmoDamageMap[ammo] = null;
-                    weaponAmmo[i] = new CoreSystem.ConsumableTypes { ConsumableDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
+                    weaponAmmo[i] = new WeaponSystem.WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
                 var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponIdHash, weaponId);
-                WeaponSystems.Add(myMuzzleNameHash, new CoreSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
                 weaponId++;
             }
             if (PrimaryWeapon == -1)

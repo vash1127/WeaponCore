@@ -4,11 +4,11 @@ using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
 {
-    public partial class CoreComponent 
+    public partial class WeaponComponent 
     {
         internal void TerminalRefresh(bool update = true)
         {
-            if (Platform.State != CorePlatform.PlatformState.Ready || Status != Start.Started)
+            if (Platform.State != MyWeaponPlatform.PlatformState.Ready || Status != Start.Started)
                 return;
 
             if (Ai?.LastTerminal == MyCube)  {
@@ -50,9 +50,9 @@ namespace WeaponCore.Support
                         Ai.Data.Repo.ActiveTerminal = 0;
                     
                     GridAi testAi;
-                    CoreComponent comp;
+                    WeaponComponent comp;
                     if (Ai.WeaponBase.TryRemove(MyCube, out comp)) {
-                        if (Platform.State == CorePlatform.PlatformState.Ready) {
+                        if (Platform.State == MyWeaponPlatform.PlatformState.Ready) {
 
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                                 var w = comp.Platform.Weapons[i];
@@ -74,23 +74,23 @@ namespace WeaponCore.Support
 
                     Ai = null;
                 }
-                else if (Platform.State != CorePlatform.PlatformState.Delay) Log.Line($"CompRemove: Ai already null - State:{Platform.State} - Status:{Status}");
+                else if (Platform.State != MyWeaponPlatform.PlatformState.Delay) Log.Line($"CompRemove: Ai already null - State:{Platform.State} - Status:{Status}");
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }
 
-        internal static void SetRange(CoreComponent comp)
+        internal static void SetRange(WeaponComponent comp)
         {
             foreach (var w in comp.Platform.Weapons)
                 w.UpdateWeaponRange();
         }
 
-        internal static void SetRof(CoreComponent comp)
+        internal static void SetRof(WeaponComponent comp)
         {
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)  {
                 var w = comp.Platform.Weapons[i];
 
-                if (w.ActiveAmmoDef.ConsumableDef.Const.MustCharge) continue;
+                if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
                 w.UpdateRof();
             }
@@ -98,13 +98,13 @@ namespace WeaponCore.Support
             SetDps(comp);
         }
 
-        internal static void SetDps(CoreComponent comp, bool change = false)
+        internal static void SetDps(WeaponComponent comp, bool change = false)
         {
-            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
-                if (!change && (!w.ActiveAmmoDef.ConsumableDef.Const.IsBeamWeapon || w.ActiveAmmoDef.ConsumableDef.Const.MustCharge)) continue;
+                if (!change && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                 comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
             }
         }
@@ -121,7 +121,7 @@ namespace WeaponCore.Support
 
         internal void GeneralWeaponCleanUp()
         {
-            if (Platform?.State == CorePlatform.PlatformState.Ready) {
+            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready) {
                 foreach (var w in Platform.Weapons) {
 
                     w.RayCallBackClean();
@@ -137,7 +137,7 @@ namespace WeaponCore.Support
 
         public void CleanCompParticles()
         {
-            if (Platform?.State == CorePlatform.PlatformState.Ready)
+            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 foreach (var w in Platform.Weapons)
                 {
@@ -168,11 +168,11 @@ namespace WeaponCore.Support
 
         public void CleanCompSounds()
         {
-            if (Platform?.State == CorePlatform.PlatformState.Ready) {
+            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready) {
 
                 foreach (var w in Platform.Weapons) {
 
-                    if (w.AvCapable && w.System.FiringSound == CoreSystem.FiringSoundState.WhenDone)
+                    if (w.AvCapable && w.System.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
                         Session.SoundsToClean.Add(new Session.CleanSound {Force = true, Emitter = w.FiringEmitter, EmitterPool = Session.Emitters, SoundPair = w.FiringSound, SoundPairPool = w.System.FireWhenDonePairs, SpawnTick = Session.Tick});
 
                     if (w.AvCapable && w.System.PreFireSound)
