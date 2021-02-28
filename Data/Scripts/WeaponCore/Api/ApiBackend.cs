@@ -249,6 +249,11 @@ namespace WeaponCore.Api
             var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
             var topTarget = e?.GetTopMostParent() as MyEntity;
             var block = e as IMyTerminalBlock;
+            if (Vector3D.DistanceSquared(topTarget.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) >  25000 * 25000)
+            {
+                return new MyDetectedEntityInfo();
+            }
+
             var player = e as IMyCharacter;
             long entityId = 0;
             var relation = MyRelationsBetweenPlayerAndBlock.NoOwnership;
@@ -278,6 +283,7 @@ namespace WeaponCore.Api
                 }
                 return new MyDetectedEntityInfo(entityId, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, relation, BoundingBoxD.CreateInvalid(), _session.Tick);
             }
+
             entityId = e.EntityId;
             var grid = topTarget as MyCubeGrid;
             if (grid != null) name = block != null ? block.CustomName : grid.DisplayName;
