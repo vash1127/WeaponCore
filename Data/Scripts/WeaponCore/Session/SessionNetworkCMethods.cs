@@ -61,7 +61,7 @@ namespace WeaponCore
             {
                 var rootConstruct = ai.Construct.RootAi.Construct;
 
-                if (rootConstruct.Data.Repo.Version < cgPacket.Data.Version)
+                if (rootConstruct.Data.Repo.FocusData.Revision < cgPacket.Data.FocusData.Revision)
                 {
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
                     rootConstruct.UpdateLeafs();

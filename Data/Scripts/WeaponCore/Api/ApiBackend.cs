@@ -290,6 +290,9 @@ namespace WeaponCore.Api
         private MyDetectedEntityInfo GetEntityInfo(IMyEntity target)
         {
             var e = target;
+            if (e?.Physics == null)
+                return new MyDetectedEntityInfo();
+
             var grid = e.GetTopMostParent() as MyCubeGrid;
             var block = e as IMyTerminalBlock;
             var player = e as IMyCharacter;
