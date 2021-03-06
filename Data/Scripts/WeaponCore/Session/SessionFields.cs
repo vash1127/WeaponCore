@@ -301,6 +301,7 @@ namespace WeaponCore
         internal bool GunnerBlackList;
         internal bool MpActive;
         internal bool IsServer;
+        internal bool IsHost;
         internal bool DedicatedServer;
         internal bool FirstLoop;
         internal bool GameLoaded;

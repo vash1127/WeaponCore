@@ -137,7 +137,7 @@ namespace WeaponCore
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(ShootOnce, comp.Session.IsHost ? 0 : -1);
                     };
                     session.AlteredActions.Add(a);
                 }
@@ -152,7 +152,7 @@ namespace WeaponCore
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(ShootOn, comp.Session.IsHost ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -181,7 +181,7 @@ namespace WeaponCore
                             return;
                         }
                         if (comp.Data.Repo.Base.State.TerminalAction != ShootOn)
-                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                            comp.RequestShootUpdate(ShootOn, comp.Session.IsHost ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -211,7 +211,7 @@ namespace WeaponCore
                             return;
                         }
                         if (comp.Data.Repo.Base.State.TerminalAction != ShootOff)
-                            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                            comp.RequestShootUpdate(ShootOff, comp.Session.IsHost ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;

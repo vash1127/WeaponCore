@@ -389,7 +389,7 @@ namespace WeaponCore.Platform
         {
             var eInfo = Ejector.Info;
             var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-            if (ejectDef.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item)
+            if (ejectDef.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item && System.Session.IsServer)
             {
                 var delay = (uint)ejectDef.CompDef.Delay;
                 if (delay <= 0)

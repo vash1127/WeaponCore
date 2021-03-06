@@ -285,7 +285,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var value = newValue ? WeaponComponent.ShootActions.ShootOn : WeaponComponent.ShootActions.ShootOff;
-            comp.RequestShootUpdate(value, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(value, comp.Session.IsHost ? 0 : -1);
         }
 
         internal static long GetSubSystem(IMyTerminalBlock block)

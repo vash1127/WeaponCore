@@ -26,6 +26,8 @@ namespace WeaponCore
             IsCreative = MyAPIGateway.Session.CreativeMode || MyAPIGateway.Session.SessionSettings.InfiniteAmmo;
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
+            IsHost = IsServer && !DedicatedServer && MpActive;
+
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ProccessServerPacket);
             else

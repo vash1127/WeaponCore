@@ -14,7 +14,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootClick, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootClick, comp.Session.IsHost ? 0 : -1);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
@@ -23,7 +23,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOn, comp.Session.IsHost ? 0 : -1);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
@@ -32,7 +32,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOn, comp.Session.IsHost ? 0 : -1);
         }
 
         internal static void TerminalActionShootOff(IMyTerminalBlock blk)
@@ -41,7 +41,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOff, comp.Session.IsHost ? 0 : -1);
         }
 
         internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
@@ -49,7 +49,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOnce, comp.Session.IsHost ? 0 : -1);
         }
 
         internal static void TerminalActionControlMode(IMyTerminalBlock blk)
