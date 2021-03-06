@@ -81,13 +81,13 @@ namespace WeaponCore
 
                     case PacketType.FakeTargetUpdate: 
                     {
-                            ClientFakeTargetUpdate(packetObj);
-                            break;
+                        ClientFakeTargetUpdate(packetObj);
+                        break;
                     }
                     case PacketType.PlayerIdUpdate: 
                     {
-                            ClientPlayerIdUpdate(packetObj); 
-                            break;
+                        ClientPlayerIdUpdate(packetObj); 
+                        break;
                     }
                     case PacketType.ServerData:
                     {
@@ -96,8 +96,8 @@ namespace WeaponCore
                     }
                     case PacketType.ClientMouseEvent: 
                     {
-                            ClientClientMouseEvent(packetObj);
-                            break;
+                        ClientClientMouseEvent(packetObj);
+                        break;
                     }
                     case PacketType.Construct:
                     {
