@@ -201,7 +201,10 @@ namespace WeaponCore
         {
             if (!IsClient || !MpActive)
             {
-                Log.Line($"trying to process client packets on a non-client");
+                foreach (var packets in PacketsToServer)
+                {
+                    Log.Line($"trying to process client packets on a non-client: {packets.PType}");
+                }
                 PacketsToServer.Clear();
                 return;
             }

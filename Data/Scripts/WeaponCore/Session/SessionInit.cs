@@ -27,6 +27,7 @@ namespace WeaponCore
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
             IsHost = IsServer && !DedicatedServer && MpActive;
+            MpServer = IsHost || DedicatedServer;
 
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ProccessServerPacket);

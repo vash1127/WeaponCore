@@ -302,6 +302,7 @@ namespace WeaponCore
         internal bool MpActive;
         internal bool IsServer;
         internal bool IsHost;
+        internal bool MpServer;
         internal bool DedicatedServer;
         internal bool FirstLoop;
         internal bool GameLoaded;
