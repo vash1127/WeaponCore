@@ -79,10 +79,11 @@ namespace WeaponCore
 
                         var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
                         var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
-                        if (IsServer)
+                        if (!MpActive && IsServer)
                             comp.Data.Repo.Base.State.TrackingReticle = track;
-                        
-                        if (MpActive && track != wasTrack)
+
+                        var needsUpdate = MpActive && track != wasTrack && (comp.Data.Repo.Base.State.PlayerId <= 0 || isControllingPlayer);
+                        if (needsUpdate)
                             comp.Session.SendTrackReticleUpdate(comp, track);
                     }
 

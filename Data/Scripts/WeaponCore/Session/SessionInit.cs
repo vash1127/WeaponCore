@@ -118,6 +118,8 @@ namespace WeaponCore
             IsCreative = MyAPIGateway.Session.CreativeMode;
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
+            IsHost = IsServer && !DedicatedServer && MpActive;
+            MpServer = IsHost || DedicatedServer;
 
             foreach (var x in WeaponDefinitions)
             {
