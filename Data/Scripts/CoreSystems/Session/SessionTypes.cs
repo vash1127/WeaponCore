@@ -595,7 +595,7 @@ namespace CoreSystems
 
             internal void Clean(bool purge = false)
             {
-                if (Session.MpActive && Session.HandlesInput && Comp != null && !purge) {
+                if (Session.MpActive && Session.IsClient && Comp != null && !purge) {
                     uint[] mIds;
                     if (Session.PlayerMIds.TryGetValue(Session.MultiplayerId, out mIds))
                     {

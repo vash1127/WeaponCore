@@ -288,7 +288,7 @@ namespace CoreSystems
             var value = newValue ? CoreComponent.TriggerActions.TriggerOn : CoreComponent.TriggerActions.TriggerOff;
             Log.Line($"2: {value} - {newValue}");
 
-            comp.RequestShootUpdate(value, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(value, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static long GetSubSystem(IMyTerminalBlock block)

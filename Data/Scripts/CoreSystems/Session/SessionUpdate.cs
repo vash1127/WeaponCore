@@ -166,10 +166,11 @@ namespace CoreSystems
 
                         var isControllingPlayer = wComp.Data.Repo.Values.State.PlayerId == PlayerId;
                         var track = (isControllingPlayer && (wComp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && wComp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
-                        if (IsServer)
+                        if (!MpActive && IsServer)
                             wComp.Data.Repo.Values.State.TrackingReticle = track;
-                        
-                        if (MpActive && track != wasTrack)
+
+                        var needsUpdate = MpActive && track != wasTrack && (wComp.Data.Repo.Values.State.PlayerId <= 0 || isControllingPlayer);
+                        if (needsUpdate)
                             wComp.Session.SendTrackReticleUpdate(wComp, track);
                     }
                     var trackReticle = wComp.Data.Repo.Values.State.TrackingReticle;

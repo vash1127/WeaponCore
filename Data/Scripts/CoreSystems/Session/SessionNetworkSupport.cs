@@ -918,17 +918,7 @@ namespace CoreSystems
             }
             else if (HandlesInput)
             {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = entity,
-                    Packet = new BoolUpdatePacket
-                    {
-                        EntityId = entity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.ActiveControlUpdate,
-                        Data = active
-                    }
-                });
+                ai.Construct.UpdateConstructsPlayers(entity, PlayerId, active);
             }
             else Log.Line("SendActiveControlUpdate should never be called on Dedicated");
         }
@@ -1063,18 +1053,7 @@ namespace CoreSystems
             }
             else if (HandlesInput)
             {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.CoreEntity,
-                    Packet = new PlayerControlRequestPacket
-                    {
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.PlayerControlRequest,
-                        PlayerId = playerId,
-                        Mode = mode,
-                    }
-                });
+                SendComp((Weapon.WeaponComponent)comp);
             }
             else Log.Line("SendPlayerControlRequest should never be called on Server");
         }

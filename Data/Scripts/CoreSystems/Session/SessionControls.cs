@@ -144,7 +144,7 @@ namespace CoreSystems
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(TriggerOnce, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(TriggerOnce, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
                     session.AlteredActions.Add(a);
                 }
@@ -159,7 +159,7 @@ namespace CoreSystems
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(TriggerOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -188,7 +188,7 @@ namespace CoreSystems
                             return;
                         }
                         if (comp.Data.Repo.Values.State.TerminalAction != TriggerOn)
-                            comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
+                            comp.RequestShootUpdate(TriggerOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -218,7 +218,7 @@ namespace CoreSystems
                             return;
                         }
                         if (comp.Data.Repo.Values.State.TerminalAction != TriggerOff)
-                            comp.RequestShootUpdate(TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
+                            comp.RequestShootUpdate(TriggerOff, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
 
                     var oldWriter = a.Writer;

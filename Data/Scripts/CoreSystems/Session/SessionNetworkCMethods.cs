@@ -56,18 +56,16 @@ namespace CoreSystems
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             Ai ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai))
-            {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
+            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+                var rootConstruct = ai.Construct.RootAi.Construct;
 
-                    var rootConstruct = ai.Construct.RootAi.Construct;
+                if (rootConstruct.Data.Repo.FocusData.Revision < cgPacket.Data.FocusData.Revision) {
 
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
                     rootConstruct.UpdateLeafs();
                 }
-                else Log.Line($"ClientConstructGroups MID failure - mId:{packet.MId}");
-            
+                else Log.Line($"ClientConstructGroups Version failure - Version:{rootConstruct.Data.Repo.Version}({cgPacket.Data.Version})");
+
                 data.Report.PacketValid = true;
             }
             else

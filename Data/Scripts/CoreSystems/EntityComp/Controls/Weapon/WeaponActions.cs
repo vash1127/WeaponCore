@@ -14,7 +14,7 @@ namespace CoreSystems.Control
             var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(TriggerClick, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(TriggerClick, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
@@ -23,7 +23,7 @@ namespace CoreSystems.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(TriggerOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
@@ -32,7 +32,7 @@ namespace CoreSystems.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(TriggerOn, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(TriggerOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionShootOff(IMyTerminalBlock blk)
@@ -41,7 +41,7 @@ namespace CoreSystems.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(TriggerOff, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
@@ -49,7 +49,7 @@ namespace CoreSystems.Control
             var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(TriggerOnce, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(TriggerOnce, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionControlMode(IMyTerminalBlock blk)

@@ -24,6 +24,9 @@ namespace CoreSystems
             IsCreative = MyAPIGateway.Session.CreativeMode || MyAPIGateway.Session.SessionSettings.InfiniteAmmo;
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
+            IsHost = IsServer && !DedicatedServer && MpActive;
+            MpServer = IsHost || DedicatedServer;
+
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ProccessServerPacket);
             else
@@ -112,6 +115,8 @@ namespace CoreSystems
             IsCreative = MyAPIGateway.Session.CreativeMode;
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
+            IsHost = IsServer && !DedicatedServer && MpActive;
+            MpServer = IsHost || DedicatedServer;
             LocalVersion = ModContext.ModId == "CoreSystems";
 
             CompileWeaponStructures();

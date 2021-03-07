@@ -207,7 +207,7 @@ namespace CoreSystems
                 CoreComponent comp;
                 if (ai.CompBase.TryGetValue(lastEnt, out comp)) {
                     if (comp.Type == CoreComponent.CompType.Weapon)
-                        ((Weapon.WeaponComponent)comp).RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.DedicatedServer ? 0 : -1);
+                        ((Weapon.WeaponComponent)comp).RequestShootUpdate(CoreComponent.TriggerActions.TriggerOff, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                 }
             }
         }
