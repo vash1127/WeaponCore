@@ -49,6 +49,7 @@ namespace WeaponCore
         internal volatile bool FixedMissileReloadControls;
         internal volatile bool FixedGunControls;
         internal volatile bool SorterControls;
+        internal volatile bool DecoyControls;
         internal volatile bool BaseControlsActions;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
@@ -96,6 +97,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridToMasterAi = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
+        internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 

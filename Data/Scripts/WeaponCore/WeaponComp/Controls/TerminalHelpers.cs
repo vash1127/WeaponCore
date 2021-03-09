@@ -57,6 +57,12 @@ namespace WeaponCore.Control
             Separator<T>(session, -19, "WC_sep4", HasTracking);
         }
 
+        internal static void AddDecoyControls<T>(Session session) where T: IMyTerminalBlock
+        {
+            Separator<T>(session, -7, "WC_decoySep1", Istrue);
+            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetDecoySubSystem, WepUi.RequestDecoySubSystem, WepUi.ListDecoySubSystems, Istrue);
+        }
+
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
             AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, IsReady);

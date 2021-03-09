@@ -228,6 +228,19 @@ namespace WeaponCore
 
                             if (fat.MarkedForClose) continue;
                             var cockpit = fat as MyCockpit;
+                            var decoy = fat as IMyDecoy;
+
+                            if (decoy != null) {
+                                WeaponDefinition.TargetingDef.BlockTypes type;
+                                if (DecoyMap.TryGetValue(fat, out type))
+                                    newTypeMap[type].Add(fat);
+                                else
+                                {
+                                    newTypeMap[Utility].Add(fat);
+                                    DecoyMap[fat] = Utility;
+                                }
+                                continue;
+                            }
 
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
@@ -238,7 +251,7 @@ namespace WeaponCore
 
                                 newTypeMap[Offense].Add(fat);
                             }
-                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyDecoy || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
+                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);

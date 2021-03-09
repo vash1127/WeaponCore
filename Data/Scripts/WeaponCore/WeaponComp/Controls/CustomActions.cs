@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Sandbox.ModAPI;
 using WeaponCore.Support;
 using WeaponCore.Platform;
@@ -86,6 +87,15 @@ namespace WeaponCore.Control
             var value = numValue + 1 <= 7 ? numValue + 1 : 0;
 
             WeaponComponent.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
+        }
+
+        internal static void TerminActionCycleDecoy(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
         }
 
         internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
@@ -426,6 +436,15 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             sb.Append(comp.Data.Repo.Base.Set.Overrides.SubSystem);
+        }
+
+        internal static void DecoyWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            long value;
+            if (long.TryParse(blk.CustomData, out value))
+            {
+                sb.Append(((WeaponDefinition.TargetingDef.BlockTypes)value).ToString());
+            }
         }
 
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)
