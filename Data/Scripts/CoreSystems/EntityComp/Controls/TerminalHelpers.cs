@@ -76,6 +76,12 @@ namespace CoreSystems.Control
             return true;
         }
 
+        internal static bool ShootOnceWeapon(IMyTerminalBlock block)
+        {
+            var comp = block.Components.Get<CoreComponent>();
+
+            return comp == null || comp.Session.DedicatedServer || !comp.HasDelayToFire;
+        }
         internal static bool WeaponIsReady(IMyTerminalBlock block)
         {
 

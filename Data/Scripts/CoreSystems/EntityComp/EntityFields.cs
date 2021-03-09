@@ -78,6 +78,7 @@ namespace CoreSystems.Support
         internal bool Registered;
         internal bool ResettingSubparts;
         internal bool UiEnabled;
+        internal bool HasDelayToFire;
 
         internal string CustomIcon;
 
