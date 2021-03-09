@@ -29,7 +29,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Shoot Once");
             action.Action = CustomActions.TerminalActionShootOnce;
             action.Writer = TerminalHelpers.EmptyStringBuilder;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.ShootOnceWeapon;
             action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

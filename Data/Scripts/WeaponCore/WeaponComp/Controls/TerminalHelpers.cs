@@ -199,6 +199,13 @@ namespace WeaponCore.Control
             return !block.Components.Has<WeaponComponent>(); 
         }
 
+        internal static bool ShootOnceWeapon(IMyTerminalBlock block)
+        {
+            var comp = block.Components.Get<WeaponComponent>();
+
+            return comp == null || comp.Session.DedicatedServer || !comp.HasDelayToFire;
+        }
+
         internal static bool NotWcOrIsTurret(IMyTerminalBlock block)
         {
             WeaponComponent comp;

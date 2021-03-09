@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                 ResetShootState(action, playerId);
                 
                 if (action == ShootActions.ShootOnce)
-                    ShootOnceCheck(out action);
+                    ShootOnceCheck();
 
                 if (Session.MpActive) {
                     Session.SendCompBaseData(this);
@@ -74,30 +74,21 @@ namespace WeaponCore.Support
 
             }
             else if (action == ShootActions.ShootOnce)
-            {
-                if (!ShootOnceCheck(out action) && action == ShootActions.ShootClick)
-                    Session.SendActionShootUpdate(this, action);
-            }
+                ShootOnceCheck();
             else Session.SendActionShootUpdate(this, action);
         }
 
-        internal bool ShootOnceCheck(out ShootActions action, int weaponToCheck = -1)
+        internal bool ShootOnceCheck(int weaponToCheck = -1)
         {
             var checkAllWeapons = weaponToCheck == -1;
             var numOfWeapons = checkAllWeapons ? Platform.Weapons.Length : 1;
             var loadedWeapons = 0;
-            action = ShootActions.ShootOnce;
 
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
 
-                if (w.State.Overheated || w.System.DelayToFire > 0)
-                {
-                    if (w.System.DelayToFire > 0)
-                        action = ShootActions.ShootClick;
-
+                if (w.State.Overheated)
                     return false;
-                }
 
                 if ((w.Ammo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;

@@ -567,8 +567,7 @@ namespace WeaponCore.Api
 
                 if (foundWeapon)  {
                     var weaponKey = allWeapons ? -1 : weaponId;
-                    WeaponComponent.ShootActions action;
-                    comp.ShootOnceCheck(out action, weaponKey);
+                    comp.ShootOnceCheck(weaponKey);
                 }
             }
         }
