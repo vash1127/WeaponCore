@@ -14,6 +14,13 @@ namespace CoreSystems
     public partial class Session
     {
         #region UI Config
+        public static void CreateDecoyTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomDecoyActions<T>(session);
+            TerminalHelpers.AddDecoyControls<T>(session);
+
+        }
+
         public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {
             try
@@ -48,6 +55,11 @@ namespace CoreSystems
             CreateCustomActions<T>.CreateShootOff(session);
             CreateCustomActions<T>.CreateShootOnce(session);
             CreateCustomActionSet<T>(session);
+        }
+
+        internal static void CreateCustomDecoyActions<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateDecoy(session);
         }
 
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock

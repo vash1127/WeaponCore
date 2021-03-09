@@ -278,6 +278,16 @@ namespace CoreSystems.Control
                     w.ChangeAmmo(next);
             }
         }
+
+        internal static void TerminActionCycleDecoy(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
+        }
+
         #endregion
 
         #region Writters
@@ -436,6 +446,15 @@ namespace CoreSystems.Control
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.ConsumableSelectionPartIds.Count == 0) return;
             var w = comp.Platform.Weapons[comp.ConsumableSelectionPartIds[0]];
             sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
+        }
+
+        internal static void DecoyWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            long value;
+            if (long.TryParse(blk.CustomData, out value))
+            {
+                sb.Append(((WeaponDefinition.TargetingDef.BlockTypes)value).ToString());
+            }
         }
         #endregion
     }

@@ -365,6 +365,19 @@ namespace CoreSystems
 
             Weapon.WeaponComponent.RequestSetValue(comp, "ControlModes", (int)newValue, comp.Session.PlayerId);
         }
+        internal static long GetDecoySubSystem(IMyTerminalBlock block)
+        {
+            long value;
+            long.TryParse(block.CustomData, out value);
+            return value;
+        }
+
+        internal static void RequestDecoySubSystem(IMyTerminalBlock block, long newValue)
+        {
+            block.CustomData = newValue.ToString();
+            block.RefreshCustomInfo();
+        }
+
 
         internal static void ListControlModes(List<MyTerminalControlComboBoxItem> controlList)
         {
@@ -376,6 +389,22 @@ namespace CoreSystems
             new MyTerminalControlComboBoxItem { Key = 0, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.ControlModes)0}") },
             new MyTerminalControlComboBoxItem { Key = 1, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.ControlModes)1}") },
             new MyTerminalControlComboBoxItem { Key = 2, Value = MyStringId.GetOrCompute($"{(ProtoWeaponOverrides.ControlModes)2}") },
+        };
+
+        internal static void ListDecoySubSystems(List<MyTerminalControlComboBoxItem> subSystemList)
+        {
+            foreach (var sub in DecoySubList) subSystemList.Add(sub);
+        }
+
+        private static readonly List<MyTerminalControlComboBoxItem> DecoySubList = new List<MyTerminalControlComboBoxItem>()
+        {
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)2}") },
+            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)3}") },
+            new MyTerminalControlComboBoxItem() { Key = 4, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)4}") },
+            new MyTerminalControlComboBoxItem() { Key = 5, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)5}") },
+            new MyTerminalControlComboBoxItem() { Key = 6, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)6}") },
+            new MyTerminalControlComboBoxItem() { Key = 7, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)7}") },
         };
     }
 }

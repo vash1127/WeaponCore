@@ -321,6 +321,19 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action);
             session.CustomActions.Add(action);
         }
+        public static void CreateDecoy(Session session)
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Mask");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder($"Select Mask Type");
+            action.Action = CustomActions.TerminActionCycleDecoy;
+            action.Writer = CustomActions.DecoyWriter;
+            action.Enabled = TerminalHelpers.Istrue;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            session.CustomActions.Add(action);
+        }
 
         internal static void CreateOnOffActionSet(Session session, IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, bool> enabler, bool group = false)
         {

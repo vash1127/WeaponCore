@@ -54,6 +54,8 @@ namespace CoreSystems
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;
         internal volatile uint LastDeform;
+        internal volatile bool DecoyControls;
+
         internal uint Tick;
 
         internal readonly TargetCompare TargetCompare = new TargetCompare();
@@ -122,6 +124,7 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> ProtSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
         internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> RegenSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
         internal readonly ConcurrentDictionary<IMySlimBlock, SupportSys> StructalSupports = new ConcurrentDictionary<IMySlimBlock, SupportSys>();
+        internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
 
         internal readonly Dictionary<CoreStructure, int> PowerGroups = new Dictionary<CoreStructure, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();

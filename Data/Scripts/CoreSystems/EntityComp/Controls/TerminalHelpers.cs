@@ -56,6 +56,11 @@ namespace CoreSystems.Control
 
             Separator<T>(session, -19, "WC_sep4", HasTracking);
         }
+        internal static void AddDecoyControls<T>(Session session) where T : IMyTerminalBlock
+        {
+            Separator<T>(session, -7, "WC_decoySep1", Istrue);
+            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", BlockUi.GetDecoySubSystem, BlockUi.RequestDecoySubSystem, BlockUi.ListDecoySubSystems, Istrue);
+        }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {

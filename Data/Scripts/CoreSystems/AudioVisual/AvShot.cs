@@ -365,11 +365,20 @@ namespace CoreSystems.Support
                 {
                     if (a.Tracer == TracerState.Shrink && !a.ShrinkInited)
                         a.Shrink();
-                    else if (a.AmmoDef.Const.IsBeamWeapon && a.Hitting && a.AmmoDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.AmmoDef.Const.ConvergeBeams || a.AmmoDef.Const.OneHitParticle)))
+                    else if (a.AmmoDef.Const.IsBeamWeapon && a.AmmoDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.AmmoDef.Const.ConvergeBeams || a.AmmoDef.Const.OneHitParticle)))
                     {
-                        ContainmentType containment;
-                        s.CameraFrustrum.Contains(ref a.Hit.SurfaceHit, out containment);
-                        if (containment != ContainmentType.Disjoint) a.RunBeam();
+                        MyParticleEffect effect;
+                        if (a.Hitting)
+                        {
+                            ContainmentType containment;
+                            s.CameraFrustrum.Contains(ref a.Hit.SurfaceHit, out containment);
+                            if (containment != ContainmentType.Disjoint) a.RunBeam();
+                        }
+                        else if (a.System.Session.Av.BeamEffects.TryGetValue(a.UniqueMuzzleId, out effect))
+                        {
+                            effect.Stop();
+                            a.System.Session.Av.BeamEffects.Remove(a.UniqueMuzzleId);
+                        }
                     }
 
                     if (a.AmmoDef.Const.OffsetEffect)

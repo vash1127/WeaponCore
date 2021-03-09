@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Text;
 using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
+using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using static CoreSystems.Support.Ai;
@@ -29,6 +32,8 @@ namespace CoreSystems
                 var turret = entity as IMyLargeTurretBase;
                 var controllableGun = entity as IMyUserControllableGun;
                 var rifle = entity as IMyAutomaticRifleGun;
+                var decoy = cube as IMyDecoy;
+
                 if (sorter != null || turret != null || controllableGun != null || rifle != null)
                 {
                     lock (InitObj)
@@ -59,12 +64,75 @@ namespace CoreSystems
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
                             FixedGunControls = true;
                         }
+                        else if (decoy != null)
+                        {
+                            if (!DecoyControls)
+                            {
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateDecoyTerminalUi<IMyDecoy>(this));
+                                DecoyControls = true;
+                            }
+
+                            cube.AddedToScene += DecoyAddedToScene;
+                        }
                     }
+
                     var def = cube?.BlockDefinition.Id ?? rifle?.DefinitionId ?? entity.DefinitionId;
                     InitComp(entity, ref def);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}", null, true); }
+        }
+
+        private void DecoyAddedToScene(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged += DecoyCustomDataChanged;
+            term.AppendingCustomInfo += DecoyAppendingCustomInfo;
+            myEntity.OnMarkForClose += DecoyOnMarkForClose;
+
+            long value = -1;
+            long.TryParse(term.CustomData, out value);
+            if (value < 1 || value > 7)
+                value = 1;
+            DecoyMap[myEntity] = (WeaponDefinition.TargetingDef.BlockTypes)value;
+        }
+
+        private void DecoyAppendingCustomInfo(IMyTerminalBlock term, StringBuilder stringBuilder)
+        {
+            if (term.CustomData.Length == 1)
+                DecoyCustomDataChanged(term);
+        }
+
+        private void DecoyOnMarkForClose(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged -= DecoyCustomDataChanged;
+            term.AppendingCustomInfo -= DecoyAppendingCustomInfo;
+            myEntity.OnMarkForClose -= DecoyOnMarkForClose;
+        }
+
+        private void DecoyCustomDataChanged(IMyTerminalBlock term)
+        {
+            long value = -1;
+            long.TryParse(term.CustomData, out value);
+
+            var entity = (MyEntity)term;
+            var cube = (MyCubeBlock)entity;
+            if (value > 0 && value <= 7)
+            {
+                var newType = (WeaponDefinition.TargetingDef.BlockTypes)value;
+                WeaponDefinition.TargetingDef.BlockTypes type;
+                ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypes;
+                if (GridToBlockTypeMap.TryGetValue(cube.CubeGrid, out blockTypes) && DecoyMap.TryGetValue(entity, out type) && type != newType)
+                {
+                    Log.Line($"removed decoy type: {type} adding type: {newType}");
+                    blockTypes[type].Remove(cube, true);
+                    var addColletion = blockTypes[newType];
+                    addColletion.Add(cube);
+                    addColletion.ApplyAdditions();
+                    DecoyMap[entity] = newType;
+                }
+            }
         }
 
         private void GridAddedToScene(MyEntity myEntity)
