@@ -99,7 +99,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Cycle SubSystems");
             action.Action = CustomActions.TerminActionCycleSubSystem;
             action.Writer = CustomActions.SubSystemWriter;
-            action.Enabled = TerminalHelpers.HasTracking;
+            action.Enabled = TerminalHelpers.TargetSubSystems;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
