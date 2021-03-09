@@ -124,7 +124,6 @@ namespace WeaponCore
                 ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypes;
                 if (GridToBlockTypeMap.TryGetValue(cube.CubeGrid, out blockTypes) && DecoyMap.TryGetValue(entity, out type) && type != newType)
                 {
-                    Log.Line($"removed decoy type: {type} adding type: {newType}");
                     blockTypes[type].Remove(cube, true);
                     var addColletion = blockTypes[newType];
                     addColletion.Add(cube);

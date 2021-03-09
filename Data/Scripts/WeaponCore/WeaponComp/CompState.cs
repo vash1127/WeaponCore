@@ -74,7 +74,10 @@ namespace WeaponCore.Support
 
             }
             else if (action == ShootActions.ShootOnce)
-                ShootOnceCheck(out action);
+            {
+                if (!ShootOnceCheck(out action) && action == ShootActions.ShootClick)
+                    Session.SendActionShootUpdate(this, action);
+            }
             else Session.SendActionShootUpdate(this, action);
         }
 
