@@ -150,15 +150,8 @@ namespace WeaponCore.Control
         internal static bool HasTracking(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.HasTracking;
-        }
-
-        internal static bool TargetSubSystems(IMyTerminalBlock block)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
             return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && (comp.HasTracking || comp.HasGuidedAmmo);
         }
-
 
         internal static bool HasTurret(IMyTerminalBlock block)
         {
