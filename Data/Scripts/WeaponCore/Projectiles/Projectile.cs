@@ -608,7 +608,8 @@ namespace WeaponCore.Projectiles
             switch (Info.AmmoDef.Const.AreaEffect)
             {
                 case AreaEffectType.AntiSmart:
-                    var eWarSphere = new BoundingSphereD(Position, Info.AmmoDef.Const.AreaEffectSize);
+                    var areaSize = !Info.EwarAreaPulse ? Info.AmmoDef.Const.AreaEffectSize : Info.TriggerMatrix.Scale.AbsMax() < Info.AmmoDef.Const.AreaEffectSize ? Info.TriggerMatrix.Scale.AbsMax() : Info.AmmoDef.Const.AreaEffectSize;
+                    var eWarSphere = new BoundingSphereD(Position, areaSize);
                     DynTrees.GetAllProjectilesInSphere(Info.System.Session, ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
