@@ -623,6 +623,13 @@ namespace WeaponCore.Projectiles
                                 netted.Info.Target.Projectile = this;
                                 netted.Info.Target.IsProjectile = true;
                                 Seekers.Add(netted);
+                                if (--Info.BaseHealthPool <= 0)
+                                {
+                                    State = ProjectileState.Detonate;
+                                    EarlyEnd = true;
+                                    Info.Hit.SurfaceHit = Position;
+                                    Info.Hit.LastHit = Position;
+                                }
                             }
                         }
 
