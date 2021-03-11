@@ -263,7 +263,7 @@ namespace WeaponCore.Api
             if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
                 relation = info.EntInfo.Relationship;
                 type = info.EntInfo.Type;
-                var maxDist = ai.MaxTargetingRangeSqr + shooterGrid.PositionComp.WorldAABB.Extents.Max();
+                var maxDist = ai.MaxTargetingRange + shooterGrid.PositionComp.WorldAABB.Extents.Max();
                 if (Vector3D.DistanceSquared(e.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
                 {
                     return new MyDetectedEntityInfo();
@@ -308,7 +308,7 @@ namespace WeaponCore.Api
             GridAi ai;
             if (shooterGrid != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai))
             {
-                var maxDist = ai.MaxTargetingRangeSqr + target.PositionComp.WorldAABB.Extents.Max();
+                var maxDist = ai.MaxTargetingRange + shooterGrid.PositionComp.WorldAABB.Extents.Max();
                 if (Vector3D.DistanceSquared(target.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
                 {
                     return new MyDetectedEntityInfo();
