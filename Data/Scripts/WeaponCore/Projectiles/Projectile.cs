@@ -608,33 +608,30 @@ namespace WeaponCore.Projectiles
             switch (Info.AmmoDef.Const.AreaEffect)
             {
                 case AreaEffectType.AntiSmart:
-                    var areaSize = !Info.EwarAreaPulse ? Info.AmmoDef.Const.AreaEffectSize : Info.TriggerMatrix.Scale.AbsMax() < Info.AmmoDef.Const.AreaEffectSize ? Info.TriggerMatrix.Scale.AbsMax() : Info.AmmoDef.Const.AreaEffectSize;
-                    var eWarSphere = new BoundingSphereD(Position, areaSize);
+                    var eWarSphere = new BoundingSphereD(Position, Info.AmmoDef.Const.AreaEffectSize);
+
                     DynTrees.GetAllProjectilesInSphere(Info.System.Session, ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
-                        if (netted.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
-                        if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+
+                        if (eWarSphere.Intersects(new BoundingSphereD(netted.Position, netted.Info.AmmoDef.Const.CollisionSize)))
                         {
-                            Info.BaseEwarPool -= Info.AmmoDef.Const.AreaEffectDamage;
-                            if (Info.BaseEwarPool <= 0)
+                            if (netted.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
+                            if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                             {
-                                Info.EwarActive = true;
-                                netted.Info.Target.Projectile = this;
-                                netted.Info.Target.IsProjectile = true;
-                                Seekers.Add(netted);
-                                if (--Info.BaseHealthPool <= 0)
+                                Info.BaseEwarPool -= (float)netted.Info.AmmoDef.Const.HealthHitModifier;
+                                if (Info.BaseEwarPool <= 0 && Info.BaseHealthPool-- > 0)
                                 {
-                                    State = ProjectileState.Detonate;
-                                    EarlyEnd = true;
-                                    Info.Hit.SurfaceHit = Position;
-                                    Info.Hit.LastHit = Position;
+                                    Info.EwarActive = true;
+                                    netted.Info.Target.Projectile = this;
+                                    netted.Info.Target.IsProjectile = true;
+                                    Seekers.Add(netted);
                                 }
                             }
-                        }
 
-                        Info.WeaponRng.ClientProjectileCurrentCounter++;
+                            Info.WeaponRng.ClientProjectileCurrentCounter++;
+                        }
                     }
                     EwaredProjectiles.Clear();
                     return;
