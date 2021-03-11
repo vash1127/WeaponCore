@@ -28,7 +28,7 @@ namespace WeaponCore.Support
         internal Session Session;
 
         internal int ExplosionCounter;
-        internal int MaxExplosions = 20;
+        internal int MaxExplosions = 100;
 
         internal bool ExplosionReady
         {

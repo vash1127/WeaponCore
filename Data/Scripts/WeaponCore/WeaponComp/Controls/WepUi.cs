@@ -285,7 +285,14 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var value = newValue ? WeaponComponent.ShootActions.ShootOn : WeaponComponent.ShootActions.ShootOff;
-            comp.RequestShootUpdate(value, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(value, comp.Session.MpServer ? comp.Session.PlayerId : -1);
+        }
+
+        internal static long GetDecoySubSystem(IMyTerminalBlock block)
+        {
+            long value;
+            long.TryParse(block.CustomData, out value);
+            return value;
         }
 
         internal static long GetSubSystem(IMyTerminalBlock block)
@@ -303,6 +310,12 @@ namespace WeaponCore
             WeaponComponent.RequestSetValue(comp, "SubSystems", (int) newValue, comp.Session.PlayerId);
         }
 
+        internal static void RequestDecoySubSystem(IMyTerminalBlock block, long newValue)
+        {
+            block.CustomData = newValue.ToString();
+            block.RefreshCustomInfo();
+        }
+
         internal static void ListSubSystems(List<MyTerminalControlComboBoxItem> subSystemList)
         {
             foreach (var sub in SubList) subSystemList.Add(sub);
@@ -311,6 +324,22 @@ namespace WeaponCore
         private static readonly List<MyTerminalControlComboBoxItem> SubList = new List<MyTerminalControlComboBoxItem>()
         {
             new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)0}") },
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)2}") },
+            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)3}") },
+            new MyTerminalControlComboBoxItem() { Key = 4, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)4}") },
+            new MyTerminalControlComboBoxItem() { Key = 5, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)5}") },
+            new MyTerminalControlComboBoxItem() { Key = 6, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)6}") },
+            new MyTerminalControlComboBoxItem() { Key = 7, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)7}") },
+        };
+
+        internal static void ListDecoySubSystems(List<MyTerminalControlComboBoxItem> subSystemList)
+        {
+            foreach (var sub in DecoySubList) subSystemList.Add(sub);
+        }
+
+        private static readonly List<MyTerminalControlComboBoxItem> DecoySubList = new List<MyTerminalControlComboBoxItem>()
+        {
             new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)1}") },
             new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)2}") },
             new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)3}") },

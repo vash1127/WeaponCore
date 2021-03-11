@@ -86,6 +86,8 @@ namespace WeaponCore.Support
         internal bool UiEnabled;
         internal bool ShootSubmerged;
         internal bool HasTracking;
+        internal bool HasGuidedAmmo;
+        internal bool HasDelayToFire;
         internal bool UnexpectedMag;
         internal string CustomIcon;
 

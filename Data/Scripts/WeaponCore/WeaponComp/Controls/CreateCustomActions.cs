@@ -29,7 +29,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Shoot Once");
             action.Action = CustomActions.TerminalActionShootOnce;
             action.Writer = TerminalHelpers.EmptyStringBuilder;
-            action.Enabled = TerminalHelpers.IsReady;
+            action.Enabled = TerminalHelpers.ShootOnceWeapon;
             action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -44,6 +44,20 @@ namespace WeaponCore.Control
             action.Action = CustomActions.TerminActionToggleShoot;
             action.Writer = CustomActions.ShootStateWriter;
             action.Enabled = TerminalHelpers.IsReady;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            session.CustomActions.Add(action);
+        }
+
+        public static void CreateDecoy(Session session)
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Mask");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder($"Select Mask Type");
+            action.Action = CustomActions.TerminActionCycleDecoy;
+            action.Writer = CustomActions.DecoyWriter;
+            action.Enabled = TerminalHelpers.Istrue;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

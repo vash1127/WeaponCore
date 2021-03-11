@@ -14,6 +14,14 @@ namespace WeaponCore
     public partial class Session
     {
         #region UI Config
+
+        public static void CreateDecoyTerminalUi<T>(Session session) where T: IMyTerminalBlock
+        {
+            CreateCustomDecoyActions<T>(session);
+            TerminalHelpers.AddDecoyControls<T>(session);
+
+        }
+
         public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {
             try
@@ -46,6 +54,11 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateShootOff(session);
             CreateCustomActions<T>.CreateShootOnce(session);
             CreateCustomActionSet<T>(session);
+        }
+
+        internal static void CreateCustomDecoyActions<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateDecoy(session);
         }
 
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
@@ -137,7 +150,7 @@ namespace WeaponCore
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(ShootOnce, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
                     session.AlteredActions.Add(a);
                 }
@@ -152,7 +165,7 @@ namespace WeaponCore
                                 oldAction(blk);
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(ShootOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -181,7 +194,7 @@ namespace WeaponCore
                             return;
                         }
                         if (comp.Data.Repo.Base.State.TerminalAction != ShootOn)
-                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                            comp.RequestShootUpdate(ShootOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -211,7 +224,7 @@ namespace WeaponCore
                             return;
                         }
                         if (comp.Data.Repo.Base.State.TerminalAction != ShootOff)
-                            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                            comp.RequestShootUpdate(ShootOff, comp.Session.MpServer ? comp.Session.PlayerId : -1);
                     };
 
                     var oldWriter = a.Writer;

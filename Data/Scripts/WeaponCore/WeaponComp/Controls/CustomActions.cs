@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Sandbox.ModAPI;
 using WeaponCore.Support;
 using WeaponCore.Platform;
@@ -14,7 +15,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootClick, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootClick, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
@@ -23,7 +24,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
@@ -32,7 +33,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOn, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionShootOff(IMyTerminalBlock blk)
@@ -41,7 +42,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOff, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
@@ -49,7 +50,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+            comp.RequestShootUpdate(ShootOnce, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
         internal static void TerminalActionControlMode(IMyTerminalBlock blk)
@@ -86,6 +87,15 @@ namespace WeaponCore.Control
             var value = numValue + 1 <= 7 ? numValue + 1 : 0;
 
             WeaponComponent.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
+        }
+
+        internal static void TerminActionCycleDecoy(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
         }
 
         internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
@@ -426,6 +436,15 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             sb.Append(comp.Data.Repo.Base.Set.Overrides.SubSystem);
+        }
+
+        internal static void DecoyWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            long value;
+            if (long.TryParse(blk.CustomData, out value))
+            {
+                sb.Append(((WeaponDefinition.TargetingDef.BlockTypes)value).ToString());
+            }
         }
 
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)

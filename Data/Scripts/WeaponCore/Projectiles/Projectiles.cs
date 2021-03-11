@@ -218,9 +218,11 @@ namespace WeaponCore.Projectiles
                     if (p.DynamicGuidance) {
                         if (p.PruningProxyId != -1) {
                             var sphere = new BoundingSphereD(p.Position, p.Info.AmmoDef.Const.AreaEffectSize);
+
                             BoundingBoxD result;
                             BoundingBoxD.CreateFromSphere(ref sphere, out result);
-                            Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, p.Velocity);
+                            var displacement = p.Position - p.LastPosition;
+                            Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, displacement);
                         }
                     }
                 }

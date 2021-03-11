@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -35,7 +38,7 @@ namespace WeaponCore
                 var sorter = cube as MyConveyorSorter;
                 var turret = cube as IMyLargeTurretBase;
                 var controllableGun = cube as IMyUserControllableGun;
-
+                var decoy = cube as IMyDecoy;
                 if (sorter != null || turret != null || controllableGun != null)
                 {
                     if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id)) return;
@@ -65,8 +68,69 @@ namespace WeaponCore
                     }
                     InitComp(cube);
                 }
+                else if (decoy != null)
+                {
+                    if (!DecoyControls)
+                    {
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateDecoyTerminalUi<IMyDecoy>(this));
+                        DecoyControls = true;
+                    }
+
+                    cube.AddedToScene += DecoyAddedToScene;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+        }
+
+        private void DecoyAddedToScene(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged += DecoyCustomDataChanged;
+            term.AppendingCustomInfo += DecoyAppendingCustomInfo;
+            myEntity.OnMarkForClose += DecoyOnMarkForClose;
+
+            long value = -1;
+            long.TryParse(term.CustomData, out value);
+            if (value < 1 || value > 7)
+                value = 1;
+            DecoyMap[myEntity] = (WeaponDefinition.TargetingDef.BlockTypes)value;
+        }
+
+        private void DecoyAppendingCustomInfo(IMyTerminalBlock term, StringBuilder stringBuilder)
+        {
+            if (term.CustomData.Length == 1) 
+                DecoyCustomDataChanged(term);
+        }
+
+        private void DecoyOnMarkForClose(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged -= DecoyCustomDataChanged;
+            term.AppendingCustomInfo -= DecoyAppendingCustomInfo;
+            myEntity.OnMarkForClose -= DecoyOnMarkForClose;
+        }
+
+        private void DecoyCustomDataChanged(IMyTerminalBlock term)
+        {
+            long value = -1;
+            long.TryParse(term.CustomData, out value);
+
+            var entity = (MyEntity)term;
+            var cube = (MyCubeBlock)entity;
+            if (value > 0 && value <= 7)
+            {
+                var newType = (WeaponDefinition.TargetingDef.BlockTypes)value;
+                WeaponDefinition.TargetingDef.BlockTypes type;
+                ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypes;
+                if (GridToBlockTypeMap.TryGetValue(cube.CubeGrid, out blockTypes) && DecoyMap.TryGetValue(entity, out type) && type != newType)
+                {
+                    blockTypes[type].Remove(cube, true);
+                    var addColletion = blockTypes[newType];
+                    addColletion.Add(cube);
+                    addColletion.ApplyAdditions();
+                    DecoyMap[entity] = newType;
+                }
+            }
         }
 
         private void GridAddedToScene(MyEntity myEntity)
@@ -209,7 +273,7 @@ namespace WeaponCore
 
                 WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp))
-                    comp.RequestShootUpdate(WeaponComponent.ShootActions.ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                    comp.RequestShootUpdate(WeaponComponent.ShootActions.ShootOff, comp.Session.MpServer ? comp.Session.PlayerId : -1);
             }
         }
 

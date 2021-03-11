@@ -57,6 +57,12 @@ namespace WeaponCore.Control
             Separator<T>(session, -19, "WC_sep4", HasTracking);
         }
 
+        internal static void AddDecoyControls<T>(Session session) where T: IMyTerminalBlock
+        {
+            Separator<T>(session, -7, "WC_decoySep1", Istrue);
+            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetDecoySubSystem, WepUi.RequestDecoySubSystem, WepUi.ListDecoySubSystems, Istrue);
+        }
+
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
             AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, IsReady);
@@ -144,7 +150,7 @@ namespace WeaponCore.Control
         internal static bool HasTracking(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.HasTracking;
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && (comp.HasTracking || comp.HasGuidedAmmo);
         }
 
         internal static bool HasTurret(IMyTerminalBlock block)
@@ -191,6 +197,13 @@ namespace WeaponCore.Control
         internal static bool NotWcBlock(IMyTerminalBlock block)
         {
             return !block.Components.Has<WeaponComponent>(); 
+        }
+
+        internal static bool ShootOnceWeapon(IMyTerminalBlock block)
+        {
+            var comp = block.Components.Get<WeaponComponent>();
+
+            return comp == null || comp.Session.DedicatedServer || !comp.HasDelayToFire;
         }
 
         internal static bool NotWcOrIsTurret(IMyTerminalBlock block)
