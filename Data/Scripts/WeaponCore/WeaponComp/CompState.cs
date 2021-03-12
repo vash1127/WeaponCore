@@ -278,7 +278,6 @@ namespace WeaponCore.Support
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var userControl = o.Control != GroupOverrides.ControlModes.Auto;
-
             if (userControl)
             {
                 comp.Data.Repo.Base.State.PlayerId = playerId;
@@ -286,12 +285,13 @@ namespace WeaponCore.Support
                 if (settings != null) settings["ControlModes"] = (int)o.Control;
                 comp.Data.Repo.Base.State.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
+            /*
             else
             {
                 comp.Data.Repo.Base.State.PlayerId = -1;
                 comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             }
-
+            */
             if (resetTarget)
                 ClearTargets(comp);
         }
