@@ -972,7 +972,7 @@ namespace WeaponCore.Support
             var vel = HitVelocity;
             if (!System.Session.Av.BeamEffects.TryGetValue(UniqueMuzzleId, out effect)) {
 
-                MatrixD.CreateTranslation(ref TracerFront, out matrix);
+                MatrixD.CreateWorld(ref TracerFront, ref Direction, ref OriginUp, out matrix);
                 if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref TracerFront, uint.MaxValue, out effect)) {
                     return;
                 }
