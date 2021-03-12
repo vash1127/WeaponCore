@@ -240,7 +240,8 @@ namespace WeaponCore.Api
 
         private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetAiFocus(long arg1, int arg2)
         {
-            return GetEntityInfo(GetAiFocus(MyEntities.GetEntityById(arg1), arg2));
+            var shooter = MyEntities.GetEntityById(arg1);
+            return GetEntityInfo(GetAiFocus(shooter, arg2), shooter);
         }
 
         private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target, MyEntity shooter)
@@ -249,6 +250,7 @@ namespace WeaponCore.Api
             var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
             var topTarget = e?.GetTopMostParent() as MyEntity;
             var block = e as IMyTerminalBlock;
+
             var player = e as IMyCharacter;
             long entityId = 0;
             var relation = MyRelationsBetweenPlayerAndBlock.NoOwnership;
@@ -261,7 +263,14 @@ namespace WeaponCore.Api
             if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
                 relation = info.EntInfo.Relationship;
                 type = info.EntInfo.Type;
+                var maxDist = ai.MaxTargetingRange + shooterGrid.PositionComp.WorldAABB.Extents.Max();
+                if (Vector3D.DistanceSquared(e.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
+                {
+                    return new MyDetectedEntityInfo();
+                }
             }
+
+            
 
             if (!target.Item1 || e == null || topTarget?.Physics == null) {
                 var projectile = target.Item2;
@@ -278,6 +287,7 @@ namespace WeaponCore.Api
                 }
                 return new MyDetectedEntityInfo(entityId, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, relation, BoundingBoxD.CreateInvalid(), _session.Tick);
             }
+
             entityId = e.EntityId;
             var grid = topTarget as MyCubeGrid;
             if (grid != null) name = block != null ? block.CustomName : grid.DisplayName;
@@ -287,11 +297,23 @@ namespace WeaponCore.Api
             return new MyDetectedEntityInfo(entityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, topTarget.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
         }
 
-        private MyDetectedEntityInfo GetEntityInfo(IMyEntity target)
+        private MyDetectedEntityInfo GetEntityInfo(IMyEntity target, MyEntity shooter)
         {
             var e = target;
             if (e?.Physics == null)
                 return new MyDetectedEntityInfo();
+
+            var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
+
+            GridAi ai;
+            if (shooterGrid != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai))
+            {
+                var maxDist = ai.MaxTargetingRange + shooterGrid.PositionComp.WorldAABB.Extents.Max();
+                if (Vector3D.DistanceSquared(target.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
+                {
+                    return new MyDetectedEntityInfo();
+                }
+            }
 
             var grid = e.GetTopMostParent() as MyCubeGrid;
             var block = e as IMyTerminalBlock;
