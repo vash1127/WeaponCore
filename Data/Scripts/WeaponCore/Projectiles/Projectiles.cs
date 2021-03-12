@@ -221,7 +221,7 @@ namespace WeaponCore.Projectiles
 
                             BoundingBoxD result;
                             BoundingBoxD.CreateFromSphere(ref sphere, out result);
-                            var displacement = (p.Position - p.LastPosition) * 10;
+                            var displacement = 0.1 * p.Velocity;
                             Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, displacement);
                         }
                     }
