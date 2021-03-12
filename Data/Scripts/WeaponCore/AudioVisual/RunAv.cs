@@ -117,7 +117,7 @@ namespace WeaponCore.Support
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (av.OnScreen != AvShot.Screen.None) {
                             var pos = av.Hit.HitTick == Session.Tick && !MyUtils.IsZero(av.Hit.SurfaceHit) ? av.Hit.SurfaceHit : av.TracerFront;
-                            var matrix = MatrixD.CreateTranslation(pos);
+                            var matrix = MatrixD.CreateWorld(pos, av.Direction, av.OriginUp);
 
                             MyParticleEffect hitEffect;
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
