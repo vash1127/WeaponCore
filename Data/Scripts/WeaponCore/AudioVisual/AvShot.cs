@@ -998,11 +998,17 @@ namespace WeaponCore.Support
 
         }
         internal void AvClose()
-        { 
+        {
+            if (MarkForClose)
+                return;
+
             if (Vector3D.IsZero(TracerFront)) TracerFront = EndState.EndPos;
 
             if (AmmoDef.Const.AmmoParticle)
-                DisposeAmmoEffect(true, false);
+            {
+                var forceClose = !(AmmoEffect != null && AmmoEffect.Loop && !AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Restart);
+                DisposeAmmoEffect(forceClose, false);
+            }
 
             if (EndState.DetonateFakeExp){
 
