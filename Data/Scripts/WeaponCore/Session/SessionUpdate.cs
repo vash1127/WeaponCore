@@ -206,9 +206,6 @@ namespace WeaponCore
 
                         w.ProjectilesNear = enemyProjectiles && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles && !w.Target.HasTarget && (w.Target.TargetChanged || QCount == w.ShortLoadId );
 
-                        if (QCount == w.ShortLoadId)
-                            Log.Line($"test");
-
                         if (comp.Data.Repo.Base.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
                         

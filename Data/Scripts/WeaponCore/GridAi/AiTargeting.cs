@@ -47,10 +47,6 @@ namespace WeaponCore.Support
                 else if (!attemptReset && shootProjectile)
                 {
                     AcquireProjectile(w, out targetType);
-                    if (targetType == TargetType.Projectile)
-                    {
-                        Log.Line($"test: {targetType} - {Vector3D.Distance(w.Target.Projectile.Position, w.MyPivotPos)}");
-                    }
                 }
 
                 if (projectilesFirst && targetType == TargetType.None && !onlyCheckProjectile)
