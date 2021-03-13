@@ -40,7 +40,7 @@ namespace WeaponCore
             }
             
             if (++SCount == 60) SCount = 0;
-
+            if (++QCount == 20) QCount = 0;
             if (++AwakeCount == AwakeBuckets) AwakeCount = 0;
             if (++AsleepCount == AsleepBuckets) AsleepCount = 0;
 
@@ -209,7 +209,7 @@ namespace WeaponCore
 
         internal int ShortLoadAssigner()
         {
-            if (_shortLoadCounter + 1 > 59) _shortLoadCounter = 0;
+            if (_shortLoadCounter + 1 > 19) _shortLoadCounter = 0;
             else ++_shortLoadCounter;
 
             return _shortLoadCounter;

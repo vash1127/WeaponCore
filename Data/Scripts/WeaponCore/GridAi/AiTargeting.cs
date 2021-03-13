@@ -40,7 +40,6 @@ namespace WeaponCore.Support
                 var shootProjectile = pCount > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles;
                 var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
                 var onlyCheckProjectile = w.ProjectilesNear && !w.Target.TargetChanged && w.Comp.Session.Count != w.Acquire.SlotId && !attemptReset;
-
                 if (!projectilesFirst && w.System.TrackTopMostEntities && !onlyCheckProjectile)
                 {
                     AcquireTopMostEntity(w, out targetType, attemptReset, targetGrid);
@@ -48,8 +47,12 @@ namespace WeaponCore.Support
                 else if (!attemptReset && shootProjectile)
                 {
                     AcquireProjectile(w, out targetType);
+                    if (targetType == TargetType.Projectile)
+                    {
+                        Log.Line($"test: {targetType} - {Vector3D.Distance(w.Target.Projectile.Position, w.MyPivotPos)}");
+                    }
                 }
-                
+
                 if (projectilesFirst && targetType == TargetType.None && !onlyCheckProjectile)
                 {
                     AcquireTopMostEntity(w, out targetType, false, targetGrid);

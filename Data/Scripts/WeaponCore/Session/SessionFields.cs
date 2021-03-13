@@ -279,6 +279,7 @@ namespace WeaponCore
         internal int Count = -1;
         internal int LCount;
         internal int SCount;
+        internal int QCount;
         internal int LogLevel;
         internal int AwakeCount = -1;
         internal int AsleepCount = -1;
