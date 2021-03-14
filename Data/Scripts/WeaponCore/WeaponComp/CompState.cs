@@ -124,9 +124,9 @@ namespace WeaponCore.Support
 
             Data.Repo.Base.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
-            if (action == ShootActions.ShootClick && HasTurret) 
+            if (action == ShootActions.ShootClick && HasTurret && !cycleShootClick) 
                 Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
-            else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce ||  action == ShootActions.ShootOn)
+            else if (action == ShootActions.ShootClick  && !cycleShootClick || action == ShootActions.ShootOnce ||  action == ShootActions.ShootOn)
                 Data.Repo.Base.State.Control = CompStateValues.ControlMode.Toolbar;
             else
                 Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
@@ -288,7 +288,7 @@ namespace WeaponCore.Support
             /*
             else
             {
-                comp.Data.Repo.Base.State.PlayerId = -1;
+                //comp.Data.Repo.Base.State.PlayerId = -1;
                 comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             }
             */

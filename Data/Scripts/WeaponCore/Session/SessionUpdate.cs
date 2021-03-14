@@ -242,7 +242,10 @@ namespace WeaponCore
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
-
+                        if (Tick180)
+                        {
+                            Log.Line($"{comp.MyCube.DebugName} - targetLock:{targetLock} - userControlled:{comp.UserControlled} - validState:{validShootStates} - manualshot:{manualShot} - wAction:{w.State.Action} - cAction:{comp.Data.Repo.Base.State.Control} - player:{comp.Data.Repo.Base.State.PlayerId} - control:{comp.Data.Repo.Base.State.Control}");
+                        }
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))

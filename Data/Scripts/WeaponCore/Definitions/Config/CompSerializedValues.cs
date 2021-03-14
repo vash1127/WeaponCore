@@ -253,7 +253,6 @@ namespace WeaponCore
         public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false, bool updateWeapons = true)
         {
             TerminalAction = action;
-            
             if (updateWeapons) {
                 for (int i = 0; i < Weapons.Length; i++)
                     Weapons[i].Action = action;
