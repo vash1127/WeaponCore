@@ -433,7 +433,7 @@ namespace WeaponCore.Platform
                         {
                             var animation = animationSet.Value[i];
                             MyEntity part;
-                            if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
+                            if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part) && !(string.IsNullOrEmpty(animation.SubpartId) || animation.SubpartId == "None"))
                             {
                                 animation.Part = part;
                                 //if (animation.Running)

@@ -157,7 +157,7 @@ namespace WeaponCore
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
-                    if (s.Tick20) s.HudUi.AddText(text: $"TargetSize: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
+                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
         }
@@ -280,6 +280,7 @@ namespace WeaponCore
                 distanceFromCenters -= ai.MyGrid.PositionComp.LocalVolume.Radius;
                 distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
                 distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
+                ai.TargetState[i].RealDistance = distanceFromCenters;
 
                 var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
                 if (distPercent > 95) ai.TargetState[i].Distance = 9;

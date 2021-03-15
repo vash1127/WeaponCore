@@ -78,6 +78,7 @@ namespace WeaponCore.Settings
                 new AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
                 new AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
             };
+            [ProtoMember(11)] public double MinHudFocusDistance;
         }
 
         [ProtoContract]

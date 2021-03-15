@@ -130,6 +130,7 @@ namespace WeaponCore.Settings
             var oldShipSizes = oldSettings.ShipSizes;
             var oldSleep = oldSettings.ServerSleepSupport;
             var oldOptimize = oldSettings.ServerOptimizations;
+            var oldFocusDist = oldSettings.MinHudFocusDistance;
 
             Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
 
@@ -145,6 +146,7 @@ namespace WeaponCore.Settings
             Core.Enforcement.ServerSleepSupport = oldSleep;
 
             Core.Enforcement.ServerOptimizations = oldOptimize;
+            Core.Enforcement.MinHudFocusDistance = oldFocusDist;
         }
 
         private void CorruptionCheck(bool write = false)

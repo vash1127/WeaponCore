@@ -14,6 +14,7 @@ namespace WeaponCore
         public int Distance;
         public int Engagement;
         public float SizeExtended;
+        public double RealDistance;
     }
 
     public class IconInfo
