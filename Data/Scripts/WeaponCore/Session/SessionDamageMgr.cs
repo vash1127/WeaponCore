@@ -47,14 +47,16 @@ namespace WeaponCore
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
                 if (tInvalid) info.Target.Reset(Tick, Target.States.ProjectileClosed);
                 var skip = pInvalid || tInvalid;
-                var fixedFire = p.Info.System.TurretMovement == Fixed && p.Guidance == None && !p.Info.AmmoDef.Const.IsBeamWeapon;
-                var canDamage = !MpActive || !IsClient && (!fixedFire || (p.Info.IsFiringPlayer || p.Info.ClientSent));
+                var canDamage = IsServer && (p.Info.ClientSent || !p.Info.AmmoDef.Const.ClientPredictedAmmo);
+                /*
+                if (!p.Info.IsShrapnel)
+                    Log.Line($"ProcessHits: canDamage:{canDamage} - notPredicted:{!p.Info.AmmoDef.Const.ClientPredictedAmmo} - clientSent:{p.Info.ClientSent} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
 
-                if (IsClient && p.Info.IsFiringPlayer && fixedFire)  {
-                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Info.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
-                    p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
-                }
-
+                if (canDamage && !p.Info.ClientSent)
+                    Log.Line($"invalid damage: shrapnel:{p.Info.IsShrapnel} - ClientSent:{p.Info.ClientSent} - ClientPredictedAmmo:{p.Info.AmmoDef.Const.ClientPredictedAmmo} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
+                else if (canDamage)
+                    Log.Line($"valid damage: shrapnel:{p.Info.IsShrapnel} - ClientSent:{p.Info.ClientSent} - ClientPredictedAmmo:{p.Info.AmmoDef.Const.ClientPredictedAmmo} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
+                */
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
                     var hitEnt = info.HitList[i];

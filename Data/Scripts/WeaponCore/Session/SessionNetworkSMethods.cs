@@ -360,10 +360,9 @@ namespace WeaponCore
             var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
             var direction = hitPacket.Velocity;
             direction.Normalize();
-
             Projectiles.NewProjectiles.Add(new NewProjectile
             {
-                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef,
+                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, // might be wrong
                 Muzzle = weapon.Muzzles[hitPacket.MuzzleId],
                 TargetEnt = targetEnt,
                 Origin = origin,

@@ -191,7 +191,6 @@ namespace WeaponCore.Projectiles
                             p.Velocity = newVel;
                         }
                     }
-
                     if (p.State == ProjectileState.OneAndDone) {
 
                         p.LastPosition = p.Position;

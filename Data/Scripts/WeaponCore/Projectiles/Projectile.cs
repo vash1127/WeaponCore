@@ -20,12 +20,12 @@ namespace WeaponCore.Projectiles
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
-        internal GuidanceType Guidance;
         internal Vector3D AccelDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
+        internal Vector3D PrevVelocity;
         internal Vector3D InitalStep;
         internal Vector3D AccelVelocity;
         internal Vector3D MaxVelocity;
@@ -112,6 +112,7 @@ namespace WeaponCore.Projectiles
         #region Start
         internal void Start()
         {
+            PrevVelocity = Vector3D.Zero;
             Position = Info.Origin;
             AccelDir = Info.Direction;
             var cameraStart = Info.System.Session.CameraPos;
@@ -149,8 +150,7 @@ namespace WeaponCore.Projectiles
 
 
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
-            Guidance = Info.AmmoDef.Trajectory.Guidance;
-            DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
+            DynamicGuidance = Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && Info.AmmoDef.Trajectory.Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
@@ -167,7 +167,7 @@ namespace WeaponCore.Projectiles
             Info.AiVersion = Info.Ai.Version;
             Info.Ai.ProjectileTicker = Info.Ai.Session.Tick;
 
-            if (Guidance == GuidanceType.Smart && DynamicGuidance) {
+            if (Info.AmmoDef.Trajectory.Guidance == GuidanceType.Smart && DynamicGuidance) {
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
                 SmartSlot = Info.WeaponRng.ClientProjectileRandom.Next(10);
@@ -233,7 +233,7 @@ namespace WeaponCore.Projectiles
 
             if (!Info.IsShrapnel) StartSpeed = Info.ShooterVel;
 
-            MoveToAndActivate = LockedTarget && !Info.AmmoDef.Const.IsBeamWeapon && Guidance == GuidanceType.TravelTo;
+            MoveToAndActivate = LockedTarget && !Info.AmmoDef.Const.IsBeamWeapon && Info.AmmoDef.Trajectory.Guidance == GuidanceType.TravelTo;
 
             if (MoveToAndActivate)
             {
@@ -397,7 +397,7 @@ namespace WeaponCore.Projectiles
             PrevTargetVel = targetVel;
             LockedTarget = true;
 
-            if (Guidance == GuidanceType.DetectFixed) return;
+            if (Info.AmmoDef.Trajectory.Guidance == GuidanceType.DetectFixed) return;
             Vector3D.DistanceSquared(ref Info.Origin, ref predictedPos, out DistanceToTravelSqr);
             Info.DistanceTraveled = 0;
             Info.PrevDistanceTraveled = 0;
@@ -417,7 +417,7 @@ namespace WeaponCore.Projectiles
             }
             else Velocity = AccelVelocity;
 
-            if (Guidance == GuidanceType.DetectSmart) {
+            if (Info.AmmoDef.Trajectory.Guidance == GuidanceType.DetectSmart) {
 
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
@@ -565,6 +565,7 @@ namespace WeaponCore.Projectiles
             if (Info.AmmoDef.Const.Pulse && !Info.EwarAreaPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.AmmoDef.Const.IsMine)
             {
                 Info.EwarAreaPulse = true;
+                PrevVelocity = Velocity;
                 Velocity = Vector3D.Zero;
                 DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
             }

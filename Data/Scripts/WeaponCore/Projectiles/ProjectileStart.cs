@@ -120,6 +120,8 @@ namespace WeaponCore.Projectiles
                         p.Info.Monitors[j].Invoke(w.Comp.MyCube.EntityId, w.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
 
+                if (p.Info.ClientSent)
+                    Log.Line($"client sent GeProjectiles: {p.Info.Id} - {p.Info.Target.Entity != null} - {p.Info.MaxTrajectory} - {p.Info.Origin} - {p.Info.Direction} - {p.Velocity}");
             }
             NewProjectiles.Clear();
         }

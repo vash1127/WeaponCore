@@ -474,7 +474,6 @@ namespace WeaponCore
             if (firingCube == null) return;
 
             var comp = firingCube.Components.Get<WeaponComponent>();
-
             int weaponId;
             if (comp.Ai?.MyGrid != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
             {

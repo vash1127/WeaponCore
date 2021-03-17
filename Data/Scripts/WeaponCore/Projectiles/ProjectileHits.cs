@@ -439,6 +439,19 @@ namespace WeaponCore.Projectiles
                         if (p.Info.Hit.Entity is MyCubeGrid) p.Info.WeaponCache.HitBlock = p.Info.Hit.Block;
                     }
 
+                    if (Session.IsClient && p.Info.IsFiringPlayer && p.Info.AmmoDef.Const.ClientPredictedAmmo && !p.Info.IsShrapnel)
+                    {
+                        var firstHitEntity = p.Info.HitList[0];
+                        var vel = p.Info.AmmoDef.Const.IsBeamWeapon ? p.Info.Direction : !MyUtils.IsZero(p.Velocity) ? p.Velocity : p.PrevVelocity;
+                        var hitDist = firstHitEntity.HitDist ?? 0;
+                        var distToTarget = p.Info.AmmoDef.Const.IsBeamWeapon ? hitDist : p.Info.MaxTrajectory - p.Info.DistanceTraveled;
+                        var spawnPos = p.Info.AmmoDef.Const.IsBeamWeapon ? new Vector3D(firstHitEntity.Intersection.From + (p.Info.Direction * distToTarget)) : p.LastPosition;
+                        //Log.Line($"client sending predicted shot:{firstHitEntity.Intersection.From == p.LastPosition} - {p.Info.Origin == p.LastPosition} - distToTarget:{distToTarget} - distTraveled:{Vector3D.Distance(firstHitEntity.Intersection.From, firstHitEntity.Intersection.To)}");
+
+                        Session.SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Info.Hit.Entity, spawnPos, vel, p.Info.OriginUp, p.Info.MuzzleId, p.Info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)distToTarget);
+                        p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
+                    }
+
                     p.Info.System.Session.Hits.Add(p);
                     continue;
                 }
@@ -489,6 +502,7 @@ namespace WeaponCore.Projectiles
 
                 p.Info.EwarAreaPulse = true;
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
+                p.PrevVelocity = p.Velocity;
                 p.Velocity = Vector3D.Zero;
                 p.Info.Hit.SurfaceHit = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
                 p.Info.Hit.LastHit = p.Info.Hit.SurfaceHit;
