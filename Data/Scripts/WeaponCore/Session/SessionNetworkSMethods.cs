@@ -362,7 +362,7 @@ namespace WeaponCore
             direction.Normalize();
             Projectiles.NewProjectiles.Add(new NewProjectile
             {
-                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, // might be wrong
+                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, 
                 Muzzle = weapon.Muzzles[hitPacket.MuzzleId],
                 TargetEnt = targetEnt,
                 Origin = origin,

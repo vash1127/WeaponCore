@@ -29,7 +29,7 @@ namespace WeaponCore.Projectiles
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
-                p.Info.ClientSent = t == Kind.Client;
+                p.Info.ClientSent = t == Kind.Client || firingPlayer && w.System.Session.IsServer;
                 p.Info.AmmoDef = a;
                 p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
@@ -119,9 +119,10 @@ namespace WeaponCore.Projectiles
                     for (int j = 0; j < p.Info.Monitors.Count; j++)
                         p.Info.Monitors[j].Invoke(w.Comp.MyCube.EntityId, w.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
-
+                /*
                 if (p.Info.ClientSent)
                     Log.Line($"client sent GeProjectiles: {p.Info.Id} - {p.Info.Target.Entity != null} - {p.Info.MaxTrajectory} - {p.Info.Origin} - {p.Info.Direction} - {p.Velocity}");
+                */
             }
             NewProjectiles.Clear();
         }
