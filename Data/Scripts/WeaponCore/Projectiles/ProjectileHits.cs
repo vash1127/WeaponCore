@@ -30,7 +30,6 @@ namespace WeaponCore.Projectiles
             MyAPIGateway.Parallel.For(0, ValidateHits.Count, x => {
 
                 var p = ValidateHits[x];
-
                 var shieldByPass = p.Info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
                 var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
@@ -348,7 +347,6 @@ namespace WeaponCore.Projectiles
                 var p =  DeferedVoxels[i].Projectile;
                 var branch = DeferedVoxels[i].Branch;
                 var voxel = DeferedVoxels[i].Voxel;
-
                 Vector3D? voxelHit = null;
 
                 if (branch == VoxelIntersectBranch.DeferFullCheck) {
@@ -476,7 +474,6 @@ namespace WeaponCore.Projectiles
 
             hitEntity.Intersection = new LineD(attacker.LastPosition, attacker.LastPosition + (attacker.Info.Direction * dist));
             hitEntity.HitPos = hitEntity.Intersection.To;
-
             attacker.Info.HitList.Add(hitEntity);
             attacker.FinalizeIntersection = true;
         }

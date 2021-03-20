@@ -41,7 +41,6 @@ namespace WeaponCore
 
                 var info = p.Info;
                 var maxObjects = info.AmmoDef.Const.MaxObjectsHit;
-
                 var phantom = info.AmmoDef.BaseDamage <= 0;
                 var pInvalid = (int) p.State > 3;
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
@@ -584,37 +583,46 @@ namespace WeaponCore
             var scaledDamage = 1 * damageScale;
 
             var fallOff = attacker.AmmoDef.Const.FallOffScaling && attacker.DistanceTraveled > attacker.AmmoDef.DamageScales.FallOff.Distance;
-            if (fallOff)
-            {
+            if (fallOff) {
                 var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((attacker.DistanceTraveled - attacker.AmmoDef.DamageScales.FallOff.Distance) / (attacker.AmmoDef.Const.MaxTrajectory - attacker.AmmoDef.DamageScales.FallOff.Distance)), attacker.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
 
-            if (scaledDamage >= objHp)
-            {
-                attacker.BaseDamagePool -= objHp;
+            if (scaledDamage >= objHp) {
+
+                var safeObjHp = objHp <= 0 ? 0.0000001f : objHp;
+                var remaining = (scaledDamage / safeObjHp) / damageScale;
+                attacker.BaseDamagePool -= remaining;
                 pTarget.Info.BaseHealthPool = 0;
                 pTarget.State = Projectile.ProjectileState.Destroy;
+                if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && attacker.Age >= attacker.AmmoDef.AreaEffect.Detonation.MinArmingTime)
+                    DetonateProjectile(hitEnt, attacker);
             }
-            else 
-            {
+            else {
                 attacker.BaseDamagePool = 0;
                 pTarget.Info.BaseHealthPool -= scaledDamage;
+                DetonateProjectile(hitEnt, attacker);
+            }
+        }
 
-                if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && attacker.Age >= attacker.AmmoDef.AreaEffect.Detonation.MinArmingTime)
-                {
-                    var areaSphere = new BoundingSphereD(pTarget.Position, attacker.AmmoDef.Const.DetonationRadius);
-                    foreach (var sTarget in attacker.Ai.LiveProjectile)
-                    {
-                        if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint)
-                        {
-                            if (attacker.AmmoDef.Const.DetonationDamage >= sTarget.Info.BaseHealthPool)
-                            {
-                                sTarget.Info.BaseHealthPool = 0;
-                                sTarget.State = Projectile.ProjectileState.Destroy;
-                            }
-                            else sTarget.Info.BaseHealthPool -= attacker.AmmoDef.Const.DetonationDamage;
+        private static void DetonateProjectile(HitEntity hitEnt, ProInfo attacker)
+        {
+            if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && attacker.Age >= attacker.AmmoDef.AreaEffect.Detonation.MinArmingTime)
+            {
+                var areaSphere = new BoundingSphereD(hitEnt.Projectile.Position, attacker.AmmoDef.Const.DetonationRadius);
+                foreach (var sTarget in attacker.Ai.LiveProjectile) {
+
+                    if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint) {
+
+                        var objHp = sTarget.Info.BaseHealthPool;
+                        var integrityCheck = attacker.AmmoDef.DamageScales.MaxIntegrity > 0;
+                        if (integrityCheck && objHp > attacker.AmmoDef.DamageScales.MaxIntegrity) continue;
+
+                        if (attacker.AmmoDef.Health >= sTarget.Info.BaseHealthPool) {
+                            sTarget.Info.BaseHealthPool = 0;
+                            sTarget.State = Projectile.ProjectileState.Destroy;
                         }
+                        else sTarget.Info.BaseHealthPool -= attacker.AmmoDef.Health;
                     }
                 }
             }
