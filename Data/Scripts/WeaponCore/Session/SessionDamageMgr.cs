@@ -618,7 +618,11 @@ namespace WeaponCore
                         var integrityCheck = attacker.AmmoDef.DamageScales.MaxIntegrity > 0;
                         if (integrityCheck && objHp > attacker.AmmoDef.DamageScales.MaxIntegrity) continue;
 
-                        if (attacker.AmmoDef.Health >= sTarget.Info.BaseHealthPool) {
+                        var damageScale = (float)attacker.AmmoDef.Const.HealthHitModifier;
+                        if (attacker.AmmoDef.Const.VirtualBeams) damageScale *= attacker.WeaponCache.Hits;
+                        var scaledDamage = 1 * damageScale;
+
+                        if (scaledDamage >= objHp) {
                             sTarget.Info.BaseHealthPool = 0;
                             sTarget.State = Projectile.ProjectileState.Destroy;
                         }
