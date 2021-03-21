@@ -216,11 +216,11 @@ namespace WeaponCore
             GridAi ai;
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
-                var mid = ai.MIds[(int)packet.PType];
-                var newUpdate = mid == 0 || mid < packet.MId;
+                //var mid = ai.MIds[(int)packet.PType];
+                //var newUpdate = mid == 0 || mid < packet.MId;
 
-                if (newUpdate) {
-                    ai.MIds[(int)packet.PType] = packet.MId;
+                //if (newUpdate) {
+                    //ai.MIds[(int)packet.PType] = packet.MId;
 
                     long playerId;
                     if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -235,8 +235,8 @@ namespace WeaponCore
                     }
                     else
                         return Error(data, Msg("SteamToPlayer missing Player"));
-                }
-                else Log.Line($"ClientFakeTargetUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
+                //}
+                //else Log.Line($"ClientFakeTargetUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
 
                 data.Report.PacketValid = true;
             }
@@ -260,15 +260,15 @@ namespace WeaponCore
             long playerId;
             if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                var mid = ai.MIds[(int)packet.PType];
-                var newUpdate = mid == 0 || mid < packet.MId;
+                //var mid = ai.MIds[(int)packet.PType];
+                //var newUpdate = mid == 0 || mid < packet.MId;
 
-                if (newUpdate)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
+                //if (newUpdate)  {
+                    //ai.MIds[(int)packet.PType] = packet.MId;
 
                     PlayerMouseStates[playerId] = mousePacket.Data;
-                }
-                else Log.Line($"ClientClientMouseEvent: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
+                //}
+                //else Log.Line($"ClientClientMouseEvent: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
 
                 data.Report.PacketValid = true;
             }

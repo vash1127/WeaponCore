@@ -111,8 +111,8 @@ namespace WeaponCore.Projectiles
                     HitEntity hitEntity = null;
                     var checkShield = Session.ShieldApiLoaded && Session.ShieldHash == ent.DefinitionId?.SubtypeId && ent.Render.Visible;
                     MyTuple<IMyTerminalBlock, MyTuple<bool, bool, float, float, float, int>, MyTuple<MatrixD, MatrixD>>? shieldInfo = null;
-                    if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
+                    if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
                         shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
                             if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
@@ -511,7 +511,8 @@ namespace WeaponCore.Projectiles
 
             if (finalCount > 0) {
 
-                var hitEntity = p.Info.HitList[0];
+                var blockingEnt = !p.ShieldBypassed || p.Info.HitList.Count == 1 ? 0 : 1;
+                var hitEntity = p.Info.HitList[blockingEnt];
 
                 if (hitEntity.EventType == Shield)
                 {

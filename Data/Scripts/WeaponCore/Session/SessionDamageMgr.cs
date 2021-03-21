@@ -123,9 +123,9 @@ namespace WeaponCore
             var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
-            var energy = damageType == ShieldDef.ShieldType.Energy;
             var heal = damageType == ShieldDef.ShieldType.Heal;
             var shieldByPass = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
+            var energy = damageType == ShieldDef.ShieldType.Energy || shieldByPass || heal;
 
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
@@ -178,16 +178,18 @@ namespace WeaponCore
 
                 var objHp = hit.Value;
 
+
                 if (info.EwarActive)
                     info.BaseHealthPool -= 1;
                 else if (objHp > 0) {
 
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;
-                    else 
-                        info.BaseDamagePool -= scaledBaseDamage;
+                    else
+                        info.BaseDamagePool -= (scaledBaseDamage * info.AmmoDef.Const.ShieldBypassMod);
                 }
                 else info.BaseDamagePool = (objHp * -1);
+
                 if (info.AmmoDef.Mass <= 0) return;
 
                 var speed = info.AmmoDef.Trajectory.DesiredSpeed > 0 ? info.AmmoDef.Trajectory.DesiredSpeed : 1;
@@ -433,9 +435,7 @@ namespace WeaponCore
                     }
 
                     if (canDamage)
-                    {
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
-                    }
                     else
                     {
                         var hasBlock = _slimHealthClient.ContainsKey(block);
