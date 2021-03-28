@@ -112,7 +112,8 @@ namespace WeaponCore
         {
             var shield = hitEnt.Entity as IMyTerminalBlock;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
-            info.ObjectsHit++;
+            if (!info.ShieldBypassed)
+                info.ObjectsHit++;
             AmmoModifer ammoModifer;
             AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
             var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
@@ -205,6 +206,7 @@ namespace WeaponCore
         private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
+
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) {
                 hitEnt.Blocks?.Clear();
                 return;
@@ -214,7 +216,6 @@ namespace WeaponCore
                 t.BaseDamagePool = 0;
                 return;
             }
-            
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;

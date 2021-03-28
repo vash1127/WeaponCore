@@ -133,7 +133,7 @@ namespace WeaponCore.Projectiles
 
                                         var faceInfo = Session.SApi.GetFaceInfo(shieldInfo.Value.Item1, hitPos);
                                         var modifiedBypassMod = ((1 - p.Info.AmmoDef.Const.ShieldBypassMod) + faceInfo.Item5);
-                                        var validRange = modifiedBypassMod >= 0 && modifiedBypassMod <= 1;
+                                        var validRange = modifiedBypassMod >= 0 && modifiedBypassMod <= 1 || faceInfo.Item1;
                                         var notSupressed = validRange && modifiedBypassMod <= 1 && faceInfo.Item5 < 1;
                                         var bypassAmmo = p.Info.AmmoDef.Const.ShieldBypassMod > 0 && notSupressed;
                                         var bypass = bypassAmmo || faceInfo.Item1;
@@ -144,6 +144,7 @@ namespace WeaponCore.Projectiles
 
                                         if (bypass) {
                                             p.Info.ShieldBypassed = true;
+                                            modifiedBypassMod = bypassAmmo && faceInfo.Item1 ? 0f : modifiedBypassMod;
                                             p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.1f;
                                         }
                                         else p.Info.ShieldBypassMod = 1f;
