@@ -179,7 +179,7 @@ namespace WeaponCore
                                 w.Target.Reset(Tick, States.Expired);
                             else if (!IsClient && w.Target.Projectile != null && (!ai.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
                                 w.Target.Reset(Tick, States.Expired);
-                                w.FastTargetResetTick = Tick + 4;
+                                w.FastTargetResetTick = Tick + 6;
                             }
                             else if (w.AiEnabled) {
 
@@ -214,8 +214,8 @@ namespace WeaponCore
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
-                        var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == ShootClick));
-                        if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
+                        var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled && !Settings.Enforcement.DisableAi || w.State.Action == ShootClick));
+                        if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled && !Settings.Enforcement.DisableAi) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
                         }

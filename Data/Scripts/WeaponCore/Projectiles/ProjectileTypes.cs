@@ -67,6 +67,9 @@ namespace WeaponCore.Support
         internal bool ClientSent;
         internal bool IsVirtual;
         internal bool InPlanetGravity;
+        internal bool ShieldBypassed;
+        internal float ShieldResistMod = 1f;
+        internal float ShieldBypassMod = 1f;
 
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
@@ -142,6 +145,7 @@ namespace WeaponCore.Support
             IsFiringPlayer = false;
             ClientSent = false;
             InPlanetGravity = false;
+            ShieldBypassed = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
@@ -153,6 +157,8 @@ namespace WeaponCore.Support
             FireCounter = 0;
             AiVersion = 0;
             UniqueMuzzleId = 0;
+            ShieldResistMod = 1f;
+            ShieldBypassMod = 1f;
             EnableGuidance = true;
             Hit = new Hit();
             Direction = Vector3D.Zero;

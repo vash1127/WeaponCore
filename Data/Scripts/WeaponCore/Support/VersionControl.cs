@@ -131,6 +131,7 @@ namespace WeaponCore.Settings
             var oldSleep = oldSettings.ServerSleepSupport;
             var oldOptimize = oldSettings.ServerOptimizations;
             var oldFocusDist = oldSettings.MinHudFocusDistance;
+            var oldDisableAi = oldSettings.DisableAi;
 
             Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
 
@@ -147,6 +148,7 @@ namespace WeaponCore.Settings
 
             Core.Enforcement.ServerOptimizations = oldOptimize;
             Core.Enforcement.MinHudFocusDistance = oldFocusDist;
+            Core.Enforcement.DisableAi = oldDisableAi;
         }
 
         private void CorruptionCheck(bool write = false)

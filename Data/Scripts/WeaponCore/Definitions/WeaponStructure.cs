@@ -622,7 +622,10 @@ namespace WeaponCore.Support
             TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
             ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
-            ShieldBypassMod = ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier < 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 1;
+
+            var shieldBypass = ammo.AmmoDef.DamageScales.Shields.Type == AmmoDef.DamageScaleDef.ShieldDef.ShieldType.Bypass;
+            ShieldBypassMod = shieldBypass && ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier <= 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 0f;
+            
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
             FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 

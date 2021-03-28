@@ -30,8 +30,7 @@ namespace WeaponCore.Projectiles
             MyAPIGateway.Parallel.For(0, ValidateHits.Count, x => {
 
                 var p = ValidateHits[x];
-                var shieldByPass = p.Info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
-                var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
+                var shieldByPass = p.Info.AmmoDef.Const.ShieldBypassMod > 0;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 p.FinalizeIntersection = false;
                 var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
@@ -112,10 +111,10 @@ namespace WeaponCore.Projectiles
                     var checkShield = Session.ShieldApiLoaded && Session.ShieldHash == ent.DefinitionId?.SubtypeId && ent.Render.Visible;
                     MyTuple<IMyTerminalBlock, MyTuple<bool, bool, float, float, float, int>, MyTuple<MatrixD, MatrixD>>? shieldInfo = null;
 
-                    if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
-                        shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
+                    if (checkShield && !p.Info.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
+                        shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
-                            if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
+                            if (p.Info.IsShrapnel && p.Info.Age < 1 || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
 
                                 p.EntitiesNear = true;
                                 var dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(p.Beam.From, p.Beam.Direction));
@@ -124,11 +123,38 @@ namespace WeaponCore.Projectiles
 
                                 if (dist != null && (dist.Value < p.Beam.Length || p.Info.EwarActive)) {
 
-                                    if (shieldByPass) p.ShieldBypassed = true;
                                     hitEntity = HitEntityPool.Get();
                                     hitEntity.EventType = Shield;
+                                    var hitPos = p.Beam.From + (p.Beam.Direction * dist.Value); 
                                     hitEntity.HitPos = p.Beam.From + (p.Beam.Direction * dist.Value);
                                     hitEntity.HitDist = dist;
+
+                                    if (shieldInfo.Value.Item2.Item2) {
+
+                                        var faceInfo = Session.SApi.GetFaceInfo(shieldInfo.Value.Item1, hitPos);
+                                        var modifiedBypassMod = ((1 - p.Info.AmmoDef.Const.ShieldBypassMod) + faceInfo.Item5);
+                                        var validRange = modifiedBypassMod >= 0 && modifiedBypassMod <= 1;
+                                        var notSupressed = validRange && modifiedBypassMod <= 1 && faceInfo.Item5 < 1;
+                                        var bypassAmmo = p.Info.AmmoDef.Const.ShieldBypassMod > 0 && notSupressed;
+                                        var bypass = bypassAmmo || faceInfo.Item1;
+
+                                        //Log.Line($"bypass:{bypass}({validRange}) - faceInfo.Item5:{faceInfo.Item5} - modifiedBypassMod: {modifiedBypassMod} - constMod:{p.Info.AmmoDef.Const.ShieldBypassMod} - value:{p.Info.AmmoDef.DamageScales.Shields.BypassModifier}");
+
+                                        p.Info.ShieldResistMod = faceInfo.Item4;
+
+                                        if (bypass) {
+                                            p.Info.ShieldBypassed = true;
+                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.1f;
+                                        }
+                                        else p.Info.ShieldBypassMod = 1f;
+                                    }
+                                    else if (shieldByPass)
+                                    {
+                                        p.Info.ShieldBypassed = true;
+                                        p.Info.ShieldResistMod = 1f;
+                                        p.Info.ShieldBypassMod = p.Info.AmmoDef.Const.ShieldBypassMod > 0 ? p.Info.AmmoDef.Const.ShieldBypassMod : 1f; 
+                                    }
+
                                 }
                                 else continue;
                             }
@@ -511,7 +537,7 @@ namespace WeaponCore.Projectiles
 
             if (finalCount > 0) {
 
-                var blockingEnt = !p.ShieldBypassed || p.Info.HitList.Count == 1 ? 0 : 1;
+                var blockingEnt = !p.Info.ShieldBypassed || p.Info.HitList.Count == 1 ? 0 : 1;
                 var hitEntity = p.Info.HitList[blockingEnt];
 
                 if (hitEntity.EventType == Shield)
