@@ -91,7 +91,7 @@ namespace WeaponCore.Support
                             var valid = false;
                             for (int j = 0; j < fatCount; j++) {
                                 var fat = allFat[j];
-                                if (fat is IMyTerminalBlock && fat.IsWorking) {
+                                if (fat is IMyWarhead || fat is IMyTerminalBlock && fat.IsWorking) {
                                     valid = true;
                                     break;
                                 }

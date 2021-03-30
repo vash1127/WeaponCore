@@ -38,7 +38,6 @@ namespace WeaponCore
             for (int x = 0; x < Hits.Count; x++)
             {
                 var p = Hits[x];
-
                 var info = p.Info;
                 var maxObjects = info.AmmoDef.Const.MaxObjectsHit;
                 var phantom = info.AmmoDef.BaseDamage <= 0;
@@ -61,7 +60,6 @@ namespace WeaponCore
                     var hitEnt = info.HitList[i];
                     var hitMax = info.ObjectsHit >= maxObjects;
                     var outOfPew = info.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
-
                     if (skip || hitMax || outOfPew)
                     {
                         if (hitMax || outOfPew || pInvalid)
@@ -114,6 +112,7 @@ namespace WeaponCore
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             if (!info.ShieldBypassed)
                 info.ObjectsHit++;
+
             AmmoModifer ammoModifer;
             AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
             var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
@@ -143,7 +142,6 @@ namespace WeaponCore
             scaledDamage = (scaledDamage * info.ShieldResistMod) * info.ShieldBypassMod;
             var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
             var detonateDamage = detonateOnEnd ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * detDmgGlobal) * info.ShieldResistMod : 0;
-            //Log.Line($"scaledBaseDamage:{scaledBaseDamage} - scaledDamage: {scaledDamage} - ShieldResistMod:{info.ShieldResistMod} - ShieldBypassMod:{info.ShieldBypassMod} - ShieldModifier:{info.AmmoDef.Const.ShieldModifier}");
             if (heal) {
                 var heat = SApi.GetShieldHeat(shield);
 
@@ -188,7 +186,7 @@ namespace WeaponCore
                     if (!info.ShieldBypassed)
                         info.BaseDamagePool = 0;
                     else
-                        info.BaseDamagePool -= ((scaledBaseDamage * info.ShieldResistMod) * info.ShieldBypassMod);
+                        info.BaseDamagePool -= (info.BaseDamagePool * info.ShieldResistMod) * info.ShieldBypassMod;
                 }
                 else info.BaseDamagePool = (objHp * -1);
 

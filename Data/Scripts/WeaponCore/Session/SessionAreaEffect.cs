@@ -84,7 +84,7 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid?.Physics == null || grid.MarkedForClose) return;
 
-            var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            var attackerId = info.AmmoDef.Const.ShieldDamageBypassMod > 0 ? grid.EntityId : info.Target.FiringCube.EntityId;
             GetAndSortBlocksInSphere(info.AmmoDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
 
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
@@ -105,7 +105,7 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaEffectType, GridEffect> effects;
-            var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            var attackerId = info.AmmoDef.Const.ShieldDamageBypassMod > 0 ? grid.EntityId : info.Target.FiringCube.EntityId;
             if (_gridEffects.TryGetValue(grid, out effects))
             {
                 GridEffect gridEffect;

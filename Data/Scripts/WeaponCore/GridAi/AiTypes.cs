@@ -203,6 +203,7 @@ namespace WeaponCore.Support
                         OffenseRating = 0.0001f;
                 }
                 else if (detectInfo.Armed) OffenseRating = 0.0001f;
+                else if (Approaching && VelLenSqr >= 1225) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
                 var myRadius = myAi.MyGrid.PositionComp.LocalVolume.Radius;
                 var sphereDistance = MyUtils.GetSmallestDistanceToSphere(ref myCenter, ref targetSphere);

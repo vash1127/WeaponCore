@@ -30,7 +30,7 @@ namespace WeaponCore.Projectiles
             MyAPIGateway.Parallel.For(0, ValidateHits.Count, x => {
 
                 var p = ValidateHits[x];
-                var shieldByPass = p.Info.AmmoDef.Const.ShieldBypassMod > 0;
+                var shieldByPass = p.Info.AmmoDef.Const.ShieldDamageBypassMod > 0;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 p.FinalizeIntersection = false;
                 var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
@@ -128,17 +128,14 @@ namespace WeaponCore.Projectiles
                                     var hitPos = p.Beam.From + (p.Beam.Direction * dist.Value); 
                                     hitEntity.HitPos = p.Beam.From + (p.Beam.Direction * dist.Value);
                                     hitEntity.HitDist = dist;
-
                                     if (shieldInfo.Value.Item2.Item2) {
 
                                         var faceInfo = Session.SApi.GetFaceInfo(shieldInfo.Value.Item1, hitPos);
-                                        var modifiedBypassMod = ((1 - p.Info.AmmoDef.Const.ShieldBypassMod) + faceInfo.Item5);
+                                        var modifiedBypassMod = ((1 - p.Info.AmmoDef.Const.ShieldDamageBypassMod) + faceInfo.Item5);
                                         var validRange = modifiedBypassMod >= 0 && modifiedBypassMod <= 1 || faceInfo.Item1;
                                         var notSupressed = validRange && modifiedBypassMod <= 1 && faceInfo.Item5 < 1;
-                                        var bypassAmmo = p.Info.AmmoDef.Const.ShieldBypassMod > 0 && notSupressed;
+                                        var bypassAmmo = shieldByPass && notSupressed;
                                         var bypass = bypassAmmo || faceInfo.Item1;
-
-                                        //Log.Line($"bypass:{bypass}({validRange}) - faceInfo.Item5:{faceInfo.Item5} - modifiedBypassMod: {modifiedBypassMod} - constMod:{p.Info.AmmoDef.Const.ShieldBypassMod} - value:{p.Info.AmmoDef.DamageScales.Shields.BypassModifier}");
 
                                         p.Info.ShieldResistMod = faceInfo.Item4;
 
@@ -153,9 +150,8 @@ namespace WeaponCore.Projectiles
                                     {
                                         p.Info.ShieldBypassed = true;
                                         p.Info.ShieldResistMod = 1f;
-                                        p.Info.ShieldBypassMod = p.Info.AmmoDef.Const.ShieldBypassMod > 0 ? p.Info.AmmoDef.Const.ShieldBypassMod : 1f; 
+                                        p.Info.ShieldBypassMod = p.Info.AmmoDef.Const.ShieldDamageBypassMod; 
                                     }
-
                                 }
                                 else continue;
                             }
