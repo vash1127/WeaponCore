@@ -282,6 +282,25 @@ namespace WeaponCore.Projectiles
 
                                     if (hitEntity.Vector3ICache.Count > 0) {
 
+                                        bool hitself = false;
+                                        for (int j = 0; j < hitEntity.Vector3ICache.Count; j++) {
+
+                                            MyCube myCube;
+                                            if (grid.TryGetCube(hitEntity.Vector3ICache[j], out myCube)) {
+
+                                                if (((IMySlimBlock)myCube.CubeBlock).Position != p.Info.Target.FiringCube.Position) {
+
+                                                    hitself = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (!hitself) {
+                                            HitEntityPool.Return(hitEntity);
+                                            continue;
+                                        }
+
                                         IHitInfo hitInfo;
                                         p.Info.System.Session.Physics.CastRay(forwardPos, p.Beam.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
                                         var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
