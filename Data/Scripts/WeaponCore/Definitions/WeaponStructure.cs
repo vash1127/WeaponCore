@@ -108,9 +108,12 @@ namespace WeaponCore.Support
         public readonly bool HasGuidedAmmo;
         public readonly bool SuppressFire;
         public readonly bool NoSubParts;
+
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
+        public readonly double HomeAzimuth;
+        public readonly double HomeElevation;
 
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
@@ -175,7 +178,7 @@ namespace WeaponCore.Support
             AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
             HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
             AltScopeName = HasScope ? "subpart_" + Values.Assignments.Scope : string.Empty;
-            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out HomeAzimuth, out HomeElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
@@ -240,7 +243,7 @@ namespace WeaponCore.Support
             shotsPerBurst = Values.HardPoint.Loading.ShotsInBurst;
         }
 
-        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out double homeAzimuth, out double homeElevation, out TurretType turretMove)
         {
             azStep = Values.HardPoint.HardWare.RotateRate;
             elStep = Values.HardPoint.HardWare.ElevateRate;
@@ -248,7 +251,10 @@ namespace WeaponCore.Support
             maxAzimuth = Values.HardPoint.HardWare.MaxAzimuth;
             minElevation = Values.HardPoint.HardWare.MinElevation;
             maxElevation = Values.HardPoint.HardWare.MaxElevation;
-            
+
+            homeAzimuth = MathHelperD.ToRadians((((Values.HardPoint.HardWare.HomeAzimuth + 180) % 360) - 180));
+            homeElevation = MathHelperD.ToRadians((((Values.HardPoint.HardWare.HomeElevation + 180) % 360) - 180));
+
             turretMove = TurretType.Full;
 
             if (minAzimuth == maxAzimuth)

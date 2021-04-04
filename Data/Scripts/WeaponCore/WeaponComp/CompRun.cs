@@ -102,6 +102,11 @@ namespace WeaponCore.Support
 
                         if (weapon.Ammo.CurrentAmmo == 0 && !weapon.Reloading)
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
+
+                        weapon.Azimuth = weapon.System.HomeAzimuth;
+                        weapon.Elevation = weapon.System.HomeElevation;
+
+                        weapon.AimBarrel();
                     }
                 } 
                 else Log.Line($"Comp Init() failed");
