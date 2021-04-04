@@ -684,6 +684,13 @@ namespace WeaponCore.Api
 
                 w.NewTarget.Entity = (MyEntity) targetEnt;
 
+                var dist = Vector3D.DistanceSquared(comp.MyCube.CubeGrid.PositionComp.WorldMatrixRef.Translation, targetEnt.PositionComp.WorldMatrixRef.Translation);
+                if (dist > w.MaxTargetDistanceSqr)
+                {
+                    return false;
+                }
+
+
                 Vector3D targetPos;
                 return Weapon.TargetAligned(w, w.NewTarget, out targetPos);
             }
@@ -729,6 +736,11 @@ namespace WeaponCore.Api
             {
                 var w = comp.Platform.Weapons[weaponId];
                 w.NewTarget.Entity = (MyEntity)targetEnt;
+                var dist = Vector3D.DistanceSquared(comp.MyCube.CubeGrid.PositionComp.WorldMatrixRef.Translation, targetEnt.PositionComp.WorldMatrixRef.Translation);
+                if (dist > w.MaxTargetDistanceSqr)
+                {
+                    return null;
+                }
 
                 Vector3D targetPos;
                 Weapon.TargetAligned(w, w.NewTarget, out targetPos);
