@@ -107,12 +107,6 @@ namespace WeaponCore
             if (!PlayersLoaded && KeenFuckery())
                 PlayersLoaded = true;
 
-            if (ShieldMod && !ShieldApiLoaded && SApi.Load())
-            {
-                ShieldApiLoaded = true;
-                ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
-            }
-
             if (WaterMod && !WaterApiLoaded && !Settings.ClientWaiting && WApi.Waters != null)
             {
                 WaterApiLoaded = true;

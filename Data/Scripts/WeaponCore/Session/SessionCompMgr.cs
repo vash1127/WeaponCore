@@ -78,6 +78,9 @@ namespace WeaponCore
                     if (!GridToInfoMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                         continue;
 
+                    if (ShieldApiLoaded)
+                        SApi.AddAttacker(weaponComp.MyCube.EntityId);
+
                     IdToCompMap[weaponComp.MyCube.EntityId] = weaponComp;
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);

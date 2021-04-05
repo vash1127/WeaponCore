@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -848,6 +849,23 @@ namespace WeaponCore
                 });
             }
             else Log.Line($"SendAmmoCycleRequest should never be called on Client");
+        }
+
+        internal void SendEwaredBlocks()
+        {
+            if (IsServer)
+            {
+                CachedEwarPacket.CleanUp();
+                CachedEwarPacket.SenderId = MultiplayerId;
+                CachedEwarPacket.PType = PacketType.EwaredBlocks;
+                CachedEwarPacket.Data.EwaredBlocks.AddRange(DirtyEwarData);
+
+                DirtyEwarData.Clear();
+                EwarNetDataDirty = false;
+
+                PacketsToClient.Add(new PacketInfo {Packet = CachedEwarPacket }); 
+            }
+            else Log.Line($"SendEwaredBlocks should never be called on Client");
         }
 
         internal void SendAmmoCycleRequest(Weapon w, int newAmmoId)

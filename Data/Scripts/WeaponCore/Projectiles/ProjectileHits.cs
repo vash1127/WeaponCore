@@ -111,7 +111,7 @@ namespace WeaponCore.Projectiles
                     var checkShield = Session.ShieldApiLoaded && Session.ShieldHash == ent.DefinitionId?.SubtypeId && ent.Render.Visible;
                     MyTuple<IMyTerminalBlock, MyTuple<bool, bool, float, float, float, int>, MyTuple<MatrixD, MatrixD>>? shieldInfo = null;
 
-                    if (checkShield && !p.Info.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
+                    if (checkShield && !p.Info.ShieldBypassed && !p.Info.EwarActive || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
                         shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
                             if (p.Info.IsShrapnel && p.Info.Age < 1 || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
@@ -550,11 +550,15 @@ namespace WeaponCore.Projectiles
             }
 
             var finalCount = p.Info.HitList.Count;
-
             if (finalCount > 0) {
 
-                var blockingEnt = !p.Info.ShieldBypassed || p.Info.HitList.Count == 1 ? 0 : 1;
+                var checkHit = (!p.Info.AmmoDef.Const.IsBeamWeapon || !p.Info.ShieldBypassed || finalCount > 1); ;
+
+                var blockingEnt = !p.Info.ShieldBypassed || finalCount == 1 ? 0 : 1;
                 var hitEntity = p.Info.HitList[blockingEnt];
+
+                if (!checkHit)
+                    hitEntity.HitPos = p.Beam.To;
 
                 if (hitEntity.EventType == Shield)
                 {
@@ -771,35 +775,39 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in system.Session.GridToInfoMap[grid].MyCubeBocks)
+                GridMap map;
+                if (system.Session.GridToInfoMap.TryGetValue(grid, out map))
                 {
-                    if (!(cube is IMyTerminalBlock)) continue;
-                    switch (fieldType)
+                    foreach (var cube in map.MyCubeBocks)
                     {
-                        case JumpNullField:
-                            if (!(cube is MyJumpDrive)) continue;
-                            break;
-                        case EnergySinkField:
-                            if (!(cube is IMyPowerProducer)) continue;
-                            break;
-                        case AnchorField:
-                            if (!(cube is MyThrust)) continue;
-                            break;
-                        case NavField:
-                            if (!(cube is MyGyro)) continue;
-                            break;
-                        case OffenseField:
-                            if (!(cube is IMyGunBaseUser)) continue;
-                            break;
-                        case EmpField:
-                        case DotField:
-                            break;
-                        default: continue;
+                        if (!(cube is IMyTerminalBlock)) continue;
+                        switch (fieldType)
+                        {
+                            case JumpNullField:
+                                if (!(cube is MyJumpDrive)) continue;
+                                break;
+                            case EnergySinkField:
+                                if (!(cube is IMyPowerProducer)) continue;
+                                break;
+                            case AnchorField:
+                                if (!(cube is MyThrust)) continue;
+                                break;
+                            case NavField:
+                                if (!(cube is MyGyro)) continue;
+                                break;
+                            case OffenseField:
+                                if (!(cube is IMyGunBaseUser)) continue;
+                                break;
+                            case EmpField:
+                            case DotField:
+                                break;
+                            default: continue;
+                        }
+                        var block = cube.SlimBlock as IMySlimBlock;
+                        if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                            continue;
+                        blocks.Add(block);
                     }
-                    var block = cube.SlimBlock as IMySlimBlock;
-                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                        continue;
-                    blocks.Add(block);
                 }
             }
             else

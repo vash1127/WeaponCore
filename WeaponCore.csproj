@@ -54,6 +54,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\EwarSerializedValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\ConstructSerializedValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\AiSerializedValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiComp\AiCompFields.cs" />
