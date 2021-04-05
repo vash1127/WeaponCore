@@ -86,15 +86,20 @@ namespace WeaponCore.Platform
                 var oldAz = Azimuth;
                 var oldEl = Elevation;
 
-                if (oldAz > 0)
-                    Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
-                else if (oldAz < 0)
-                    Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
+                var homeEl = System.HomeElevation;
+                var homeAz = System.HomeAzimuth;
 
-                if (oldEl > 0)
-                    Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
-                else if (oldEl < 0)
-                    Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
+                Log.Line($"Sending turret ${Comp.MyCube.Name} to az={homeAz} el={homeEl}");
+
+                if (oldAz > homeAz)
+                    Azimuth = oldAz - azStep > homeAz ? oldAz - azStep : homeAz;
+                else if (oldAz < homeAz)
+                    Azimuth = oldAz + azStep < homeAz ? oldAz + azStep : homeAz;
+
+                if (oldEl > homeEl)
+                    Elevation = oldEl - elStep > homeEl ? oldEl - elStep : homeEl;
+                else if (oldEl < homeEl)
+                    Elevation = oldEl + elStep < homeEl ? oldEl + elStep : homeEl;
 
                 if (!MyUtils.IsEqual((float)oldAz, (float)Azimuth))
                     AzimuthTick = Comp.Session.Tick;
@@ -104,7 +109,7 @@ namespace WeaponCore.Platform
 
                 AimBarrel();
 
-                if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) {
+                if (Azimuth > homeAz || Azimuth < homeAz || Elevation > homeEl || Elevation < homeEl) {
                     IsHome = false;
                 }
                 else {
