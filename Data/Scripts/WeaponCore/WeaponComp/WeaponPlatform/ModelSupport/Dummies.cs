@@ -104,9 +104,9 @@ namespace WeaponCore.Support
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var localPos = dummyMatrix.Translation;
                 var localDir = dummyMatrix.Forward;
-                CachedPos = Vector3D.Transform(localPos, _cachedSubpart.WorldMatrix);
-                CachedDir = Vector3D.TransformNormal(localDir, _cachedSubpart.WorldMatrix);
-                return new DummyInfo { Position = CachedPos, Direction = CachedDir, ParentMatrix = _cachedSubpart.WorldMatrix, Entity = _entity, LocalPosition = localPos, DummyMatrix = dummyMatrix};
+                CachedPos = Vector3D.Transform(localPos, _cachedSubpart.PositionComp.WorldMatrixRef);
+                CachedDir = Vector3D.TransformNormal(localDir, _cachedSubpart.PositionComp.WorldMatrixRef);
+                return new DummyInfo { Position = CachedPos, Direction = CachedDir, ParentMatrix = _cachedSubpart.PositionComp.WorldMatrixRef, Entity = _entity, LocalPosition = localPos, DummyMatrix = dummyMatrix};
             }
         }
 
