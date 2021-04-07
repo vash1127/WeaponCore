@@ -50,6 +50,7 @@ namespace WeaponCore
         WeaponReload,
         WeaponAmmo,
         QueueShot,
+        EwaredBlocks,
     }
 
     #region packets
@@ -212,6 +213,21 @@ namespace WeaponCore
             PlayerId = -1;
         }
     }
+
+    [ProtoContract]
+    public class EwaredBlocksPacket : Packet
+    {
+        [ProtoMember(1)] internal EwarData Data = new EwarData();
+
+        public EwaredBlocksPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data.EwaredBlocks.Clear();
+        }
+    }
+
 
     [ProtoContract]
     public class WeaponAmmoPacket : Packet

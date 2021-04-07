@@ -176,6 +176,9 @@ namespace WeaponCore
                     if (PacketsToServer.Count > 0) 
                         ProccessClientPacketsForServer();
 
+                    if (EwarNetDataDirty)
+                        SendEwaredBlocks();
+
                     DsUtil.Complete("network1", true);
                 }
 

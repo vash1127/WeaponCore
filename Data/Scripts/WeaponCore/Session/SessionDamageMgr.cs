@@ -126,7 +126,6 @@ namespace WeaponCore
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
             var heal = damageType == ShieldDef.ShieldType.Heal;
             var energy = damageType == ShieldDef.ShieldType.Energy || info.ShieldBypassed || heal;
-
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !info.ShieldBypassed;
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;
@@ -214,6 +213,7 @@ namespace WeaponCore
                 t.BaseDamagePool = 0;
                 return;
             }
+
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -226,8 +226,8 @@ namespace WeaponCore
             var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.AmmoDef.AreaEffect.Detonation.MinArmingTime;
             var detonateDmg = t.AmmoDef.Const.DetonationDamage;
 
-            var attackerId = t.ShieldBypassed ? grid.EntityId : t.Target.FiringCube.EntityId;
-            var attacker = t.ShieldBypassed ? (MyEntity)grid : t.Target.FiringCube;
+            var attackerId = t.Target.FiringCube.EntityId;
+            var attacker = t.Target.FiringCube;
             
             var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
@@ -689,8 +689,7 @@ namespace WeaponCore
                     info.BaseDamagePool -= objHp;
                     if (oRadius < minTestRadius) oRadius = minTestRadius;
                 }
-
-                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)(oRadius * info.AmmoDef.Const.VoxelHitModifier), true);
+                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)(oRadius * info.AmmoDef.Const.VoxelHitModifier), false);
 
                 if (detonateOnEnd && info.BaseDamagePool <= 0)
                 {

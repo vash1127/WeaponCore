@@ -122,8 +122,6 @@ namespace WeaponCore.Support
                 w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
                 w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
                 ClientDirty = false;
-
-                //Log.Line($"UpdateTarget: id:{tData.EntityId}({TargetId}) - entity:{Entity != null}({targetEntity != null}) - state:{CurrentState}({PreviousState}) - hasTarget:{tData.EntityId != 0}({HasTarget})");
             }
         }
 

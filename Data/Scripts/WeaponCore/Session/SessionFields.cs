@@ -81,7 +81,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
         internal readonly MyConcurrentPool<MyConcurrentList<BetterInventoryItem>> BetterItemsListPool = new MyConcurrentPool<MyConcurrentList<BetterInventoryItem>>(256, list => list.Clear());
-
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
 
@@ -204,10 +203,10 @@ namespace WeaponCore
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
+        private readonly EwaredBlocksPacket CachedEwarPacket = new EwaredBlocksPacket();
 
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
-
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
 
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
@@ -344,6 +343,7 @@ namespace WeaponCore
         internal bool DebugLos = false;
         internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
+        internal bool EwarNetDataDirty;
         [Flags]
         internal enum SafeZoneAction
         {
