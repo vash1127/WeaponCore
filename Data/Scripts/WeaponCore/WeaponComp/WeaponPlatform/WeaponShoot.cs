@@ -60,11 +60,10 @@ namespace WeaponCore.Platform
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++ShotsFired > System.ShotsPerBurst) {
-                    ShotsFired = 1;
-                    EventTriggerStateChanged(EventTriggers.BurstReload, false);
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++ShotsFired == System.ShotsPerBurst) {
                 }
-                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst) {
+                else if (!ActiveAmmoDef.AmmoDef.Const.BurstMode && ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst)
+                {
                     ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
                 }
@@ -274,7 +273,6 @@ namespace WeaponCore.Platform
                 #region Reload and Animation
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
-
                 if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (s.IsServer && !ComputeServerStorage() || s.IsClient && !ClientReload()))
                     BurstMode();
 
@@ -305,25 +303,40 @@ namespace WeaponCore.Platform
 
         private void BurstMode()
         {
-            if (ShotsFired == System.ShotsPerBurst) {
-
+            if (ShotsFired >= System.ShotsPerBurst) {
                 uint delay = 0;
                 FinishBurst = false;
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                 if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
 
+
                     System.Session.FutureEvents.Schedule(o => {
                         EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                        ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
-                        StopShooting();
+                        if (IsShooting)
+                        {
+                            StopShooting();
+                        }
+                        System.Session.FutureEvents.Schedule(ob =>
+                        {
+                            EventTriggerStateChanged(EventTriggers.BurstReload, false);
+                        }, null, burstDelay);
 
                     }, null, delay);
                 }
                 else
+                {
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
 
-                if (IsShooting) {
-                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+                    System.Session.FutureEvents.Schedule(ob =>
+                    {
+                        EventTriggerStateChanged(EventTriggers.BurstReload, false);
+                    }, null, burstDelay);
+                }
+
+                ShotsFired = 0;
+                ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+                if (IsShooting)
+                {
                     StopShooting();
                 }
 

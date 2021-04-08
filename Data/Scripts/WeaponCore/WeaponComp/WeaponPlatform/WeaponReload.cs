@@ -193,7 +193,7 @@ namespace WeaponCore.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             StartReload();
-            return true;
+            return Reloading;
         }
 
         internal bool ComputeServerStorage()
@@ -273,7 +273,7 @@ namespace WeaponCore.Platform
             }
 
             StartReload();
-            return true;
+            return Reloading;
         }
 
         internal void StartReload()
