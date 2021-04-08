@@ -159,6 +159,11 @@ namespace WeaponCore
                         ClientNotify(packetObj);
                         break;
                     }
+                    case PacketType.EwaredBlocks:
+                    {
+                        ClientEwarBlocks(packetObj);
+                        break;
+                    }
                     case PacketType.Invalid:
                     {
                         Log.Line($"invalid packet: {packetObj.PacketSize} - {packetObj.Packet.PType}");

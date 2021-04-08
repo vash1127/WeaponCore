@@ -203,7 +203,6 @@ namespace WeaponCore
                             PType = PacketType.ProblemReport,
                             Data = data,
                             Type = ProblemReportPacket.RequestType.SendReport,
-
                         },
                         SingleClient = true,
                     });

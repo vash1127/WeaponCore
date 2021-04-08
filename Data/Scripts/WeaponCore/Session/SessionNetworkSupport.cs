@@ -855,10 +855,11 @@ namespace WeaponCore
         {
             if (IsServer)
             {
+                Log.Line($"sending ewar packet: {DirtyEwarData.Count}");
                 CachedEwarPacket.CleanUp();
                 CachedEwarPacket.SenderId = MultiplayerId;
                 CachedEwarPacket.PType = PacketType.EwaredBlocks;
-                CachedEwarPacket.Data.EwaredBlocks.AddRange(DirtyEwarData);
+                CachedEwarPacket.Data.AddRange(DirtyEwarData);
 
                 DirtyEwarData.Clear();
                 EwarNetDataDirty = false;
