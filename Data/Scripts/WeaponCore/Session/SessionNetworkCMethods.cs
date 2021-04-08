@@ -366,5 +366,26 @@ namespace WeaponCore
 
             return true;
         }
+
+        private bool ClientEwarBlocks(PacketObj data)
+        {
+            var packet = data.Packet;
+            var queueShot = (EwaredBlocksPacket)packet;
+            if (queueShot?.Data == null)
+            {
+                Log.Line($"packet list null");
+                return false;
+            }
+            CurrentClientEwaredCubes.Clear();
+            
+            for (int i = 0; i < queueShot.Data.Count; i++)
+                CurrentClientEwaredCubes.Add(queueShot.Data[i]);
+            Log.Line($"client ewar packet processed: {CurrentClientEwaredCubes.Count}");
+            ClientEwarStale = true;
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
     }
 }

@@ -317,7 +317,13 @@ namespace WeaponCore
                     {
                         functBlock.Enabled = false;
                         functBlock.EnabledChanged += ForceDisable;
-                        
+
+                        if (MpActive && IsServer) {
+                            Log.Line($"server add");
+                            DirtyEwarData.Add(cubeid);
+                            EwarNetDataDirty = true;
+                        }
+
                         if (HandlesInput) {
                             functBlock.AppendingCustomInfo += blockInfo.AppendCustomInfo;
                             functBlock.RefreshCustomInfo();
@@ -370,7 +376,8 @@ namespace WeaponCore
                 var queue = _effectPurge.Dequeue();
 
                 if (MpActive && IsServer) {
-                    DirtyEwarData.Add(queue);
+                    Log.Line($"server remove");
+                    DirtyEwarData.Remove(queue);
                     EwarNetDataDirty = true;
                 }
 
@@ -389,12 +396,15 @@ namespace WeaponCore
                     var cube = (MyCubeBlock)ent;
                     if (!_activeEwarCubes.ContainsKey(entId)) {
 
+                        Log.Line($"added new ewar block");
                         var func = (IMyFunctionalBlock)cube;
                         _activeEwarCubes[entId] = new BlockState { FunctBlock = func, FirstState = func.Enabled };
                         ActivateClientEwarState(func);
                     }
                 }
                 else if (_activeEwarCubes.TryGetValue(entId, out state)) {
+
+                    Log.Line($"stale ewar block");
 
                     DeactivateClientEwarState(ref state);
                     _activeEwarCubes.Remove(entId);
@@ -408,6 +418,7 @@ namespace WeaponCore
                 if (!CurrentClientEwaredCubes.Contains(activeEwar.Key)) {
                     var state = activeEwar.Value;
                     DeactivateClientEwarState(ref state);
+                    Log.Line($"ewar block removed");
                 }
             }
         }

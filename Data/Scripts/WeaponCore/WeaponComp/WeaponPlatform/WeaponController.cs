@@ -89,8 +89,6 @@ namespace WeaponCore.Platform
                 var homeEl = System.HomeElevation;
                 var homeAz = System.HomeAzimuth;
 
-                Log.Line($"Sending turret ${Comp.MyCube.Name} to az={homeAz} el={homeEl}");
-
                 if (oldAz > homeAz)
                     Azimuth = oldAz - azStep > homeAz ? oldAz - azStep : homeAz;
                 else if (oldAz < homeAz)

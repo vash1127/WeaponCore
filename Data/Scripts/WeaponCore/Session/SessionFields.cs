@@ -422,6 +422,7 @@ namespace WeaponCore
             Projectiles = new Projectiles.Projectiles(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
+            CachedEwarPacket.Data = new List<long>(32);
 
             ProblemRep = new ProblemReport(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));

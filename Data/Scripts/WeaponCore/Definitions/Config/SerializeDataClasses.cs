@@ -80,6 +80,7 @@ namespace WeaponCore
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
     [ProtoInclude(28, typeof(QueuedShotPacket))]
     [ProtoInclude(29, typeof(WeaponAmmoPacket))]
+    [ProtoInclude(30, typeof(EwaredBlocksPacket))]
 
     public class Packet
     {
@@ -217,14 +218,14 @@ namespace WeaponCore
     [ProtoContract]
     public class EwaredBlocksPacket : Packet
     {
-        [ProtoMember(1)] internal EwarData Data = new EwarData();
+        [ProtoMember(1)] internal List<long> Data = new List<long>(32);
 
         public EwaredBlocksPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data.EwaredBlocks.Clear();
+            Data.Clear();
         }
     }
 
