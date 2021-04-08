@@ -1016,8 +1016,8 @@ namespace WeaponCore
                     var dummyInfo = particleEvent.MyDummy.Info;
                     var ent = particleEvent.MyDummy.Entity;
                     var pos = particleEvent.EmptyPos;
-                    var matrix = dummyInfo.ParentMatrix;
-                    matrix.Translation = pos;
+                    var matrix = dummyInfo.DummyMatrix;
+                    matrix.Translation = dummyInfo.LocalPosition + particleEvent.Offset;
 
                     if (particleEvent.Effect == null)
                     {
