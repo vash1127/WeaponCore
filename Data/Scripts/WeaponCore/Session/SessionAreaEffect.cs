@@ -164,18 +164,19 @@ namespace WeaponCore
             {
                 var cubeBlock = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
-                var ewared = EffectedCubes.ContainsKey(cubeBlock.EntityId);
 
-                if (fieldType != DotField)
-                    if (cubeBlock == null || cubeBlock.MarkedForClose || (!cubeBlock.IsWorking && !ewared) || ewared && !stack) continue;
+                IMyFunctionalBlock funcBlock = null;
+                if (fieldType != DotField) {
 
-                if (cubeBlock is MyConveyor)
-                    continue;
+                    if (cubeBlock == null || cubeBlock.MarkedForClose)
+                        continue;
 
-                var cube = cubeBlock as IMyFunctionalBlock;
-                if (cube == null)
-                    continue;
+                    funcBlock = cubeBlock as IMyFunctionalBlock;
+                    var isConveyor = cubeBlock is MyConveyor;
+                    var ewared = EffectedCubes.ContainsKey(cubeBlock.EntityId);
 
+                    if (funcBlock == null || isConveyor || !cubeBlock.IsWorking && !ewared || ewared && !stack) continue;
+                }
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
@@ -231,10 +232,10 @@ namespace WeaponCore
                     continue;
                 }
 
-                if (cube != null)
+                if (funcBlock != null)
                 {
                     BlockState blockState;
-                    var cubeId = cube.EntityId;
+                    var cubeId = cubeBlock.EntityId;
                     if (EffectedCubes.TryGetValue(cubeId, out blockState))
                     {
                         if (blockState.Health > 0) damagePool = tmpDamagePool;
@@ -259,7 +260,7 @@ namespace WeaponCore
                     else
                     {
                         damagePool = tmpDamagePool;
-                        blockState.FunctBlock = cube;
+                        blockState.FunctBlock = funcBlock;
                         var originState = blockState.FunctBlock.Enabled;
                         blockState.FirstTick = Tick + 1;
                         blockState.FirstState = originState;
@@ -267,6 +268,7 @@ namespace WeaponCore
                         blockState.Endtick = Tick + (duration + 1);
                         blockState.Session = this;
                         blockState.AmmoDef = ammoDef;
+                        blockState.SystemId = sysmteId;
                         if (!blockDisabled) blockState.Health = blockHp - scaledDamage;
                         else
                         {
