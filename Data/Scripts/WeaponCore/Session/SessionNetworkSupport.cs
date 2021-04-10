@@ -855,16 +855,15 @@ namespace WeaponCore
         {
             if (IsServer)
             {
-                Log.Line($"sending ewar packet: {DirtyEwarData.Count}");
-                CachedEwarPacket.CleanUp();
-                CachedEwarPacket.SenderId = MultiplayerId;
-                CachedEwarPacket.PType = PacketType.EwaredBlocks;
-                CachedEwarPacket.Data.AddRange(DirtyEwarData);
+                _cachedEwarPacket.CleanUp();
+                _cachedEwarPacket.SenderId = MultiplayerId;
+                _cachedEwarPacket.PType = PacketType.EwaredBlocks;
+                _cachedEwarPacket.Data.AddRange(DirtyEwarData.Values);
 
                 DirtyEwarData.Clear();
                 EwarNetDataDirty = false;
 
-                PacketsToClient.Add(new PacketInfo {Packet = CachedEwarPacket }); 
+                PacketsToClient.Add(new PacketInfo {Packet = _cachedEwarPacket }); 
             }
             else Log.Line($"SendEwaredBlocks should never be called on Client");
         }

@@ -218,7 +218,7 @@ namespace WeaponCore
     [ProtoContract]
     public class EwaredBlocksPacket : Packet
     {
-        [ProtoMember(1)] internal List<long> Data = new List<long>(32);
+        [ProtoMember(1)] internal List<EwarValues> Data = new List<EwarValues>(32);
 
         public EwaredBlocksPacket() { }
 

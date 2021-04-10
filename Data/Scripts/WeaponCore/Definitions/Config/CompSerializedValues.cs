@@ -92,6 +92,16 @@ namespace WeaponCore
     }
 
     [ProtoContract]
+    public class EwarValues
+    {
+        [ProtoMember(1)] public long FiringBlockId;
+        [ProtoMember(2)] public long EwaredBlockId;
+        [ProtoMember(3)] public int SystemId; 
+        [ProtoMember(4)] public int AmmoId; 
+        [ProtoMember(5)] public uint EndTick; 
+    }
+
+    [ProtoContract]
     public class CompBaseValues
     {
         [ProtoMember(1)] public uint Revision;

@@ -78,6 +78,8 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<EwarValues> EwarDataPool = new MyConcurrentPool<EwarValues>(64);
+
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
         internal readonly MyConcurrentPool<MyConcurrentList<BetterInventoryItem>> BetterItemsListPool = new MyConcurrentPool<MyConcurrentList<BetterInventoryItem>>(256, list => list.Clear());
@@ -203,7 +205,7 @@ namespace WeaponCore
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
-        private readonly EwaredBlocksPacket CachedEwarPacket = new EwaredBlocksPacket();
+        private readonly EwaredBlocksPacket _cachedEwarPacket = new EwaredBlocksPacket();
 
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
@@ -422,7 +424,7 @@ namespace WeaponCore
             Projectiles = new Projectiles.Projectiles(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
-            CachedEwarPacket.Data = new List<long>(32);
+            _cachedEwarPacket.Data = new List<EwarValues>(32);
 
             ProblemRep = new ProblemReport(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));

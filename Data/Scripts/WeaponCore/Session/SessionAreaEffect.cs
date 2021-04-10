@@ -25,10 +25,9 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<Dictionary<AreaEffectType, GridEffect>> GridEffectsPool = new MyConcurrentPool<Dictionary<AreaEffectType, GridEffect>>(128, effect => effect.Clear());
         internal readonly MyConcurrentPool<GridEffect> GridEffectPool = new MyConcurrentPool<GridEffect>(128, effect => effect.Clean());
         internal readonly Dictionary<long, BlockState> EffectedCubes = new Dictionary<long, BlockState>();
-        internal readonly HashSet<MyCubeGrid> RemoveEffectsFromGrid = new HashSet<MyCubeGrid>();
-        internal readonly HashSet<long> CurrentClientEwaredCubes = new HashSet<long>();
-        internal readonly HashSet<long> DirtyEwarData = new HashSet<long>();
-        private readonly Dictionary<long, BlockState> _activeEwarCubes = new Dictionary<long, BlockState>();
+        internal readonly Dictionary<long, EwarValues> CurrentClientEwaredCubes = new Dictionary<long, EwarValues>();
+        internal readonly Dictionary<long, EwarValues> DirtyEwarData = new Dictionary<long, EwarValues>();
+        private readonly CachingDictionary<long, BlockState> _activeEwarCubes = new CachingDictionary<long, BlockState>();
         private readonly Queue<long> _effectPurge = new Queue<long>();
         internal bool ClientEwarStale;
 
@@ -93,7 +92,7 @@ namespace WeaponCore
 
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
-            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, ref healthPool, attackerId, hitEnt.Blocks);
+            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, ref healthPool, attackerId, info.System.WeaponIdHash, hitEnt.Blocks);
 
             if (depletable) 
                 info.BaseHealthPool -= healthPool;
@@ -150,7 +149,7 @@ namespace WeaponCore
         }
 
 
-        private void ComputeEffects(MyCubeGrid grid, AmmoDef ammoDef, float damagePool, ref float healthPool, long attackerId, List<IMySlimBlock> blocks)
+        private void ComputeEffects(MyCubeGrid grid, AmmoDef ammoDef, float damagePool, ref float healthPool, long attackerId, int sysmteId, List<IMySlimBlock> blocks)
         {
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var eWarInfo = ammoDef.AreaEffect.EwarFields;
@@ -165,8 +164,10 @@ namespace WeaponCore
             {
                 var cubeBlock = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
+                var ewared = EffectedCubes.ContainsKey(cubeBlock.EntityId);
+
                 if (fieldType != DotField)
-                    if (cubeBlock == null || cubeBlock.MarkedForClose || !cubeBlock.IsWorking && !EffectedCubes.ContainsKey(cubeBlock.EntityId)) continue;
+                    if (cubeBlock == null || cubeBlock.MarkedForClose || (!cubeBlock.IsWorking && !ewared) || ewared && !stack) continue;
 
                 if (cubeBlock is MyConveyor)
                     continue;
@@ -174,6 +175,7 @@ namespace WeaponCore
                 var cube = cubeBlock as IMyFunctionalBlock;
                 if (cube == null)
                     continue;
+
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
@@ -233,7 +235,7 @@ namespace WeaponCore
                 {
                     BlockState blockState;
                     var cubeId = cube.EntityId;
-                    if (stack && EffectedCubes.TryGetValue(cubeId, out blockState))
+                    if (EffectedCubes.TryGetValue(cubeId, out blockState))
                     {
                         if (blockState.Health > 0) damagePool = tmpDamagePool;
                         if (!blockDisabled && blockState.Health - scaledDamage > 0)
@@ -271,7 +273,7 @@ namespace WeaponCore
                             blockState.Health = 0;
                         }
                     }
-                    EffectedCubes[cube.EntityId] = blockState;
+                    EffectedCubes[cubeId] = blockState;
                 }
             }
          
@@ -287,7 +289,7 @@ namespace WeaponCore
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
                     var healthPool = v.Value.AmmoDef.Health;
-                    ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, _tmpEffectCubes);
+                    ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, v.Value.System.WeaponIdHash, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     GridEffectPool.Return(v.Value);
                 }
@@ -305,70 +307,60 @@ namespace WeaponCore
                 var blockInfo = item.Value;
                 var functBlock = blockInfo.FunctBlock;
                 var health = blockInfo.Health;
-                if (functBlock == null || functBlock.MarkedForClose)
-                {
+                if (functBlock == null || functBlock.MarkedForClose) {
                     _effectPurge.Enqueue(cubeid);
                     continue;
                 }
 
-                if (health <= 0)
-                {
-                    if (functBlock.IsWorking)
-                    {
+                if (health <= 0) {
+
+                    if (functBlock.IsWorking) {
+
                         functBlock.Enabled = false;
                         functBlock.EnabledChanged += ForceDisable;
 
                         if (MpActive && IsServer) {
-                            Log.Line($"server add");
-                            DirtyEwarData.Add(cubeid);
+                            var ewarData = EwarDataPool.Get();
+                            ewarData.FiringBlockId = blockInfo.FiringBlockId;
+                            ewarData.EwaredBlockId = cubeid;
+                            ewarData.EndTick = blockInfo.Endtick - Tick;
+                            ewarData.AmmoId = blockInfo.AmmoDef.Const.AmmoIdxPos;
+                            ewarData.SystemId = blockInfo.SystemId;
+                            DirtyEwarData.Add(cubeid, ewarData);
                             EwarNetDataDirty = true;
                         }
 
-                        if (HandlesInput) {
+                        if (IsHost) {
                             functBlock.AppendingCustomInfo += blockInfo.AppendCustomInfo;
                             functBlock.RefreshCustomInfo();
-                        }
 
-                        if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
-                            functBlock.SetDamageEffect(true);
-                    }
-                }
-
-                if (tick < blockInfo.Endtick)
-                {
-                    if (Tick60)
-                    {
-                        if (HandlesInput && LastTerminal == functBlock) 
-                            functBlock.RefreshCustomInfo();
-                        var grid = (MyCubeGrid) functBlock.CubeGrid;
-                        if (RemoveEffectsFromGrid.Contains(grid))
-                        {
-                            functBlock.EnabledChanged -= ForceDisable;
-                            functBlock.Enabled = blockInfo.FirstState;
-                            
                             if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
-                                functBlock.SetDamageEffect(false);
-
-                            _effectPurge.Enqueue(cubeid);
-                            RemoveEffectsFromGrid.Remove(grid);
+                                functBlock.SetDamageEffect(true);
                         }
                     }
                 }
-                else
-                {
+
+                if (IsHost && Tick60 && HandlesInput && LastTerminal == functBlock)
+                    functBlock.RefreshCustomInfo();
+
+                if (tick >= blockInfo.Endtick) {
+
                     functBlock.EnabledChanged -= ForceDisable;
-                    if (HandlesInput) {
+
+                    if (IsHost) {
+
                         functBlock.AppendingCustomInfo -= blockInfo.AppendCustomInfo;
                         functBlock.RefreshCustomInfo();
+
+                        if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                            functBlock.SetDamageEffect(false);
                     }
 
                     functBlock.Enabled = blockInfo.FirstState;
-                    
-                    if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
-                        functBlock.SetDamageEffect(false);
 
                     _effectPurge.Enqueue(cubeid);
                 }
+
             }
 
             while (_effectPurge.Count != 0)
@@ -376,8 +368,11 @@ namespace WeaponCore
                 var queue = _effectPurge.Dequeue();
 
                 if (MpActive && IsServer) {
-                    Log.Line($"server remove");
-                    DirtyEwarData.Remove(queue);
+
+                    EwarValues ewarValue;
+                    if (DirtyEwarData.TryGetValue(queue, out ewarValue))
+                        EwarDataPool.Return(ewarValue);
+
                     EwarNetDataDirty = true;
                 }
 
@@ -387,24 +382,24 @@ namespace WeaponCore
 
         internal void SyncClientEwarBlocks()
         {
-            foreach (var entId in CurrentClientEwaredCubes) {
-
+            foreach (var ewarPair in CurrentClientEwaredCubes) {
                 BlockState state;
                 MyEntity ent;
+                var entId = ewarPair.Key;
                 if (MyEntities.TryGetEntityById(entId, out ent)) {
 
                     var cube = (MyCubeBlock)ent;
+                    var func = (IMyFunctionalBlock)cube;
+                    func.RefreshCustomInfo();
+
                     if (!_activeEwarCubes.ContainsKey(entId)) {
 
-                        Log.Line($"added new ewar block");
-                        var func = (IMyFunctionalBlock)cube;
-                        _activeEwarCubes[entId] = new BlockState { FunctBlock = func, FirstState = func.Enabled };
-                        ActivateClientEwarState(func);
+                        state = new BlockState { FunctBlock = func, FirstState = func.Enabled, Endtick = Tick + ewarPair.Value.EndTick, Session = this };
+                        _activeEwarCubes[entId] = state;
+                        ActivateClientEwarState(ref state);
                     }
                 }
                 else if (_activeEwarCubes.TryGetValue(entId, out state)) {
-
-                    Log.Line($"stale ewar block");
 
                     DeactivateClientEwarState(ref state);
                     _activeEwarCubes.Remove(entId);
@@ -413,30 +408,38 @@ namespace WeaponCore
                 ClientEwarStale = false;
             }
 
+            _activeEwarCubes.ApplyChanges();
             foreach (var activeEwar in _activeEwarCubes) {
 
-                if (!CurrentClientEwaredCubes.Contains(activeEwar.Key)) {
+                if (!CurrentClientEwaredCubes.ContainsKey(activeEwar.Key)) {
                     var state = activeEwar.Value;
                     DeactivateClientEwarState(ref state);
-                    Log.Line($"ewar block removed");
+                    _activeEwarCubes.Remove(activeEwar.Key);
                 }
             }
+            _activeEwarCubes.ApplyRemovals();
         }
 
-        private static void ActivateClientEwarState(IMyFunctionalBlock functBlock)
+        private static void ActivateClientEwarState(ref BlockState state)
         {
+            var functBlock = state.FunctBlock;
             functBlock.Enabled = false;
             functBlock.EnabledChanged += ForceDisable;
-            functBlock.AppendingCustomInfo -= AppendCustomInfoClient;
+            functBlock.AppendingCustomInfo += state.AppendCustomInfo;
             functBlock.RefreshCustomInfo();
+            functBlock.SetDamageEffect(true);
         }
 
         private static void DeactivateClientEwarState(ref BlockState state)
         {
-            state.FunctBlock.Enabled = state.FirstState;
             state.FunctBlock.EnabledChanged -= ForceDisable;
-            state.FunctBlock.AppendingCustomInfo -= AppendCustomInfoClient;
+            state.FunctBlock.Enabled = state.FirstState;
+            state.Endtick = 0;
             state.FunctBlock.RefreshCustomInfo();
+            state.FunctBlock.AppendingCustomInfo -= state.AppendCustomInfo;
+            state.FunctBlock.RefreshCustomInfo();
+
+            state.FunctBlock.SetDamageEffect(false);
         }
 
         private static void ForceDisable(IMyTerminalBlock myTerminalBlock)
@@ -499,11 +502,6 @@ namespace WeaponCore
 
             return null;
         }
-
-        internal static void AppendCustomInfoClient(IMyTerminalBlock block, StringBuilder stringBuilder)
-        {
-            stringBuilder.Append($"\n*****************************************\nDisabled due to Electronic Warfare!\nRebooting, please wait");
-        }
     }
 
     internal struct BlockState
@@ -516,7 +514,8 @@ namespace WeaponCore
         public uint NextTick;
         public uint Endtick;
         public float Health;
-
+        public long FiringBlockId;
+        public int SystemId;
 
         internal void AppendCustomInfo(IMyTerminalBlock block, StringBuilder stringBuilder)
         {

@@ -122,11 +122,11 @@ namespace WeaponCore.Support
                             MyParticleEffect hitEffect;
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
 
-                                hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                                //hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                                 var scaler = 1;
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                                var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
-                                hitEffect.UserScale = scale * scaler;
+                                //var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
+                                //hitEffect.UserScale = scale * scaler;
                                 hitEffect.Velocity = av.Hit.HitVelocity;
                             }
                         }
@@ -417,7 +417,7 @@ namespace WeaponCore.Support
                     if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
 
                         effect = weapon.BarrelEffects1[muzzle.MuzzleId];
-                        effect.UserColorMultiplier = particles.Color;
+                        //effect.UserColorMultiplier = particles.Color;
                         effect.UserRadiusMultiplier = particles.Extras.Scale;
                         muzzle.Av1Looping = effect.Loop || effect.DurationMax <= 0;
                     }
@@ -481,7 +481,7 @@ namespace WeaponCore.Support
                     if (!effectExists && ticksAgo <= 0)  {
                         if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
                             effect = weapon.BarrelEffects2[muzzle.MuzzleId];
-                            effect.UserColorMultiplier = particles.Color;
+                            //effect.UserColorMultiplier = particles.Color;
                             effect.UserRadiusMultiplier = particles.Extras.Scale;
                             muzzle.Av2Looping = effect.Loop || effect.DurationMax <= 0;
                         }

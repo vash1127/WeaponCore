@@ -395,9 +395,10 @@ namespace WeaponCore.Support
                 {
                     if (a.OnScreen != Screen.None)
                     {
+                        /*
                         if (!a.AmmoDef.Const.IsBeamWeapon && !a.AmmoParticleStopped && a.AmmoEffect != null && a.AmmoDef.Const.AmmoParticleShrinks)
                             a.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1f);
-
+                        */
                         if ((a.AmmoParticleStopped || !a.AmmoParticleInited))
                             a.PlayAmmoParticle();
                     }
@@ -409,9 +410,10 @@ namespace WeaponCore.Support
                 {
                     if (a.OnScreen != Screen.None)
                     {
+                        /*
                         if (!a.AmmoDef.Const.IsBeamWeapon && !a.FieldParticleStopped && a.FieldEffect != null && a.AmmoDef.Const.FieldParticleShrinks)
                             a.FieldEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AreaEffect.Pulse.Particle.Extras.MaxDistance), 0.05f, 1f);
-
+                        */
                         if ((a.FieldParticleStopped || !a.FieldParticleInited))
                             a.PlayFieldParticle();
                     }
@@ -909,9 +911,9 @@ namespace WeaponCore.Support
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect))
             {
 
-                AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
+                //AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                 AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
-                AmmoEffect.UserScale = 1;
+                //AmmoEffect.UserScale = 1;
 
 
                 AmmoParticleStopped = false;
@@ -927,9 +929,9 @@ namespace WeaponCore.Support
             var pos = TriggerEntity.PositionComp.WorldAABB.Center;
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
             {
-                FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
+                //FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
                 FieldEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
-                FieldEffect.UserScale = 1;
+                //FieldEffect.UserScale = 1;
                 FieldParticleStopped = false;
                 FieldParticleInited = true;
             }
@@ -981,9 +983,9 @@ namespace WeaponCore.Support
                     System.Session.Av.BeamEffects[UniqueMuzzleId] = effect;
 
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                //effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 //effect.WorldMatrix = matrix;
-                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                //effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
                 //if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
             }
@@ -991,7 +993,7 @@ namespace WeaponCore.Support
 
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
-                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                //effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 // if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
                 effect.WorldMatrix = matrix;
             }

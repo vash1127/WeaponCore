@@ -46,15 +46,6 @@ namespace WeaponCore
                 if (tInvalid) info.Target.Reset(Tick, Target.States.ProjectileClosed);
                 var skip = pInvalid || tInvalid;
                 var canDamage = IsServer && (p.Info.ClientSent || !p.Info.AmmoDef.Const.ClientPredictedAmmo);
-                /*
-                if (!p.Info.IsShrapnel)
-                    Log.Line($"ProcessHits: canDamage:{canDamage} - notPredicted:{!p.Info.AmmoDef.Const.ClientPredictedAmmo} - clientSent:{p.Info.ClientSent} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
-
-                if (canDamage && !p.Info.ClientSent)
-                    Log.Line($"invalid damage: shrapnel:{p.Info.IsShrapnel} - ClientSent:{p.Info.ClientSent} - ClientPredictedAmmo:{p.Info.AmmoDef.Const.ClientPredictedAmmo} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
-                else if (canDamage)
-                    Log.Line($"valid damage: shrapnel:{p.Info.IsShrapnel} - ClientSent:{p.Info.ClientSent} - ClientPredictedAmmo:{p.Info.AmmoDef.Const.ClientPredictedAmmo} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
-                */
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
                     var hitEnt = info.HitList[i];
@@ -125,7 +116,7 @@ namespace WeaponCore
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
             var heal = damageType == ShieldDef.ShieldType.Heal;
-            var energy = damageType == ShieldDef.ShieldType.Energy || info.ShieldBypassed || heal;
+            var energy = damageType != ShieldDef.ShieldType.Kinetic;
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !info.ShieldBypassed;
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;

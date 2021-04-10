@@ -371,16 +371,17 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var queueShot = (EwaredBlocksPacket)packet;
-            if (queueShot?.Data == null)
-            {
-                Log.Line($"packet list null");
+            if (queueShot?.Data == null) {
                 return false;
             }
+
             CurrentClientEwaredCubes.Clear();
             
             for (int i = 0; i < queueShot.Data.Count; i++)
-                CurrentClientEwaredCubes.Add(queueShot.Data[i]);
-            Log.Line($"client ewar packet processed: {CurrentClientEwaredCubes.Count}");
+            {
+                var values = queueShot.Data[i];
+                CurrentClientEwaredCubes[values.EwaredBlockId] = values;
+            }
             ClientEwarStale = true;
 
             data.Report.PacketValid = true;

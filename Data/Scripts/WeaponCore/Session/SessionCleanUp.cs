@@ -186,7 +186,6 @@ namespace WeaponCore
             DsUtil2.Purge();
 
             ShootingWeapons.Clear();
-            RemoveEffectsFromGrid.Clear();
             WeaponToPullAmmo.Clear();
             AmmoToPullQueue.Clear();
             ChargingWeaponsIndexer.Clear();
