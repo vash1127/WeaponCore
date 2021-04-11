@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 namespace WeaponCore.Support
 {
@@ -73,15 +74,15 @@ namespace WeaponCore.Support
 
             if (!weapon.System.DesignatorWeapon)
             {
-                var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
+                var patternSize = MathHelper.Clamp(weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length - weapon.ActiveAmmoDef.AmmoDef.Pattern.PatternSteps, 1, int.MaxValue);
                 foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
                 {
-                    PeakDps += ammo.Const.PeakDps / (float) patternSize;
-                    EffectiveDps += ammo.Const.EffectiveDps / (float) patternSize;
-                    ShotsPerSec += ammo.Const.ShotsPerSec / (float) patternSize;
-                    BaseDps += ammo.Const.BaseDps / (float) patternSize;
-                    AreaDps += ammo.Const.AreaDps / (float) patternSize;
-                    DetDps += ammo.Const.DetDps / (float) patternSize;
+                    PeakDps += ammo.Const.PeakDps / patternSize;
+                    EffectiveDps += ammo.Const.EffectiveDps / patternSize;
+                    ShotsPerSec += ammo.Const.ShotsPerSec / patternSize;
+                    BaseDps += ammo.Const.BaseDps / patternSize;
+                    AreaDps += ammo.Const.AreaDps / patternSize;
+                    DetDps += ammo.Const.DetDps / patternSize;
                 }
             }
 

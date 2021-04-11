@@ -86,19 +86,21 @@ namespace WeaponCore.Support
                         if (fatCount <= 0)
                             continue;
 
+                        var loneWarhead = false;
                         if (fatCount <= 20)  { // possible debris
 
                             var valid = false;
                             for (int j = 0; j < fatCount; j++) {
                                 var fat = allFat[j];
-                                if (fat is IMyWarhead || fat is IMyTerminalBlock && fat.IsWorking) {
+                                var warhead = fat is IMyWarhead;
+                                if (warhead || fat is IMyTerminalBlock && fat.IsWorking) {
+                                    loneWarhead = warhead && fatCount == 1;
                                     valid = true;
                                     break;
                                 }
                             }
                             if (!valid) continue;
                         }
-
                         int partCount;
                         GridAi targetAi;
                         if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi)) {
@@ -107,9 +109,9 @@ namespace WeaponCore.Support
                             partCount = targetAi.Construct.BlockCount;
                         }
                         else 
-                            partCount = gridMap.MostBlocks;
+                            partCount = gridMap.MostBlocks; 
 
-                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount));
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead? fatCount : 2));// bump warhead to 2 fatblocks so its not ignored by targeting
                         ValidGrids.Add(ent);
                     }
                     else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));

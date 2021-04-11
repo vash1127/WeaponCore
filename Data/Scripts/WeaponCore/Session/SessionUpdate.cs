@@ -244,7 +244,14 @@ namespace WeaponCore
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
-
+                        /*
+                        if (Tick180)
+                        {
+                            Log.CleanLine($"ammo:{w.ActiveAmmoDef.AmmoName} - shotReady:{shotReady} - CanShoot:{ai.CanShoot} - NoMagsToLoad:{w.NoMagsToLoad} - reloading:{w.Reloading}");
+                            Log.CleanLine($"cMags:{w.Ammo.CurrentMags} - cAmmo:{w.Ammo.CurrentAmmo} - cId:{w.Ammo.AmmoCycleId} - cCharge:{w.Ammo.CurrentCharge} - cType:{w.Ammo.AmmoTypeId}");
+                            Log.CleanLine($"cStartId:{w.ClientStartId} - rStartId:{w.Reload.StartId} - cMakeUp:{w.ClientMakeUpShots} - ClientEndId:{w.ClientEndId} - cType:{w.State.Action}({comp.Data.Repo.Base.State.Control})[{comp.Data.Repo.Base.State.TerminalAction}]");
+                        }
+                        */
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))

@@ -280,8 +280,6 @@ namespace WeaponCore.Support
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                    Vector3D targetNormDir;
-                    Vector3D predictedMuzzlePos;
 
                     if (info.IsGrid) {
 
@@ -304,8 +302,8 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
-                        predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
+                        var targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
+                        var predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
 
                         if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
