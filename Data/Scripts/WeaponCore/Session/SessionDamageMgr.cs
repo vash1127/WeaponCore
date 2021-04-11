@@ -264,6 +264,7 @@ namespace WeaponCore
             var done = false;
             var nova = false;
             var outOfPew = false;
+            var partialShield = t.ShieldInLine && !t.ShieldBypassed && SApi.MatchEntToShieldFast(grid, true) != null;
             IMySlimBlock rootBlock = null;
 
             var destroyed = 0;
@@ -309,9 +310,9 @@ namespace WeaponCore
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
 
-                    if (t.ShieldInLine && SApi.IsBlockProtected(block))
+                    if (partialShield && SApi.IsBlockProtected(block))
                         continue;
-                    
+
                     var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
                     float cachedIntegrity;
                     var blockHp = !IsClient ? block.Integrity - block.AccumulatedDamage : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
