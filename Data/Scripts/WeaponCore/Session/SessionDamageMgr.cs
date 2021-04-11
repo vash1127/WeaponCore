@@ -263,6 +263,7 @@ namespace WeaponCore
 
             var done = false;
             var nova = false;
+            var earlyExit = false;
             var outOfPew = false;
             var partialShield = t.ShieldInLine && !t.ShieldBypassed && SApi.MatchEntToShieldFast(grid, true) != null;
             IMySlimBlock rootBlock = null;
@@ -270,7 +271,7 @@ namespace WeaponCore
             var destroyed = 0;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
-                if (done || outOfPew && !nova) break;
+                if (done || earlyExit || outOfPew && !nova) break;
 
                 rootBlock = hitEnt.Blocks[i];
 
@@ -310,8 +311,10 @@ namespace WeaponCore
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
 
-                    if (partialShield && SApi.IsBlockProtected(block))
-                        continue;
+                    if (partialShield && SApi.IsBlockProtected(block)) {
+                        earlyExit = true;
+                        break;
+                    }
 
                     var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
                     float cachedIntegrity;
