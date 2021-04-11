@@ -51,6 +51,7 @@ namespace WeaponCore.Support
         private Func<MyEntity, MyTuple<bool, bool, float, float>> _getModulationInfo;
         private Func<IMyTerminalBlock, Vector3D, bool, MyTuple<bool, int, int, float, float>> _getFaceInfo;
         private Action<long> _addAtacker;
+        private Func<IMySlimBlock, bool> _isBlockProtected;
 
         private const long Channel = 1365616918;
 
@@ -131,6 +132,7 @@ namespace WeaponCore.Support
             _getModulationInfo = (Func<MyEntity, MyTuple<bool, bool, float, float>>)delegates["GetModulationInfo"];
             _getFaceInfo = (Func<IMyTerminalBlock, Vector3D, bool, MyTuple<bool, int, int, float, float>>)delegates["GetFaceInfo"];
             _addAtacker = (Action<long>)delegates["AddAttacker"];
+            _isBlockProtected = (Func<IMySlimBlock, bool>)delegates["IsBlockProtected"];
         }
 
         public Vector3D? RayAttackShield(IMyTerminalBlock block, RayD ray, long attackerId, float damage, bool energy, bool drawParticle) =>
@@ -177,6 +179,7 @@ namespace WeaponCore.Support
         public MyTuple<bool, bool, float, float> GetModulationInfo(MyEntity entity) => _getModulationInfo?.Invoke(entity) ?? new MyTuple<bool, bool, float, float>();
         public MyTuple<bool, int, int, float, float> GetFaceInfo(IMyTerminalBlock block, Vector3D pos, bool posMustBeInside = false) => _getFaceInfo?.Invoke(block, pos, posMustBeInside) ?? new MyTuple<bool, int, int, float, float>();
         public void AddAttacker(long attacker) => _addAtacker?.Invoke(attacker);
+        public bool IsBlockProtected(IMySlimBlock block) => _isBlockProtected?.Invoke(block) ?? false;
 
     }
 }

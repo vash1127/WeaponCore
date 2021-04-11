@@ -32,7 +32,10 @@ namespace WeaponCore.Projectiles
                 var p = ValidateHits[x];
                 var shieldByPass = p.Info.AmmoDef.Const.ShieldDamageBypassMod > 0;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
+                
                 p.FinalizeIntersection = false;
+                p.Info.ShieldInLine = false;
+
                 var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
                 var ewarProjectile = (p.Info.EwarActive || p.Info.AmmoDef.Const.EwarEffect);
 
@@ -642,6 +645,7 @@ namespace WeaponCore.Projectiles
                 else if (shield != null) {
                     hitEnt.Hit = true;
                     dist = hitEnt.HitDist.Value;
+                    info.ShieldInLine = true;
                 }
                 else if (grid != null) {
 

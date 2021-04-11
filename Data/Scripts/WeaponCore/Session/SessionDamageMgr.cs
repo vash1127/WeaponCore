@@ -265,6 +265,7 @@ namespace WeaponCore
             var nova = false;
             var outOfPew = false;
             IMySlimBlock rootBlock = null;
+
             var destroyed = 0;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
@@ -307,6 +308,10 @@ namespace WeaponCore
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
+
+                    if (t.ShieldInLine && SApi.IsBlockProtected(block))
+                        continue;
+                    
                     var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
                     float cachedIntegrity;
                     var blockHp = !IsClient ? block.Integrity - block.AccumulatedDamage : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);

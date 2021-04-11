@@ -68,6 +68,7 @@ namespace WeaponCore.Support
         internal bool IsVirtual;
         internal bool InPlanetGravity;
         internal bool ShieldBypassed;
+        internal bool ShieldInLine;
         internal float ShieldResistMod = 1f;
         internal float ShieldBypassMod = 1f;
 
@@ -146,6 +147,7 @@ namespace WeaponCore.Support
             ClientSent = false;
             InPlanetGravity = false;
             ShieldBypassed = false;
+            ShieldInLine = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
