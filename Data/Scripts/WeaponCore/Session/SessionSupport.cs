@@ -496,7 +496,14 @@ namespace WeaponCore
                 {
                     if (Session?.Player == null) return false;
                     MultiplayerId = MyAPIGateway.Multiplayer.MyId;
+                    
+                    if (BlackListedPlayers.Contains(MultiplayerId))
+                    {
+                        //SuppressWc = true;
+                    }
+
                     PlayerId = Session.Player.IdentityId;
+
                     List<IMyPlayer> players = new List<IMyPlayer>();
                     MyAPIGateway.Multiplayer.Players.GetPlayers(players);
 

@@ -347,7 +347,7 @@ namespace WeaponCore
         internal bool QuickDisableGunsCheck;
         internal bool EwarNetDataDirty;
 
-        internal readonly HashSet<long> BlackListedPlayers = new HashSet<long>()
+        internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
             76561198028233790, // Muzzled SteamId goes here
         };
