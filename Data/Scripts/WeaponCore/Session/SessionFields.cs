@@ -349,7 +349,7 @@ namespace WeaponCore
 
         internal readonly HashSet<long> BlackListedPlayers = new HashSet<long>()
         {
-            0, // Muzzled SteamId goes here
+            76561198028233790, // Muzzled SteamId goes here
         };
 
         [Flags]
