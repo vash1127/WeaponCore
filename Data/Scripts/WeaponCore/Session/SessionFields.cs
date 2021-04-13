@@ -346,6 +346,12 @@ namespace WeaponCore
         internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
         internal bool EwarNetDataDirty;
+
+        internal readonly HashSet<long> BlackListedPlayers = new HashSet<long>()
+        {
+            0, // Muzzled SteamId goes here
+        };
+
         [Flags]
         internal enum SafeZoneAction
         {
