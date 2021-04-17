@@ -19,13 +19,15 @@ namespace CoreSystems.Settings
 
         public void InitSettings()
         {
-            if (MyAPIGateway.Utilities.FileExistsInGlobalStorage(Session.ClientCfgName)) {
-                
+            if (MyAPIGateway.Utilities.FileExistsInGlobalStorage(Session.ClientCfgName))
+            {
+
                 var writer = MyAPIGateway.Utilities.ReadFileInGlobalStorage(Session.ClientCfgName);
                 var xmlData = MyAPIGateway.Utilities.SerializeFromXML<CoreSettings.ClientSettings>(writer.ReadToEnd());
                 writer.Dispose();
 
-                if (xmlData?.Version == Session.ClientCfgVersion) {
+                if (xmlData?.Version == Session.ClientCfgVersion)
+                {
 
                     Core.ClientConfig = xmlData;
                     Core.Session.UiInput.ActionKey = Core.Session.KeyMap[xmlData.ActionKey];
@@ -36,20 +38,23 @@ namespace CoreSystems.Settings
             }
             else WriteNewClientCfg();
 
-            if (Core.Session.IsServer) {
+            if (Core.Session.IsServer)
+            {
 
-                if (MyAPIGateway.Utilities.FileExistsInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings))) {
+                if (MyAPIGateway.Utilities.FileExistsInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings)))
+                {
 
                     var writer = MyAPIGateway.Utilities.ReadFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
 
                     CoreSettings.ServerSettings xmlData = null;
-                    
+
                     try { xmlData = MyAPIGateway.Utilities.SerializeFromXML<CoreSettings.ServerSettings>(writer.ReadToEnd()); }
                     catch (Exception e) { writer.Dispose(); }
 
                     writer.Dispose();
 
-                    if (xmlData?.Version == Session.ServerCfgVersion) {
+                    if (xmlData?.Version == Session.ServerCfgVersion)
+                    {
                         Core.Enforcement = xmlData;
                         CorruptionCheck(true);
                     }
@@ -57,15 +62,15 @@ namespace CoreSystems.Settings
                         GenerateConfig(xmlData);
                 }
                 else GenerateConfig();
-                
+
 
                 GenerateBlockDmgMap();
-               GenerateAmmoDmgMap();
+                GenerateAmmoDmgMap();
             }
 
             if (VersionChange)
             {
-                Core.Session.PlayerMessage = "You may access CoreSystems client settings with the /wc chat command";
+                Core.Session.PlayerMessage = "You may access WeaponCore client settings with the /wc chat command";
             }
         }
 
@@ -79,7 +84,7 @@ namespace CoreSystems.Settings
 
         private void GenerateConfig(CoreSettings.ServerSettings oldSettings = null)
         {
-            
+
             if (oldSettings != null) RebuildConfig(oldSettings);
             else
                 Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
@@ -93,7 +98,7 @@ namespace CoreSystems.Settings
         {
             VersionChange = true;
             MyAPIGateway.Utilities.DeleteFileInGlobalStorage(Session.ClientCfgName);
-            Core.ClientConfig = new CoreSettings.ClientSettings {Version = Session.ClientCfgVersion};
+            Core.ClientConfig = new CoreSettings.ClientSettings { Version = Session.ClientCfgVersion };
             var writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage(Session.ClientCfgName);
             var data = MyAPIGateway.Utilities.SerializeToXML(Core.ClientConfig);
             Write(writer, data);
@@ -106,7 +111,7 @@ namespace CoreSystems.Settings
             var data = MyAPIGateway.Utilities.SerializeToXML(Core.ClientConfig);
             Write(writer, data);
         }
-        
+
         private void SaveServerCfg()
         {
             MyAPIGateway.Utilities.DeleteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
@@ -129,6 +134,8 @@ namespace CoreSystems.Settings
             var oldShipSizes = oldSettings.ShipSizes;
             var oldSleep = oldSettings.ServerSleepSupport;
             var oldOptimize = oldSettings.ServerOptimizations;
+            var oldFocusDist = oldSettings.MinHudFocusDistance;
+            var oldDisableAi = oldSettings.DisableAi;
 
             Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
 
@@ -144,13 +151,15 @@ namespace CoreSystems.Settings
             Core.Enforcement.ServerSleepSupport = oldSleep;
 
             Core.Enforcement.ServerOptimizations = oldOptimize;
+            Core.Enforcement.MinHudFocusDistance = oldFocusDist;
+            Core.Enforcement.DisableAi = oldDisableAi;
         }
 
         private void CorruptionCheck(bool write = false)
         {
             if (Core.Enforcement.AreaDamageModifer < 0)
                 Core.Enforcement.AreaDamageModifer = 1f;
-            
+
             if (Core.Enforcement.DirectDamageModifer < 0)
                 Core.Enforcement.DirectDamageModifer = 1f;
 
@@ -216,7 +225,7 @@ namespace CoreSystems.Settings
             foreach (var modifer in Core.Enforcement.AmmoModifers)
                 foreach (var pair in Core.Session.AmmoDamageMap)
                     if (modifer.Name == pair.Key.AmmoRound)
-                        _tmpAmmoModiferMap[pair.Key] =  modifer;
+                        _tmpAmmoModiferMap[pair.Key] = modifer;
 
             foreach (var t in _tmpAmmoModiferMap)
                 Core.Session.AmmoDamageMap[t.Key] = t.Value;

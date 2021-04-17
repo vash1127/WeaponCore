@@ -202,7 +202,7 @@ namespace CoreSystems
                     var lookSphere = new BoundingSphereD(badBlock.PositionComp.WorldAABB.Center, 30f);
                     if (Camera.IsInFrustum(ref lookSphere)) {
                         MyOrientedBoundingBoxD blockBox;
-                        DsStaticUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
+                        SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
                         DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
                     }
                 }
@@ -261,7 +261,7 @@ namespace CoreSystems
                                     if (comp.IsBlock)
                                     {
                                         MyOrientedBoundingBoxD blockBox;
-                                        DsStaticUtils.GetBlockOrientedBoundingBox(comp.Cube, out blockBox);
+                                        SUtils.GetBlockOrientedBoundingBox(comp.Cube, out blockBox);
 
                                         BoundingSphereD s;
                                         MyOrientedBoundingBoxD b;

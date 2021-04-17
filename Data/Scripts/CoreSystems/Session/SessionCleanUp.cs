@@ -190,7 +190,6 @@ namespace CoreSystems
             DsUtil2.Purge();
 
             ShootingWeapons.Clear();
-            RemoveEffectsFromGrid.Clear();
             PartToPullConsumable.Clear();
             ConsumableToPullQueue.Clear();
 

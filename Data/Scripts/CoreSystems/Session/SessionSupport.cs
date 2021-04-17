@@ -107,12 +107,6 @@ namespace CoreSystems
             if (!PlayersLoaded && KeenFuckery())
                 PlayersLoaded = true;
 
-            if (ShieldMod && !ShieldApiLoaded && SApi.Load())
-            {
-                ShieldApiLoaded = true;
-                ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
-            }
-
             if (WaterMod && !WaterApiLoaded && !Settings.ClientWaiting && WApi.Waters != null)
             {
                 WaterApiLoaded = true;
@@ -512,6 +506,10 @@ namespace CoreSystems
                 {
                     if (Session?.Player == null) return false;
                     MultiplayerId = MyAPIGateway.Multiplayer.MyId;
+
+                    if (BlackListedPlayers.Contains(MultiplayerId))
+                        SuppressWc = true;
+
                     PlayerId = Session.Player.IdentityId;
 
                     List<IMyPlayer> players = new List<IMyPlayer>();
@@ -736,7 +734,7 @@ namespace CoreSystems
 
         private void ColorAreas()
         {
-            var color = ColorArmorToggle ? DsStaticUtils.ColorToHSVOffset(Color.Black) : DsStaticUtils.ColorToHSVOffset(Color.OrangeRed);
+            var color = ColorArmorToggle ? SUtils.ColorToHSVOffset(Color.Black) : SUtils.ColorToHSVOffset(Color.OrangeRed);
             foreach (var enhancer in DisplayAffectedArmor)
             {
                 var grid = enhancer.BaseComp.Ai.GridEntity;

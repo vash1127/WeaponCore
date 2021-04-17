@@ -91,6 +91,9 @@ namespace CoreSystems.Projectiles
             if (Session.Tick60)
                 Session.GridEffects();
 
+            if (Session.IsClient && Session.CurrentClientEwaredCubes.Count > 0 && (Session.ClientEwarStale || Session.Tick120))
+                Session.SyncClientEwarBlocks();
+
             if (Session.Hits.Count > 0) Session.ProcessHits();
         }
 

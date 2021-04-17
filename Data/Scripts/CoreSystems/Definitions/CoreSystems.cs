@@ -176,11 +176,12 @@ namespace CoreSystems.Support
         public readonly bool LockOnFocus;
         public readonly bool HasGuidedAmmo;
         public readonly bool SuppressFire;
-        public readonly bool HasSpinPart;
+        public readonly bool NoSubParts;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
-
+        public readonly double HomeAzimuth;
+        public readonly double HomeElevation;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float WepCoolDown;
@@ -223,8 +224,7 @@ namespace CoreSystems.Support
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             SpinPartName = spinPartName;
-            HasSpinPart = !string.IsNullOrEmpty(SpinPartName.String) && !SpinPartName.String.Contains("None") && !SpinPartName.String.Equals(ElevationPartName.String) && !SpinPartName.String.Equals(AzimuthPartName.String) && !SpinPartName.String.Equals(MuzzlePartName.String);
-
+            NoSubParts = (muzzlePartName.String == "None" || string.IsNullOrEmpty(muzzlePartName.String)) && (AzimuthPartName.String == "None" || string.IsNullOrEmpty(AzimuthPartName.String)) && (ElevationPartName.String == "None" || string.IsNullOrEmpty(ElevationPartName.String));
             Values = values;
             StayCharged = values.HardPoint.Loading.StayCharged || values.HardPoint.Loading.ReloadTime == 0;
             Muzzles = values.Assignments.Muzzles;
@@ -249,7 +249,7 @@ namespace CoreSystems.Support
             AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
             HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
             AltScopeName = HasScope ? "subpart_" + Values.Assignments.Scope : string.Empty;
-            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out HomeAzimuth, out HomeElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
@@ -309,7 +309,7 @@ namespace CoreSystems.Support
                 if (Values.HardPoint.Loading.BarrelSpinRate > 0) barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate < 3600 ? Values.HardPoint.Loading.BarrelSpinRate : 3599;
                 else barrelSpinRate = RateOfFire < 3699 ? RateOfFire : 3599;
             }
-            hasBarrelRotation = barrelSpinRate > 0 && (HasSpinPart || (MuzzlePartName.String != "None" && !string.IsNullOrEmpty(MuzzlePartName.String)));
+            hasBarrelRotation = barrelSpinRate > 0 && (NoSubParts || (MuzzlePartName.String != "None" && !string.IsNullOrEmpty(MuzzlePartName.String)));
         }
 
         private void BarrelValues(out int barrelsPerShot, out int rateOfFire, out int shotsPerBurst)
@@ -319,7 +319,7 @@ namespace CoreSystems.Support
             shotsPerBurst = Values.HardPoint.Loading.ShotsInBurst;
         }
 
-        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out double homeAzimuth, out double homeElevation, out TurretType turretMove)
         {
             azStep = Values.HardPoint.HardWare.RotateRate;
             elStep = Values.HardPoint.HardWare.ElevateRate;
@@ -327,6 +327,9 @@ namespace CoreSystems.Support
             maxAzimuth = Values.HardPoint.HardWare.MaxAzimuth;
             minElevation = Values.HardPoint.HardWare.MinElevation;
             maxElevation = Values.HardPoint.HardWare.MaxElevation;
+
+            homeAzimuth = MathHelperD.ToRadians((((Values.HardPoint.HardWare.HomeAzimuth + 180) % 360) - 180));
+            homeElevation = MathHelperD.ToRadians((((Values.HardPoint.HardWare.HomeElevation + 180) % 360) - 180));
 
             turretMove = TurretType.Full;
 
@@ -336,6 +339,8 @@ namespace CoreSystems.Support
                 turretMove = TurretType.Fixed;
             else if (minElevation == maxElevation)
                 turretMove = TurretType.AzimuthOnly;
+            else if (NoSubParts)
+                turretMove = TurretType.Fixed;
         }
 
 

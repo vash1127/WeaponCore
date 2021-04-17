@@ -72,6 +72,13 @@ namespace CoreSystems
             GenerateButtonMap();
             Settings = new CoreSettings(this);
             CounterKeenLogMessage();
+            
+            if (ShieldMod && !ShieldApiLoaded && SApi.Load())
+            {
+                ShieldApiLoaded = true;
+                ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
+            }
+
             if (!CompsToStart.IsEmpty)
                 StartComps();
 

@@ -78,7 +78,6 @@ namespace CoreSystems.Projectiles
         internal bool MineTriggered;
         internal bool CachedPlanetHit;
         internal bool AtMaxRange;
-        internal bool ShieldBypassed;
         internal bool EarlyEnd;
         internal bool FeelsGravity;
         internal bool LineOrNotModel;
@@ -136,7 +135,6 @@ namespace CoreSystems.Projectiles
             MineTriggered = false;
             LinePlanetCheck = false;
             AtMaxRange = false;
-            ShieldBypassed = false;
             FakeGravityNear = false;
             HadTarget = false;
             WasTracking = false;

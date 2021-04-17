@@ -662,6 +662,11 @@ namespace CoreSystems.Api
                 var w = comp.Platform.Weapons[weaponId];
 
                 w.NewTarget.TargetEntity = (MyEntity) targetEnt;
+                var dist = Vector3D.DistanceSquared(comp.CoreEntity.PositionComp.WorldMatrixRef.Translation, targetEnt.PositionComp.WorldMatrixRef.Translation);
+                if (dist > w.MaxTargetDistanceSqr)
+                {
+                    return false;
+                }
 
                 Vector3D targetPos;
                 return Weapon.TargetAligned(w, w.NewTarget, out targetPos);
@@ -691,7 +696,15 @@ namespace CoreSystems.Api
             var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
             {
+
                 var w = comp.Platform.Weapons[weaponId];
+                var dist = Vector3D.DistanceSquared(comp.CoreEntity.PositionComp.WorldMatrixRef.Translation, targetEnt.PositionComp.WorldMatrixRef.Translation);
+                
+                if (dist > w.MaxTargetDistanceSqr)
+                {
+                    return false;
+                }
+
                 var topMost = targetEnt.GetTopMostParent();
                 var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
                 var targetAccel = topMost.Physics?.AngularAcceleration ?? Vector3.Zero;

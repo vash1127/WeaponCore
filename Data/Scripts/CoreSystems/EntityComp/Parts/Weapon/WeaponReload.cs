@@ -169,9 +169,13 @@ namespace CoreSystems.Platform
             if (!syncUp) {
                 var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
                 if (ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
-                    if (!NoMagsToLoad) 
-                        EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
-                    NoMagsToLoad = true;
+                    
+                    if (!Comp.Session.IsCreative) {
+
+                        if (!NoMagsToLoad)
+                            EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
+                        NoMagsToLoad = true;
+                    }
                 }
                 return false;
             }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using CoreSystems.Settings;
 using ProtoBuf;
 using VRageMath;
@@ -57,6 +58,7 @@ namespace CoreSystems
         ServerData,
         QueueShot,
         PlayerState,
+        EwaredBlocks,
     }
 
     #region packets
@@ -92,6 +94,7 @@ namespace CoreSystems
     [ProtoInclude(31, typeof(SupportStatePacket))]
     [ProtoInclude(30, typeof(PhantomCompPacket))]
     [ProtoInclude(31, typeof(PhantomStatePacket))]
+    [ProtoInclude(32, typeof(EwaredBlocksPacket))]
 
     public class Packet
     {
@@ -211,6 +214,20 @@ namespace CoreSystems
             base.CleanUp();
             PartId = 0;
             PlayerId = -1;
+        }
+    }
+
+    [ProtoContract]
+    public class EwaredBlocksPacket : Packet
+    {
+        [ProtoMember(1)] internal List<EwarValues> Data = new List<EwarValues>(32);
+
+        public EwaredBlocksPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data.Clear();
         }
     }
 

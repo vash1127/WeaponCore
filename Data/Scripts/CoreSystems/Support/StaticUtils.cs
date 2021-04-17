@@ -12,7 +12,7 @@ using VRageMath;
 
 namespace CoreSystems.Support
 {
-    internal static class DsStaticUtils
+    internal static class SUtils
     {
 
         public static Vector3 ColorToHSVOffset(Color color)

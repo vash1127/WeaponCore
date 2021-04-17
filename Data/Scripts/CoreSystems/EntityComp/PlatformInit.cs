@@ -184,7 +184,7 @@ namespace CoreSystems.Platform
                 MyEntity spinPart = null;
                 if (system.HasBarrelRotation)
                 {
-                    if (!(system.HasSpinPart && Parts.NameToEntity.TryGetValue(system.SpinPartName.String, out spinPart)))
+                    if (!(system.NoSubParts && Parts.NameToEntity.TryGetValue(system.SpinPartName.String, out spinPart)))
                         spinPart = muzzlePartEntity;
                 }
 
@@ -507,7 +507,7 @@ namespace CoreSystems.Platform
                     if (weapon.System.HasBarrelRotation) {
 
                         MyEntity spinPart = null;
-                        if (!(weapon.System.HasSpinPart && Parts.NameToEntity.TryGetValue(weapon.System.SpinPartName.String, out spinPart)))
+                        if (!(weapon.System.NoSubParts && Parts.NameToEntity.TryGetValue(weapon.System.SpinPartName.String, out spinPart)))
                             spinPart = muzzlePart;
 
                         if (spinPart != null) {

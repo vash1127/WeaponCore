@@ -222,10 +222,10 @@ namespace CoreSystems
         private readonly Dictionary<string, List<UpgradeDefinition>> _subTypeIdUpgradeDefs = new Dictionary<string, List<UpgradeDefinition>>();
         private readonly Dictionary<string, List<SupportDefinition>> _subTypeIdSupportDefs = new Dictionary<string, List<SupportDefinition>>();
         private readonly Dictionary<string, List<PhantomDefinition>> _subTypeIdPhantomDefs = new Dictionary<string, List<PhantomDefinition>>();
-
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
+        private readonly EwaredBlocksPacket _cachedEwarPacket = new EwaredBlocksPacket();
 
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
@@ -370,6 +370,12 @@ namespace CoreSystems
         internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
         internal bool ColorArmorToggle;
+        internal bool EwarNetDataDirty;
+
+        internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
+        {
+            0, // Muzzled SteamId goes here
+        };
 
         [Flags]
         internal enum SafeZoneAction
@@ -449,6 +455,7 @@ namespace CoreSystems
             Projectiles = new Projectiles.Projectiles(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
+            _cachedEwarPacket.Data = new List<EwarValues>(32);
 
             ProblemRep = new ProblemReport(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));

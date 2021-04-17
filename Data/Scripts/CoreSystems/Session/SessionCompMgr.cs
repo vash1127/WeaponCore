@@ -34,7 +34,7 @@ namespace CoreSystems
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
-            DsStaticUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
+            SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
 
             if (IsPartAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.CoreEntity.EntityId, ai, out b, out s)) {
 
@@ -76,6 +76,10 @@ namespace CoreSystems
                     }
                     if (!GridToInfoMap.ContainsKey(comp.TopEntity))
                         continue;
+
+                    if (ShieldApiLoaded)
+                        SApi.AddAttacker(comp.TopEntity.EntityId);
+
                     IdToCompMap[comp.CoreEntity.EntityId] = comp;
                     comp.CoreEntity.Components.Add(comp);
 

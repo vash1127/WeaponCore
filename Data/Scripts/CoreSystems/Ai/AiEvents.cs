@@ -153,7 +153,7 @@ namespace CoreSystems.Support
                     MyOrientedBoundingBoxD b;
                     BoundingSphereD s;
                     MyOrientedBoundingBoxD blockBox;
-                    DsStaticUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
+                    SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
                     if (Session.IsPartAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, cube.CubeGrid, cube.EntityId, null, out b, out s))
                     {
                         if (Session.IsServer)

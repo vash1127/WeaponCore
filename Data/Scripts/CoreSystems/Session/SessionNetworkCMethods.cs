@@ -313,24 +313,19 @@ namespace CoreSystems
             Ai ai;
             if (myGrid != null && GridAIs.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId) {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    long playerId;
-                    if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                long playerId;
+                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                {
+                    FakeTarget dummyTarget;
+                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
                     {
-                        FakeTarget dummyTarget;
-                        if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
-                        {
-                            dummyTarget.Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
-                        }
-                        else
-                            return Error(data, Msg("Player dummy target not found"));
+                        dummyTarget.Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
                     }
                     else
-                        return Error(data, Msg("SteamToPlayer missing Player"));
+                        return Error(data, Msg("Player dummy target not found"));
                 }
-                else Log.Line($"ClientFakeTargetUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
+                else
+                    return Error(data, Msg("SteamToPlayer missing Player"));
 
                 data.Report.PacketValid = true;
             }
@@ -346,22 +341,15 @@ namespace CoreSystems
         {
             var packet = data.Packet;
             var mousePacket = (InputPacket)packet;
-            if (mousePacket.Data == null) return Error(data, Msg("BaseData"));
-            var entity = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var topEntity = entity?.GetTopMostParent();
-            if (topEntity == null) return Error(data, Msg($"entityId: {packet.EntityId}"));
+            if (mousePacket.Data == null) return Error(data, Msg("Data"));
+            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+            if (cube == null) return Error(data, Msg($"CubeId: {packet.EntityId}"));
 
             Ai ai;
             long playerId;
-            if (GridToMasterAi.TryGetValue(topEntity, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    PlayerMouseStates[playerId] = mousePacket.Data;
-                }
-                else Log.Line($"ClientClientMouseEvent: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
-
+                PlayerMouseStates[playerId] = mousePacket.Data;
                 data.Report.PacketValid = true;
             }
             else
@@ -421,6 +409,29 @@ namespace CoreSystems
             if (clientNotifyPacket.Message == string.Empty || clientNotifyPacket.Color == string.Empty) return Error(data, Msg("BaseData"));
 
             ShowClientNotify(clientNotifyPacket);
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientEwarBlocks(PacketObj data)
+        {
+            var packet = data.Packet;
+            var queueShot = (EwaredBlocksPacket)packet;
+            if (queueShot?.Data == null)
+            {
+                return false;
+            }
+
+            CurrentClientEwaredCubes.Clear();
+
+            for (int i = 0; i < queueShot.Data.Count; i++)
+            {
+                var values = queueShot.Data[i];
+                CurrentClientEwaredCubes[values.EwaredBlockId] = values;
+            }
+            ClientEwarStale = true;
+
             data.Report.PacketValid = true;
 
             return true;

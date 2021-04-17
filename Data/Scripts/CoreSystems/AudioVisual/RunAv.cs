@@ -121,11 +121,11 @@ namespace CoreSystems.Support
                             MyParticleEffect hitEffect;
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
 
-                                hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                                //hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                                 var scaler = 1;
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                                var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
-                                hitEffect.UserScale = scale * scaler;
+                                //var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
+                                //hitEffect.UserScale = scale * scaler;
                                 hitEffect.Velocity = av.Hit.HitVelocity;
                             }
                         }
@@ -136,8 +136,8 @@ namespace CoreSystems.Support
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             var pos = !MyUtils.IsZero(av.Hit.SurfaceHit) ? av.Hit.SurfaceHit : av.TracerFront;
-                            if (av.DetonateFakeExp) DsStaticUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
-                            else DsStaticUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.AreaEffectSize, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.Const.AreaEffectSize, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
                         }
                     }
 
@@ -405,26 +405,26 @@ namespace CoreSystems.Support
                 var particles = weapon.System.Values.HardPoint.Graphics.Effect1;
                 var renderId = info.Entity.Render.GetRenderObjectID();
                 var matrix = info.DummyMatrix;
-                var pos = particles.Extras.Loop ? info.LocalPosition : info.Position;
-                pos += Vector3D.Rotate(particles.Offset, matrix);
+                var pos = info.Position;
+                matrix.Translation = info.LocalPosition + particles.Offset;
 
                 if (!effectExists && ticksAgo <= 0) {
 
                     if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.Effects1[muzzle.MuzzleId])) {
 
                         effect = weapon.Effects1[muzzle.MuzzleId];
-                        effect.UserColorMultiplier = particles.Color;
+                        //effect.UserColorMultiplier = particles.Color;
                         effect.UserRadiusMultiplier = particles.Extras.Scale;
                         muzzle.Av1Looping = effect.Loop || effect.DurationMax <= 0;
                     }
                 }
                 else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped) {
                     effect.WorldMatrix = matrix;
-                    effect.SetTranslation(ref pos);
+                    //effect.SetTranslation(ref pos);
                     effect.Play();
                 }
                 else if (effectExists) {
-                    effect.WorldMatrix = matrix;
+                   // effect.WorldMatrix = matrix;
                     effect.SetTranslation(ref pos);
                 }
             }
@@ -472,14 +472,14 @@ namespace CoreSystems.Support
                 var particles = weapon.System.Values.HardPoint.Graphics.Effect2;
                 var renderId = info.Entity.Render.GetRenderObjectID();
                 var matrix = info.DummyMatrix;
-                var pos = particles.Extras.Loop ? info.LocalPosition : info.Position;
-                pos += Vector3D.Rotate(particles.Offset, matrix);
+                var pos = info.Position;
+                matrix.Translation = info.LocalPosition + particles.Offset;
 
                 if (!effectExists && ticksAgo <= 0)  {
 
                     if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.Effects2[muzzle.MuzzleId]))  {
                         effect = weapon.Effects2[muzzle.MuzzleId];
-                        effect.UserColorMultiplier = particles.Color;
+                        //effect.UserColorMultiplier = particles.Color;
                         effect.UserRadiusMultiplier = particles.Extras.Scale;
                         muzzle.Av2Looping = effect.Loop || effect.DurationMax <= 0;
                     }
@@ -487,13 +487,13 @@ namespace CoreSystems.Support
                 else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped)  {
 
                     effect.WorldMatrix = matrix;
-                    effect.SetTranslation(ref pos);
+                    //effect.SetTranslation(ref pos);
                     effect.Play();
                 }
                 else if (effectExists)  {
 
                     effect.WorldMatrix = matrix;
-                    effect.SetTranslation(ref pos);
+                    //effect.SetTranslation(ref pos);
 
                 }
             }

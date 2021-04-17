@@ -123,7 +123,7 @@ namespace CoreSystems.Support
         public readonly float ChargSize;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
-        public readonly float ShieldBypassMod;
+        public readonly float ShieldDamageBypassMod;
         public readonly float MagMass;
         public readonly float MagVolume;
         public readonly float BaseDamage;
@@ -227,7 +227,7 @@ namespace CoreSystems.Support
             TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
             ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
-            ShieldBypassMod = ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier < 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 1;
+            
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
             FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
@@ -235,6 +235,8 @@ namespace CoreSystems.Support
             HasBackKickForce = ammo.AmmoDef.BackKickForce > 0;
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
+
+            ComputeShieldBypass(ammo, out ShieldDamageBypassMod);
 
             ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out GuidedAmmoDetected);
 
@@ -258,6 +260,16 @@ namespace CoreSystems.Support
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
 
             if (CollisionSize > 5 && !session.LocalVersion) Log.Line($"{ammo.AmmoDef.AmmoRound} has large largeCollisionSize: {CollisionSize} meters");
+        }
+
+        internal void ComputeShieldBypass(WeaponSystem.AmmoType ammo, out float shieldDamageBypassMod)
+        {
+            if (ammo.AmmoDef.DamageScales.Shields.BypassModifier <= 0)
+                shieldDamageBypassMod = 0;
+            else if (ammo.AmmoDef.DamageScales.Shields.BypassModifier >= 1)
+                shieldDamageBypassMod = 0.00001f;
+            else
+                shieldDamageBypassMod = MathHelper.Clamp(1 - ammo.AmmoDef.DamageScales.Shields.BypassModifier, 0.00001f, 0.99999f);
         }
 
         internal void ComputeTextures(WeaponSystem.AmmoType ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)

@@ -67,6 +67,10 @@ namespace CoreSystems.Support
         internal bool ClientSent;
         internal bool IsVirtual;
         internal bool InPlanetGravity;
+        internal bool ShieldBypassed;
+        internal bool ShieldInLine;
+        internal float ShieldResistMod = 1f;
+        internal float ShieldBypassMod = 1f;
 
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
@@ -145,6 +149,8 @@ namespace CoreSystems.Support
             IsFiringPlayer = false;
             ClientSent = false;
             InPlanetGravity = false;
+            ShieldBypassed = false;
+            ShieldInLine = false;
             TriggerGrowthSteps = 0;
             PartId = 0;
             MuzzleId = 0;
@@ -156,6 +162,8 @@ namespace CoreSystems.Support
             FireCounter = 0;
             AiVersion = 0;
             UniqueMuzzleId = 0;
+            ShieldResistMod = 1f;
+            ShieldBypassMod = 1f;
             EnableGuidance = true;
             Hit = new Hit();
             Direction = Vector3D.Zero;
@@ -518,7 +526,7 @@ namespace CoreSystems.Support
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
         internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);
         internal BoundingSphereD PlanetSphere = new BoundingSphereD(Vector3D.Zero, 0.1f);
-        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
+        //internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
         internal Vector3D FirstPlanetHit;
 
         internal uint HitRefreshed;

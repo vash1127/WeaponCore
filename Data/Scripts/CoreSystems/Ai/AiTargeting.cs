@@ -443,7 +443,7 @@ namespace CoreSystems.Support
                 var card = deck[i];
                 var block = subSystemList[card];
 
-                if (!(block is IMyTerminalBlock) || block.MarkedForClose || checkPower && !block.IsWorking) continue;
+                if (!(block is IMyTerminalBlock) || block.MarkedForClose || checkPower && !(block is IMyWarhead) && !block.IsWorking) continue;
 
                 system.Session.BlockChecks++;
 
@@ -537,7 +537,7 @@ namespace CoreSystems.Support
 
                 var grid = cube.CubeGrid;
                 if (grid == null || grid.MarkedForClose) continue;
-                if (!(cube is IMyTerminalBlock) || cube.MarkedForClose || cube == newEntity || cube == newEntity0 ||  cube == newEntity1 || cube == newEntity2 || cube == newEntity3 || checkPower && !cube.IsWorking)
+                if (!(cube is IMyTerminalBlock) || cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3 || checkPower && !(cube is IMyWarhead) && !cube.IsWorking)
                     continue;
 
                 var cubePos = grid.GridIntegerToWorld(cube.Position);

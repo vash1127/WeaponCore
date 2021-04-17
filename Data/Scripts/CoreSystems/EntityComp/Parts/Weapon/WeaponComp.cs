@@ -90,6 +90,12 @@ namespace CoreSystems.Platform
 
                     if (TypeSpecific == CompTypeSpecific.Rifle)
                         Ai.AiOwner = GunBase.OwnerId;
+
+                    if (w.IsTurret) {
+                        w.Azimuth = w.System.HomeAzimuth;
+                        w.Elevation = w.System.HomeElevation;
+                        w.AimBarrel();
+                    }
                 }
             }
 
@@ -174,7 +180,7 @@ namespace CoreSystems.Platform
 
                 if (!weapon.System.DesignatorWeapon)
                 {
-                    var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
+                    var patternSize = MathHelper.Clamp(weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length - weapon.ActiveAmmoDef.AmmoDef.Pattern.PatternSteps, 1, int.MaxValue);
                     foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
                     {
                         weapon.Comp.PeakDps += ammo.Const.PeakDps / patternSize;
