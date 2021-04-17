@@ -435,10 +435,7 @@ namespace WeaponCore
                     }
 
                     if (canDamage)
-                    {
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
-                        Log.Line($"{scaledDamage}");
-                    }
                     else
                     {
                         var hasBlock = _slimHealthClient.ContainsKey(block);
