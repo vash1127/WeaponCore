@@ -523,7 +523,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
         internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);
         internal BoundingSphereD PlanetSphere = new BoundingSphereD(Vector3D.Zero, 0.1f);
-        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
+        //internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
         internal Vector3D FirstPlanetHit;
 
         internal uint HitRefreshed;

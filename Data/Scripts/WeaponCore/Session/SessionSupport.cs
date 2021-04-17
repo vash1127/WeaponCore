@@ -499,7 +499,7 @@ namespace WeaponCore
                     
                     if (BlackListedPlayers.Contains(MultiplayerId))
                     {
-                        //SuppressWc = true;
+                        SuppressWc = true;
                     }
 
                     PlayerId = Session.Player.IdentityId;

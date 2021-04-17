@@ -157,8 +157,8 @@ namespace WeaponCore
                     }
                 }
             }
-            var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
-            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, applyToShield);
+            //var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
+            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, false);
             if (hit.HasValue) {
 
                 if (heal) {

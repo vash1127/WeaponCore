@@ -349,7 +349,7 @@ namespace WeaponCore
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
-            76561198028233790, // Muzzled SteamId goes here
+             // Muzzled SteamId goes here
         };
 
         [Flags]
