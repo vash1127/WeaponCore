@@ -57,6 +57,7 @@ namespace WeaponCore.Support
         internal bool FakeExplosion;
         internal bool MarkForClose;
         internal bool ProEnded;
+        internal bool SmartOn;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -159,11 +160,12 @@ namespace WeaponCore.Support
         }
 
         #region Run
-        internal void Init(ProInfo info, double firstStepSize, double maxSpeed, ref Vector3D originDir)
+        internal void Init(ProInfo info, bool smartsOn, double firstStepSize, double maxSpeed, ref Vector3D originDir)
         {
             System = info.System;
             AmmoDef = info.AmmoDef;
             IsShrapnel = info.IsShrapnel;
+            SmartOn = smartsOn;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
             Model = (info.AmmoDef.Const.PrimeModel || info.AmmoDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
@@ -248,7 +250,7 @@ namespace WeaponCore.Support
                 a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
 
                 a.VisualLength = d.VisualLength;
-                if (a.AmmoDef.Const.ConvergeBeams)
+                if (a.AmmoDef.Const.ConvergeBeams || a.SmartOn)
                     a.VisualDir = d.Direction;
                 else if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;

@@ -399,7 +399,7 @@ namespace WeaponCore.Projectiles
                         var vs = vp.AvShot;
 
                         vp.TracerLength = p.Info.TracerLength;
-                        vs.Init(vp, p.AccelInMetersPerSec * StepConst, p.MaxSpeed, ref p.AccelDir);
+                        vs.Init(vp, p.SmartsOn, p.AccelInMetersPerSec * StepConst, p.MaxSpeed, ref p.AccelDir);
 
                         if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
                             vs.ProEnded = true;
