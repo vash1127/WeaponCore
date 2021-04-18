@@ -45,7 +45,7 @@ namespace WeaponCore
             var s = _session;
             var ai = s.TrackingAi;
 
-            if (s.Tick - MasterUpdateTick > 600 || MasterUpdateTick < 600 && _masterTargets.Count == 0)
+            if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
@@ -144,9 +144,9 @@ namespace WeaponCore
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
-            var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
+            var updateTick = s.Tick - _cacheIdleTicks > 300 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
             
-            if (s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed || updateTick && !UpdateCache()) return;
+            if (updateTick && !UpdateCache() || s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
             _cacheIdleTicks = s.Tick;
 
             var canMoveForward = _currentIdx + 1 <= _endIdx;
