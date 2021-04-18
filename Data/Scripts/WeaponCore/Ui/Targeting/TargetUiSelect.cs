@@ -146,9 +146,8 @@ namespace WeaponCore
             if (!_cachedTargetPos) InitTargetOffset();
             var updateTick = s.Tick - _cacheIdleTicks > 300 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
             
-            if (updateTick && !UpdateCache() || s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
-            _cacheIdleTicks = s.Tick;
-
+            if (updateTick && !UpdateCache(s.Tick) || s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
+            
             var canMoveForward = _currentIdx + 1 <= _endIdx;
             var canMoveBackward = _currentIdx - 1 >= 0;
             if (s.UiInput.WheelForward)
@@ -170,8 +169,9 @@ namespace WeaponCore
             s.SetTarget(ent, ai, _masterTargets);
         }
 
-        private bool UpdateCache()
+        private bool UpdateCache(uint tick)
         {
+            _cacheIdleTicks = tick;
             var ai = _session.TrackingAi;
             var focus = ai.Construct.Data.Repo.FocusData;
             _currentIdx = 0;
