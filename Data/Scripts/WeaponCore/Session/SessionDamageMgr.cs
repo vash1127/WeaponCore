@@ -354,7 +354,6 @@ namespace WeaponCore
 
                             if (isArmor && (d.Armor.Light >= 0 || d.Armor.Heavy >= 0))
                             {
-                                Log.Line($"shrapnel:{t.IsShrapnel} - count:{t.AmmoDef.Shrapnel.Fragments} - baseDamage:{t.AmmoDef.BaseDamage} - heavy:{d.Armor.Heavy} - light:{d.Armor.Light}");
                                 var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef) || CustomHeavyArmorSubtypes.Contains(blockDef.Id.SubtypeId);
                                 if (isHeavy && d.Armor.Heavy >= 0) damageScale *= d.Armor.Heavy;
                                 else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
