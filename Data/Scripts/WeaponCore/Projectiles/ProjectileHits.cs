@@ -370,7 +370,7 @@ namespace WeaponCore.Projectiles
                     MatrixD matrix;
                     MatrixD.CreateWorld(ref p.Position, ref p.Info.Direction, ref up, out matrix);
                     var vec = new Vector3D(p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize);
-                    var box = new BoundingBoxD(vec, vec);
+                    var box = new BoundingBoxD(-vec, vec);
                     box.Include(ref p.LastPosition);
                     var test = new MyOrientedBoundingBoxD(new BoundingBoxD(-vec, vec), matrix);
                     var testSphere = p.PruneSphere;
