@@ -365,7 +365,7 @@ namespace WeaponCore.Projectiles
                         if (dist <= hitTolerance || p.Info.AmmoDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
                             rayCheck = true;
                     }
-
+                    /*
                     var up = MatrixD.Identity.Up;
                     MatrixD matrix;
                     MatrixD.CreateWorld(ref p.Position, ref p.Info.Direction, ref up, out matrix);
@@ -373,11 +373,12 @@ namespace WeaponCore.Projectiles
                     var box = new BoundingBoxD(-vec, vec);
                     box.Include(ref p.LastPosition);
                     var test = new MyOrientedBoundingBoxD(box, matrix);
+                    */
+
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
-
-                    //if (rayCheck || sphere.Intersects(testSphere))
-                    if (test.IntersectsOrContains(ref p.Beam) != null)
+                    if (rayCheck || sphere.Intersects(testSphere))
+                    //if (test.IntersectsOrContains(ref p.Beam) != null)
                         ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
                 }
 
