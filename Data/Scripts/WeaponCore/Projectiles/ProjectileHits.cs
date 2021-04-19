@@ -372,7 +372,7 @@ namespace WeaponCore.Projectiles
                     var vec = new Vector3D(p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize);
                     var box = new BoundingBoxD(-vec, vec);
                     box.Include(ref p.LastPosition);
-                    var test = new MyOrientedBoundingBoxD(new BoundingBoxD(-vec, vec), matrix);
+                    var test = new MyOrientedBoundingBoxD(box, matrix);
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
 
