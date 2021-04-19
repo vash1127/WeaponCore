@@ -376,13 +376,14 @@ namespace WeaponCore.Projectiles
                     */
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
-                    //if (rayCheck || sphere.Intersects(testSphere)) 
-
+                    /*
                     var targetCapsule = new CapsuleD(p.Position, p.LastPosition, (float) p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize / 2);
                     var dVec = Vector3D.Zero;
                     var eVec = Vector3.Zero;
+                    */
 
-                    if (targetCapsule.Intersect(p.Beam, ref dVec, ref dVec, ref eVec, ref eVec))
+                    if (rayCheck || sphere.Intersects(testSphere)) 
+                    //if (targetCapsule.Intersect(p.Beam, ref dVec, ref dVec, ref eVec, ref eVec))
                         ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
                 }
 
