@@ -285,7 +285,7 @@ namespace WeaponCore.Support
                     double? dist;
                     s.CameraFrustrum.Intersects(ref rayTracer, out dist);
 
-                    if (dist != null && dist <= a.VisualLength)
+                    if (a.AmmoDef.Const.AlwaysDraw || dist != null && dist <= a.VisualLength)
                         a.OnScreen = Screen.Tracer;
                     else if (a.AmmoDef.Const.Trail)
                     {

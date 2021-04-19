@@ -520,6 +520,7 @@ namespace WeaponCore.Support
         public readonly bool GuidedAmmoDetected;
         public readonly bool FixedFireAmmo;
         public readonly bool ClientPredictedAmmo;
+        public readonly bool AlwaysDraw;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldDamageBypassMod;
@@ -660,7 +661,7 @@ namespace WeaponCore.Support
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             HasShotFade =  ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
             MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
-            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
+            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep, out AlwaysDraw);
         }
 
         internal void ComputeShieldBypass(WeaponSystem.WeaponAmmoTypes ammo, out float shieldDamageBypassMod)
@@ -729,12 +730,13 @@ namespace WeaponCore.Support
         }
 
 
-        private void ComputeSteps(WeaponSystem.WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
+        private void ComputeSteps(WeaponSystem.WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep, out bool alwaysDraw)
         {
             var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
             shotFadeStep = 1f / changeFadeSteps;
 
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
+            alwaysDraw = (Trail || HasShotFade) && ShotsPerSec < 0.1;
         }
 
         private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
