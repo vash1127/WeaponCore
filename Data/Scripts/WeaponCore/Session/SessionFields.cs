@@ -178,7 +178,7 @@ namespace WeaponCore
         internal readonly HashSet<GridAi> GridsToUpdateInventories = new HashSet<GridAi>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
-
+        internal readonly List<MyOrientedBoundingBoxD> HitBoxes = new List<MyOrientedBoundingBoxD>();
         internal readonly int[] AuthorSettings = new int[6];
 
         ///

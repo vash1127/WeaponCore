@@ -217,7 +217,11 @@ namespace WeaponCore
                 
                 if (DebugLos)
                     LosDebuging();
-                
+
+                foreach (var box in HitBoxes)
+                {
+                    DsDebugDraw.DrawBox(box, Color.Green);
+                }
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
                 CameraMatrix = Session.Camera.WorldMatrix;
