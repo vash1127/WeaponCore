@@ -376,14 +376,15 @@ namespace WeaponCore.Projectiles
 
                     if (rayCheck || sphere.Intersects(testSphere))
                     {
+                        /*
                         var dir = p.Info.Target.Projectile.Position - p.Info.Target.Projectile.LastPosition;
                         var delta = dir.Normalize();
                         var radius = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
                         var size = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
                         var obb = new MyOrientedBoundingBoxD((p.Info.Target.Projectile.Position + p.Info.Target.Projectile.LastPosition) / 2, new Vector3(size, size, delta / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(dir)));
-                        Session.HitBoxes.Add(obb);
                         if (obb.Intersects(ref testSphere))
-                            ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
+                        */
+                        ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
                     }
                 }
 
