@@ -365,15 +365,10 @@ namespace WeaponCore.Projectiles
                         if (dist <= hitTolerance || p.Info.AmmoDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
                             rayCheck = true;
                     }
-                    /*
-                    var up = MatrixD.Identity.Up;
-                    MatrixD matrix;
-                    MatrixD.CreateWorld(ref p.Position, ref p.Info.Direction, ref up, out matrix);
-                    var vec = new Vector3D(p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize);
-                    var box = new BoundingBoxD(-vec, vec);
-                    box.Include(ref p.LastPosition);
-                    var test = new MyOrientedBoundingBoxD(box, matrix);
-                    */
+                    var dir = p.Position - p.LastPosition;
+                    var delta = dir.Normalize();
+                    var radius = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
+                    var obb = new MyOrientedBoundingBoxD((p.Position + p.LastPosition) / 2,  new Vector3(radius, radius, delta / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(dir)));
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
                     /*
@@ -382,8 +377,8 @@ namespace WeaponCore.Projectiles
                     var eVec = Vector3.Zero;
                     */
 
-                    if (rayCheck || sphere.Intersects(testSphere)) 
-                    //if (targetCapsule.Intersect(p.Beam, ref dVec, ref dVec, ref eVec, ref eVec))
+                    //if (rayCheck || sphere.Intersects(testSphere)) 
+                    if (obb.Intersects(ref p.Beam) != null)
                         ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
                 }
 
