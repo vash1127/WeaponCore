@@ -366,9 +366,9 @@ namespace WeaponCore.Projectiles
                             rayCheck = true;
                     }
                     var dir = p.Position - p.LastPosition;
-                    var delta = dir.Normalize();
+                    var normDir = dir.Normalize();
                     var radius = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
-                    var obb = new MyOrientedBoundingBoxD((p.Position + p.LastPosition) / 2,  new Vector3(radius, radius, delta / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(dir)));
+                    var obb = new MyOrientedBoundingBoxD((p.Position + p.LastPosition) / 2,  new Vector3(radius, radius, normDir / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(normDir)));
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
                     /*
