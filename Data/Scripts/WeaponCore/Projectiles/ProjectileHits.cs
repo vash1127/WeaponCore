@@ -365,10 +365,7 @@ namespace WeaponCore.Projectiles
                         if (dist <= hitTolerance || p.Info.AmmoDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
                             rayCheck = true;
                     }
-                    var dir = p.Position - p.LastPosition;
-                    var normDir = dir.Normalize();
-                    var radius = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
-                    var obb = new MyOrientedBoundingBoxD((p.Position + p.LastPosition) / 2,  new Vector3(radius, radius, normDir / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(normDir)));
+
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
                     /*
@@ -377,9 +374,15 @@ namespace WeaponCore.Projectiles
                     var eVec = Vector3.Zero;
                     */
 
-                    //if (rayCheck || sphere.Intersects(testSphere)) 
-                    if (obb.Intersects(ref p.Beam) != null)
-                        ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
+                    if (rayCheck || sphere.Intersects(testSphere))
+                    {
+                        var dir = p.Info.Target.Projectile.Position - p.Info.Target.Projectile.LastPosition;
+                        var delta = dir.Normalize();
+                        var radius = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
+                        var obb = new MyOrientedBoundingBoxD((p.Info.Target.Projectile.Position + p.Info.Target.Projectile.LastPosition) / 2, new Vector3(radius, radius, delta / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(dir)));
+                        if (obb.Intersects(ref p.Beam) != null)
+                            ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
+                    }
                 }
 
                 if (!useEntityCollection)
