@@ -3,17 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.ObjectBuilders;
-using VRage.Utils;
-using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
@@ -45,35 +39,41 @@ namespace WeaponCore
 
                     lock (InitObj)
                     {
-                        if (!SorterControls && myEntity is MyConveyorSorter) {
+                        if (!SorterDetected && myEntity is MyConveyorSorter) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
-                            SorterControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyConveyorSorter));
+                            SorterDetected = true;
                         }
-                        else if (!TurretControls && turret != null) {
+                        else if (!TurretDetected && turret != null) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
-                            TurretControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyLargeTurretBase));
+                            TurretDetected = true;
                         }
-                        else if (!FixedMissileReloadControls && controllableGun is IMySmallMissileLauncherReload) {
+                        else if (!FixedMissileReloadDetected && controllableGun is IMySmallMissileLauncherReload) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncherReload>(this));
-                            FixedMissileReloadControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallMissileLauncherReload));
+
+                            FixedMissileReloadDetected = true;
                         }
-                        else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher) {
+                        else if (!FixedMissileDetected && controllableGun is IMySmallMissileLauncher) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
-                            FixedMissileControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallMissileLauncher));
+                            FixedMissileDetected = true;
                         }
-                        else if (!FixedGunControls && controllableGun is IMySmallGatlingGun) {
+                        else if (!FixedGunDetected && controllableGun is IMySmallGatlingGun) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
-                            FixedGunControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallGatlingGun));
+                            FixedGunDetected = true;
                         }
                     }
                     InitComp(cube);
                 }
                 else if (decoy != null)
                 {
-                    if (!DecoyControls)
+                    if (!DecoyDetected)
                     {
                         MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateDecoyTerminalUi<IMyDecoy>(this));
-                        DecoyControls = true;
+                        DecoyDetected = true;
                     }
 
                     cube.AddedToScene += DecoyAddedToScene;

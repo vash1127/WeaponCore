@@ -44,16 +44,16 @@ namespace WeaponCore
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
-        internal volatile bool TurretControls;
-        internal volatile bool FixedMissileControls;
-        internal volatile bool FixedMissileReloadControls;
-        internal volatile bool FixedGunControls;
-        internal volatile bool SorterControls;
-        internal volatile bool DecoyControls;
+        internal volatile bool TurretDetected;
+        internal volatile bool FixedMissileDetected;
+        internal volatile bool FixedMissileReloadDetected;
+        internal volatile bool FixedGunDetected;
+        internal volatile bool SorterDetected;
+        internal volatile bool DecoyDetected;
         internal volatile bool BaseControlsActions;
+        internal volatile bool EarlyInitOver;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
-
         internal readonly TargetCompare TargetCompare = new TargetCompare();
         internal readonly WaterModAPI WApi = new WaterModAPI();
 
@@ -111,6 +111,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
+        internal readonly ConcurrentQueue<Type> ControlQueue = new ConcurrentQueue<Type>();
 
         internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
 
@@ -156,6 +157,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Weapon> WeaponLosDebugActive = new HashSet<Weapon>();
+        internal readonly HashSet<Type> ControlTypeActivated = new HashSet<Type>();
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
