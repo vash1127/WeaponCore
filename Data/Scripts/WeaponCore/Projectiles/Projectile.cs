@@ -91,6 +91,7 @@ namespace WeaponCore.Projectiles
         internal bool FinalizeIntersection;
         internal bool SphereCheck;
         internal bool LineCheck;
+        internal bool ASleep;
         internal enum CheckTypes
         {
             Ray,
@@ -141,6 +142,7 @@ namespace WeaponCore.Projectiles
             HadTarget = false;
             WasTracking = false;
             Intersecting = false;
+            ASleep = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -757,7 +759,6 @@ namespace WeaponCore.Projectiles
             }
 
             if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
-
             MineTriggered = true;
         }
 
