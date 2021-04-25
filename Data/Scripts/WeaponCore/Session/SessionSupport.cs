@@ -95,10 +95,17 @@ namespace WeaponCore
                     foreach (var t in AllDefinitions)
                     {
                         var name = t.Id.SubtypeName;
-                        if (name.Contains("BlockArmor"))
+                        if (name.Contains("Armor"))
                         {
-                            AllArmorBaseDefinitions.Add(t);
-                            if (name.Contains("HeavyBlockArmor")) HeavyArmorBaseDefinitions.Add(t);
+                            var normalArmor = name.Contains("ArmorBlock") || name.Contains("HeavyArmor") || name.StartsWith("LargeRoundArmor") || name.Contains("BlockArmor");
+                            var blast = !normalArmor && (name == "ArmorCenter" || name == "ArmorCorner" || name == "ArmorInvCorner" || name == "ArmorSide" || name.StartsWith("SmallArmor"));
+                            if (normalArmor || blast)
+                            {
+                                AllArmorBaseDefinitions.Add(t);
+                                if (name.Contains("Heavy") || blast) HeavyArmorBaseDefinitions.Add(t);
+
+                                Log.Line($"{name} - blast:{blast} - heavy:{HeavyArmorBaseDefinitions.Contains(t)}");
+                            }
                         }
                     }
                 }
