@@ -102,9 +102,7 @@ namespace WeaponCore
                             if (normalArmor || blast)
                             {
                                 AllArmorBaseDefinitions.Add(t);
-                                if (name.Contains("Heavy") || blast) HeavyArmorBaseDefinitions.Add(t);
-
-                                Log.Line($"{name} - blast:{blast} - heavy:{HeavyArmorBaseDefinitions.Contains(t)}");
+                                if (blast || name.Contains("Heavy")) HeavyArmorBaseDefinitions.Add(t);
                             }
                         }
                     }
