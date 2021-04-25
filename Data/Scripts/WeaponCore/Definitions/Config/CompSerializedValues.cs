@@ -21,9 +21,6 @@ namespace WeaponCore
 
         public void ResetToFreshLoadState()
         {
-            //Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
-            //Base.State.Control = CompStateValues.ControlMode.None;
-            //Base.State.PlayerId = -1;
             Base.State.TrackingReticle = false;
             if (Base.State.TerminalAction == ShootActions.ShootOnce) 
                 Base.State.TerminalAction = ShootActions.ShootOff;

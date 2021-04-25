@@ -448,8 +448,6 @@ namespace WeaponCore.Support
             }
             else
             {
-                //frontPos = Back && !onlyStep ? TracerBack : TracerFront;
-                //backPos = Back && !extStart ? TracerBack : TracerFront;
                 var futureStep = (VisualDir * ShortStepSize);
                 var pastStep = (-VisualDir * ShortStepSize);
                 if (!Back) futureStep -= velStep;

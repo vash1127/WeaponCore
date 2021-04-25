@@ -433,17 +433,6 @@ namespace WeaponCore.Projectiles
             TravelMagnitude = Velocity * StepConst;
         }
 
-        internal void TriggerMine(bool startTimer)
-        {
-            DistanceToTravelSqr = double.MinValue;
-            if (Info.AmmoDef.Const.Ewar) {
-                Info.AvShot.Triggered = true;
-                if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
-            }
-            else if (startTimer) FieldTime = 0;
-            MineTriggered = true;
-        }
-
         internal void RunSmart()
         {
             Vector3D newVel;
@@ -527,6 +516,10 @@ namespace WeaponCore.Projectiles
                             PrevTargetPos += TargetOffSet;
                             PredictedTargetPos = PrevTargetPos;
                         }
+                    }
+                    else if (MineSeeking) {
+                        ResetMine();
+                        return;
                     }
                 }
 
@@ -753,6 +746,56 @@ namespace WeaponCore.Projectiles
                 TriggerMine(false);
                 MyEntityList.Add(Info.Target.Entity);
             }
+        }
+
+        internal void TriggerMine(bool startTimer)
+        {
+            DistanceToTravelSqr = double.MinValue;
+            if (Info.AmmoDef.Const.Ewar)
+            {
+                Info.AvShot.Triggered = true;
+            }
+
+            if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
+
+            MineTriggered = true;
+        }
+
+        internal void ResetMine()
+        {
+            if (MineTriggered)
+            {
+                SmartsOn = false;
+                Info.DistanceTraveled = double.MaxValue;
+                FieldTime = 0;
+                return;
+            }
+
+            FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
+            DistanceToTravelSqr = MaxTrajectorySqr;
+
+            Info.AvShot.Triggered = false;
+            MineTriggered = false;
+            MineActivated = false;
+            LockedTarget = false;
+            MineSeeking = true;
+
+            if (Info.AmmoDef.Trajectory.Guidance == GuidanceType.DetectSmart)
+            {
+                SmartsOn = false;
+                MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
+                MaxChaseTime = int.MaxValue;
+                SmartsOn = false;
+                SmartSlot = 0;
+                TargetOffSet = Vector3D.Zero;
+                OffsetSqr = 0;
+            }
+
+            Info.Direction = Vector3D.Zero;
+            AccelDir = Vector3D.Zero;
+            Velocity = Vector3D.Zero;
+            TravelMagnitude = Vector3D.Zero;
+            VelocityLengthSqr = 0;
         }
 
         internal void OffSetTarget(bool roam = false)

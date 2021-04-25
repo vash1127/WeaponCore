@@ -158,7 +158,8 @@ namespace WeaponCore
                 }
             }
             //var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
-            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, false);
+            var hitWave = info.AmmoDef.Const.RealShotsPerMin <= 120;
+            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, hitWave);
             if (hit.HasValue) {
 
                 if (heal) {
@@ -199,7 +200,7 @@ namespace WeaponCore
                 hitEnt.Blocks?.Clear();
                 return;
             }
-            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsSameConstructAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
             {
                 t.BaseDamagePool = 0;
                 return;
