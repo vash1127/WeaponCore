@@ -68,6 +68,7 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
+                Log.Line($"AmmoValues: currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - start:{w.ClientStartId}({w.Reload.StartId}) - end:{w.ClientEndId}({w.Reload.EndId})");
                 Revision = sync.Revision;
                 CurrentAmmo = sync.CurrentAmmo;
                 CurrentCharge = sync.CurrentCharge;
@@ -169,6 +170,7 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision || force)
             {
+                Log.Line($"WeaponReloadValues: currentAmmo:{w.Ammo.CurrentAmmo} - Charge:{w.Ammo.CurrentCharge}- Mags:{w.Ammo.CurrentMags} - start:{w.ClientStartId}({w.Reload.StartId})[{sync.StartId}] - end:{w.ClientEndId}({w.Reload.EndId})[{sync.EndId}]");
                 Revision = sync.Revision;
                 StartId = sync.StartId;
                 EndId = sync.EndId;

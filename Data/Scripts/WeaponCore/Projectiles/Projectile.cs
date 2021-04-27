@@ -240,7 +240,7 @@ namespace WeaponCore.Projectiles
                 var distancePos = !Vector3D.IsZero(PredictedTargetPos) ? PredictedTargetPos : OriginTargetPos;
                 if (!MyUtils.IsZero(variance))
                 {
-                    distancePos += (AccelDir * variance);
+                    distancePos -= (AccelDir * variance);
                 }
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }
