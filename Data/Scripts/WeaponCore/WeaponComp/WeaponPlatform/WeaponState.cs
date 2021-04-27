@@ -115,11 +115,13 @@ namespace WeaponCore.Platform
             FireCounter = 0;
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
-            
+            FinishBurst = false;
             if (System.Session.IsServer)
                 ShootOnce = false;
 
-            PreFired = false;
+            if (PreFired)
+                UnSetPreFire();
+
             if (IsShooting && !System.DesignatorWeapon)
             {
                 EventTriggerStateChanged(EventTriggers.Firing, false);

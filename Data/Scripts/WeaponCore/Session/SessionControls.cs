@@ -79,10 +79,8 @@ namespace WeaponCore
             {
                 if (ControlsAlreadyExist<T>(session))
                 {
-                    Log.Line($"already exists");
                     return;
                 }
-                Log.Line($"doesn't exit");
                 AlterActions<T>(session);
                 AlterControls<T>(session);
 

@@ -181,13 +181,22 @@ namespace WeaponCore.Platform
                 return false;
             }
             ClientStartId = Reload.StartId;
-            ClientMakeUpShots += Ammo.CurrentAmmo;
+            
+            var fullCapacity = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+            var notShotBlocked = !PreFired && !Reloading && !FinishBurst;
+            if (notShotBlocked && (fullCapacity > 1 || AiShooting)) 
+                ClientMakeUpShots += Ammo.CurrentAmmo;
+
             Ammo.CurrentAmmo = 0;
 
-            if (NoMagsToLoad) {
-                EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
-                NoMagsToLoad = false;
+            if (!Comp.Session.IsCreative) {
+
+                if (NoMagsToLoad) {
+                    EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
+                    NoMagsToLoad = false;
+                }
             }
+            //Log.Line($"ClientReload: maxUpShots:{ClientMakeUpShots} - fullCap:{fullCapacity} - notShotBlocked:{notShotBlocked}({PreFired} - {Reloading} - {FinishBurst}) - AiShooting:{AiShooting}");
 
             ClientReloading = true;
             Reloading = true;
@@ -325,7 +334,6 @@ namespace WeaponCore.Platform
                     CancelableReloadAction -= Reloaded;
                     ReloadSubscribed = false;
                 }
-
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
                 Ammo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
@@ -333,6 +341,7 @@ namespace WeaponCore.Platform
                 if (System.Session.IsServer) {
                     
                     ++Reload.EndId;
+                    ClientEndId = Reload.EndId;
                     ShootOnce = false;
                     if (System.Session.MpActive)
                         System.Session.SendWeaponReload(this);
@@ -340,9 +349,9 @@ namespace WeaponCore.Platform
                 else {
                     ClientReloading = false;
                     ClientMakeUpShots = 0;
+                    ClientEndId = Reload.EndId;
                 }
 
-                ++ClientEndId;
                 Reloading = false;
             }
 
