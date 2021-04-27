@@ -238,11 +238,9 @@ namespace WeaponCore.Projectiles
             if (MoveToAndActivate)
             {
                 var distancePos = !Vector3D.IsZero(PredictedTargetPos) ? PredictedTargetPos : OriginTargetPos;
-                if (variance > 0)
+                if (!MyUtils.IsZero(variance))
                 {
-                    var forward = Info.WeaponRng.ClientProjectileRandom.Next(100) < 50;
-                    Info.WeaponRng.ClientProjectileCurrentCounter++;
-                    distancePos = forward ? distancePos + (AccelDir * variance) : distancePos + (-AccelDir * variance);
+                    distancePos += (AccelDir * variance);
                 }
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }

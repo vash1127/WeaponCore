@@ -250,7 +250,7 @@ namespace WeaponCore.Support
                 a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
 
                 a.VisualLength = d.VisualLength;
-                if (a.AmmoDef.Const.ConvergeBeams || a.SmartOn)
+                if (a.SmartOn || a.AmmoDef.Const.IsBeamWeapon && a.AmmoDef.Const.ConvergeBeams)
                     a.VisualDir = d.Direction;
                 else if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;

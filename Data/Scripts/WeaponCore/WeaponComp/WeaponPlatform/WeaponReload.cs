@@ -183,9 +183,11 @@ namespace WeaponCore.Platform
             ClientStartId = Reload.StartId;
             
             var fullCapacity = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-            var notShotBlocked = !PreFired && !Reloading && !FinishBurst;
-            if (notShotBlocked && (fullCapacity > 1 || AiShooting)) 
+            var notShotBlocked = !PreFired && !Reloading && !FinishBurst && !IsShooting;
+            if (notShotBlocked && (AiShooting || fullCapacity > 1)) 
                 ClientMakeUpShots += Ammo.CurrentAmmo;
+
+            Log.Line($"ClientReload: maxUpShots:{ClientMakeUpShots} - current:{Ammo.CurrentAmmo} - IsShooting:{IsShooting} - LastShootTick:{System.Session.Tick - LastShootTick} - fullCap:{fullCapacity} - notShotBlocked:{notShotBlocked}({PreFired} - {Reloading} - {FinishBurst}) - AiShooting:{AiShooting} - Start:{Reload.StartId} - End:{Reload.EndId}");
 
             Ammo.CurrentAmmo = 0;
 
@@ -196,7 +198,6 @@ namespace WeaponCore.Platform
                     NoMagsToLoad = false;
                 }
             }
-            //Log.Line($"ClientReload: maxUpShots:{ClientMakeUpShots} - fullCap:{fullCapacity} - notShotBlocked:{notShotBlocked}({PreFired} - {Reloading} - {FinishBurst}) - AiShooting:{AiShooting}");
 
             ClientReloading = true;
             Reloading = true;
