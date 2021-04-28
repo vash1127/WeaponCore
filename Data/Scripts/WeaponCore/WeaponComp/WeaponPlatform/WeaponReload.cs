@@ -181,14 +181,7 @@ namespace WeaponCore.Platform
                 return false;
             }
             ClientStartId = Reload.StartId;
-            
-            var fullCapacity = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-            var notShotBlocked = !PreFired && !Reloading && !FinishBurst && !IsShooting;
-            if (notShotBlocked && (AiShooting || fullCapacity > 1)) 
-                ClientMakeUpShots += Ammo.CurrentAmmo;
-
-            Log.Line($"ClientReload: maxUpShots:{ClientMakeUpShots} - current:{Ammo.CurrentAmmo} - IsShooting:{IsShooting} - LastShootTick:{System.Session.Tick - LastShootTick} - fullCap:{fullCapacity} - notShotBlocked:{notShotBlocked}({PreFired} - {Reloading} - {FinishBurst}) - AiShooting:{AiShooting} - Start:{Reload.StartId} - End:{Reload.EndId}");
-
+            ClientMakeUpShots += Ammo.CurrentAmmo;
             Ammo.CurrentAmmo = 0;
 
             if (!Comp.Session.IsCreative) {
@@ -352,7 +345,6 @@ namespace WeaponCore.Platform
                     ClientMakeUpShots = 0;
                     ClientEndId = Reload.EndId;
                 }
-
                 Reloading = false;
             }
 
@@ -361,7 +353,7 @@ namespace WeaponCore.Platform
         {
             Comp.CurrentCharge -= Ammo.CurrentCharge;
             Ammo.CurrentCharge = 0;
-            Ammo.CurrentAmmo = 0;
+            //Ammo.CurrentAmmo = 0;
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
 
             if (!Comp.UnlimitedPower)

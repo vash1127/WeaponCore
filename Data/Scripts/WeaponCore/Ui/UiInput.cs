@@ -38,6 +38,7 @@ namespace WeaponCore
         internal bool MouseShootOn;
         internal LineD AimRay;
         private readonly Session _session;
+        private uint _lastInputUpdate;
         internal readonly InputStateData ClientInputState;
         internal MyKeys ActionKey;
         internal MyMouseButtonsEnum MouseButtonMenu;
@@ -87,8 +88,11 @@ namespace WeaponCore
                     var shootButtonActive = ClientInputState.MouseButtonLeft || ClientInputState.MouseButtonRight;
 
                     MouseShootWasOn = MouseShootOn;
-                    if (_session.ManualShot && shootButtonActive && !MouseShootOn)
+                    if ((_session.ManualShot  || s.Tick - _lastInputUpdate >= 29) && shootButtonActive && !MouseShootOn)
+                    {
+                        _lastInputUpdate = s.Tick; 
                         MouseShootOn = true;
+                    }
                     else if (MouseShootOn && !shootButtonActive)
                         MouseShootOn = false;
 

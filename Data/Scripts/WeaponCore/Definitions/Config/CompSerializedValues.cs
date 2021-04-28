@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using ProtoBuf;
 using VRage;
+using VRage.Sync;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -68,9 +69,20 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
-                Log.Line($"AmmoValues: currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - start:{w.ClientStartId}({w.Reload.StartId}) - end:{w.ClientEndId}({w.Reload.EndId})");
                 Revision = sync.Revision;
-                CurrentAmmo = sync.CurrentAmmo;
+
+                if (CurrentAmmo != sync.CurrentAmmo) {
+
+                    var ammoSpent = w.ClientLastShotId == w.Reload.StartId && CurrentAmmo == 0;
+                    var notShotBlocked = !w.PreFired && !w.Reloading && !w.FinishBurst && !w.IsShooting;
+                    if (!notShotBlocked && !ammoSpent) {
+
+                        Log.Line($"Syncing AmmoValues: - currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - LastShootTick:{w.System.Session.Tick - w.LastShootTick} - IsShooting:{w.IsShooting} - finish:{w.FinishBurst} - start:{w.ClientStartId}({w.Reload.StartId})[{w.ClientLastShotId}] - end:{w.ClientEndId}({w.Reload.EndId})");
+                        CurrentAmmo = sync.CurrentAmmo;
+                    }
+                    else Log.Line($"spent:{ammoSpent} - notBlocked:{notShotBlocked} - syncAmmo:{sync.CurrentAmmo} - endIdMatch:{w.Reload.EndId == w.ClientEndId}() - startIdMatch:{w.Reload.StartId == w.ClientStartId}");
+                }
+
                 CurrentCharge = sync.CurrentCharge;
 
                 if (sync.CurrentMags <= 0 && CurrentMags != sync.CurrentMags)
@@ -170,7 +182,6 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision || force)
             {
-                Log.Line($"WeaponReloadValues: currentAmmo:{w.Ammo.CurrentAmmo} - Charge:{w.Ammo.CurrentCharge}- Mags:{w.Ammo.CurrentMags} - start:{w.ClientStartId}({w.Reload.StartId})[{sync.StartId}] - end:{w.ClientEndId}({w.Reload.EndId})[{sync.EndId}]");
                 Revision = sync.Revision;
                 StartId = sync.StartId;
                 EndId = sync.EndId;

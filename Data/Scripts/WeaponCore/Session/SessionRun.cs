@@ -263,9 +263,11 @@ namespace WeaponCore
                 UiInput.UpdateInputState();
                 if (MpActive)  {
 
-                    if (UiInput.InputChanged && ActiveControlBlock != null) 
+                    if (UiInput.InputChanged && ActiveControlBlock != null)
+                    {
                         SendMouseUpdate(TrackingAi, ActiveControlBlock);
-                    
+                    }
+
                     if (TrackingAi != null && TargetUi.DrawReticle)  {
                         var dummyTarget = PlayerDummyTargets[PlayerId];
                         if (dummyTarget.LastUpdateTick == Tick)

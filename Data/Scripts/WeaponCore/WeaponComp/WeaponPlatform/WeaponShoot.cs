@@ -56,7 +56,8 @@ namespace WeaponCore.Platform
                 ShootTick = tick + TicksPerShot;
                 LastShootTick = tick;
 
-                if (!IsShooting) StartShooting();
+                if (!IsShooting)
+                    StartShooting();
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
@@ -101,14 +102,26 @@ namespace WeaponCore.Platform
                                 if (!skipMuzzle) break;
                             }
                         }
-                        
+
                         if (Ammo.CurrentAmmo > 0) {
+
                             --Ammo.CurrentAmmo;
                             if (ShootOnce)
                                 DequeueShot();
+
+                            if (Ammo.CurrentAmmo == 0) {
+                                FinishBurst = false;
+                                ClientLastShotId = Reload.StartId;
+                            }
                         }
                         else if (ClientMakeUpShots > 0)
+                        {
                             --ClientMakeUpShots;
+                            if (ClientMakeUpShots == 0)
+                                FinishBurst = false;
+
+                        }
+
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
                             if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
                             {

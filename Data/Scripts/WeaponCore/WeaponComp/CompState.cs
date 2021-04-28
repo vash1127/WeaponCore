@@ -138,6 +138,7 @@ namespace WeaponCore.Support
 
         internal void ResetPlayerControl()
         {
+            Log.Line($"ResetPlayerControl");
             Data.Repo.Base.State.PlayerId = -1;
             Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
