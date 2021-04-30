@@ -1044,8 +1044,8 @@ namespace WeaponCore.Api
                         [ProtoMember(8)] internal bool NoTargetExpire;
                         [ProtoMember(9)] internal bool Roam;
                         [ProtoMember(10)] internal bool KeepAliveAfterTargetLoss;
-                        [ProtoMember(10)] internal float OffsetDegree;
-                        [ProtoMember(11)] internal int OffsetTime;
+                        [ProtoMember(11)] internal float OffsetDegree;
+                        [ProtoMember(12)] internal int OffsetTime;
                     }
 
                     [ProtoContract]
