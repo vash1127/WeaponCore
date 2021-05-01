@@ -22,6 +22,7 @@ namespace WeaponCore.Projectiles
         internal MyEntityQueryType PruneQuery;
         internal Vector3D AccelDir;
         internal Vector3D Position;
+        internal Vector3D OffsetDir;
         internal Vector3D LastPosition;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
@@ -113,6 +114,7 @@ namespace WeaponCore.Projectiles
         internal void Start()
         {
             PrevVelocity = Vector3D.Zero;
+            OffsetDir = Vector3D.Zero;
             Position = Info.Origin;
             AccelDir = Info.Direction;
             var cameraStart = Info.System.Session.CameraPos;
@@ -539,24 +541,23 @@ namespace WeaponCore.Projectiles
                     }
                     commandedAccel = Math.Sqrt(Math.Max(0, AccelInMetersPerSec * AccelInMetersPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
                 }
-                /*
-                var offsetTime = 180;
-                if (offsetTime > 0 && (Info.Age % offsetTime == 0 || MyUtils.IsZero(OffsetDir)))
+
+                var offsetTime = Info.AmmoDef.Trajectory.Smarts.OffsetTime;
+                if (offsetTime > 0)
                 {
-                    var dirMatrix = Matrix.CreateFromDir(commandedAccel);
-                    var posValue = MathHelper.ToRadians(MathHelper.Clamp(90, 0, 360));
-                    posValue *= 0.5f;
+                    if ((Info.Age % offsetTime == 0))
+                    {
+                        double angle = Info.WeaponRng.ClientProjectileRandom.NextDouble() * MathHelper.TwoPi;
+                        Info.WeaponRng.ClientProjectileCurrentCounter += 1;
+                        var up = Vector3D.Normalize(Vector3D.CalculatePerpendicularVector(Info.Direction));
+                        var right = Vector3D.Cross(Info.Direction, up);
+                        OffsetDir = Math.Sin(angle) * up + Math.Cos(angle) * right;
+                        OffsetDir *= Info.AmmoDef.Trajectory.Smarts.OffsetRatio;
+                    }
 
-                    var randomFloat1 = (float)(Info.WeaponRng.ClientProjectileRandom.NextDouble() * posValue);
-                    var randomFloat2 = (float)(Info.WeaponRng.ClientProjectileRandom.NextDouble() * MathHelper.TwoPi);
-                    Info.WeaponRng.ClientProjectileCurrentCounter += 2;
-
-                    OffsetDir = Vector3.TransformNormal(1 * -new Vector3(
-                        MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
-                        MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
-                        MyMath.FastCos(randomFloat1)), dirMatrix);
+                    commandedAccel += AccelInMetersPerSec * OffsetDir;
+                    commandedAccel = Vector3D.Normalize(commandedAccel) * AccelInMetersPerSec;
                 }
-                */
 
                 newVel = Velocity + (commandedAccel * StepConst);
                 var accelDir = commandedAccel / AccelInMetersPerSec;
