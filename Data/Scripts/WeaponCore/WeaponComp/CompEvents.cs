@@ -185,33 +185,33 @@ namespace WeaponCore.Support
             {
                 var status = GetSystemStatus();
 
-                stringBuilder.Append(status + 
-                    "\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0") +
-                    "\nShotsPerSec: " + ShotsPerSec.ToString("0.000") +
-                    "\n" +
-                    "\nRealDps: " + EffectiveDps.ToString("0.0") +
-                    "\nPeakDps: " + PeakDps.ToString("0.0") +
-                    "\nBaseDps: " + BaseDps.ToString("0.0") +
-                    "\nAreaDps: " + AreaDps.ToString("0.0") +
-                    "\nExplode: " + DetDps.ToString("0.0") +
-                    "\nCurrent: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/ PeakDps).ToString("P") + ")");
+                stringBuilder.Append(status)
+                    .Append($"\nConstruct DPS: {Ai.EffectiveDps.ToString("0.0")}")
+                    .Append($"\nShotsPerSec: {ShotsPerSec.ToString("0.000")}")
+                    .Append("\n")
+                    .Append($"\nRealDps: {EffectiveDps.ToString("0.0")}")
+                    .Append($"\nPeakDps: {PeakDps.ToString("0.0")}")
+                    .Append($"\nBaseDps: {BaseDps.ToString("0.0")}")
+                    .Append($"\nAreaDps: {AreaDps.ToString("0.0")}")
+                    .Append($"\nExplode: { DetDps.ToString("0.0")}")
+                    .Append($"\nCurrent: { CurrentDps.ToString("0.0")} ({(CurrentDps / PeakDps).ToString("P")})");
 
                 if (HeatPerSecond > 0)
-                    stringBuilder.Append("\n__________________________________" +
-                    "\nHeat Generated: " + HeatPerSecond.ToString("0.0") + " W (" + (HeatPerSecond / MaxHeat).ToString("P") + "/s)" +
-                    "\nHeat Dissipated: " + HeatSinkRate.ToString("0.0") + " W (" + (HeatSinkRate/MaxHeat).ToString("P") +"/s)" +
-                    "\nCurrent Heat: " +CurrentHeat.ToString("0.0") + " J (" + (CurrentHeat / MaxHeat).ToString("P")+")");
+                    stringBuilder.Append($"\n__________________________________")
+                    .Append($"\nHeat Generated: {HeatPerSecond.ToString("0.0")} W ({(HeatPerSecond / MaxHeat).ToString("P") }/s)")
+                    .Append($"\nHeat Dissipated: {HeatSinkRate.ToString("0.0")} W ({(HeatSinkRate / MaxHeat).ToString("P")}/s)")
+                    .Append($"\nCurrent Heat: {CurrentHeat.ToString("0.0")} J ({(CurrentHeat / MaxHeat).ToString("P")})");
 
                 if (HeatPerSecond > 0 && HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");
 
                 if (HasEnergyWeapon)
                 {
-                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MW");
-                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MJ");
-                    stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MJ");
+                    stringBuilder.Append($"\nCurrent Draw: {SinkPower.ToString("0.00")} MW");
+                    if (HasChargeWeapon) stringBuilder.Append($"\nCurrent Charge: {CurrentCharge.ToString("0.00")} MJ");
+                    stringBuilder.Append($"\nRequired Power: {MaxRequiredPower.ToString("0.00")} MJ");
                 }
-                
+
                 stringBuilder.Append("\n\n==== Weapons ====");
 
                 var weaponCnt = Platform.Weapons.Length;
@@ -223,13 +223,13 @@ namespace WeaponCore.Support
                     {
                         shots = "\nCharging:" + w.Charging;
                     }
-                    else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.Ammo.CurrentAmmo;
+                    else shots = $"\n{ w.ActiveAmmoDef.AmmoDef.AmmoMagazine }: { +w.Ammo.CurrentAmmo}";
 
-                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
+                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? $"\nBurst: {w.ShotsFired }({ w.System.ShotsPerBurst }) - Delay: {w.System.Values.HardPoint.Loading.DelayAfterBurst}" : string.Empty;
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
-                    stringBuilder.Append("\nName: " + w.System.WeaponName + shots + burst + "\nReloading: " + w.Reloading + endReturn);
+                    stringBuilder.Append($"\nName: {w.System.WeaponName }{shots }{ burst }\nReloading: { w.Reloading }{ endReturn}");
 
                     string otherAmmo = null;
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
