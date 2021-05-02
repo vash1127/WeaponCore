@@ -22,8 +22,8 @@ namespace WeaponCore
             if (ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
             {
-                //DrawTarget();
-                DrawTargetAlternate();
+                DrawTarget();
+                //DrawTargetAlternate();
             }
         }
 
