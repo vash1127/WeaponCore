@@ -25,6 +25,9 @@ namespace WeaponCore
         internal Hud.TextureMap FocusTextureMap;
 
 
+        private const string ShieldHudStr = "hud";
+        private const string NoShieldHudStr = "hudnoshield";
+
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
         private readonly MyStringId _focusSecondary = MyStringId.GetOrCompute("DS_TargetFocusSecondary");
@@ -102,6 +105,16 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetShield80"), 0.0625, new Vector2D(0.14, 1.0f), 4, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetShield90"), 0.0625, new Vector2D(0.14, 1.0f), 4, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetShield100"), 0.0625, new Vector2D(0.14, 1.0f), 4, true),
+            }},
+        };
+
+        private readonly Dictionary<string, IconInfo[]> _targetHuds = new Dictionary<string, IconInfo[]>()
+        {
+            {"hud", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"), 0.5f,  new Vector2D(0.14, .8f), 4, true),
+            }},
+            {"hudnoshield", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2D(0.14, .8f), 4, true),
             }},
         };
 

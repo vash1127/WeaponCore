@@ -20,7 +20,11 @@ namespace WeaponCore
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
             if (ActivateSelector()) DrawSelector();
-            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s)) DrawTarget();
+            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
+            {
+                //DrawTarget();
+                DrawTargetAlternate();
+            }
         }
 
         private void DrawSelector()
@@ -83,7 +87,6 @@ namespace WeaponCore
 
                 var targetState = s.TrackingAi.TargetState[i];
                 var displayCount = 0;
-
                 foreach (var icon in _targetIcons.Keys) {
 
                     int iconLevel;
@@ -96,7 +99,6 @@ namespace WeaponCore
                     iconInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset);
 
                     var color = Color.White;
-
                     switch (lockMode) {
                         case FocusData.LockModes.None:
                             color = Color.White;
@@ -160,6 +162,79 @@ namespace WeaponCore
                     if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
+        }
+
+        private void DrawTargetAlternate()
+        {
+            var s = _session;
+            var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
+            for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
+            {
+
+                if (focus.Target[i] <= 0) continue;
+                var lockMode = focus.Locked[i];
+
+                var targetState = s.TrackingAi.TargetState[i];
+                var displayCount = 0;
+                foreach (var hud in _targetHuds.Keys)
+                {
+
+                    var shielded = targetState.ShieldHealth >= 0;
+                    if (shielded && hud == ShieldHudStr || !shielded && hud == NoShieldHudStr)
+                        continue;
+
+                    Vector3D offset;
+                    float scale;
+                    MyStringId textureName;
+                    var hudInfo = _targetHuds[hud][0];
+                    hudInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset);
+
+                    var color = Color.White;
+                    switch (lockMode)
+                    {
+                        case FocusData.LockModes.None:
+                            color = Color.White;
+                            break;
+                        case FocusData.LockModes.Locked:
+                            color = s.Count < 60 ? Color.White : new Color(255, 255, 255, 64);
+                            break;
+                        case FocusData.LockModes.ExclusiveLock:
+                            color = s.SCount < 30 ? Color.White : new Color(255, 255, 255, 64);
+                            break;
+
+                    }
+
+                    MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                    displayCount++;
+                }
+
+                MyEntity target;
+                if (i == focus.ActiveId && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
+                {
+
+                    var targetSphere = target.PositionComp.WorldVolume;
+                    var targetCenter = targetSphere.Center;
+                    var screenPos = s.Camera.WorldToScreen(ref targetCenter);
+                    var screenScale = 0.1 * s.ScaleFov;
+
+                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
+                    {
+                        screenPos.X *= -1;
+                        screenPos.Y = -1;
+                    }
+
+                    var dotpos = new Vector2D(MathHelper.Clamp(screenPos.X, -0.98, 0.98), MathHelper.Clamp(screenPos.Y, -0.98, 0.98));
+
+                    dotpos.X *= (float)(screenScale * _session.AspectRatio);
+                    dotpos.Y *= (float)screenScale;
+                    screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
+                    MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
+
+                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
+                }
+            }
+
+            //MyTransparentGeometry.AddBillboardOriented(_hudWithShield, Color.White, offset, _session.CameraMatrix.Left, _session.CameraMatrix.Up, 0.002, BlendTypeEnum.PostPP);
         }
 
         private static bool IconStatus(string icon, TargetStatus targetState, out int iconLevel)

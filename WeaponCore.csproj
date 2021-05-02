@@ -45,6 +45,7 @@
     <None Include="Data\Energy_Ammo.sbc" />
     <None Include="Data\Energy_Magazine.sbc" />
     <None Include="Data\EntityComponents.sbc" />
+    <None Include="Data\TransparentMaterials.sbc" />
     <None Include="packages.config" />
     <None Include="WeaponCore.ruleset" />
   </ItemGroup>
