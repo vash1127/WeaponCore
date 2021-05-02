@@ -106,9 +106,15 @@ namespace WeaponCore
         internal enum ElementNames
         {
             Invalid,
-            Test1,
-            Test2,
-            Test3,
+            Element0,
+            Element1,
+            Element2,
+            Element3,
+            Element4,
+            Element5,
+            Element6,
+            Element7,
+            Element8,
         }
 
         internal enum Justify

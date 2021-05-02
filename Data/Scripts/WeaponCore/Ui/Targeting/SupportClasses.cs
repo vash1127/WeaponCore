@@ -20,13 +20,13 @@ namespace WeaponCore
     public class IconInfo
     {
         private readonly MyStringId _textureName;
-        private readonly Vector2D _screenPosition;
+        private readonly Vector2 _screenPosition;
         private readonly double _definedScale;
         private readonly int _slotId;
         private readonly bool _canShift;
         private readonly int[] _prevSlotId;
 
-        public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool canShift)
+        public IconInfo(MyStringId textureName, double definedScale, Vector2 screenPosition, int slotId, bool canShift)
         {
             _textureName = textureName;
             _definedScale = definedScale;
@@ -38,7 +38,7 @@ namespace WeaponCore
                 _prevSlotId[i] = -1;
         }
 
-        public void GetTextureInfo(int index, int displayCount, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
+        public void GetTextureInfo(int index, int displayCount, Session session, out MyStringId textureName, out float scale, out Vector3D offset, out Vector2 localOffset)
         {
             var screenScale = 0.075 * session.ScaleFov;
             var needShift = _slotId != displayCount;
@@ -46,11 +46,11 @@ namespace WeaponCore
 
             scale = (float)(_definedScale * screenScale);
 
-            var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y, 0);
+            localOffset = _screenPosition;
+            var position = new Vector3D(localOffset.X + shiftSize - (index * 0.45), localOffset.Y, 0);
             position.X *= screenScale * session.AspectRatio;
             position.Y *= screenScale;
             offset = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), session.CameraMatrix);
-
             textureName = _textureName;
             _prevSlotId[index] = displayCount;
         }

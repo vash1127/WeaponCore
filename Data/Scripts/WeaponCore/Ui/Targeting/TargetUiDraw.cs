@@ -93,10 +93,11 @@ namespace WeaponCore
                     if (!IconStatus(icon, targetState, out iconLevel)) continue;
 
                     Vector3D offset;
+                    Vector2 localOffset;
                     float scale;
                     MyStringId textureName;
                     var iconInfo = _targetIcons[icon][iconLevel];
-                    iconInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset);
+                    iconInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset, out localOffset);
 
                     var color = Color.White;
                     switch (lockMode) {
@@ -159,7 +160,7 @@ namespace WeaponCore
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
-                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
+                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, element: Hud.ElementNames.Element0, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
         }
@@ -180,14 +181,16 @@ namespace WeaponCore
                 {
 
                     var shielded = targetState.ShieldHealth >= 0;
-                    if (shielded && hud == ShieldHudStr || !shielded && hud == NoShieldHudStr)
+                    if (shielded && hud != ShieldHudStr || !shielded && hud == ShieldHudStr)
                         continue;
 
                     Vector3D offset;
+                    Vector2 localOffset;
+
                     float scale;
                     MyStringId textureName;
                     var hudInfo = _targetHuds[hud][0];
-                    hudInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset);
+                    hudInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset, out localOffset);
 
                     var color = Color.White;
                     switch (lockMode)
@@ -205,6 +208,27 @@ namespace WeaponCore
                     }
 
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                    if (s.Tick20)
+                    {
+                        var slots = shielded ? 9 : 6;
+                        for (int j = 0; j < slots; j++)
+                        {
+                            string text;
+                            Vector2 textOffset;
+                            if (TextStatus(j, targetState, localOffset, out text, out textOffset))
+                            {
+                                var textColor = i == 0 ? Color.OrangeRed : Color.MediumOrchid;
+                                var fontSize = 5;
+                                var fontHeight = 0.75f;
+                                var fontAge = 18;
+                                var fontJustify = Hud.Justify.Center;
+                                var fontType = Hud.FontType.Shadow;
+                                var elementKey = (Hud.ElementNames)j;
+
+                                s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, element: elementKey, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                            }
+                        }
+                    }
                     displayCount++;
                 }
 
@@ -230,11 +254,71 @@ namespace WeaponCore
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
-                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
 
             //MyTransparentGeometry.AddBillboardOriented(_hudWithShield, Color.White, offset, _session.CameraMatrix.Left, _session.CameraMatrix.Up, 0.002, BlendTypeEnum.PostPP);
+        }
+
+        private static bool TextStatus(int slot, TargetStatus targetState, Vector2 localOffset, out string textStr, out Vector2 textOffset)
+        {
+            bool display;
+            textOffset = localOffset;
+            switch (slot)
+            {
+                case 0:
+                    display = targetState.Size > -1;
+                    textStr = !display ? string.Empty : $"SIZE: {targetState.Size}";
+                    textOffset += 0.1f;
+                    break;
+                case 1:
+                    Log.Line("1");
+                    display = targetState.RealDistance > -1;
+                    textStr = !display ? string.Empty : $"RANGE: {targetState.RealDistance:#.0}";
+                    textOffset += 0.1f;
+                    break;
+                case 2:
+                    display = targetState.ThreatLvl > -1;
+                    textStr = !display ? string.Empty : $"THREAT: {targetState.ThreatLvl}";
+                    textOffset += 0.1f;
+                    break;
+                case 3:
+                    display = targetState.Engagement > -1;
+                    textStr = !display ? string.Empty : $"ENGAGEMENT: {targetState.Engagement}";
+                    textOffset += 0.1f;
+                    break;
+                case 4:
+                    display = targetState.Speed > -1;
+                    textStr = !display ? string.Empty : $"SPEED: {targetState.Speed}";
+                    textOffset += 0.1f;
+                    break;
+                case 5:
+                    display = targetState.ShieldHealth > -1;
+                    textStr = !display ? string.Empty : $"SHIELD HP: {targetState.ShieldHealth}";
+                    textOffset += 0.1f;
+                    break;
+                case 6:
+                    display = targetState.Distance > -1;
+                    textStr = !display ? string.Empty : $"EMPTY: {targetState.Distance}";
+                    textOffset += 0.1f;
+                    break;
+                case 7:
+                    display = targetState.Distance > -1;
+                    textStr = !display ? string.Empty : $"EMPTY: {targetState.Distance}";
+                    textOffset += 0.1f;
+                    break;
+                case 8:
+                    display = targetState.Distance > -1;
+                    textStr = !display ? string.Empty : $"EMPTY: {targetState.Distance}";
+                    textOffset += 0.1f;
+                    break;
+                default:
+                    display = false;
+                    textStr = string.Empty;
+                    textOffset = Vector2.Zero;
+                    break;
+            }
+            return display;
         }
 
         private static bool IconStatus(string icon, TargetStatus targetState, out int iconLevel)
