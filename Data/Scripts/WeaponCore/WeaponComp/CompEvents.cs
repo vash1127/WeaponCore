@@ -198,18 +198,18 @@ namespace WeaponCore.Support
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +
-                    "\nHeat Generated / s: " + HeatPerSecond.ToString("0.0") + " W" +
-                    "\nHeat Dissipated / s: " + HeatSinkRate.ToString("0.0") + " W" +
-                    "\nCurrent Heat: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat / MaxHeat).ToString("P")+")");
+                    "\nHeat Generated: " + HeatPerSecond.ToString("0.0") + " W (" + (HeatPerSecond / MaxHeat).ToString("P") + "/s)" +
+                    "\nHeat Dissipated: " + HeatSinkRate.ToString("0.0") + " W (" + (HeatSinkRate/MaxHeat).ToString("P") +"/s)" +
+                    "\nCurrent Heat: " +CurrentHeat.ToString("0.0") + " J (" + (CurrentHeat / MaxHeat).ToString("P")+")");
 
                 if (HeatPerSecond > 0 && HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");
 
                 if (HasEnergyWeapon)
                 {
-                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MWs");
-                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MWs");
-                    stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MWs");
+                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MW");
+                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MJ");
+                    stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MJ");
                 }
                 
                 stringBuilder.Append("\n\n==== Weapons ====");
