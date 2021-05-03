@@ -25,8 +25,11 @@ namespace WeaponCore
         internal Hud.TextureMap FocusTextureMap;
 
 
-        private const string ShieldHudStr = "hud";
-        private const string NoShieldHudStr = "hudnoshield";
+        private const string ActiveNoShield = "activenoshield";
+        private const string ActiveShield = "activeshield";
+        private const string InactiveNoShield = "inactivenoshield";
+        private const string InactiveShield = "activeshield";
+
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
@@ -108,19 +111,21 @@ namespace WeaponCore
             }},
         };
 
+        internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
+
         private readonly Dictionary<string, IconInfo[]> _targetHuds = new Dictionary<string, IconInfo[]>()
         {
-            {"hud", new[] {
+            {"activenoshield", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
+            }},
+            {"activeshield", new[] {
                 new IconInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
             }},
-            {"hudactive", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_TargetDesignation"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
+            {"inactivenoshield", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
             }},
-            {"hudnoshield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
-            }},
-            {"hudactivenoshield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
+            {"inactiveshield", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_Shield"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
             }},
         };
 
