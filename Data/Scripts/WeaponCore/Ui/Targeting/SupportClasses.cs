@@ -18,6 +18,7 @@ namespace WeaponCore
         public float SizeExtended;
         public double RealDistance;
         public bool IsFocused;
+        public string Name;
     }
 
     public class IconInfo

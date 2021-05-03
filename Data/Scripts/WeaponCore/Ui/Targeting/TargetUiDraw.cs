@@ -219,7 +219,7 @@ namespace WeaponCore
                             Vector2 textOffset;
                             if (TextStatus(j, targetState, localOffset, out text, out textOffset))
                             {
-                                var textColor = i == 0 ? Color.OrangeRed : Color.MediumOrchid;
+                                var textColor = i == 0 ? Color.WhiteSmoke : Color.MediumOrchid;
                                 var fontSize = 6;
                                 var fontHeight = 0.75f;
                                 var fontAge = 18;
@@ -309,7 +309,6 @@ namespace WeaponCore
                     textOffset.Y += 0.0225f;
                     break;
                 case 6:
-
                     var hp = targetState.ShieldHealth < 0 ? 0 : (targetState.ShieldHealth + 1) * 10;
                     textStr = $"SHIELD HP: {hp}%";
                     textOffset.X -= 0.3675f;
@@ -323,7 +322,7 @@ namespace WeaponCore
                     textOffset.Y += -0.0325f;
                     break;
                 case 8:
-                    textStr = "[F,B] [U] [L,R]";
+                    textStr = targetState.Name;
                     textOffset.X -= 0.275f;
                     textOffset.Y += -0.09f;
                     break;
@@ -398,7 +397,8 @@ namespace WeaponCore
             var size4 = s.Settings.Enforcement.ShipSizes[4];
             var size5 = s.Settings.Enforcement.ShipSizes[5];
             var size6 = s.Settings.Enforcement.ShipSizes[6];
-            
+            var maxNameLength = 18;
+
             if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
@@ -416,7 +416,6 @@ namespace WeaponCore
                 var smallGrid = false;
                 var isFcused = false;
                 if (grid != null)  {
-
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
                     smallGrid = !largeGrid;
                     GridAi targetAi;
@@ -447,6 +446,9 @@ namespace WeaponCore
                 }
 
                 ai.TargetState[i].IsFocused = isFcused;
+                var displayName = target.DisplayName;
+                var name = string.IsNullOrEmpty(displayName) ? string.Empty : displayName.Length <= maxNameLength ? displayName : displayName.Substring(0, maxNameLength);
+                ai.TargetState[i].Name = name;
 
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
                 if (MyUtils.IsZero(targetVel, 1E-01F)) targetVel = Vector3.Zero;
