@@ -177,6 +177,8 @@ namespace WeaponCore
 
                 var targetState = s.TrackingAi.TargetState[i];
                 var displayCount = 0;
+                var isActive = i == focus.ActiveId;
+
                 foreach (var hud in _targetHuds.Keys)
                 {
 
@@ -233,7 +235,7 @@ namespace WeaponCore
                 }
 
                 MyEntity target;
-                if (i == focus.ActiveId && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
+                if (isActive && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
                 {
 
                     var targetSphere = target.PositionComp.WorldVolume;
@@ -272,8 +274,11 @@ namespace WeaponCore
                     textOffset.Y += 0.135f;
                     break;
                 case 1:
-                    textStr = $"RANGE: {targetState.RealDistance:#.0}";
-                    textOffset.X -= 0.1675f;
+                    var inKm = targetState.RealDistance >= 1000;
+                    var unit = inKm ? "km" : "m";
+                    var measure = inKm ? targetState.RealDistance / 1000 : targetState.RealDistance;
+                    textStr = $"RANGE: {measure:#.0} {unit}";
+                    textOffset.X -= 0.1725f;
                     textOffset.Y += 0.135f;
                     break;
                 case 2:
@@ -289,7 +294,7 @@ namespace WeaponCore
                         textStr = "RETREATING";
                     else
                         textStr = "STATIONARY";
-                    textOffset.X -= 0.1675f;
+                    textOffset.X -= 0.1725f;
                     textOffset.Y += 0.0775f;
                     break;
                 case 4:
@@ -300,7 +305,7 @@ namespace WeaponCore
                     break;
                 case 5:
                     textStr = targetState.IsFocused ? "FOCUSED" : "OBLIVIOUS";
-                    textOffset.X -= 0.1675f;
+                    textOffset.X -= 0.1725f;
                     textOffset.Y += 0.0225f;
                     break;
                 case 6:
@@ -311,12 +316,14 @@ namespace WeaponCore
                     textOffset.Y += -0.0325f;
                     break;
                 case 7:
-                    textStr = $"HEAT LEVEL: {targetState.ShieldHeat}";
-                    textOffset.X -= 0.1675f;
+                    var type = targetState.ShieldMod > 0 ? "Energy" : targetState.ShieldMod < 0 ? "Kinetic" : "Neutral";
+                    var value = Math.Round(1 / (2 - targetState.ShieldMod), 1);
+                    textStr = $"{type}: {value}x";
+                    textOffset.X -= 0.1725f;
                     textOffset.Y += -0.0325f;
                     break;
                 case 8:
-                    textStr = "[F,B] [U,D] [L,R]";
+                    textStr = "[F,B] [U] [L,R]";
                     textOffset.X -= 0.275f;
                     textOffset.Y += -0.09f;
                     break;
@@ -509,7 +516,7 @@ namespace WeaponCore
                     ai.TargetState[i].ShieldHeat = shieldInfo.Item6;
                     var modInfo = s.SApi.GetModulationInfo(target);
 
-                    ai.TargetState[i].ShieldMod = (modInfo.Item3 + (-modInfo.Item4));
+                    ai.TargetState[i].ShieldMod = modInfo.Item3 > modInfo.Item4 ? modInfo.Item3 : -modInfo.Item4;
                     var shieldPercent = shieldInfo.Item5;
                     if (shieldPercent > 95) ai.TargetState[i].ShieldHealth = 9;
                     else if (shieldPercent > 90) ai.TargetState[i].ShieldHealth = 8;

@@ -113,7 +113,13 @@ namespace WeaponCore
             {"hud", new[] {
                 new IconInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
             }},
+            {"hudactive", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_TargetDesignation"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
+            }},
             {"hudnoshield", new[] {
+                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
+            }},
+            {"hudactivenoshield", new[] {
                 new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
             }},
         };
