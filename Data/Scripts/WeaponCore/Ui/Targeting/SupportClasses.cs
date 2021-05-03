@@ -8,13 +8,16 @@ namespace WeaponCore
     public class TargetStatus
     {
         public int ShieldHealth;
+        public int ShieldHeat;
         public int ThreatLvl;
         public int Size;
         public int Speed;
         public int Distance;
         public int Engagement;
+        public float ShieldMod;
         public float SizeExtended;
         public double RealDistance;
+        public bool IsFocused;
     }
 
     public class IconInfo

@@ -37,10 +37,10 @@ namespace WeaponCore
 
                     var c = textAdd.Text[j];
 
-                    float reSize;
-                    var tooWide = remap.TryGetValue(c, out reSize);
+                    float size;
+                    var needResize = remap.TryGetValue(c, out size);
   
-                    var scaledWidth = textAdd.FontSize * (tooWide ? reSize : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
+                    var scaledWidth = textAdd.FontSize * (needResize ? size : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
                     messageLength += scaledWidth;
 
                     var cm = CharacterMap[textAdd.Font][c];
@@ -52,7 +52,7 @@ namespace WeaponCore
                     td.P2 = cm.P2;
                     td.P3 = cm.P3;
                     td.UvDraw = true;
-                    td.TooWide = tooWide;
+                    td.ReSize = needResize;
                     td.ScaledWidth = scaledWidth;
                     textAdd.Data.Add(td);
                 }

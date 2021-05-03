@@ -218,10 +218,10 @@ namespace WeaponCore
                             if (TextStatus(j, targetState, localOffset, out text, out textOffset))
                             {
                                 var textColor = i == 0 ? Color.OrangeRed : Color.MediumOrchid;
-                                var fontSize = 5;
+                                var fontSize = 6;
                                 var fontHeight = 0.75f;
                                 var fontAge = 18;
-                                var fontJustify = Hud.Justify.Center;
+                                var fontJustify = Hud.Justify.None;
                                 var fontType = Hud.FontType.Shadow;
                                 var elementKey = (Hud.ElementNames)j;
 
@@ -262,55 +262,63 @@ namespace WeaponCore
 
         private static bool TextStatus(int slot, TargetStatus targetState, Vector2 localOffset, out string textStr, out Vector2 textOffset)
         {
-            bool display;
+            var display = true;
             textOffset = localOffset;
             switch (slot)
             {
                 case 0:
-                    display = targetState.Size > -1;
-                    textStr = !display ? string.Empty : $"SIZE: {targetState.Size}";
-                    textOffset += 0.1f;
+                    textStr = $"SIZE: {targetState.Size}";
+                    textOffset.X -= 0.3675f;
+                    textOffset.Y += 0.135f;
                     break;
                 case 1:
-                    Log.Line("1");
-                    display = targetState.RealDistance > -1;
-                    textStr = !display ? string.Empty : $"RANGE: {targetState.RealDistance:#.0}";
-                    textOffset += 0.1f;
+                    textStr = $"RANGE: {targetState.RealDistance:#.0}";
+                    textOffset.X -= 0.1675f;
+                    textOffset.Y += 0.135f;
                     break;
                 case 2:
-                    display = targetState.ThreatLvl > -1;
-                    textStr = !display ? string.Empty : $"THREAT: {targetState.ThreatLvl}";
-                    textOffset += 0.1f;
+                    textStr = $"THREAT: {targetState.ThreatLvl}";
+                    textOffset.X -= 0.3675f;
+                    textOffset.Y += 0.0775f;
                     break;
                 case 3:
-                    display = targetState.Engagement > -1;
-                    textStr = !display ? string.Empty : $"ENGAGEMENT: {targetState.Engagement}";
-                    textOffset += 0.1f;
+
+                    if (targetState.Engagement == 0)
+                        textStr = "INTERCEPT";
+                    else if (targetState.Engagement == 1)
+                        textStr = "RETREATING";
+                    else
+                        textStr = "STATIONARY";
+                    textOffset.X -= 0.1675f;
+                    textOffset.Y += 0.0775f;
                     break;
                 case 4:
-                    display = targetState.Speed > -1;
-                    textStr = !display ? string.Empty : $"SPEED: {targetState.Speed}";
-                    textOffset += 0.1f;
+                    var speed = MathHelper.Clamp(targetState.Speed, 0, int.MaxValue);
+                    textStr = $"SPEED: {speed}";
+                    textOffset.X -= 0.3675f;
+                    textOffset.Y += 0.0225f;
                     break;
                 case 5:
-                    display = targetState.ShieldHealth > -1;
-                    textStr = !display ? string.Empty : $"SHIELD HP: {targetState.ShieldHealth}";
-                    textOffset += 0.1f;
+                    textStr = targetState.IsFocused ? "FOCUSED" : "OBLIVIOUS";
+                    textOffset.X -= 0.1675f;
+                    textOffset.Y += 0.0225f;
                     break;
                 case 6:
-                    display = targetState.Distance > -1;
-                    textStr = !display ? string.Empty : $"EMPTY: {targetState.Distance}";
-                    textOffset += 0.1f;
+
+                    var hp = targetState.ShieldHealth < 0 ? 0 : (targetState.ShieldHealth + 1) * 10;
+                    textStr = $"SHIELD HP: {hp}%";
+                    textOffset.X -= 0.3675f;
+                    textOffset.Y += -0.0325f;
                     break;
                 case 7:
-                    display = targetState.Distance > -1;
-                    textStr = !display ? string.Empty : $"EMPTY: {targetState.Distance}";
-                    textOffset += 0.1f;
+                    textStr = $"HEAT LEVEL: {targetState.ShieldHeat}";
+                    textOffset.X -= 0.1675f;
+                    textOffset.Y += -0.0325f;
                     break;
                 case 8:
-                    display = targetState.Distance > -1;
-                    textStr = !display ? string.Empty : $"EMPTY: {targetState.Distance}";
-                    textOffset += 0.1f;
+                    textStr = "[F,B] [U,D] [L,R]";
+                    textOffset.X -= 0.275f;
+                    textOffset.Y += -0.09f;
                     break;
                 default:
                     display = false;
@@ -399,6 +407,7 @@ namespace WeaponCore
                 var partCount = 1;
                 var largeGrid = false;
                 var smallGrid = false;
+                var isFcused = false;
                 if (grid != null)  {
 
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -409,7 +418,28 @@ namespace WeaponCore
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
+
+                    if (targetAi != null && targetAi.Construct.Data.Repo.FocusData.HasFocus)
+                    {
+                        var fd = targetAi.Construct.Data.Repo.FocusData;
+
+                        foreach (var tId in fd.Target) {
+
+                            if (isFcused)
+                                break;
+
+                            foreach (var sub in ai.SubGrids) {
+
+                                if (sub.EntityId == tId) {
+                                    isFcused = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
+
+                ai.TargetState[i].IsFocused = isFcused;
 
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
                 if (MyUtils.IsZero(targetVel, 1E-01F)) targetVel = Vector3.Zero;
@@ -476,6 +506,10 @@ namespace WeaponCore
                 if (s.ShieldApiLoaded) shieldInfo = s.SApi.GetShieldInfo(target);
                 if (shieldInfo.Item1)
                 {
+                    ai.TargetState[i].ShieldHeat = shieldInfo.Item6;
+                    var modInfo = s.SApi.GetModulationInfo(target);
+
+                    ai.TargetState[i].ShieldMod = (modInfo.Item3 + (-modInfo.Item4));
                     var shieldPercent = shieldInfo.Item5;
                     if (shieldPercent > 95) ai.TargetState[i].ShieldHealth = 9;
                     else if (shieldPercent > 90) ai.TargetState[i].ShieldHealth = 8;
@@ -489,7 +523,12 @@ namespace WeaponCore
                     else if (shieldPercent > 0) ai.TargetState[i].ShieldHealth = 0;
                     else ai.TargetState[i].ShieldHealth = -1;
                 }
-                else ai.TargetState[i].ShieldHealth = -1;
+                else
+                {
+                    ai.TargetState[i].ShieldHeat = -1;
+                    ai.TargetState[i].ShieldHealth = -1;
+                    ai.TargetState[i].ShieldMod = 0;
+                }
 
                 var friend = false;
                 if (grid != null && grid.BigOwners.Count != 0)
@@ -518,7 +557,6 @@ namespace WeaponCore
                     else if (offenseRating > 1) ai.TargetState[i].ThreatLvl = 5 + shieldBonus;
                     else if (offenseRating > 0.5) ai.TargetState[i].ThreatLvl = 4 + shieldBonus;
                     else if (offenseRating > 0.25) ai.TargetState[i].ThreatLvl = 3 + shieldBonus;
-
                     else if (offenseRating > 0.125) ai.TargetState[i].ThreatLvl = 2 + shieldBonus;
                     else if (offenseRating > 0.0625) ai.TargetState[i].ThreatLvl = 1 + shieldBonus;
                     else if (offenseRating > 0) ai.TargetState[i].ThreatLvl = shieldBonus > 0 ? 1 : 0;

@@ -205,7 +205,7 @@ namespace WeaponCore
             internal Vector2 P3;
             internal float ScaledWidth;
             internal bool UvDraw;
-            internal bool TooWide;
+            internal bool ReSize;
             internal MyBillboard.BlendTypeEnum Blend = PostPP;
         }
 
