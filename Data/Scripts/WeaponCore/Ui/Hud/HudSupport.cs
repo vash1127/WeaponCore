@@ -122,12 +122,12 @@ namespace WeaponCore
 
         internal Vector2 GetScreenSpace(Vector2 offset)
         {
-            Vector3 pos;
-            pos.Y = (float) (2 * _session.Camera.NearPlaneDistance * _session.ScaleFov);
-            pos.X = pos.Y * _session.AspectRatio;
-            pos.Z = -(_session.Camera.NearPlaneDistance * 2);
+            var fovScale = (float)(0.1 * _session.ScaleFov);
 
-            return new Vector2(pos.X * offset.X, pos.Y * offset.Y);
+            var position = new Vector2(offset.X, offset.Y);
+            position.X *= fovScale * _session.AspectRatio;
+            position.Y *= fovScale;
+            return position;
         }
 
         internal void UpdateHudSettings()

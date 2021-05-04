@@ -59,4 +59,35 @@ namespace WeaponCore
             _prevSlotId[index] = displayCount;
         }
     }
+
+    public class HudInfo
+    {
+        private readonly MyStringId _textureName;
+        private readonly Vector2 _screenPosition;
+        private readonly float _definedScale;
+
+        public HudInfo(MyStringId textureName, Vector2 screenPosition, float scale)
+        {
+            _definedScale = scale;
+            _textureName = textureName;
+            _screenPosition = screenPosition;
+        }
+
+        public void GetTextureInfo(Session session, out MyStringId textureName, out float scale, out float screenScale, out float fontScale, out Vector3D offset, out Vector2 localOffset)
+        {
+            var fovScale = (float)(0.1 * session.ScaleFov);
+
+            localOffset = _screenPosition;
+
+            scale = _definedScale;
+            screenScale = (float) (_definedScale * fovScale);
+            fontScale = (float)(_definedScale * session.ScaleFov);
+            var position = new Vector2(_screenPosition.X, _screenPosition.Y);
+            position.X *= fovScale * session.AspectRatio;
+            position.Y *= fovScale;
+
+            offset = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), session.CameraMatrix);
+            textureName = _textureName;
+        }
+    }
 }

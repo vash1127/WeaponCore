@@ -176,30 +176,34 @@ namespace WeaponCore
                 var lockMode = focus.Locked[i];
 
                 var targetState = s.TrackingAi.TargetState[i];
-                var displayCount = 0;
                 var isActive = i == focus.ActiveId;
                 var shielded = targetState.ShieldHealth >= 0;
 
-                foreach (var hud in _targetHuds.Keys)
+                var collection = isActive ? _primaryTargetHuds : _secondaryTargetHuds;
+
+                foreach (var hud in collection.Keys)
                 {
-                    if (shielded) {
 
-                        if (hud != ActiveShield && isActive || hud != InactiveShield && !isActive)
-                            continue;
-                    }
-                    else {
+                    if (isActive && (hud == InactiveShield || hud == InactiveNoShield))
+                        continue;
 
-                        if (hud != ActiveNoShield && isActive || hud != InactiveNoShield && !isActive)
-                            continue;
-                    }
+                    if (!isActive && (hud == ActiveShield || hud == ActiveNoShield))
+                        continue;
+
+                    if (shielded && (hud != ActiveShield && hud != InactiveShield))
+                        continue;
+                    if (!shielded && (hud != ActiveNoShield && hud != InactiveNoShield))
+                        continue;
 
                     Vector3D offset;
                     Vector2 localOffset;
 
                     float scale;
+                    float screenScale;
+                    float fontScale;
                     MyStringId textureName;
-                    var hudInfo = _targetHuds[hud][0];
-                    hudInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset, out localOffset);
+                    var hudInfo = collection[hud];
+                    hudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
 
                     var color = Color.White;
                     switch (lockMode)
@@ -216,7 +220,7 @@ namespace WeaponCore
 
                     }
 
-                    MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                    MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
                     if (s.Tick20)
                     {
                         for (int j = 0; j < 11; j++)
@@ -226,10 +230,10 @@ namespace WeaponCore
 
                             string text;
                             Vector2 textOffset;
-                            if (TextStatus(j, targetState, localOffset, shielded, out text, out textOffset))
+                            if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
                             {
                                 var textColor = i == 0 ? Color.WhiteSmoke : Color.MediumOrchid;
-                                var fontSize = 6;
+                                var fontSize = (float)Math.Round(22 * fontScale);
                                 var fontHeight = 0.75f;
                                 var fontAge = 18;
                                 var fontJustify = Hud.Justify.None;
@@ -240,7 +244,6 @@ namespace WeaponCore
                             }
                         }
                     }
-                    displayCount++;
                 }
 
                 MyEntity target;
@@ -250,7 +253,6 @@ namespace WeaponCore
                     var targetSphere = target.PositionComp.WorldVolume;
                     var targetCenter = targetSphere.Center;
                     var screenPos = s.Camera.WorldToScreen(ref targetCenter);
-                    var screenScale = 0.1 * s.ScaleFov;
 
                     if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
                     {
@@ -259,7 +261,7 @@ namespace WeaponCore
                     }
 
                     var dotpos = new Vector2D(MathHelper.Clamp(screenPos.X, -0.98, 0.98), MathHelper.Clamp(screenPos.Y, -0.98, 0.98));
-
+                    var screenScale = 0.1 * s.ScaleFov;
                     dotpos.X *= (float)(screenScale * _session.AspectRatio);
                     dotpos.Y *= (float)screenScale;
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
@@ -269,29 +271,37 @@ namespace WeaponCore
             }
         }
 
-        private bool TextStatus(int slot, TargetStatus targetState, Vector2 localOffset, bool shielded, out string textStr, out Vector2 textOffset)
+        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, out string textStr, out Vector2 textOffset)
         {
             var display = true;
             textOffset = localOffset;
+
+            var aspectScale = (2.37037f / _session.AspectRatio);
+
+            var xOdd = 0.1875f;
+            var xEven = 0.035f;
+            var yStart = 0.45f;
+            var yStep = 0.0755f;
+
             switch (slot)
             {
                 case 0:
                     textStr = $"SIZE: {targetState.Size}";
-                    textOffset.X -= 0.355f;
-                    textOffset.Y += 0.135f;
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart;
                     break;
                 case 1:
                     var inKm = targetState.RealDistance >= 1000;
                     var unit = inKm ? "km" : "m";
                     var measure = inKm ? targetState.RealDistance / 1000 : targetState.RealDistance;
                     textStr = $"RANGE: {measure:#.0} {unit}";
-                    textOffset.X -= 0.1875f;
-                    textOffset.Y += 0.135f;
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart;
                     break;
                 case 2:
                     textStr = $"THREAT: {targetState.ThreatLvl}";
-                    textOffset.X -= 0.355f;
-                    textOffset.Y += 0.0775f;
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 1);
                     break;
                 case 3:
 
@@ -301,51 +311,51 @@ namespace WeaponCore
                         textStr = "RETREATING";
                     else
                         textStr = "STATIONARY";
-                    textOffset.X -= 0.1875f;
-                    textOffset.Y += 0.0775f;
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 1);
                     break;
                 case 4:
                     var speed = MathHelper.Clamp(targetState.Speed, 0, int.MaxValue);
                     textStr = $"SPEED: {speed}";
-                    textOffset.X -= 0.355f;
-                    textOffset.Y += 0.0225f;
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 2);
                     break;
                 case 5:
                     textStr = targetState.IsFocused ? "FOCUSED" : "OBLIVIOUS";
-                    textOffset.X -= 0.1875f;
-                    textOffset.Y += 0.0225f;
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 2);
                     break;
                 case 6:
                     var hp = targetState.ShieldHealth < 0 ? 0 : (targetState.ShieldHealth + 1) * 10;
                     textStr = $"SHIELD HP: {hp}%";
-                    textOffset.X -= 0.355f;
-                    textOffset.Y += -0.0325f;
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 3);
                     break;
                 case 7:
                     var type = targetState.ShieldMod > 0 ? "ENERGY" : targetState.ShieldMod < 0 ? "KINETIC" : "NEUTRAL";
                     var value = Math.Round(1 / (2 - targetState.ShieldMod), 1);
                     textStr = $"{type}: {value}x";
-                    textOffset.X -= 0.1875f;
-                    textOffset.Y += -0.0325f;
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 3);
                     break;
                 case 8:
                     textStr = "[F,B] [U] [L,R]";
-                    textOffset.X -= 0.355f;
-                    textOffset.Y += -0.0875f;
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 4);
                     break;
                 case 9:
                     var reduction = ExpChargeReductions[targetState.ShieldHeat];
                     textStr = $"CHARGE RATE: {Math.Round(1f / reduction, 1)}x";
-                    textOffset.X -= 0.1875f;
-                    textOffset.Y += -0.0875f;
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 4);
                     break;
                 case 10:
                     textStr = targetState.Name;
-                    textOffset.X -= 0.28f;
+                    textOffset.X -= 0.095f * aspectScale;
                     if (shielded)
-                        textOffset.Y += -0.145f;
+                        textOffset.Y += yStart - (yStep * 5);
                     else
-                        textOffset.Y += -0.0325f;
+                        textOffset.Y += yStart - (yStep * 3);
                     break;
                 default:
                     display = false;

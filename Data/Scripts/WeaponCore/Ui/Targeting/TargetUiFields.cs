@@ -28,7 +28,7 @@ namespace WeaponCore
         private const string ActiveNoShield = "activenoshield";
         private const string ActiveShield = "activeshield";
         private const string InactiveNoShield = "inactivenoshield";
-        private const string InactiveShield = "activeshield";
+        private const string InactiveShield = "inactiveshield";
 
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
@@ -113,20 +113,20 @@ namespace WeaponCore
 
         internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
 
-        private readonly Dictionary<string, IconInfo[]> _targetHuds = new Dictionary<string, IconInfo[]>()
+        private readonly Dictionary<string, HudInfo> _primaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"activenoshield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
-            }},
-            {"activeshield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
-            }},
-            {"inactivenoshield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
-            }},
-            {"inactiveshield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("WC_HUD_Shield"), 0.5f,  new Vector2(0.14f, .8f), 4, true),
-            }},
+            {"activenoshield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.5f), 0.5f)},
+            {"activeshield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.5f), 0.5f)},
+            {"inactivenoshield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.5f), 0.5f)},
+            {"inactiveshield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.5f), 0.5f)},
+        };
+
+        private readonly Dictionary<string, HudInfo> _secondaryTargetHuds = new Dictionary<string, HudInfo>
+        {
+            {"activenoshield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.5f, 0.5f), 0.5f)},
+            {"activeshield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.5f, 0.5f), 0.5f)},
+            {"inactivenoshield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.5f, 0.5f), 0.5f)},
+            {"inactiveshieldy",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.5f, 0.5f), 0.5f)},
         };
 
         private readonly string[] _textValues = new[]

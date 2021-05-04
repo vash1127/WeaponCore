@@ -39,7 +39,7 @@ namespace WeaponCore
 
                     float size;
                     var needResize = remap.TryGetValue(c, out size);
-  
+
                     var scaledWidth = textAdd.FontSize * (needResize ? size : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
                     messageLength += scaledWidth;
 
@@ -91,7 +91,7 @@ namespace WeaponCore
                 }
 
                 var height = textAdd.FontSize * textAdd.HeightScale;
-                var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
+                //var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
                 var remove = textAdd.Ttl-- < 0;
 
                 for (int i = 0; i < textAdd.Data.Count; i++) { 
@@ -101,6 +101,7 @@ namespace WeaponCore
 
                     if (textData.UvDraw) {
 
+                        var width = (textData.ScaledWidth * widthScaler) * _session.AspectRatioInv;
                         MyQuadD quad;
                         MyUtils.GetBillboardQuadOriented(out quad, ref textPos, width, height, ref left, ref up);
 
