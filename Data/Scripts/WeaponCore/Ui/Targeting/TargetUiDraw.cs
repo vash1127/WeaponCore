@@ -240,7 +240,7 @@ namespace WeaponCore
                     textOffset.Y += yStart - (yStep * 2);
                     break;
                 case 6:
-                    var hp = targetState.ShieldHealth < 0 ? 0 : (targetState.ShieldHealth + 1) * 10;
+                    var hp = targetState.ShieldHealth < 0 ? 0 : targetState.ShieldHealth;
                     textStr = $"SHIELD HP: {hp}%";
                     textOffset.X -= xOdd * aspectScale;
                     textOffset.Y += yStart - (yStep * 3);
@@ -392,7 +392,7 @@ namespace WeaponCore
                 else
                 {
                     state.ShieldHeat = 0;
-                    state.ShieldHealth = 0;
+                    state.ShieldHealth = -1;
                     state.ShieldMod = 0;
                 }
 
