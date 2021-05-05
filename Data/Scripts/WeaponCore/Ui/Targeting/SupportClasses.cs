@@ -7,12 +7,10 @@ namespace WeaponCore
 {
     public class TargetStatus
     {
-        public int ShieldHealth;
+        public float ShieldHealth;
         public int ShieldHeat;
         public int ThreatLvl;
-        public int Size;
-        public int Speed;
-        public int Distance;
+        public float Speed;
         public int Engagement;
         public float ShieldMod;
         public float SizeExtended;
