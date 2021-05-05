@@ -247,7 +247,7 @@ namespace WeaponCore
                     break;
                 case 7:
                     var type = targetState.ShieldMod > 0 ? "ENERGY" : targetState.ShieldMod < 0 ? "KINETIC" : "NEUTRAL";
-                    var value = Math.Round(1 / (2 - targetState.ShieldMod), 1);
+                    var value = !MyUtils.IsZero(targetState.ShieldMod) ? Math.Round(1 / (2 - targetState.ShieldMod), 1) : 1;
                     textStr = $"{type}: {value}x";
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 3);
@@ -384,16 +384,17 @@ namespace WeaponCore
                 if (s.ShieldApiLoaded) shieldInfo = s.SApi.GetShieldInfo(target);
                 if (shieldInfo.Item1)
                 {
-                    state.ShieldHeat = shieldInfo.Item6;
+                    state.ShieldHeat = shieldInfo.Item6 / 10;
                     var modInfo = s.SApi.GetModulationInfo(target);
-                    state.ShieldMod = modInfo.Item3 > modInfo.Item4 ? modInfo.Item3 : -modInfo.Item4;
-                    state.ShieldHealth = shieldInfo.Item5;
+                    var modValue = MyUtils.IsEqual(modInfo.Item3, modInfo.Item4) ? 0 : modInfo.Item3 > modInfo.Item4 ? modInfo.Item3 : -modInfo.Item4;
+                    state.ShieldMod = modValue;
+                    state.ShieldHealth = (float) Math.Round(shieldInfo.Item5);
                 }
                 else
                 {
                     state.ShieldHeat = 0;
-                    state.ShieldHealth = -1;
                     state.ShieldMod = 0;
+                    state.ShieldHealth = -1;
                 }
 
                 var friend = false;
