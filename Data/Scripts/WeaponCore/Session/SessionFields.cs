@@ -300,6 +300,7 @@ namespace WeaponCore
         internal float AspectRatioInv;
         internal float UiBkOpacity;
         internal float UiOpacity;
+        internal float UIHudOpacity;
         internal float CurrentFovWithZoom;
         internal bool PurgedAll;
         internal bool InMenu;

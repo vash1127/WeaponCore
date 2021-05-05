@@ -45,88 +45,23 @@ namespace WeaponCore
         private Vector2 _pointerPosition = new Vector2(0, 0.0f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;
-        private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
-        {
-            {"size", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetScout"), 0.125, new Vector2(0, 1.2f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetFighter"), 0.125, new Vector2(0, 1.2f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetFrigate"), 0.125, new Vector2(0, 1.2f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.125, new Vector2(0, 1.2f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.125, new Vector2(0, 1.2f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetBattleCruiser"), 0.125, new Vector2(0, 1.2f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.125, new Vector2(0, 1.2f), -1, false),
-            }},
-            {"threat", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat1"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat2"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat3"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat4"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat5"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat6"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat7"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat8"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat9"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat10"), 0.0625, new Vector2(-0.18f, 1.0f), 0, true),
-            }},
-            {"distance", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance10"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance20"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance30"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance40"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance50"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance60"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance70"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance80"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance90"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistance100"), 0.0625, new Vector2(-0.10f, 1.0f), 1, true),
-            }},
-            {"speed", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed10"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed20"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed30"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed40"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed50"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed60"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed70"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed80"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed90"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed100"), 0.0625, new Vector2(-0.02f, 1.0f), 2, true),
-            }},
-            {"engagement", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetIntercept"), 0.0625,  new Vector2(0.06f, 1.0f), 3, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetRetreat"), 0.0625, new Vector2(0.06f, 1.0f), 3, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetEngaged"), 0.0625, new Vector2(0.06f, 1.0f), 3, true),
-            }},
-            {"shield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield10"), 0.0625,  new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield20"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield30"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield40"), 0.0625,  new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield50"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield60"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield70"), 0.0625,  new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield80"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield90"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield100"), 0.0625, new Vector2(0.14f, 1.0f), 4, true),
-            }},
-        };
 
         internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
 
         private readonly Dictionary<string, HudInfo> _primaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.5f), 0.5f)},
-            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.5f), 0.5f)},
-            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.5f), 0.5f)},
-            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.5f), 0.5f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.65f), 0.35f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.65f), 0.35f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.65f), 0.35f)},
+            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.65f), 0.35f)},
         };
 
         private readonly Dictionary<string, HudInfo> _secondaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.5f), 0.5f)},
-            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.65f, 0.5f), 0.5f)},
-            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.5f), 0.5f)},
-            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.65f, 0.5f), 0.5f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.65f), 0.35f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.65f, 0.65f), 0.35f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.65f), 0.35f)},
+            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.65f, 0.65f), 0.35f)},
         };
 
         private uint _cacheIdleTicks;

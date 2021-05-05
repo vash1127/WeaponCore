@@ -49,6 +49,7 @@ namespace WeaponCore
                 Count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
+                UIHudOpacity = MyAPIGateway.Session.Config.HUDBkOpacity;
                 CheckAdminRights();
                 if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
                 

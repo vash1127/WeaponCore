@@ -130,6 +130,8 @@ namespace WeaponCore
 
                     }
 
+                    var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+                    color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
                     if (s.Tick20)
                     {
@@ -139,7 +141,7 @@ namespace WeaponCore
                             Vector2 textOffset;
                             if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
                             {
-                                var textColor = Color.WhiteSmoke;
+                                var textColor = Color.White;
                                 var fontSize = (float)Math.Round(22 * fontScale);
                                 var fontHeight = 0.75f;
                                 var fontAge = 18;
@@ -187,15 +189,15 @@ namespace WeaponCore
                 textOffset = Vector2.Zero;
                 return false;
             }
-
             textOffset = localOffset;
 
             var aspectScale = (2.37037f / _session.AspectRatio);
 
-            var xOdd = 0.1875f;
-            var xEven = 0.035f;
-            var yStart = 0.45f;
-            var yStep = 0.0755f;
+            var xOdd = 0.3755f * scale;
+            var xEven = 0.07f * scale;
+            var xCenter = 0.19f * scale;
+            var yStart = 0.9f * scale;
+            var yStep = 0.151f * scale;
 
             switch (slot)
             {
@@ -253,7 +255,8 @@ namespace WeaponCore
                     textOffset.Y += yStart - (yStep * 3);
                     break;
                 case 8:
-                    textStr = "[F,B] [U] [L,R]";
+                    Log.Line($"{targetState.ShieldFaces}");
+                    textStr = ShieldSides(targetState.ShieldFaces);
                     textOffset.X -= xOdd * aspectScale;
                     textOffset.Y += yStart - (yStep * 4);
                     break;
@@ -265,7 +268,7 @@ namespace WeaponCore
                     break;
                 case 10:
                     textStr = targetState.Name;
-                    textOffset.X -= 0.095f * aspectScale;
+                    textOffset.X -= xCenter * aspectScale;
                     if (shielded)
                         textOffset.Y += yStart - (yStep * 5);
                     else
@@ -292,6 +295,57 @@ namespace WeaponCore
 
             TargetOffset = new Vector3D(position.X, position.Y, -0.1);
             _cachedTargetPos = true;
+        }
+
+        public string ShieldSides(Vector3I shunts)
+        {
+            string text = string.Empty;
+            var left = shunts.X == -1 || shunts.X == 2;
+            var right = shunts.X == 1 || shunts.X == 2;
+            var up = shunts.Y == 1 || shunts.Y == 2;
+            var down = shunts.Y == -1 || shunts.Y == 2;
+            var forward = shunts.Z == -1 || shunts.Y == 2;
+            var backward = shunts.Z == 1 || shunts.Y == 2;
+
+            if (forward || backward) {
+
+                var both = forward && backward;
+
+                if (both) {
+                    text += "FR:BA:";
+                }
+                else if (forward)
+                    text += "FR:";
+                else
+                    text += "BA:";
+            }
+
+            if (up || down) {
+
+                var both = up && down;
+
+                if (both) {
+                    text += "TO:BO:";
+                }
+                else if (up)
+                    text += "TO:";
+                else
+                    text += "BO:";
+            }
+
+            if (left || right) {
+
+                var both = left && right;
+
+                if (both) {
+                    text += "LE:RI:";
+                }
+                else if (left)
+                    text += "LE:";
+                else
+                    text += "RI:";
+            }
+            return text;
         }
 
         internal bool GetTargetState(Session s)
@@ -384,9 +438,11 @@ namespace WeaponCore
                 if (s.ShieldApiLoaded) shieldInfo = s.SApi.GetShieldInfo(target);
                 if (shieldInfo.Item1)
                 {
-                    state.ShieldHeat = shieldInfo.Item6 / 10;
                     var modInfo = s.SApi.GetModulationInfo(target);
                     var modValue = MyUtils.IsEqual(modInfo.Item3, modInfo.Item4) ? 0 : modInfo.Item3 > modInfo.Item4 ? modInfo.Item3 : -modInfo.Item4;
+                    var faceInfo = s.SApi.GetFacesFast(target);
+                    state.ShieldFaces = faceInfo.Item1 ? faceInfo.Item2 : Vector3I.Zero;
+                    state.ShieldHeat = shieldInfo.Item6 / 10;
                     state.ShieldMod = modValue;
                     state.ShieldHealth = (float) Math.Round(shieldInfo.Item5);
                 }
@@ -395,6 +451,7 @@ namespace WeaponCore
                     state.ShieldHeat = 0;
                     state.ShieldMod = 0;
                     state.ShieldHealth = -1;
+                    state.ShieldFaces = Vector3I.Zero;
                 }
 
                 var friend = false;
