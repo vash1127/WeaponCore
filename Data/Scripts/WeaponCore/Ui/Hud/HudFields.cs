@@ -42,7 +42,7 @@ namespace WeaponCore
         private readonly List<TextureDrawData> _drawList = new List<TextureDrawData>(InitialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
 
-        private readonly ConcurrentDictionary<ElementNames, AgingTextRequest> _agingTextRequests = new ConcurrentDictionary<ElementNames, AgingTextRequest>();
+        private readonly ConcurrentDictionary<long, AgingTextRequest> _agingTextRequests = new ConcurrentDictionary<long, AgingTextRequest>();
 
         private readonly Session _session;
         private readonly MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
@@ -101,20 +101,6 @@ namespace WeaponCore
             Mono,
             Shadow,
             Whitespace
-        }
-
-        internal enum ElementNames
-        {
-            Invalid,
-            Element0,
-            Element1,
-            Element2,
-            Element3,
-            Element4,
-            Element5,
-            Element6,
-            Element7,
-            Element8,
         }
 
         internal enum Justify
@@ -177,7 +163,7 @@ namespace WeaponCore
             internal Color Color;
             internal Vector3D Position;
             internal FontType Font;
-            internal ElementNames Type;
+            internal long ElementId;
             internal Justify Justify;
             internal float FontSize;
             internal float MessageWidth;

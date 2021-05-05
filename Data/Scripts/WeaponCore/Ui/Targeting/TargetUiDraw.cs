@@ -160,7 +160,7 @@ namespace WeaponCore
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
-                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, element: Hud.ElementNames.Element0, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
+                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, elementId: 0, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
         }
@@ -177,22 +177,22 @@ namespace WeaponCore
 
                 var targetState = s.TrackingAi.TargetState[i];
                 var isActive = i == focus.ActiveId;
+                var primary = i == 0;
                 var shielded = targetState.ShieldHealth >= 0;
 
-                var collection = isActive ? _primaryTargetHuds : _secondaryTargetHuds;
+                var collection = primary ? _primaryTargetHuds : _secondaryTargetHuds;
 
                 foreach (var hud in collection.Keys)
                 {
-
                     if (isActive && (hud == InactiveShield || hud == InactiveNoShield))
                         continue;
 
                     if (!isActive && (hud == ActiveShield || hud == ActiveNoShield))
                         continue;
 
-                    if (shielded && (hud != ActiveShield && hud != InactiveShield))
+                    if (shielded && (hud == ActiveNoShield || hud == InactiveNoShield))
                         continue;
-                    if (!shielded && (hud != ActiveNoShield && hud != InactiveNoShield))
+                    if (!shielded && (hud == ActiveShield || hud == InactiveShield))
                         continue;
 
                     Vector3D offset;
@@ -225,22 +225,19 @@ namespace WeaponCore
                     {
                         for (int j = 0; j < 11; j++)
                         {
-                            if (!shielded && j > 5 && j < 10)
-                                continue;
-
                             string text;
                             Vector2 textOffset;
                             if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
                             {
-                                var textColor = i == 0 ? Color.WhiteSmoke : Color.MediumOrchid;
+                                var textColor = Color.WhiteSmoke;
                                 var fontSize = (float)Math.Round(22 * fontScale);
                                 var fontHeight = 0.75f;
                                 var fontAge = 18;
                                 var fontJustify = Hud.Justify.None;
                                 var fontType = Hud.FontType.Shadow;
-                                var elementKey = (Hud.ElementNames)j;
+                                var elementId = MathFuncs.UniqueId(i, j);
 
-                                s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, element: elementKey, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                                s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
                             }
                         }
                     }
@@ -273,7 +270,14 @@ namespace WeaponCore
 
         private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, out string textStr, out Vector2 textOffset)
         {
-            var display = true;
+            var display = shielded || slot < 6 || slot == 10;
+            if (!display)
+            {
+                textStr = string.Empty;
+                textOffset = Vector2.Zero;
+                return false;
+            }
+
             textOffset = localOffset;
 
             var aspectScale = (2.37037f / _session.AspectRatio);

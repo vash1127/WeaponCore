@@ -125,9 +125,9 @@ namespace WeaponCore
 
                 textAdd.Data.ApplyRemovals();
                 AgingTextRequest request;
-                if (textAdd.Data.Count == 0 && _agingTextRequests.TryRemove(textAdd.Type, out request))
+                if (textAdd.Data.Count == 0 && _agingTextRequests.TryRemove(textAdd.ElementId, out request))
                 {
-                    _agingTextRequests.Remove(textAdd.Type);
+                    _agingTextRequests.Remove(textAdd.ElementId);
                     _agingTextRequestPool.Return(request);
                 }
 

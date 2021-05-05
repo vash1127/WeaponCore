@@ -12,12 +12,12 @@ namespace WeaponCore
         internal uint TicksSinceUpdated => _session.Tick - _lastHudUpdateTick;
         internal bool KeepBackground => _session.Tick - _lastHudUpdateTick < MinUpdateTicks;
 
-        internal void AddText(string text, float x, float y, ElementNames element, int ttl, Vector4 color, Justify justify = Justify.None, FontType fontType = FontType.Mono, float fontSize = 10f, float heightScale = 0.65f)
+        internal void AddText(string text, float x, float y, long elementId, int ttl, Vector4 color, Justify justify = Justify.None, FontType fontType = FontType.Mono, float fontSize = 10f, float heightScale = 0.65f)
         {
             AgingTextures = true;
 
             AgingTextRequest request;
-            if (_agingTextRequests.TryGetValue(element, out request))
+            if (_agingTextRequests.TryGetValue(elementId, out request))
             {
                 request.RefreshTtl(ttl);
                 return;
@@ -32,10 +32,10 @@ namespace WeaponCore
             request.FontSize = fontSize * MetersInPixel;
             request.Font = fontType;
             request.Ttl = ttl;
-            request.Type = element;
+            request.ElementId = elementId;
             request.Justify = justify;
             request.HeightScale = heightScale;
-            _agingTextRequests.TryAdd(element, request);
+            _agingTextRequests.TryAdd(elementId, request);
         }
 
         internal void AddTextureUVSimple(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)

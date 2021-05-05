@@ -444,6 +444,7 @@ namespace WeaponCore
 
             for (int i = 0; i < AuthorSettings.Length; i++)
                 AuthorSettings[i] = -1;
+
         }
     }
 }

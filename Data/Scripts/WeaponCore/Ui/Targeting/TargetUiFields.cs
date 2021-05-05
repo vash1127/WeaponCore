@@ -25,10 +25,10 @@ namespace WeaponCore
         internal Hud.TextureMap FocusTextureMap;
 
 
-        private const string ActiveNoShield = "activenoshield";
-        private const string ActiveShield = "activeshield";
-        private const string InactiveNoShield = "inactivenoshield";
-        private const string InactiveShield = "inactiveshield";
+        private const string ActiveNoShield = "ActiveNoShield";
+        private const string ActiveShield = "ActiveShield";
+        private const string InactiveNoShield = "InactiveNoShield";
+        private const string InactiveShield = "InactiveShield";
 
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
@@ -115,23 +115,18 @@ namespace WeaponCore
 
         private readonly Dictionary<string, HudInfo> _primaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"activenoshield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.5f), 0.5f)},
-            {"activeshield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.5f), 0.5f)},
-            {"inactivenoshield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.5f), 0.5f)},
-            {"inactiveshield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.5f), 0.5f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.5f), 0.5f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.5f), 0.5f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.5f), 0.5f)},
+            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.5f), 0.5f)},
         };
 
         private readonly Dictionary<string, HudInfo> _secondaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"activenoshield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.5f, 0.5f), 0.5f)},
-            {"activeshield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.5f, 0.5f), 0.5f)},
-            {"inactivenoshield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.5f, 0.5f), 0.5f)},
-            {"inactiveshieldy",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.5f, 0.5f), 0.5f)},
-        };
-
-        private readonly string[] _textValues = new[]
-        {
-            ""
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.5f), 0.5f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.65f, 0.5f), 0.5f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.5f), 0.5f)},
+            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.65f, 0.5f), 0.5f)},
         };
 
         private uint _cacheIdleTicks;
