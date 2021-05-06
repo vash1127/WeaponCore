@@ -52,6 +52,7 @@ namespace CoreSystems.Support
         private Func<IMyTerminalBlock, Vector3D, bool, MyTuple<bool, int, int, float, float>> _getFaceInfo;
         private Action<long> _addAtacker;
         private Func<IMySlimBlock, bool> _isBlockProtected;
+        private Func<MyEntity, MyTuple<bool, Vector3I>> _getFacesFast;
 
         private const long Channel = 1365616918;
 
@@ -133,6 +134,7 @@ namespace CoreSystems.Support
             _getFaceInfo = (Func<IMyTerminalBlock, Vector3D, bool, MyTuple<bool, int, int, float, float>>)delegates["GetFaceInfo"];
             _addAtacker = (Action<long>)delegates["AddAttacker"];
             _isBlockProtected = (Func<IMySlimBlock, bool>)delegates["IsBlockProtected"];
+            _getFacesFast = (Func<MyEntity, MyTuple<bool, Vector3I>>)delegates["GetFacesFast"];
         }
 
         public Vector3D? RayAttackShield(IMyTerminalBlock block, RayD ray, long attackerId, float damage, bool energy, bool drawParticle) =>
@@ -180,6 +182,6 @@ namespace CoreSystems.Support
         public MyTuple<bool, int, int, float, float> GetFaceInfo(IMyTerminalBlock block, Vector3D pos, bool posMustBeInside = false) => _getFaceInfo?.Invoke(block, pos, posMustBeInside) ?? new MyTuple<bool, int, int, float, float>();
         public void AddAttacker(long attacker) => _addAtacker?.Invoke(attacker);
         public bool IsBlockProtected(IMySlimBlock block) => _isBlockProtected?.Invoke(block) ?? false;
-
+        public MyTuple<bool, Vector3I> GetFacesFast(MyEntity entity) => _getFacesFast?.Invoke(entity) ?? new MyTuple<bool, Vector3I>();
     }
 }

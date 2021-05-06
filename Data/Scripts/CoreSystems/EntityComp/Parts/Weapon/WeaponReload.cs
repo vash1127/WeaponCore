@@ -358,7 +358,6 @@ namespace CoreSystems.Platform
         public void ChargeReload()
         {
             ProtoWeaponAmmo.CurrentCharge = 0;
-            ProtoWeaponAmmo.CurrentAmmo = 0;
             EstimatedCharge = 0;
 
             Comp.Ai.Charger.Add(this);

@@ -3,7 +3,7 @@ using VRage.Game;
 using VRage.Utils;
 using VRageMath;
 
-namespace CoreSystems
+namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
     partial class Hud
     {
@@ -16,9 +16,11 @@ namespace CoreSystems
             if (NeedsUpdate)
                 UpdateHudSettings();
 
-            if (WeaponsToDisplay.Count > 0 || KeepBackground) {
+            if (WeaponsToDisplay.Count > 0 || KeepBackground)
+            {
 
-                if (ticksSinceUpdate >= MinUpdateTicks) {
+                if (ticksSinceUpdate >= MinUpdateTicks)
+                {
                     _weapontoDraw = SortDisplayedWeapons(WeaponsToDisplay);
                     _lastHudUpdateTick = _session.Tick;
                 }
@@ -27,7 +29,7 @@ namespace CoreSystems
 
                 BuildHud(reset);
             }
-            
+
             AddTextAndTextures();
             DrawHudOnce();
 
@@ -42,7 +44,8 @@ namespace CoreSystems
         {
             var currWeaponDisplayPos = _currWeaponDisplayPos;
 
-            if (_lastHudUpdateTick == _session.Tick) {
+            if (_lastHudUpdateTick == _session.Tick)
+            {
 
                 var largestName = (_currentLargestName * _textWidth) + _reloadWidth + _stackPadding;
 
@@ -60,7 +63,8 @@ namespace CoreSystems
 
             WeaponsToAdd(reset, currWeaponDisplayPos, bgStartPosX);
 
-            if (reset) {
+            if (reset)
+            {
                 _weapontoDraw.Clear();
                 _weaponInfoListPool.Enqueue(_weapontoDraw);
             }
@@ -68,23 +72,28 @@ namespace CoreSystems
 
         private void DrawHudOnce()
         {
-            foreach (var textureToDraw in _drawList) {
+            foreach (var textureToDraw in _drawList)
+            {
 
-                if (textureToDraw.UvDraw) {
+                if (textureToDraw.UvDraw)
+                {
 
                     MyQuadD quad;
                     MyUtils.GetBillboardQuadOriented(out quad, ref textureToDraw.Position, textureToDraw.Width, textureToDraw.Height, ref textureToDraw.Left, ref textureToDraw.Up);
 
-                    if (textureToDraw.Color != Color.Transparent) {
+                    if (textureToDraw.Color != Color.Transparent)
+                    {
                         MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P1, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
                         MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P2, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
                     }
-                    else {
+                    else
+                    {
                         MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P1, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Blend);
                         MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P2, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Blend);
                     }
                 }
-                else {
+                else
+                {
                     textureToDraw.Position = Vector3D.Transform(textureToDraw.Position, _cameraWorldMatrix);
                     MyTransparentGeometry.AddBillboardOriented(textureToDraw.Material, textureToDraw.Color, textureToDraw.Position, _cameraWorldMatrix.Left, _cameraWorldMatrix.Up, textureToDraw.Height, textureToDraw.Blend);
                 }
@@ -98,7 +107,8 @@ namespace CoreSystems
 
         private void AddTextAndTextures()
         {
-            for (int i = 0; i < _textAddList.Count; i++) {
+            for (int i = 0; i < _textAddList.Count; i++)
+            {
 
                 var textAdd = _textAddList[i];
 
@@ -107,7 +117,8 @@ namespace CoreSystems
                 textAdd.Position.Z = _viewPortSize.Z;
                 var textPos = Vector3D.Transform(textAdd.Position, _cameraWorldMatrix);
 
-                for (int j = 0; j < textAdd.Text.Length; j++) {
+                for (int j = 0; j < textAdd.Text.Length; j++)
+                {
 
                     var c = textAdd.Text[j];
 
@@ -139,7 +150,8 @@ namespace CoreSystems
                 _textDrawPool.Enqueue(textAdd);
             }
 
-            for (int i = 0; i < _textureAddList.Count; i++) {
+            for (int i = 0; i < _textureAddList.Count; i++)
+            {
 
                 var tdd = _textureAddList[i];
                 tdd.Position.Z = _viewPortSize.Z;
@@ -208,11 +220,12 @@ namespace CoreSystems
 
         private void WeaponsToAdd(bool reset, Vector2D currWeaponDisplayPos, double bgStartPosX)
         {
-            for (int i = 0; i < _weapontoDraw.Count; i++) {
+            for (int i = 0; i < _weapontoDraw.Count; i++)
+            {
 
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
-                var weapon = stackedInfo.HighestValuePart;
+                var weapon = stackedInfo.HighestValueWeapon;
                 var name = weapon.System.PartName + ": ";
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
@@ -233,7 +246,8 @@ namespace CoreSystems
                 _textAddList.Add(textInfo);
 
 
-                if (stackedInfo.WeaponStack > 1) {
+                if (stackedInfo.WeaponStack > 1)
+                {
 
                     if (!_textDrawPool.TryDequeue(out textInfo))
                         textInfo = new TextDrawRequest();
@@ -248,10 +262,10 @@ namespace CoreSystems
                     _textAddList.Add(textInfo);
                 }
 
-                if (hasHeat) 
+                if (hasHeat)
                     HasHeat(weapon, stackedInfo, ref currWeaponDisplayPos, reset);
 
-                if (showReloadIcon) 
+                if (showReloadIcon)
                     ShowReloadIcon(weapon, stackedInfo, ref currWeaponDisplayPos, textOffset, reset);
 
                 currWeaponDisplayPos.Y -= _infoPaneloffset + (_padding * .5f);
@@ -289,10 +303,11 @@ namespace CoreSystems
 
         private void ShowReloadIcon(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, double textOffset, bool reset)
         {
-            var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !weapon.ActiveAmmoDef.AmmoDef.Const.IsHybrid;
+            var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
             var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
-            if (texture.Length > 0) {
+            if (texture.Length > 0)
+            {
 
                 if (mustCharge)
                     stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.ProtoWeaponAmmo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);

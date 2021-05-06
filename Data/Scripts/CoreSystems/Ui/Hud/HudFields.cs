@@ -1,13 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using CoreSystems;
 using CoreSystems.Platform;
 using VRage.Collections;
 using VRage.Utils;
 using VRageMath;
-using VRageRender;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
-namespace CoreSystems
+namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
     partial class Hud
     {
@@ -42,7 +42,7 @@ namespace CoreSystems
         private readonly List<TextureDrawData> _drawList = new List<TextureDrawData>(InitialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
 
-        private readonly ConcurrentDictionary<ElementNames, AgingTextRequest> _agingTextRequests = new ConcurrentDictionary<ElementNames, AgingTextRequest>();
+        private readonly ConcurrentDictionary<long, AgingTextRequest> _agingTextRequests = new ConcurrentDictionary<long, AgingTextRequest>();
 
         private readonly Session _session;
         private readonly MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
@@ -82,7 +82,6 @@ namespace CoreSystems
         private float _bgBorderHeight;
         private float _bgCenterHeight;
         private float _symbolWidth;
-        private float _reloadHeightOffset;
 
 
         ///
@@ -101,14 +100,6 @@ namespace CoreSystems
             Mono,
             Shadow,
             Whitespace
-        }
-
-        internal enum ElementNames
-        {
-            Invalid,
-            Test1,
-            Test2,
-            Test3,
         }
 
         internal enum Justify
@@ -135,8 +126,8 @@ namespace CoreSystems
 
             for (int i = 0; i < InitialPoolCapacity; i++)
             {
-                _textureDrawPool.Enqueue(new TextureDrawData { Position = new Vector3D(), Blend = BlendTypeEnum.PostPP });
-                _textDrawPool.Enqueue(new TextDrawRequest { Position = new Vector3D() });
+                _textureDrawPool.Enqueue(new TextureDrawData() { Position = new Vector3D(), Blend = BlendTypeEnum.PostPP });
+                _textDrawPool.Enqueue(new TextDrawRequest() { Position = new Vector3D() });
                 _weaponSortingListPool.Enqueue(new List<Weapon>());
                 _weaponStackedInfoPool.Enqueue(new StackedWeaponInfo());
                 _weaponInfoListPool.Enqueue(new List<StackedWeaponInfo>());
@@ -171,7 +162,7 @@ namespace CoreSystems
             internal Color Color;
             internal Vector3D Position;
             internal FontType Font;
-            internal ElementNames Type;
+            internal long ElementId;
             internal Justify Justify;
             internal float FontSize;
             internal float MessageWidth;
@@ -199,13 +190,13 @@ namespace CoreSystems
             internal Vector2 P3;
             internal float ScaledWidth;
             internal bool UvDraw;
-            internal bool TooWide;
+            internal bool ReSize;
             internal BlendTypeEnum Blend = BlendTypeEnum.PostPP;
         }
 
         internal class StackedWeaponInfo
         {
-            internal Weapon HighestValuePart;
+            internal Weapon HighestValueWeapon;
             internal int WeaponStack;
             internal TextureDrawData CachedReloadTexture;
             internal TextureDrawData CachedHeatTexture;
@@ -225,7 +216,7 @@ namespace CoreSystems
         {
             internal MyStringId Material;
             internal Color Color;
-            internal Vector3D Position;
+            internal Vector3D Position = new Vector3D();
             internal Vector3 Up;
             internal Vector3 Left;
             internal Vector2 P0;
@@ -238,5 +229,4 @@ namespace CoreSystems
             internal bool UvDraw;
             internal BlendTypeEnum Blend = BlendTypeEnum.PostPP;
         }
-    }
-}
+    }}

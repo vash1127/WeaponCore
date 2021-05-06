@@ -132,6 +132,22 @@ namespace CoreSystems.Platform
             else IsShooting = false;
         }
 
+        internal void LostPowerIsThisEverUsed()
+        {
+            if (System.Session.IsServer)
+            {
+                PartState.WeaponMode(Comp, CoreComponent.TriggerActions.TriggerOff);
+                //w.Ammo.CurrentAmmo = 0;
+                Log.Line($"power off set ammo to 0");
+            }
+
+            Loading = false;
+            FinishBurst = false;
+
+            if (IsShooting)
+                StopShooting();
+        }
+
         internal double GetMaxWeaponRange()
         {
             var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CoreSystems.Platform;
+using CoreSystems.Settings;
 using CoreSystems.Support;
 using ParallelTasks;
 using Sandbox.Common.ObjectBuilders;
@@ -50,6 +51,7 @@ namespace CoreSystems
                 Count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
+                UIHudOpacity = MyAPIGateway.Session.Config.HUDBkOpacity;
                 CheckAdminRights();
                 if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
                 
@@ -338,7 +340,7 @@ namespace CoreSystems
             {
                 var w = HomingWeapons[i];
                 var comp = w.BaseComp;
-                if (w.BaseComp.Ai == null || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.IsWorking) {
+                if (w.BaseComp.Ai == null || comp.Ai.TopEntity.MarkedForClose || comp.Ai.Concealed || comp.CoreEntity.MarkedForClose || !comp.Cube.IsFunctional) {
                     HomingWeapons.RemoveAtFast(i);
                     continue;
                 }
@@ -372,23 +374,42 @@ namespace CoreSystems
 
         private void UpdateControlKeys()
         {
-            if (ControlRequest == ControlQuery.Keyboard) {
+            if (ControlRequest == ControlQuery.Action)
+            {
 
                 MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
-                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter) {
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter)
+                {
 
                     var firstKey = _pressedKeys[0];
                     Settings.ClientConfig.ActionKey = firstKey.ToString();
                     UiInput.ActionKey = firstKey;
                     ControlRequest = ControlQuery.None;
                     Settings.VersionControl.UpdateClientCfgFile();
-                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the CoreSystems Action Key", 10000);
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Action Key", 10000);
                 }
             }
-            else if (ControlRequest == ControlQuery.Mouse) {
+            else if (ControlRequest == ControlQuery.Keyboard)
+            {
+
+                MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter)
+                {
+
+                    var firstKey = _pressedKeys[0];
+                    Settings.ClientConfig.ControlKey = firstKey.ToString();
+                    UiInput.ControlKey = firstKey;
+                    ControlRequest = ControlQuery.None;
+                    Settings.VersionControl.UpdateClientCfgFile();
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Control Key", 10000);
+                }
+            }
+            else if (ControlRequest == ControlQuery.Mouse)
+            {
 
                 MyAPIGateway.Input.GetListOfPressedMouseButtons(_pressedButtons);
-                if (_pressedButtons.Count > 0) {
+                if (_pressedButtons.Count > 0)
+                {
 
                     var firstButton = _pressedButtons[0];
                     var invalidButtons = firstButton == MyMouseButtonsEnum.Left || firstButton == MyMouseButtonsEnum.Right || firstButton == MyMouseButtonsEnum.None;
@@ -398,7 +419,7 @@ namespace CoreSystems
                         Settings.ClientConfig.MenuButton = firstButton.ToString();
                         UiInput.MouseButtonMenu = firstButton;
                         Settings.VersionControl.UpdateClientCfgFile();
-                        MyAPIGateway.Utilities.ShowNotification($"{firstButton.ToString()}MouseButton will now open and close the CoreSystems Menu", 10000);
+                        MyAPIGateway.Utilities.ShowNotification($"{firstButton.ToString()}MouseButton will now open and close the WeaponCore Menu", 10000);
                     }
                     else MyAPIGateway.Utilities.ShowNotification($"{firstButton.ToString()}Button is an invalid mouse button for this function", 10000);
                     ControlRequest = ControlQuery.None;
@@ -420,16 +441,22 @@ namespace CoreSystems
                     case "/wc remap keyboard":
                         ControlRequest = ControlQuery.Keyboard;
                         somethingUpdated = true;
-                        MyAPIGateway.Utilities.ShowNotification("Press the key you want to use for the CoreSystems Action key", 10000);
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Control key", 10000);
                         break;
                     case "/wc remap mouse":
                         ControlRequest = ControlQuery.Mouse;
                         somethingUpdated = true;
-                        MyAPIGateway.Utilities.ShowNotification("Press the mouse button you want to use to open and close the CoreSystems Menu", 10000);
+                        MyAPIGateway.Utilities.ShowNotification($"Press the mouse button you want to use to open and close the WeaponCore Menu", 10000);
+                        break;
+                    case "/wc remap action":
+                        ControlRequest = ControlQuery.Keyboard;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
                         break;
                 }
 
-                if (ControlRequest == ControlQuery.None) {
+                if (ControlRequest == ControlQuery.None)
+                {
 
                     string[] tokens = message.Split(' ');
 
@@ -439,20 +466,20 @@ namespace CoreSystems
                         switch (tokens[1])
                         {
                             case "drawlimit":
-                            {
-                                int maxDrawCount;
-                                if (tokenLength > 2 && int.TryParse(tokens[2], out maxDrawCount))
                                 {
-                                    Settings.ClientConfig.MaxProjectiles = maxDrawCount;
-                                    var enabled = maxDrawCount != 0;
-                                    Settings.ClientConfig.ClientOptimizations = enabled;
-                                    somethingUpdated = true;
-                                    MyAPIGateway.Utilities.ShowNotification($"The maximum onscreen projectiles is now set to {maxDrawCount} and is Enabled:{enabled}", 10000);
-                                    Settings.VersionControl.UpdateClientCfgFile();
-                                }
+                                    int maxDrawCount;
+                                    if (tokenLength > 2 && int.TryParse(tokens[2], out maxDrawCount))
+                                    {
+                                        Settings.ClientConfig.MaxProjectiles = maxDrawCount;
+                                        var enabled = maxDrawCount != 0;
+                                        Settings.ClientConfig.ClientOptimizations = enabled;
+                                        somethingUpdated = true;
+                                        MyAPIGateway.Utilities.ShowNotification($"The maximum onscreen projectiles is now set to {maxDrawCount} and is Enabled:{enabled}", 10000);
+                                        Settings.VersionControl.UpdateClientCfgFile();
+                                    }
 
-                                break;
-                            }
+                                    break;
+                                }
                             case "shipsizes":
                                 Settings.ClientConfig.ShowHudTargetSizes = !Settings.ClientConfig.ShowHudTargetSizes;
                                 somethingUpdated = true;
@@ -460,17 +487,48 @@ namespace CoreSystems
                                 Settings.VersionControl.UpdateClientCfgFile();
                                 FovChanged();
                                 break;
+                            case "changehud":
+                                CanChangeHud = !CanChangeHud;
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Modify Hud set to: {CanChangeHud}", 10000);
+                                break;
+                            case "setdefaults":
+                                Settings.ClientConfig = new CoreSettings.ClientSettings();
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Client configuration has been set to defaults", 10000);
+                                Settings.VersionControl.UpdateClientCfgFile();
+                                break;
                         }
                     }
                 }
 
                 if (!somethingUpdated)
-                    MyAPIGateway.Utilities.ShowNotification("Valid CoreSystems Commands:\n '/wc remap keyboard'  -- Remaps action key (default R)\n '/wc remap mouse'  -- Remaps menu mouse key (default middle button)\n '/wc shipsizes'  -- Toggles the displaying of ship size icons\n '/wc drawlimit 1000'  -- Limits total number of projectiles on screen (default unlimited)\n", 10000);
+                {
+                    if (message.Length <= 3)
+                        MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n'/wc remap -- Remap keys'\n'/wc drawlimit 1000' -- Limits total number of projectiles on screen (default unlimited)\n'/wc changehud' to enable moving/resizing of WC Hud\n'/wc setdefaults' -- Resets shield client configs to default values\n", 10000);
+                    else if (message.StartsWith("/wc remap"))
+                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (numpad0)\n", 10000, "White");
+                }
                 sendToOthers = false;
             }
         }
 
+        private void ParticleJokes()
+        {
+            var chance = MyUtils.GetRandomInt(0, 4);
+            if (chance == 2)
+            {
+                var messageIndex = MyUtils.GetRandomInt(0, JokeMessages.Length);
+                MyAPIGateway.Utilities.ShowNotification(JokeMessages[messageIndex], 10000, "Red");
+            }
+        }
 
+        internal readonly string[] JokeMessages =
+        {
+            "FakeStar in the house, there can be only one!",
+            "Fake DarkStar is here, he loves to answer your shield questions!",
+            "FakeStar has now joined to solve all of your shield problems"
+        };
         internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
         {
             foreach (var cube in grid.GetFatBlocks())

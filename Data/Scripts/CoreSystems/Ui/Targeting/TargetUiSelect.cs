@@ -5,7 +5,7 @@ using VRage.Game.Entity;
 using VRage.Input;
 using VRageMath;
 
-namespace CoreSystems
+namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 {
     internal partial class TargetUi
     {
@@ -51,19 +51,23 @@ namespace CoreSystems
             var cockPit = s.ActiveCockPit;
             Vector3D end;
 
-            if (!s.UiInput.FirstPersonView) {
+            if (!s.UiInput.FirstPersonView)
+            {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
                 end = offetPosition + (AimDirection * ai.MaxTargetingRange);
             }
-            else {
-                if (!_session.UiInput.AltPressed) {
+            else
+            {
+                if (!_session.UiInput.AltPressed)
+                {
                     AimDirection = cockPit.PositionComp.WorldMatrixRef.Forward;
                     AimPosition = cockPit.PositionComp.WorldAABB.Center;
                     end = AimPosition + (AimDirection * s.TrackingAi.MaxTargetingRange);
                 }
-                else {
+                else
+                {
                     var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                     AimPosition = offetPosition;
                     AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
@@ -78,14 +82,16 @@ namespace CoreSystems
             MyEntity closestEnt = null;
             _session.Physics.CastRay(AimPosition, end, _hitInfo);
 
-            for (int i = 0; i < _hitInfo.Count; i++) {
+            for (int i = 0; i < _hitInfo.Count; i++)
+            {
 
                 var hit = _hitInfo[i];
                 closestEnt = hit.HitEntity.GetTopMostParent() as MyEntity;
 
                 var hitGrid = closestEnt as MyCubeGrid;
 
-                if (ai.IsGrid && hitGrid != null && hitGrid.IsSameConstructAs(ai.GridEntity)) {
+                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.GridEntity))
+                {
                     rayHitSelf = true;
                     rayOnlyHitSelf = true;
                     continue;
@@ -93,7 +99,8 @@ namespace CoreSystems
 
                 if (rayOnlyHitSelf) rayOnlyHitSelf = false;
 
-                if (manualSelect) {
+                if (manualSelect)
+                {
                     if (hitGrid == null || !_masterTargets.ContainsKey(hitGrid))
                         continue;
 
@@ -106,7 +113,8 @@ namespace CoreSystems
                 break;
             }
 
-            if (rayHitSelf) {
+            if (rayHitSelf)
+            {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
                 if (rayOnlyHitSelf) ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
@@ -115,20 +123,23 @@ namespace CoreSystems
 
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
+            if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect))
+            {
                 foundTarget = true;
-                if (manualSelect) {
+                if (manualSelect)
+                {
                     s.SetTarget(closestEnt, ai, _masterTargets);
                     return true;
                 }
                 ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hitPos, ai, closestEnt);
             }
 
-            if (!manualSelect) {
+            if (!manualSelect)
+            {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
-               
-                if (!foundTarget) 
+
+                if (!foundTarget)
                     ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
             }
 
@@ -144,7 +155,7 @@ namespace CoreSystems
             if (!_cachedTargetPos) InitTargetOffset();
             var updateTick = s.Tick - _cacheIdleTicks > 300 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
 
-            if (updateTick && !UpdateCache(s.Tick) || s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
+            if (updateTick && !UpdateCache(s.Tick) || s.UiInput.ShiftPressed || s.UiInput.ControlKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
 
             var canMoveForward = _currentIdx + 1 <= _endIdx;
             var canMoveBackward = _currentIdx - 1 >= 0;
@@ -162,7 +173,7 @@ namespace CoreSystems
             {
                 _endIdx = -1;
                 return;
-            } 
+            }
 
             s.SetTarget(ent, ai, _masterTargets);
         }
@@ -184,10 +195,12 @@ namespace CoreSystems
         internal void BuildMasterCollections(Ai ai)
         {
             _masterTargets.Clear();
-            for (int i = 0; i < ai.Construct.RefreshedAis.Count; i++)  {
+            for (int i = 0; i < ai.Construct.RefreshedAis.Count; i++)
+            {
 
                 var subTargets = ai.Construct.RefreshedAis[i].SortedTargets;
-                for (int j = 0; j < subTargets.Count; j++) {
+                for (int j = 0; j < subTargets.Count; j++)
+                {
                     var tInfo = subTargets[j];
                     if (tInfo.Target.MarkedForClose) continue;
                     _masterTargets[tInfo.Target] = tInfo.OffenseRating;

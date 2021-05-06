@@ -827,6 +827,7 @@ namespace CoreSystems
             None,
             Keyboard,
             Mouse,
+            Action,
         }
 
         internal struct BlockDamage

@@ -67,7 +67,21 @@ namespace CoreSystems
             if (sync.Revision > Revision)
             {
                 Revision = sync.Revision;
-                CurrentAmmo = sync.CurrentAmmo;
+
+                if (CurrentAmmo != sync.CurrentAmmo)
+                {
+
+                    var ammoSpent = w.ClientLastShotId == w.Reload.StartId && CurrentAmmo == 0;
+                    var notShotBlocked = !w.PreFired && !w.Loading && !w.FinishBurst && !w.IsShooting;
+                    if (!notShotBlocked && !ammoSpent)
+                    {
+
+                        //Log.Line($"Syncing AmmoValues: - currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - LastShootTick:{w.System.Session.Tick - w.LastShootTick} - IsShooting:{w.IsShooting} - finish:{w.FinishBurst} - start:{w.ClientStartId}({w.Reload.StartId})[{w.ClientLastShotId}] - end:{w.ClientEndId}({w.Reload.EndId})");
+                        CurrentAmmo = sync.CurrentAmmo;
+                    }
+                    //else Log.Line($"spent:{ammoSpent} - notBlocked:{notShotBlocked} - syncAmmo:{sync.CurrentAmmo} - endIdMatch:{w.Reload.EndId == w.ClientEndId}() - startIdMatch:{w.Reload.StartId == w.ClientStartId}");
+                }
+
                 CurrentCharge = sync.CurrentCharge;
 
                 if (sync.CurrentMags <= 0 && CurrentMags != sync.CurrentMags)

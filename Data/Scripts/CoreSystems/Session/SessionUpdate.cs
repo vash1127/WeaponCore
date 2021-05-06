@@ -205,18 +205,8 @@ namespace CoreSystems
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
 
-                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.PartState.Action != TriggerOff) {
-
-                            if (IsServer) {
-                                w.PartState.WeaponMode(comp, TriggerOff);
-                                w.ProtoWeaponAmmo.CurrentAmmo = 0;
-                            }
-
-                            w.FinishBurst = false;
-
-                            if (w.IsShooting)
-                                w.StopShooting();
-                        }
+                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.PartState.Action != TriggerOff) 
+                            w.LostPowerIsThisEverUsed();
 
                         ///
                         ///Check Reload

@@ -383,6 +383,14 @@ namespace CoreSystems.Support
             return Math.Acos(MathHelperD.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
         }
 
+        internal static long UniqueId(int left, int right)
+        {
+            long uniqueId = left;
+            uniqueId <<= 32;
+            uniqueId += right;
+            return uniqueId;
+        }
+
         internal static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD matrix, out double yaw, out double pitch)
         {
             var localTargetVector = Vector3D.TransformNormal(targetVector, MatrixD.Transpose(matrix));

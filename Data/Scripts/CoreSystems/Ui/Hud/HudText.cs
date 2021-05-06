@@ -3,7 +3,7 @@ using VRage.Game;
 using VRage.Utils;
 using VRageMath;
 
-namespace CoreSystems
+namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
     partial class Hud
     {
@@ -13,14 +13,15 @@ namespace CoreSystems
 
             if (NeedsUpdate)
                 UpdateHudSettings();
-            
+
             AddAgingText();
             AgingTextDraw();
         }
 
         private void AddAgingText()
         {
-            foreach (var aging in _agingTextRequests) {
+            foreach (var aging in _agingTextRequests)
+            {
 
                 var textAdd = aging.Value;
 
@@ -30,14 +31,15 @@ namespace CoreSystems
                 var scaleShadow = textAdd.Font == FontType.Shadow;
                 var remap = scaleShadow ? _shadowCharWidthMap : _monoCharWidthMap;
                 float messageLength = 0;
-                for (int j = 0; j < textAdd.Text.Length; j++) {
+                for (int j = 0; j < textAdd.Text.Length; j++)
+                {
 
                     var c = textAdd.Text[j];
 
-                    float reSize;
-                    var tooWide = remap.TryGetValue(c, out reSize);
-  
-                    var scaledWidth = textAdd.FontSize * (tooWide ? reSize : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
+                    float size;
+                    var needResize = remap.TryGetValue(c, out size);
+
+                    var scaledWidth = textAdd.FontSize * (needResize ? size : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
                     messageLength += scaledWidth;
 
                     var cm = CharacterMap[textAdd.Font][c];
@@ -49,7 +51,7 @@ namespace CoreSystems
                     td.P2 = cm.P2;
                     td.P3 = cm.P3;
                     td.UvDraw = true;
-                    td.TooWide = tooWide;
+                    td.ReSize = needResize;
                     td.ScaledWidth = scaledWidth;
                     textAdd.Data.Add(td);
                 }
@@ -63,7 +65,8 @@ namespace CoreSystems
             var up = (Vector3)_cameraWorldMatrix.Up;
             var left = (Vector3)_cameraWorldMatrix.Left;
 
-            foreach (var textAdd in _agingTextRequests.Values) {
+            foreach (var textAdd in _agingTextRequests.Values)
+            {
 
                 textAdd.Position.Z = _viewPortSize.Z;
                 var requestPos = textAdd.Position;
@@ -88,24 +91,29 @@ namespace CoreSystems
                 }
 
                 var height = textAdd.FontSize * textAdd.HeightScale;
-                var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
+                //var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
                 var remove = textAdd.Ttl-- < 0;
 
-                for (int i = 0; i < textAdd.Data.Count; i++) { 
+                for (int i = 0; i < textAdd.Data.Count; i++)
+                {
 
                     var textData = textAdd.Data[i];
                     textData.WorldPos.Z = _viewPortSize.Z;
 
-                    if (textData.UvDraw) {
+                    if (textData.UvDraw)
+                    {
 
+                        var width = (textData.ScaledWidth * widthScaler) * _session.AspectRatioInv;
                         MyQuadD quad;
                         MyUtils.GetBillboardQuadOriented(out quad, ref textPos, width, height, ref left, ref up);
 
-                        if (textAdd.Color != Color.Transparent) {
+                        if (textAdd.Color != Color.Transparent)
+                        {
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P1, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P2, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                         }
-                        else {
+                        else
+                        {
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P1, textData.P3, textData.Material, 0, textPos, textData.Blend);
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P2, textData.P3, textData.Material, 0, textPos, textData.Blend);
                         }
@@ -113,7 +121,8 @@ namespace CoreSystems
 
                     textPos -= _cameraWorldMatrix.Left * textData.ScaledWidth;
 
-                    if (remove) {
+                    if (remove)
+                    {
                         textAdd.Data.Remove(textData);
                         _textDataPool.Return(textData);
                     }
@@ -121,9 +130,9 @@ namespace CoreSystems
 
                 textAdd.Data.ApplyRemovals();
                 AgingTextRequest request;
-                if (textAdd.Data.Count == 0 && _agingTextRequests.TryRemove(textAdd.Type, out request))
+                if (textAdd.Data.Count == 0 && _agingTextRequests.TryRemove(textAdd.ElementId, out request))
                 {
-                    _agingTextRequests.Remove(textAdd.Type);
+                    _agingTextRequests.Remove(textAdd.ElementId);
                     _agingTextRequestPool.Return(request);
                 }
 

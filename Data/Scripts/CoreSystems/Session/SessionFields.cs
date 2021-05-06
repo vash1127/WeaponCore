@@ -41,7 +41,7 @@ namespace CoreSystems
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 3;
-        internal const int ClientCfgVersion = 2;
+        internal const int ClientCfgVersion = 4;
         internal const string ServerCfgName = "CoreSystemsServer.cfg";
         internal const string ClientCfgName = "CoreSystemsClient.cfg";
         internal volatile bool Inited;
@@ -272,8 +272,8 @@ namespace CoreSystems
         internal StallReporter StallReporter;
         internal StallReporter InnerStallReporter;
         internal UiInput UiInput;
-        internal TargetUi TargetUi;
-        internal Hud HudUi;
+        internal WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi TargetUi;
+        internal WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud HudUi;
         internal CoreSettings Settings;
         internal TerminalMonitor TerminalMon;
         internal ProblemReport ProblemRep;
@@ -328,6 +328,7 @@ namespace CoreSystems
         internal float AspectRatioInv;
         internal float UiBkOpacity;
         internal float UiOpacity;
+        internal float UIHudOpacity;
         internal float CurrentFovWithZoom;
         internal bool PurgedAll;
         internal bool InMenu;
@@ -376,10 +377,16 @@ namespace CoreSystems
         internal bool QuickDisableGunsCheck;
         internal bool ColorArmorToggle;
         internal bool EwarNetDataDirty;
+        internal bool CanChangeHud;
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
             0, // Muzzled SteamId goes here
+        };
+        
+        internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
+        {
+            76561198025274552,
         };
 
         [Flags]
@@ -448,8 +455,8 @@ namespace CoreSystems
         public Session()
         {
             UiInput = new UiInput(this);
-            HudUi = new Hud(this);
-            TargetUi = new TargetUi(this);
+            HudUi = new WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud(this);
+            TargetUi = new WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
             StallReporter = new StallReporter();

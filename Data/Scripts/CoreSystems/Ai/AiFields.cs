@@ -14,6 +14,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting;
 
 namespace CoreSystems.Support
 {

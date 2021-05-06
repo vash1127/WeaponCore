@@ -2,7 +2,7 @@
 using VRage.Utils;
 using VRageMath;
 
-namespace CoreSystems
+namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
     partial class Hud
     {

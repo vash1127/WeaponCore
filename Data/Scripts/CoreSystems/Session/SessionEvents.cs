@@ -355,6 +355,8 @@ namespace CoreSystems
                     SendPlayerConnectionUpdate(id, true);
                     SendServerStartup(player.SteamUserId);
                 }
+                else if (MpActive && MultiplayerId != player.SteamUserId && JokePlayerList.Contains(player.SteamUserId))
+                    ParticleJokes();
             }
             return false;
         }
