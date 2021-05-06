@@ -243,9 +243,9 @@ namespace CoreSystems.Platform
 
                 Data.Repo.Values.State.TerminalActionSetter(this, cycleSomething ? TriggerActions.TriggerOff : action);
 
-                if (action == TriggerActions.TriggerClick && HasTurret)
+                if (action == TriggerActions.TriggerClick && HasTurret && !cycleShootClick)
                     Data.Repo.Values.State.Control = ProtoWeaponState.ControlMode.Ui;
-                else if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOnce || action == TriggerActions.TriggerOn)
+                else if (action == TriggerActions.TriggerClick && !cycleShootClick || action == TriggerActions.TriggerOnce || action == TriggerActions.TriggerOn)
                     Data.Repo.Values.State.Control = ProtoWeaponState.ControlMode.Toolbar;
                 else
                     Data.Repo.Values.State.Control = ProtoWeaponState.ControlMode.None;
@@ -442,11 +442,6 @@ namespace CoreSystems.Platform
                     if (settings != null) settings["ControlModes"] = (int)o.Control;
                     comp.Data.Repo.Values.State.TerminalActionSetter(comp, TriggerActions.TriggerOff);
                 }
-                else
-                {
-                    comp.Data.Repo.Values.State.PlayerId = -1;
-                    comp.Data.Repo.Values.State.Control = ProtoWeaponState.ControlMode.None;
-                }
 
                 if (resetTarget)
                     ClearTargets(comp);
@@ -577,7 +572,6 @@ namespace CoreSystems.Platform
                     w.StopShootingAv(false);
                 }
             }
-
 
             internal bool ShootOnceCheck(int weaponToCheck = -1)
             {

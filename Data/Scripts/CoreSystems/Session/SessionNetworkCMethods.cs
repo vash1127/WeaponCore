@@ -313,6 +313,7 @@ namespace CoreSystems
             Ai ai;
             if (myGrid != null && GridAIs.TryGetValue(myGrid, out ai))
             {
+
                 long playerId;
                 if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                 {
@@ -334,7 +335,6 @@ namespace CoreSystems
 
             return true;
         }
-
         // no storge sync
 
         private bool ClientClientMouseEvent(PacketObj data)
@@ -349,7 +349,9 @@ namespace CoreSystems
             long playerId;
             if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
+
                 PlayerMouseStates[playerId] = mousePacket.Data;
+
                 data.Report.PacketValid = true;
             }
             else

@@ -116,6 +116,15 @@ namespace CoreSystems.Projectiles
                 ++p.Info.Age;
                 ++p.Info.Ai.MyProjectiles;
                 p.Info.Ai.ProjectileTicker = p.Info.System.Session.Tick;
+                if (p.Asleep)
+                {
+                    if (p.FieldTime > 300 && p.Info.Age % 100 != 0)
+                    {
+                        p.FieldTime--;
+                        continue;
+                    }
+                    p.Asleep = false;
+                }
 
                 switch (p.State) {
                     case ProjectileState.Destroy:
@@ -217,7 +226,8 @@ namespace CoreSystems.Projectiles
                             var sphere = new BoundingSphereD(p.Position, p.Info.AmmoDef.Const.AreaEffectSize);
                             BoundingBoxD result;
                             BoundingBoxD.CreateFromSphere(ref sphere, out result);
-                            Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, p.Velocity);
+                            var displacement = 0.1 * p.Velocity;
+                            Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, displacement);
                         }
                     }
                 }
@@ -268,7 +278,7 @@ namespace CoreSystems.Projectiles
 
                 var p = ActiveProjetiles[x];
                 
-                if ((int) p.State > 3)
+                if ((int) p.State > 3 || p.Asleep)
                     continue;
 
                 if (p.Info.AmmoDef.Const.IsBeamWeapon)
@@ -373,6 +383,10 @@ namespace CoreSystems.Projectiles
                 if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
                     ValidateHits.Add(p);
                 }
+                else if (p.MineSeeking && !p.MineTriggered && p.Info.Age - p.ChaseAge > 600)
+                {
+                    p.Asleep = true;
+                }
             }, stride);
             ValidateHits.ApplyAdditions();
         }
@@ -392,7 +406,7 @@ namespace CoreSystems.Projectiles
                         var vs = vp.AvShot;
 
                         vp.TracerLength = p.Info.TracerLength;
-                        vs.Init(vp, p.AccelInMetersPerSec * StepConst, p.MaxSpeed, ref p.AccelDir);
+                        vs.Init(vp, p.SmartsOn, p.AccelInMetersPerSec * StepConst, p.MaxSpeed, ref p.AccelDir);
 
                         if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
                             vs.ProEnded = true;

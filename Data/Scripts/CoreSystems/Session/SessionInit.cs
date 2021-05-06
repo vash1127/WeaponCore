@@ -82,6 +82,7 @@ namespace CoreSystems
             if (!CompsToStart.IsEmpty)
                 StartComps();
 
+            EarlyInitControls(this);
         }
 
         internal void GenerateButtonMap()

@@ -282,11 +282,9 @@ namespace CoreSystems
         internal static void RequestSetShoot(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
-            Log.Line($"1: {comp == null}");
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
             var value = newValue ? CoreComponent.TriggerActions.TriggerOn : CoreComponent.TriggerActions.TriggerOff;
-            Log.Line($"2: {value} - {newValue}");
 
             comp.RequestShootUpdate(value, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }

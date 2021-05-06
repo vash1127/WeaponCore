@@ -225,7 +225,7 @@ namespace CoreSystems
             var size5 = s.Settings.Enforcement.ShipSizes[5];
             var size6 = s.Settings.Enforcement.ShipSizes[6];
             
-            if (s.Tick - MasterUpdateTick > 600 || MasterUpdateTick < 600 && _masterTargets.Count == 0)
+            if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
             for (int i = 0; i < ai.Construct.Data.Repo.FocusData.Target.Length; i++)

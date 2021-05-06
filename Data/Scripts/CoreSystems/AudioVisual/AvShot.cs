@@ -55,6 +55,7 @@ namespace CoreSystems.Support
         internal bool FakeExplosion;
         internal bool MarkForClose;
         internal bool ProEnded;
+        internal bool SmartOn;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -157,11 +158,12 @@ namespace CoreSystems.Support
         }
 
         #region Run
-        internal void Init(ProInfo info, double firstStepSize, double maxSpeed, ref Vector3D originDir)
+        internal void Init(ProInfo info, bool smartsOn, double firstStepSize, double maxSpeed, ref Vector3D originDir)
         {
             System = info.System;
             AmmoDef = info.AmmoDef;
             IsShrapnel = info.IsShrapnel;
+            SmartOn = smartsOn;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
             Model = (info.AmmoDef.Const.PrimeModel || info.AmmoDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
@@ -246,7 +248,7 @@ namespace CoreSystems.Support
                 a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
 
                 a.VisualLength = d.VisualLength;
-                if (a.AmmoDef.Const.ConvergeBeams)
+                if (a.SmartOn || a.AmmoDef.Const.IsBeamWeapon && a.AmmoDef.Const.ConvergeBeams)
                     a.VisualDir = d.Direction;
                 else if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;
@@ -281,7 +283,7 @@ namespace CoreSystems.Support
                     double? dist;
                     s.CameraFrustrum.Intersects(ref rayTracer, out dist);
 
-                    if (dist != null && dist <= a.VisualLength)
+                    if (a.AmmoDef.Const.AlwaysDraw || dist != null && dist <= a.VisualLength)
                         a.OnScreen = Screen.Tracer;
                     else if (a.AmmoDef.Const.Trail)
                     {
@@ -444,8 +446,6 @@ namespace CoreSystems.Support
             }
             else
             {
-                //frontPos = Back && !onlyStep ? TracerBack : TracerFront;
-                //backPos = Back && !extStart ? TracerBack : TracerFront;
                 var futureStep = (VisualDir * ShortStepSize);
                 var pastStep = (-VisualDir * ShortStepSize);
                 if (!Back) futureStep -= velStep;
@@ -996,16 +996,24 @@ namespace CoreSystems.Support
             }
         }
         internal void AvClose()
-        { 
+        {
+            if (MarkForClose)
+                return;
+
             if (Vector3D.IsZero(TracerFront)) TracerFront = EndState.EndPos;
 
             if (AmmoDef.Const.AmmoParticle)
-                DisposeAmmoEffect(true, false);
+            {
+                var forceClose = !(AmmoEffect != null && AmmoEffect.Loop && !AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Restart);
+                DisposeAmmoEffect(forceClose, false);
+            }
 
-            if (EndState.DetonateFakeExp){
+            if (EndState.DetonateFakeExp)
+            {
 
                 HitParticle = ParticleState.Dirty;
-                if (OnScreen != Screen.None && (!string.IsNullOrEmpty(AmmoDef.AreaEffect.Explosions.CustomParticle) || System.Session.Av.ExplosionReady)) {
+                if (OnScreen != Screen.None && (!string.IsNullOrEmpty(AmmoDef.AreaEffect.Explosions.CustomParticle) || System.Session.Av.ExplosionReady))
+                {
                     SUtils.CreateFakeExplosion(System.Session, AmmoDef.Const.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef, Hit.HitVelocity);
                 }
             }

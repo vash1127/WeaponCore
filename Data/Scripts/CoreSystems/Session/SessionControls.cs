@@ -21,10 +21,66 @@ namespace CoreSystems
 
         }
 
+        public static void EarlyInitControls(Session session)
+        {
+            Type controlObject;
+            while (session.ControlQueue.TryDequeue(out controlObject))
+            {
+                if (controlObject == typeof(IMyConveyorSorter))
+                {
+                    CreateTerminalUi<IMyConveyorSorter>(session);
+                }
+                else if (controlObject == typeof(IMyLargeTurretBase))
+                {
+                    CreateTerminalUi<IMyLargeTurretBase>(session);
+                }
+                else if (controlObject == typeof(IMySmallMissileLauncherReload))
+                {
+                    CreateTerminalUi<IMySmallMissileLauncherReload>(session);
+                }
+                else if (controlObject == typeof(IMySmallMissileLauncher))
+                {
+                    CreateTerminalUi<IMySmallMissileLauncher>(session);
+                }
+                else if (controlObject == typeof(IMySmallGatlingGun))
+                {
+                    CreateTerminalUi<IMySmallGatlingGun>(session);
+                }
+            }
+            session.ControlQueue.Clear();
+            session.EarlyInitOver = true;
+        }
+
+        public static bool ControlsAlreadyExist<T>(Session session)
+        {
+            if (typeof(T) == typeof(IMyConveyorSorter) && session.ControlTypeActivated.Contains(typeof(IMyConveyorSorter)))
+                return true;
+
+            if (typeof(T) == typeof(IMyLargeTurretBase) && session.ControlTypeActivated.Contains(typeof(IMyLargeTurretBase)))
+                return true;
+
+            if (typeof(T) == typeof(IMySmallMissileLauncherReload) && session.ControlTypeActivated.Contains(typeof(IMySmallMissileLauncherReload)))
+                return true;
+
+            if (typeof(T) == typeof(IMySmallMissileLauncher) && session.ControlTypeActivated.Contains(typeof(IMySmallMissileLauncher)))
+                return true;
+
+            if (typeof(T) == typeof(IMySmallGatlingGun) && session.ControlTypeActivated.Contains(typeof(IMySmallGatlingGun)))
+                return true;
+
+            session.ControlTypeActivated.Add(typeof(T));
+            return false;
+        }
+
         public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {
             try
             {
+                if (ControlsAlreadyExist<T>(session))
+                {
+                    return;
+                }
+
                 AlterActions<T>(session);
                 AlterControls<T>(session);
 

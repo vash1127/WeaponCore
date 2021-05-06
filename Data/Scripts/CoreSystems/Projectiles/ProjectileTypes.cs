@@ -415,6 +415,7 @@ namespace CoreSystems.Support
                 frag.Velocity = p.Velocity;
                 frag.DeadSphere = p.DeadSphere;
                 frag.LockOnFireState = p.Info.LockOnFireState;
+                frag.IgnoreShield = p.Info.ShieldBypassed && p.Info.AmmoDef.Const.ShieldDamageBypassMod > 0;
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Fragment.Degrees, 0, 360));
                 posValue *= 0.5f;
@@ -480,6 +481,7 @@ namespace CoreSystems.Support
                 p.Info.LockOnFireState = frag.LockOnFireState;
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
+                p.Info.ShieldBypassed = frag.IgnoreShield;
 
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
@@ -519,6 +521,7 @@ namespace CoreSystems.Support
         public bool ClientSent;
         public bool IsFiringPlayer;
         public bool LockOnFireState;
+        public bool IgnoreShield;
     }
 
     public class VoxelCache

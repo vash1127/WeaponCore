@@ -27,7 +27,7 @@ namespace CoreSystems.Support
         internal Session Session;
 
         internal int ExplosionCounter;
-        internal int MaxExplosions = 20;
+        internal int MaxExplosions = 100;
 
         internal bool ExplosionReady
         {
@@ -221,11 +221,15 @@ namespace CoreSystems.Support
                                     Vector4 dyncColor;
                                     if (!gap) {
                                         rawLen = first ? av.SegmentLenTranserved : seg.SegmentLength;
+                                        if (rawLen <= 0)
+                                            break;
                                         width = av.SegmentWidth;
                                         dyncColor = segColor;
                                     }
                                     else {
                                         rawLen = first ? av.SegmentLenTranserved : seg.SegmentGap;
+                                        if (rawLen <= 0)
+                                            break;
                                         width = av.TracerWidth;
                                         dyncColor = color;
                                     }

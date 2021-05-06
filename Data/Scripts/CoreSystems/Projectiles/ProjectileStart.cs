@@ -27,7 +27,7 @@ namespace CoreSystems.Projectiles
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
-                p.Info.ClientSent = t == Kind.Client;
+                p.Info.ClientSent = t == Kind.Client || firingPlayer && w.System.Session.IsServer; 
                 p.Info.AmmoDef = a;
                 p.Info.Overrides = w.Comp.Data.Repo.Values.Set.Overrides;
                 p.Info.Target.TargetEntity = t != Kind.Client ? w.Target.TargetEntity : gen.TargetEnt;

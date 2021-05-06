@@ -47,22 +47,27 @@ namespace CoreSystems
                         if (!SorterControls && entity is MyConveyorSorter) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
                             SorterControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyConveyorSorter));
                         }
                         else if (!TurretControls && turret != null) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
                             TurretControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyLargeTurretBase));
                         }
                         else if (!FixedMissileReloadControls && controllableGun is IMySmallMissileLauncherReload) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncherReload>(this));
                             FixedMissileReloadControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallMissileLauncherReload));
                         }
                         else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
                             FixedMissileControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallMissileLauncher));
                         }
                         else if (!FixedGunControls && controllableGun is IMySmallGatlingGun) {
                             MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
                             FixedGunControls = true;
+                            if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallGatlingGun));
                         }
                         else if (decoy != null)
                         {
@@ -70,6 +75,7 @@ namespace CoreSystems
                             {
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateDecoyTerminalUi<IMyDecoy>(this));
                                 DecoyControls = true;
+                                if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyDecoy));
                             }
 
                             cube.AddedToScene += DecoyAddedToScene;

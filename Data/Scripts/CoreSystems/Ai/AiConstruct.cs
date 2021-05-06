@@ -371,6 +371,7 @@ namespace CoreSystems.Support
         public readonly long[] OldTarget = new long[2];
         public readonly LockModes[] OldLocked = new LockModes[2];
 
+        public uint LastUpdateTick;
         public int OldActiveId;
         public bool OldHasFocus;
         public float OldDistToNearestFocusSqr;
@@ -378,7 +379,8 @@ namespace CoreSystems.Support
         public bool ChangeDetected(Ai ai)
         {
             var fd = ai.Construct.Data.Repo.FocusData;
-            if (fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.Locked[0] != OldLocked[0] || fd.Locked[1] != OldLocked[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0)  {
+            var forceUpdate = LastUpdateTick == 0 || ai.Session.Tick - LastUpdateTick > 600;
+            if (forceUpdate || fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.Locked[0] != OldLocked[0] || fd.Locked[1] != OldLocked[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0) {
 
                 OldTarget[0] = fd.Target[0];
                 OldTarget[1] = fd.Target[1];
@@ -387,7 +389,7 @@ namespace CoreSystems.Support
                 OldActiveId = fd.ActiveId;
                 OldHasFocus = fd.HasFocus;
                 OldDistToNearestFocusSqr = fd.DistToNearestFocusSqr;
-
+                LastUpdateTick = ai.Session.Tick;
                 return true;
             }
 

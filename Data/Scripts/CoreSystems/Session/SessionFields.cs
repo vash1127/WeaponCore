@@ -55,6 +55,7 @@ namespace CoreSystems
         internal volatile bool BaseControlsActions;
         internal volatile uint LastDeform;
         internal volatile bool DecoyControls;
+        internal volatile bool EarlyInitOver;
 
         internal uint Tick;
 
@@ -85,6 +86,7 @@ namespace CoreSystems
         internal readonly MyConcurrentPool<UpgradeStatePacket> PacketUpgradeStatePool = new MyConcurrentPool<UpgradeStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<SupportStatePacket> PacketSupportStatePool = new MyConcurrentPool<SupportStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<PhantomStatePacket> PacketPhantomStatePool = new MyConcurrentPool<PhantomStatePacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<EwarValues> EwarDataPool = new MyConcurrentPool<EwarValues>(64);
 
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
@@ -108,6 +110,7 @@ namespace CoreSystems
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
+        internal readonly ConcurrentQueue<Type> ControlQueue = new ConcurrentQueue<Type>();
 
         internal readonly ConcurrentDictionary<MyEntity, Ai> GridToMasterAi = new ConcurrentDictionary<MyEntity, Ai>();
         internal readonly ConcurrentDictionary<MyEntity, Ai> GridAIs = new ConcurrentDictionary<MyEntity, Ai>();
@@ -168,6 +171,7 @@ namespace CoreSystems
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Part> WeaponLosDebugActive = new HashSet<Part>();
         internal readonly HashSet<SupportSys> DisplayAffectedArmor = new HashSet<SupportSys>();
+        internal readonly HashSet<Type> ControlTypeActivated = new HashSet<Type>();
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<CoreComponent> CompsDelayed = new List<CoreComponent>();
@@ -305,6 +309,7 @@ namespace CoreSystems
         internal int Count = -1;
         internal int LCount;
         internal int SCount;
+        internal int QCount;
         internal int LogLevel;
         internal int AwakeCount = -1;
         internal int AsleepCount = -1;

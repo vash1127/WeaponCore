@@ -40,6 +40,7 @@ namespace CoreSystems
             }
             
             if (++SCount == 60) SCount = 0;
+            if (++QCount == 15) QCount = 0;
 
             if (++AwakeCount == AwakeBuckets) AwakeCount = 0;
             if (++AsleepCount == AsleepBuckets) AsleepCount = 0;
@@ -95,10 +96,15 @@ namespace CoreSystems
                     foreach (var t in AllDefinitions)
                     {
                         var name = t.Id.SubtypeName;
-                        if (name.Contains("BlockArmor"))
+                        if (name.Contains("Armor"))
                         {
-                            AllArmorBaseDefinitions.Add(t);
-                            if (name.Contains("HeavyBlockArmor")) HeavyArmorBaseDefinitions.Add(t);
+                            var normalArmor = name.Contains("ArmorBlock") || name.Contains("HeavyArmor") || name.StartsWith("LargeRoundArmor") || name.Contains("BlockArmor");
+                            var blast = !normalArmor && (name == "ArmorCenter" || name == "ArmorCorner" || name == "ArmorInvCorner" || name == "ArmorSide" || name.StartsWith("SmallArmor"));
+                            if (normalArmor || blast)
+                            {
+                                AllArmorBaseDefinitions.Add(t);
+                                if (blast || name.Contains("Heavy")) HeavyArmorBaseDefinitions.Add(t);
+                            }
                         }
                     }
                 }
@@ -203,7 +209,7 @@ namespace CoreSystems
 
         internal int ShortLoadAssigner()
         {
-            if (_shortLoadCounter + 1 > 59) _shortLoadCounter = 0;
+            if (_shortLoadCounter + 1 > 14) _shortLoadCounter = 0;
             else ++_shortLoadCounter;
 
             return _shortLoadCounter;

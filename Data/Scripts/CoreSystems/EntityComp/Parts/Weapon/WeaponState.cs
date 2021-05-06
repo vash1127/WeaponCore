@@ -113,20 +113,18 @@ namespace CoreSystems.Platform
             FireCounter = 0;
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
-            
+            FinishBurst = false;
             if (System.Session.IsServer)
                 ShootOnce = false;
 
-            PreFired = false;
+            if (PreFired)
+                UnSetPreFire();
+
             if (IsShooting && !System.DesignatorWeapon)
             {
                 EventTriggerStateChanged(EventTriggers.Firing, false);
                 EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                 Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
-
-                //if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && ExitCharger)
-                    //StopPowerDraw();
-
             }
 
             if (System.Session.HandlesInput)

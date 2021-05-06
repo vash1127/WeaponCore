@@ -198,6 +198,10 @@ namespace CoreSystems.Support
             TopEntity.Flags |= (EntityFlags)(1 << 31);
             Closed = false;
             MarkedForClose = false;
+            
+            MaxTargetingRange = session.Settings.Enforcement.MinHudFocusDistance;
+            MaxTargetingRangeSqr = MaxTargetingRange * MaxTargetingRange;
+
             Session = session;
 
             if (CreatedTick == 0) 

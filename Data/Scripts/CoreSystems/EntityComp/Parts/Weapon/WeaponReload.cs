@@ -183,10 +183,14 @@ namespace CoreSystems.Platform
             ClientMakeUpShots += ProtoWeaponAmmo.CurrentAmmo;
             ProtoWeaponAmmo.CurrentAmmo = 0;
 
-            if (NoMagsToLoad) {
-                EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
-                NoMagsToLoad = false;
+            if (!Comp.Session.IsCreative) {
+
+                if (NoMagsToLoad) {
+                    EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
+                    NoMagsToLoad = false;
+                }
             }
+
 
             ClientReloading = true;
             Loading = true;
@@ -336,6 +340,7 @@ namespace CoreSystems.Platform
                     if (System.Session.IsServer) {
 
                         ++Reload.EndId;
+                        ClientEndId = Reload.EndId;
                         ShootOnce = false;
                         if (System.Session.MpActive)
                             System.Session.SendWeaponReload(this);
@@ -343,9 +348,9 @@ namespace CoreSystems.Platform
                     else {
                         ClientReloading = false;
                         ClientMakeUpShots = 0;
+                        ClientEndId = Reload.EndId;
                     }
                 }
-                ++ClientEndId;
                 Loading = false;
             }
         }

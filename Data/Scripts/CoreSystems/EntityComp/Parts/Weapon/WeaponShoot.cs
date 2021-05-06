@@ -309,12 +309,14 @@ namespace CoreSystems.Platform
 
         private void BurstMode()
         {
-            if (ShotsFired == System.ShotsPerBurst) {
+            if (ShotsFired == System.ShotsPerBurst)
+            {
 
                 uint delay = 0;
                 FinishBurst = false;
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
+                if (System.PartAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
+                {
 
                     System.Session.FutureEvents.Schedule(o => {
                         EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -326,7 +328,8 @@ namespace CoreSystems.Platform
                 else
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
 
-                if (IsShooting) {
+                if (IsShooting)
+                {
                     ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
                     StopShooting();
                 }

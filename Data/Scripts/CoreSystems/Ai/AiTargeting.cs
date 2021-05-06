@@ -162,7 +162,7 @@ namespace CoreSystems.Support
                     
                     if (!s.TrackGrids || !overRides.Grids || !focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
-                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, ref waterSphere, null, !focusTarget)) continue;
+                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, ref waterSphere, null, !focusTarget, overRides)) continue;
                     acquired = true;
                     break;
                 }
@@ -356,18 +356,18 @@ namespace CoreSystems.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}", null, true); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(WeaponSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
+        private static bool AcquireBlock(WeaponSystem system, Ai ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true, ProtoWeaponOverrides overRides = null)
         {
             if (system.TargetSubSystems)
             {
                 var subSystems = system.Values.Targeting.SubSystems;
                 var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 var targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                var focusSubSystem = w != null && w.Comp.Data.Repo.Values.Set.Overrides.FocusSubSystem;
-                
+                var focusSubSystem = w != null && w.Comp.Data.Repo.Values.Set.Overrides.FocusSubSystem || overRides != null && overRides.FocusSubSystem;
+                var subSystem = w?.Comp.Data.Repo.Values.Set.Overrides.SubSystem ?? (overRides?.SubSystem ?? Any);
                 foreach (var blockType in subSystems)
                 {
-                    var bt = focusSubSystem ? w.Comp.Data.Repo.Values.Set.Overrides.SubSystem : blockType;
+                    var bt = focusSubSystem ? subSystem : blockType;
 
                     ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     system.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
@@ -389,7 +389,7 @@ namespace CoreSystems.Support
                     if (focusSubSystem) break;
                 }
 
-                if (system.OnlySubSystems || focusSubSystem && w.Comp.Data.Repo.Values.Set.Overrides.SubSystem != Any) return false;
+                if (system.OnlySubSystems || focusSubSystem && subSystem != Any) return false;
             }
             GridMap gridMap;
             return system.Session.GridToInfoMap.TryGetValue((MyCubeGrid)info.Target, out gridMap) && gridMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, gridMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);

@@ -200,9 +200,18 @@ namespace CoreSystems.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && ProtoWeaponAmmo.CurrentAmmo == 0 && !(Loading && System.ReloadTime == 0);
-                var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
+                var reloading = ActiveAmmoDef.AmmoDef.Const.Reloadable && ClientMakeUpShots == 0 && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
+                var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon && (!LastEventCanDelay || AnimationDelayTick <= System.Session.Tick || ClientMakeUpShots > 0);
+                var validShootStates = PartState.Action == CoreComponent.TriggerActions.TriggerOn || AiShooting && PartState.Action == CoreComponent.TriggerActions.TriggerOff;
+                var delayedFire = System.DelayCeaseFire && !Target.IsAligned && System.Session.Tick - CeaseFireDelayTick <= System.CeaseFireDelay;
+                var shoot = (validShootStates || FinishBurst || delayedFire);
+                var shotReady = canShoot && (shoot || LockOnFireState);
+
+                /*
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
+                var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
+                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
+                */
                 return shotReady;
             }
         }

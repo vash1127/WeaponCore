@@ -295,7 +295,7 @@ namespace CoreSystems
                             }
                         }
 
-                        w.ProjectilesNear = enemyProjectiles && w.System.TrackProjectile && w.Comp.Data.Repo.Values.Set.Overrides.Projectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
+                        w.ProjectilesNear = enemyProjectiles && w.System.TrackProjectile && w.Comp.Data.Repo.Values.Set.Overrides.Projectiles && !w.Target.HasTarget && (w.Target.TargetChanged || QCount == w.ShortLoadId );
 
                         if (comp.Data.Repo.Values.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;

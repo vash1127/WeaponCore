@@ -65,6 +65,7 @@ namespace CoreSystems.Support
         public readonly int MagazineSize;
         public readonly int PatternIndexCnt;
         public readonly int AmmoIdxPos;
+
         public readonly bool HasEjectEffect;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
@@ -120,7 +121,11 @@ namespace CoreSystems.Support
         public readonly bool HasShotFade;
         public readonly bool CustomExplosionSound;
         public readonly bool GuidedAmmoDetected;
+        public readonly bool AlwaysDraw;
+        public readonly bool FixedFireAmmo;
+        public readonly bool ClientPredictedAmmo;
         public readonly float ChargSize;
+        public readonly float RealShotsPerMin;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldDamageBypassMod;
@@ -192,6 +197,7 @@ namespace CoreSystems.Support
                     ShrapnelId = i;
             }
 
+            FixedFireAmmo = system.TurretMovement == WeaponSystem.TurretType.Fixed && ammo.AmmoDef.Trajectory.Guidance == None;
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
             IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
             IsHybrid = ammo.AmmoDef.HybridRound;
@@ -251,13 +257,14 @@ namespace CoreSystems.Support
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out ChargSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AltHitSounds, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
-            GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+            GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps, out RealShotsPerMin);
+            ClientPredictedAmmo = FixedFireAmmo && RealShotsPerMin <= 120;
 
             DesiredProjectileSpeed = (!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             HasShotFade = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
             MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
-            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
+            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep, out AlwaysDraw);
 
             if (CollisionSize > 5 && !session.LocalVersion) Log.Line($"{ammo.AmmoDef.AmmoRound} has large largeCollisionSize: {CollisionSize} meters");
         }
@@ -328,12 +335,13 @@ namespace CoreSystems.Support
         }
 
 
-        private void ComputeSteps(WeaponSystem.AmmoType ammo, out float shotFadeStep, out float trajectoryStep)
+        private void ComputeSteps(WeaponSystem.AmmoType ammo, out float shotFadeStep, out float trajectoryStep, out bool alwaysDraw)
         {
             var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
             shotFadeStep = 1f / changeFadeSteps;
 
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
+            alwaysDraw = (Trail || HasShotFade) && ShotsPerSec < 0.1;
         }
 
         private void ComputeAmmoPattern(WeaponSystem.AmmoType ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
@@ -408,7 +416,7 @@ namespace CoreSystems.Support
         }
 
         private int mexLogLevel = 0;
-        private void GetPeakDps(WeaponSystem.AmmoType ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        private void GetPeakDps(WeaponSystem.AmmoType ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps, out float realShotsPerMin)
         {
             var s = system;
             var a = ammoDef.AmmoDef;
@@ -541,7 +549,7 @@ namespace CoreSystems.Support
                 }
 
             }
-
+            realShotsPerMin = (shotsPerSec * 60);
             baseDps = BaseDamage * shotsPerSec;
             areaDps = (GetAreaDmg(a) * shotsPerSec);
             detDps = (GetDetDmg(a) * shotsPerSec);

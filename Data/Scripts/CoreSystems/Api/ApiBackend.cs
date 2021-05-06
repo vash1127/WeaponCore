@@ -241,7 +241,8 @@ namespace CoreSystems.Api
 
         private MyDetectedEntityInfo PbGetAiFocus(long arg1, int arg2)
         {
-            return GetEntityInfo(GetAiFocus(MyEntities.GetEntityById(arg1), arg2));
+            var shooter = MyEntities.GetEntityById(arg1);
+            return GetEntityInfo(GetAiFocus(shooter, arg2), shooter);
         }
 
         private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target, MyEntity shooter)
@@ -262,6 +263,11 @@ namespace CoreSystems.Api
             if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
                 relation = info.EntInfo.Relationship;
                 type = info.EntInfo.Type;
+                var maxDist = ai.MaxTargetingRange + shooterGrid.PositionComp.WorldAABB.Extents.Max();
+                if (Vector3D.DistanceSquared(e.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
+                {
+                    return new MyDetectedEntityInfo();
+                }
             }
 
             if (!target.Item1 || e == null || topTarget?.Physics == null) {
@@ -288,11 +294,23 @@ namespace CoreSystems.Api
             return new MyDetectedEntityInfo(entityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, topTarget.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
         }
 
-        private MyDetectedEntityInfo GetEntityInfo(IMyEntity target)
+        private MyDetectedEntityInfo GetEntityInfo(IMyEntity target, MyEntity shooter)
         {
             var e = target;
             if (e?.Physics == null)
                 return new MyDetectedEntityInfo();
+
+            var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
+
+            Ai ai;
+            if (shooterGrid != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai))
+            {
+                var maxDist = ai.MaxTargetingRangeSqr + target.PositionComp.WorldAABB.Extents.Max();
+                if (Vector3D.DistanceSquared(target.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
+                {
+                    return new MyDetectedEntityInfo();
+                }
+            }
 
             var grid = e.GetTopMostParent() as MyCubeGrid;
             var block = e as Sandbox.ModAPI.IMyTerminalBlock;
