@@ -329,7 +329,7 @@ namespace WeaponCore
             {
                 var w = HomingWeapons[i];
                 var comp = w.Comp;
-                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.IsWorking) {
+                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.MyCube.IsFunctional) {
                     HomingWeapons.RemoveAtFast(i);
                     continue;
                 }
