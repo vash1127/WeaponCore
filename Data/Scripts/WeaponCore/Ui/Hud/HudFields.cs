@@ -82,7 +82,6 @@ namespace WeaponCore
         private float _bgBorderHeight;
         private float _bgCenterHeight;
         private float _symbolWidth;
-        private float _reloadHeightOffset;
 
 
         ///

@@ -133,25 +133,25 @@ namespace WeaponCore
         internal void UpdateHudSettings()
         {
             //runs once on first draw then only again if a menu is closed
-            var fovModifier = _session.CurrentFovWithZoom / DefaultFov;
+            var fovScale = (float)(0.1 * _session.ScaleFov);
+
+            var fovModifier = (float)(1.5 * _session.ScaleFov);
             NeedsUpdate = false;
             _lastHudUpdateTick = 0;
-            _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * _session.ScaleFov;
-            _viewPortSize.X = (_viewPortSize.Y * _session.AspectRatio);
-            _viewPortSize.Z = -(_session.Camera.NearPlaneDistance * 2);
+            _viewPortSize.X = (fovScale * _session.AspectRatio);
+            _viewPortSize.Y = fovScale;
+            _viewPortSize.Z = -0.1f;
 
             _currWeaponDisplayPos.X = _viewPortSize.X;
             _currWeaponDisplayPos.Y = _viewPortSize.Y * .6f;
 
-            _padding = PaddingConst * fovModifier;
-
+            _padding = PaddingConst * ((float)_session.ScaleFov * _session.AspectRatio);
             _reloadWidth = ReloadWidthConst * fovModifier;
             _reloadHeight = ReloadHeightConst * fovModifier;
             _reloadOffset = _reloadWidth * fovModifier;
-            _reloadHeightOffset = (ReloadHeightOffsetConst * (2 * fovModifier)) * fovModifier; //never used
 
             _textSize = WeaponHudFontHeight * fovModifier;
-            _sTextSize = _textSize * .5f;
+            _sTextSize = _textSize * .75f;
             _textWidth = (WeaponHudFontHeight * _session.AspectRatioInv) * fovModifier;
             _stextWidth = (_textWidth * .75f);
             _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
