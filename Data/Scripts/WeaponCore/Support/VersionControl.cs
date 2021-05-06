@@ -29,6 +29,7 @@ namespace WeaponCore.Settings
                 if (xmlData?.Version == Session.ClientCfgVersion) {
 
                     Core.ClientConfig = xmlData;
+                    Core.Session.UiInput.ControlKey = Core.Session.KeyMap[xmlData.ControlKey];
                     Core.Session.UiInput.ActionKey = Core.Session.KeyMap[xmlData.ActionKey];
                     Core.Session.UiInput.MouseButtonMenu = Core.Session.MouseMap[xmlData.MenuButton];
                 }

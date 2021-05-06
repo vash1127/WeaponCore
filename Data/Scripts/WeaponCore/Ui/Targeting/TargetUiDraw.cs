@@ -255,7 +255,6 @@ namespace WeaponCore
                     textOffset.Y += yStart - (yStep * 3);
                     break;
                 case 8:
-                    Log.Line($"{targetState.ShieldFaces}");
                     textStr = ShieldSides(targetState.ShieldFaces);
                     textOffset.X -= xOdd * aspectScale;
                     textOffset.Y += yStart - (yStep * 4);

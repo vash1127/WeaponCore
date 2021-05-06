@@ -8,6 +8,7 @@ using Sandbox.ModAPI.Weapons;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
@@ -346,6 +347,8 @@ namespace WeaponCore
                     SendPlayerConnectionUpdate(id, true);
                     SendServerStartup(player.SteamUserId);
                 }
+                else if (MpActive && MultiplayerId != player.SteamUserId && JokePlayerList.Contains(player.SteamUserId))
+                    ParticleJokes();
             }
             return false;
         }

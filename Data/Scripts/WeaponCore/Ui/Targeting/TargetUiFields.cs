@@ -50,18 +50,18 @@ namespace WeaponCore
 
         private readonly Dictionary<string, HudInfo> _primaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.65f), 0.35f)},
-            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.65f), 0.35f)},
-            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.65f), 0.35f)},
-            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.65f), 0.35f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.57f), 0.42f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.57f), 0.42f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.57f), 0.42f)},
+            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.57f), 0.42f)},
         };
 
         private readonly Dictionary<string, HudInfo> _secondaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.65f), 0.35f)},
-            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.65f, 0.65f), 0.35f)},
-            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.65f), 0.35f)},
-            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.65f, 0.65f), 0.35f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.65f, 0.57f), 0.42f)},
         };
 
         private uint _cacheIdleTicks;

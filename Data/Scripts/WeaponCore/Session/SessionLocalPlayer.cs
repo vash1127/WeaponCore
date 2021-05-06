@@ -277,7 +277,7 @@ namespace WeaponCore
             if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight) && InGridAiBlock)
                 TrackingAi.Construct.Focus.RequestReleaseActive(TrackingAi);
 
-            if (UiInput.ActionKeyReleased && TrackingAi.Construct.Data.Repo.FocusData.HasFocus && InGridAiBlock)
+            if (UiInput.ControlKeyReleased && TrackingAi.Construct.Data.Repo.FocusData.HasFocus && InGridAiBlock)
                 TrackingAi.Construct.Focus.RequestAddLock(TrackingAi);
 
             if (InGridAiBlock)

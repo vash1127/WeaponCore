@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage.Input;
 using VRageMath;
@@ -24,8 +26,11 @@ namespace WeaponCore
         internal bool ShiftPressed;
         internal bool LongShift;
         internal bool AltPressed;
+        internal bool ControlKeyPressed;
         internal bool ActionKeyPressed;
+        internal bool ControlKeyReleased;
         internal bool ActionKeyReleased;
+        internal bool BlackListActive1;
         internal bool CtrlPressed;
         internal bool AnyKeyPressed;
         internal bool KeyPrevPressed;
@@ -40,7 +45,9 @@ namespace WeaponCore
         private readonly Session _session;
         private uint _lastInputUpdate;
         internal readonly InputStateData ClientInputState;
+        internal MyKeys ControlKey;
         internal MyKeys ActionKey;
+
         internal MyMouseButtonsEnum MouseButtonMenu;
 
         internal UiInput(Session session)
@@ -102,7 +109,7 @@ namespace WeaponCore
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
-                ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
+                ControlKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ControlKey);
 
                 if (ShiftPressed)
                 {
@@ -130,16 +137,74 @@ namespace WeaponCore
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 }
+
+
             }
             else if (!s.InMenu)
             {
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
-                ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
+                ControlKeyPressed = MyAPIGateway.Input.IsKeyPress(ControlKey);
 
-                if (CtrlPressed && ActionKeyPressed && GetAimRay(s, out AimRay) && Debug)
+                if (CtrlPressed && ControlKeyPressed && GetAimRay(s, out AimRay) && Debug)
                 {
                     DsDebugDraw.DrawLine(AimRay, Color.Red, 0.1f);
                 }
+            }
+
+            if (!s.InMenu)
+            {
+                //ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
+                ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
+                if (ActionKeyPressed && _session.CanChangeHud)
+                {
+                    
+                    if (!BlackListActive1)
+                        BlackList1(true);
+
+                    var evenTicks = _session.Tick % 2 == 0;
+                    if (evenTicks)
+                    {
+
+                        if (MyAPIGateway.Input.IsKeyPress(MyKeys.Up))
+                        {
+                            _session.Settings.ClientConfig.HudPos.Y += 0.01f;
+                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Down))
+                        {
+                            _session.Settings.ClientConfig.HudPos.Y -= 0.01f;
+                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Left))
+                        {
+                            _session.Settings.ClientConfig.HudPos.X -= 0.01f;
+                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Right))
+                        {
+                            _session.Settings.ClientConfig.HudPos.X += 0.01f;
+                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                    }
+
+                    if (_session.Tick10)
+                    {
+                        if (MyAPIGateway.Input.IsKeyPress(MyKeys.Add))
+                        {
+                            _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale + 0.01f, 0.1f, 10f);
+                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Subtract))
+                        {
+                            _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale - 0.01f, 0.1f, 10f);
+                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                ActionKeyPressed = false;
             }
 
             if (_session.MpActive && !s.InGridAiBlock)
@@ -158,6 +223,9 @@ namespace WeaponCore
                 WheelForward = true;
             else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
                 WheelBackward = true;
+
+            if (!ActionKeyPressed && BlackListActive1)
+                BlackList1(false);
         }
 
         internal bool GetAimRay(Session s, out LineD ray)
@@ -170,6 +238,47 @@ namespace WeaponCore
             }
             ray = new LineD();
             return false;
+        }
+
+        private void BlackList1(bool activate)
+        {
+            try
+            {
+                var upKey = MyAPIGateway.Input.GetControl(MyKeys.Up);
+                var downKey = MyAPIGateway.Input.GetControl(MyKeys.Down);
+                var leftKey = MyAPIGateway.Input.GetControl(MyKeys.Left);
+                var rightkey = MyAPIGateway.Input.GetControl(MyKeys.Right);
+                var addKey = MyAPIGateway.Input.GetControl(MyKeys.Add);
+                var subKey = MyAPIGateway.Input.GetControl(MyKeys.Subtract);
+
+                if (upKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(upKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+                if (downKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(downKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+                if (leftKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(leftKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+                if (rightkey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(rightkey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+                if (addKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(addKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+                if (subKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(subKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+
+                BlackListActive1 = activate;
+            }
+            catch (Exception ex) { Log.Line($"Exception in BlackList1: {ex}"); }
         }
     }
 }

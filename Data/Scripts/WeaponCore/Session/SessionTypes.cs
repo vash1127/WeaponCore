@@ -820,6 +820,7 @@ namespace WeaponCore
         {
             None,
             Keyboard,
+            Action,
             Mouse,
         }
 

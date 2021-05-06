@@ -13,6 +13,7 @@ using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Settings;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -362,10 +363,12 @@ namespace WeaponCore
 
         private void UpdateControlKeys()
         {
-            if (ControlRequest == ControlQuery.Keyboard) {
+            if (ControlRequest == ControlQuery.Action)
+            {
 
                 MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
-                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter) {
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter)
+                {
 
                     var firstKey = _pressedKeys[0];
                     Settings.ClientConfig.ActionKey = firstKey.ToString();
@@ -373,6 +376,19 @@ namespace WeaponCore
                     ControlRequest = ControlQuery.None;
                     Settings.VersionControl.UpdateClientCfgFile();
                     MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Action Key", 10000);
+                }
+            }
+            else if (ControlRequest == ControlQuery.Keyboard) {
+
+                MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter) {
+
+                    var firstKey = _pressedKeys[0];
+                    Settings.ClientConfig.ControlKey = firstKey.ToString();
+                    UiInput.ControlKey = firstKey;
+                    ControlRequest = ControlQuery.None;
+                    Settings.VersionControl.UpdateClientCfgFile();
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Control Key", 10000);
                 }
             }
             else if (ControlRequest == ControlQuery.Mouse) {
@@ -410,12 +426,17 @@ namespace WeaponCore
                     case "/wc remap keyboard":
                         ControlRequest = ControlQuery.Keyboard;
                         somethingUpdated = true;
-                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Control key", 10000);
                         break;
                     case "/wc remap mouse":
                         ControlRequest = ControlQuery.Mouse;
                         somethingUpdated = true;
                         MyAPIGateway.Utilities.ShowNotification($"Press the mouse button you want to use to open and close the WeaponCore Menu", 10000);
+                        break;
+                    case "/wc remap action":
+                        ControlRequest = ControlQuery.Keyboard;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
                         break;
                 }
 
@@ -450,12 +471,28 @@ namespace WeaponCore
                                 Settings.VersionControl.UpdateClientCfgFile();
                                 FovChanged();
                                 break;
+                            case "changehud":
+                                CanChangeHud = !CanChangeHud;
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Modify Hud set to: {CanChangeHud}", 10000);
+                                break;
+                            case "setdefaults":
+                                Settings.ClientConfig = new CoreSettings.ClientSettings();
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Client configuration has been set to defaults", 10000);
+                                Settings.VersionControl.UpdateClientCfgFile();
+                                break;
                         }
                     }
                 }
 
                 if (!somethingUpdated)
-                    MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n '/wc remap keyboard'  -- Remaps action key (default R)\n '/wc remap mouse'  -- Remaps menu mouse key (default middle button)\n '/wc shipsizes'  -- Toggles the displaying of ship size icons\n '/wc drawlimit 1000'  -- Limits total number of projectiles on screen (default unlimited)\n", 10000);
+                {
+                    if (message.Length <= 3)
+                        MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n'/wc remap -- Remap keys'\n'/wc drawlimit 1000' -- Limits total number of projectiles on screen (default unlimited)\n'/wc changehud' to enable moving/resizing of WC Hud\n'/wc setdefaults' -- Resets shield client configs to default values\n", 10000);
+                    else if (message.StartsWith("/wc remap"))
+                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (numpad0)\n", 10000, "White");
+                }
                 sendToOthers = false;
             }
         }
@@ -597,6 +634,23 @@ namespace WeaponCore
             }
             CounterKeenLogMessage(false);
         }
+
+        private void ParticleJokes()
+        {
+            var chance = MyUtils.GetRandomInt(0, 4);
+            if (chance == 2)
+            {
+                var messageIndex = MyUtils.GetRandomInt(0, JokeMessages.Length);
+                MyAPIGateway.Utilities.ShowNotification(JokeMessages[messageIndex], 10000, "Red");
+            }
+        }
+
+        internal readonly string[] JokeMessages =
+        {
+            "FakeStar in the house, there can be only one!",
+            "Fake DarkStar is here, he loves to answer your shield questions!",
+            "FakeStar has now joined to solve all of your shield problems"
+        };
 
         private static void CounterKeenLogMessage(bool console = true)
         {

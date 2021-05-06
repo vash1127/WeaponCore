@@ -37,12 +37,12 @@ namespace WeaponCore
         {
             var fovScale = (float)(0.1 * session.ScaleFov);
 
-            localOffset = _screenPosition;
+            localOffset = _screenPosition + session.Settings.ClientConfig.HudPos;
 
-            scale = _definedScale;
-            screenScale = (float) (_definedScale * fovScale);
-            fontScale = (float)(_definedScale * session.ScaleFov);
-            var position = new Vector2(_screenPosition.X, _screenPosition.Y);
+            scale = session.Settings.ClientConfig.HudScale * _definedScale;
+            screenScale = scale * fovScale;
+            fontScale = (float)(scale * session.ScaleFov);
+            var position = new Vector2(localOffset.X , localOffset.Y);
             position.X *= fovScale * session.AspectRatio;
             position.Y *= fovScale;
 

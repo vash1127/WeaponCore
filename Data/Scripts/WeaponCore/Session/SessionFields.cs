@@ -40,7 +40,7 @@ namespace WeaponCore
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 4;
-        internal const int ClientCfgVersion = 2;
+        internal const int ClientCfgVersion = 4;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
@@ -348,10 +348,16 @@ namespace WeaponCore
         internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
         internal bool EwarNetDataDirty;
+        internal bool CanChangeHud;
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
              // Muzzled SteamId goes here
+        };
+
+        internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
+        {
+            76561198025274552,
         };
 
         [Flags]
