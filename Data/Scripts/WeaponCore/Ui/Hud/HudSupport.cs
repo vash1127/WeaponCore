@@ -19,8 +19,13 @@ namespace WeaponCore
             AgingTextRequest request;
             if (_agingTextRequests.TryGetValue(elementId, out request))
             {
-                request.RefreshTtl(ttl);
-                return;
+                if (ttl > 0) {
+                    request.RefreshTtl(ttl);
+                    return;
+                }
+                _agingTextRequests.Remove(elementId);
+                _agingTextRequestPool.Return(request);
+
             }
             request = _agingTextRequestPool.Get();
 

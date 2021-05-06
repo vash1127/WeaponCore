@@ -133,7 +133,8 @@ namespace WeaponCore
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
-                    if (s.Tick20)
+                    var quickUpdate = _session.UiInput.FirstPersonView && _session.HudUi.NeedsUpdate && _session.ControlledEntity is IMyGunBaseUser;
+                    if (s.Tick20 || quickUpdate)
                     {
                         for (int j = 0; j < 11; j++)
                         {
@@ -142,9 +143,9 @@ namespace WeaponCore
                             if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
                             {
                                 var textColor = Color.White;
-                                var fontSize = (float)Math.Round(22 * fontScale);
+                                var fontSize = (float)Math.Round(22 * fontScale, 1);
                                 var fontHeight = 0.75f;
-                                var fontAge = 18;
+                                var fontAge = !quickUpdate ? 18 : 0;
                                 var fontJustify = Hud.Justify.None;
                                 var fontType = Hud.FontType.Shadow;
                                 var elementId = MathFuncs.UniqueId(i, j);
