@@ -329,7 +329,6 @@ namespace CoreSystems.Support
                         TargetInfo hitInfo;
                         if (w.LastHitInfo.HitEntity == info.Target || ai.Targets.TryGetValue((MyEntity)w.LastHitInfo.HitEntity, out hitInfo) && (hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)) {
 
-                            Log.Line("something");
                             double rayDist;
                             Vector3D.Distance(ref weaponPos, ref targetCenter, out rayDist);
                             var shortDist = rayDist * (1 - w.LastHitInfo.Fraction);
