@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreSystems.Platform;
+using ProtoBuf;
 using VRage.Game.Entity;
 using static CoreSystems.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -21,6 +22,7 @@ namespace CoreSystems.Support
                     if (Type == CompType.Weapon) 
                         Platform.ResetParts();
                     Status = Start.Started;
+                    Log.Line("started");
                     break;
             }
         }
@@ -32,12 +34,12 @@ namespace CoreSystems.Support
             if (!IsWorking)
                 Ai.PowerDistributor?.MarkForUpdate();
 
-            if (FunctionalBlock.Enabled) {
+            else if (FunctionalBlock.Enabled) {
                 FunctionalBlock.Enabled = false;
                 FunctionalBlock.Enabled = true;
             }
 
-            Status = Start.Started;
+            Status = Start.ReInit;
         }
 
         internal void WakeupComp()

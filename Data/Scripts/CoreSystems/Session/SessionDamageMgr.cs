@@ -199,17 +199,18 @@ namespace CoreSystems
 
         private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
+
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) {
                 hitEnt.Blocks?.Clear();
                 return;
             }
+
             if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.IsGrid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
             {
                 t.BaseDamagePool = 0;
                 return;
             }
-            
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -257,7 +258,7 @@ namespace CoreSystems
                 hits = t.WeaponCache.Hits;
                 areaEffectDmg *= hits;
             }
-            
+
             var objectsHit = t.ObjectsHit;
             var countBlocksAsObjects = t.AmmoDef.ObjectsHit.CountBlocks;
             var partialShield = t.ShieldInLine && !t.ShieldBypassed && SApi.MatchEntToShieldFast(grid, true) != null;

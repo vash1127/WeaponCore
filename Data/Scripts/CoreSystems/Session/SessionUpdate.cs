@@ -327,7 +327,6 @@ namespace CoreSystems
                         var weaponPrimed  = canShoot && (shoot || w.LockOnFireState);
                         
                         var shotReady = weaponPrimed && !ammoEmpty;
-
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.PartState.Action != TriggerOnce))

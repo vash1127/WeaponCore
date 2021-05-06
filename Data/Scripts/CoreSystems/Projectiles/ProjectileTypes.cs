@@ -405,6 +405,9 @@ namespace CoreSystems.Support
                 frag.WeaponId = p.Info.PartId;
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.CoreEntity = p.Info.Target.CoreEntity;
+                frag.CoreParent = p.Info.Target.CoreParent;
+                frag.CoreCube = p.Info.Target.CoreCube;
+                frag.CoreIsCube = p.Info.Target.CoreIsCube;
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Info.Hit.LastHit) ? p.Info.Hit.LastHit : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
@@ -462,6 +465,9 @@ namespace CoreSystems.Support
                 p.Info.TriggerEntity = frag.TriggerEntity;
                 p.Info.Target.TargetEntity = frag.TargetEntity;
                 p.Info.Target.CoreEntity = frag.CoreEntity;
+                p.Info.Target.CoreParent = frag.CoreParent;
+                p.Info.Target.CoreCube = frag.CoreCube;
+                p.Info.Target.CoreIsCube = frag.CoreIsCube;
                 p.Info.Overrides = frag.Overrides;
                 p.Info.IsShrapnel = true;
                 p.Info.EnableGuidance = frag.Guidance;
@@ -507,6 +513,9 @@ namespace CoreSystems.Support
         public MyEntity TriggerEntity;
         public MyEntity TargetEntity;
         public MyEntity CoreEntity;
+        public MyEntity CoreParent;
+        public MyCubeBlock CoreCube;
+
         public ProtoWeaponOverrides Overrides;
         public Vector3D Origin;
         public Vector3D OriginUp;
@@ -522,6 +531,7 @@ namespace CoreSystems.Support
         public bool IsFiringPlayer;
         public bool LockOnFireState;
         public bool IgnoreShield;
+        public bool CoreIsCube;
     }
 
     public class VoxelCache

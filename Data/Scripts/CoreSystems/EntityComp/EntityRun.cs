@@ -187,8 +187,10 @@ namespace CoreSystems.Support
                 Ai.Construct.Refresh(Ai, Constructs.RefreshCaller.Init);
 
                 if (!FunctionalBlock.Enabled)
+                {
                     for (int i = 0; i < Platform.Weapons.Count; i++)
                         Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
+                }
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
