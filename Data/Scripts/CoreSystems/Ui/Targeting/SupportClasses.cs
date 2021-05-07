@@ -6,6 +6,16 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 {
     public class TargetStatus
     {
+        public enum Awareness
+        {
+            SEEKING,
+            FOCUSFIRE,
+            TRACKING,
+            STALKING,
+            OBLIVIOUS,
+            WONDERING,
+        }
+
         public float ShieldHealth;
         public int ShieldHeat;
         public Vector3I ShieldFaces;
@@ -15,7 +25,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         public float ShieldMod;
         public float SizeExtended;
         public double RealDistance;
-        public bool IsFocused;
+        public Awareness Aware;
         public string Name;
     }
 

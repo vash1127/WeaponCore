@@ -9,7 +9,7 @@ using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    partial class Hud
+    internal partial class Hud
     {
         private const float MetersInPixel = 0.0002645833f;
         private const float PaddingConst = 10 * MetersInPixel;

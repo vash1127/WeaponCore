@@ -6,7 +6,7 @@ using VRageMath;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    partial class Hud
+    internal partial class Hud
     {
         internal uint TicksSinceUpdated => _session.Tick - _lastHudUpdateTick;
         internal bool KeepBackground => _session.Tick - _lastHudUpdateTick < MinUpdateTicks;
@@ -18,8 +18,14 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             AgingTextRequest request;
             if (_agingTextRequests.TryGetValue(elementId, out request))
             {
-                request.RefreshTtl(ttl);
-                return;
+                if (ttl > 0)
+                {
+                    request.RefreshTtl(ttl);
+                    return;
+                }
+                _agingTextRequests.Remove(elementId);
+                _agingTextRequestPool.Return(request);
+
             }
             request = _agingTextRequestPool.Get();
 

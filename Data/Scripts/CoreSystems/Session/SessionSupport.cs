@@ -374,7 +374,22 @@ namespace CoreSystems
 
         private void UpdateControlKeys()
         {
-            if (ControlRequest == ControlQuery.Action)
+            if (ControlRequest == ControlQuery.Info)
+            {
+
+                MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter)
+                {
+
+                    var firstKey = _pressedKeys[0];
+                    Settings.ClientConfig.InfoKey = firstKey.ToString();
+                    UiInput.InfoKey = firstKey;
+                    ControlRequest = ControlQuery.None;
+                    Settings.VersionControl.UpdateClientCfgFile();
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Info Key", 10000);
+                }
+            }
+            else if (ControlRequest == ControlQuery.Action)
             {
 
                 MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
@@ -449,9 +464,14 @@ namespace CoreSystems
                         MyAPIGateway.Utilities.ShowNotification($"Press the mouse button you want to use to open and close the WeaponCore Menu", 10000);
                         break;
                     case "/wc remap action":
-                        ControlRequest = ControlQuery.Keyboard;
+                        ControlRequest = ControlQuery.Action;
                         somethingUpdated = true;
                         MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
+                        break;
+                    case "/wc remap info":
+                        ControlRequest = ControlQuery.Info;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Info key", 10000);
                         break;
                 }
 
@@ -507,7 +527,7 @@ namespace CoreSystems
                     if (message.Length <= 3)
                         MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n'/wc remap -- Remap keys'\n'/wc drawlimit 1000' -- Limits total number of projectiles on screen (default unlimited)\n'/wc changehud' to enable moving/resizing of WC Hud\n'/wc setdefaults' -- Resets shield client configs to default values\n", 10000);
                     else if (message.StartsWith("/wc remap"))
-                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (numpad0)\n", 10000, "White");
+                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (default numpad0)\n'/wc remap info' -- Remaps info key (default decimal key, aka numpad period key)\n", 10000, "White");
                 }
                 sendToOthers = false;
             }

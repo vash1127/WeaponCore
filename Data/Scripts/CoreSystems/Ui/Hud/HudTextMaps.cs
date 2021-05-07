@@ -4,7 +4,7 @@ using VRageMath;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    partial class Hud
+    internal partial class Hud
     {
         private TextureMap GenerateMap(MyStringId material, float uvOffsetX, float uvOffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY)
         {

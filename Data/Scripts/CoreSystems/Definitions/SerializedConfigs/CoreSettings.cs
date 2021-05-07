@@ -93,6 +93,8 @@ namespace CoreSystems.Settings
             [ProtoMember(7)] public string ActionKey = MyKeys.NumPad0.ToString();
             [ProtoMember(8)] public Vector2 HudPos = new Vector2(0, 0);
             [ProtoMember(9)] public float HudScale = 1f;
+            [ProtoMember(10)] public string InfoKey = MyKeys.Decimal.ToString();
+            [ProtoMember(11)] public bool MinimalHud = false;
         }
     }
 }

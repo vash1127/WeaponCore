@@ -5,7 +5,7 @@ using VRageMath;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    partial class Hud
+    internal partial class Hud
     {
         internal void DrawText()
         {

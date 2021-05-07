@@ -5,7 +5,6 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 {
     internal partial class TargetUi
@@ -23,7 +22,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         internal uint MasterUpdateTick;
         internal int ReticleAgeOnSelf;
         internal readonly char FocusChar = "_"[0];
-        internal WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud.TextureMap FocusTextureMap;
+        internal Hud.Hud.TextureMap FocusTextureMap;
 
 
         private const string ActiveNoShield = "ActiveNoShield";
@@ -49,18 +48,30 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
         internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
 
+        private readonly Dictionary<string, HudInfo> _primaryMinimalHuds = new Dictionary<string, HudInfo>
+        {
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_Minimal_Active"), new Vector2(0f, 0.57f), 0.42f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_Minimal"),  new Vector2(0f, 0.57f), 0.42f)},
+        };
+
+        private readonly Dictionary<string, HudInfo> _secondaryMinimalHuds = new Dictionary<string, HudInfo>
+        {
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_Minimal_Active"), new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_Minimal"),  new Vector2(-0.65f, 0.57f), 0.42f)},
+        };
+
         private readonly Dictionary<string, HudInfo> _primaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.57f), 0.42f)},
-            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(0f, 0.57f), 0.42f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShield_Active"), new Vector2(0f, 0.57f), 0.42f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield_Active"),  new Vector2(0f, 0.57f), 0.42f)},
             {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(0f, 0.57f), 0.42f)},
             {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(0f, 0.57f), 0.42f)},
         };
 
         private readonly Dictionary<string, HudInfo> _secondaryTargetHuds = new Dictionary<string, HudInfo>
         {
-            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.57f), 0.42f)},
-            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_ShieldPrimary"),  new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShield_Active"), new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"ActiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield_Active"),  new Vector2(-0.65f, 0.57f), 0.42f)},
             {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.57f), 0.42f)},
             {"InactiveShield",  new HudInfo(MyStringId.GetOrCompute("WC_HUD_Shield"),  new Vector2(-0.65f, 0.57f), 0.42f)},
         };
@@ -79,8 +90,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         {
             _session = session;
             var cm = session.HudUi.CharacterMap;
-            Dictionary<char, WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud.TextureMap> monoText;
-            if (cm.TryGetValue(WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud.FontType.Mono, out monoText))
+            Dictionary<char, Hud.Hud.TextureMap> monoText;
+            if (cm.TryGetValue(Hud.Hud.FontType.Mono, out monoText))
             {
                 FocusTextureMap = monoText[FocusChar];
             }

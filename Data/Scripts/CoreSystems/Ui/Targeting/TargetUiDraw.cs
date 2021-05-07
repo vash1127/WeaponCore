@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CoreSystems;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
@@ -32,7 +33,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
-            var offetPosition = Vector3D.Transform((Vector3D) PointerOffset, (MatrixD) _session.CameraMatrix);
+            var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
 
             if (s.UiInput.FirstPersonView)
             {
@@ -49,17 +50,17 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     var currentPos = _pointerPosition.Y;
                     if (s.UiInput.CurrentWheel > s.UiInput.PreviousWheel) currentPos += 0.05f;
                     else currentPos -= 0.05f;
-                    var clampPos = MathHelper.Clamp((float) currentPos, -1.25f, 1.25f);
+                    var clampPos = MathHelper.Clamp(currentPos, -1.25f, 1.25f);
                     _3RdPersonPos.Y = clampPos;
                     InitPointerOffset(0.05);
                 }
-                if (!MyUtils.IsEqual((Vector2) _pointerPosition, _3RdPersonPos))
+                if (!MyUtils.IsEqual(_pointerPosition, _3RdPersonPos))
                 {
                     _pointerPosition = _3RdPersonPos;
                     InitPointerOffset(0.05);
                 }
             }
-            else if (!MyUtils.IsEqual((Vector2) _pointerPosition, _3RdPersonPos))
+            else if (!MyUtils.IsEqual(_pointerPosition, _3RdPersonPos))
             {
                 _pointerPosition = _3RdPersonPos;
                 InitPointerOffset(0.05);
@@ -79,6 +80,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         {
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
+            var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
+
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -90,19 +93,23 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var primary = i == 0;
                 var shielded = targetState.ShieldHealth >= 0;
 
-                var collection = primary ? _primaryTargetHuds : _secondaryTargetHuds;
+                Dictionary<string, HudInfo> collection;
+                if (detailedHud)
+                    collection = primary ? _primaryTargetHuds : _secondaryTargetHuds;
+                else
+                    collection = primary ? _primaryMinimalHuds : _secondaryMinimalHuds;
 
                 foreach (var hud in collection.Keys)
                 {
-                    if (isActive && (hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.InactiveShield || hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.InactiveNoShield))
+                    if (isActive && (hud == InactiveShield || hud == InactiveNoShield))
                         continue;
 
-                    if (!isActive && (hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.ActiveShield || hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.ActiveNoShield))
+                    if (!isActive && (hud == ActiveShield || hud == ActiveNoShield))
                         continue;
 
-                    if (shielded && (hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.ActiveNoShield || hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.InactiveNoShield))
+                    if (shielded && (hud == ActiveNoShield || hud == InactiveNoShield))
                         continue;
-                    if (!shielded && (hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.ActiveShield || hud == global::WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting.TargetUi.InactiveShield))
+                    if (!shielded && (hud == ActiveShield || hud == InactiveShield))
                         continue;
 
                     Vector3D offset;
@@ -133,20 +140,21 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
-                    if (s.Tick20)
+                    var quickUpdate = _session.UiInput.FirstPersonView && _session.HudUi.NeedsUpdate && _session.ControlledEntity is IMyGunBaseUser;
+                    if (s.Tick20 || quickUpdate)
                     {
                         for (int j = 0; j < 11; j++)
                         {
                             string text;
                             Vector2 textOffset;
-                            if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
+                            if (TextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                             {
                                 var textColor = Color.White;
-                                var fontSize = (float)Math.Round(22 * fontScale);
+                                var fontSize = (float)Math.Round(21 * fontScale, 1);
                                 var fontHeight = 0.75f;
-                                var fontAge = 18;
-                                var fontJustify = WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud.Justify.None;
-                                var fontType = WeaponCore.Data.Scripts.CoreSystems.Ui.Hud.Hud.FontType.Shadow;
+                                var fontAge = !quickUpdate ? 18 : 0;
+                                var fontJustify = Hud.Hud.Justify.None;
+                                var fontType = Hud.Hud.FontType.Shadow;
                                 var elementId = MathFuncs.UniqueId(i, j);
 
                                 s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
@@ -163,7 +171,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     var targetCenter = targetSphere.Center;
                     var screenPos = s.Camera.WorldToScreen(ref targetCenter);
 
-                    if (Vector3D.Transform(targetCenter, (MatrixD) s.Camera.ViewMatrix).Z > 0)
+                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
                     {
                         screenPos.X *= -1;
                         screenPos.Y = -1;
@@ -173,22 +181,27 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     var screenScale = 0.1 * s.ScaleFov;
                     dotpos.X *= (float)(screenScale * _session.AspectRatio);
                     dotpos.Y *= (float)screenScale;
-                    screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), (MatrixD) s.CameraMatrix);
+                    screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
                 }
             }
         }
 
-        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, out string textStr, out Vector2 textOffset)
+        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
         {
-            var display = shielded || slot < 6 || slot == 10;
-            if (!display)
+            var showAll = details && shielded;
+            var minimal = !details;
+            var skipShield = !showAll && !minimal;
+            var skip = minimal && slot != 1 && slot != 2 && slot != 10 || skipShield && slot > 5 && slot != 10;
+
+            if (skip)
             {
                 textStr = string.Empty;
                 textOffset = Vector2.Zero;
                 return false;
             }
+
             textOffset = localOffset;
 
             var aspectScale = (2.37037f / _session.AspectRatio);
@@ -217,7 +230,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 case 2:
                     textStr = $"THREAT: {targetState.ThreatLvl}";
                     textOffset.X -= xOdd * aspectScale;
-                    textOffset.Y += yStart - (yStep * 1);
+                    if (minimal)
+                        textOffset.Y += yStart;
+                    else
+                        textOffset.Y += yStart - (yStep * 1);
                     break;
                 case 3:
 
@@ -237,7 +253,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     textOffset.Y += yStart - (yStep * 2);
                     break;
                 case 5:
-                    textStr = targetState.IsFocused ? "FOCUSED" : "OBLIVIOUS";
+                    textStr = targetState.Aware.ToString();
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 2);
                     break;
@@ -268,18 +284,19 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 case 10:
                     textStr = targetState.Name;
                     textOffset.X -= xCenter * aspectScale;
-                    if (shielded)
+                    if (minimal)
+                        textOffset.Y += yStart - (yStep * 1);
+                    else if (shielded)
                         textOffset.Y += yStart - (yStep * 5);
                     else
                         textOffset.Y += yStart - (yStep * 3);
                     break;
                 default:
-                    display = false;
                     textStr = string.Empty;
                     textOffset = Vector2.Zero;
-                    break;
+                    return false;
             }
-            return display;
+            return true;
         }
 
         private void InitTargetOffset()
@@ -373,43 +390,26 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var grid = target as MyCubeGrid;
                 var partCount = 1;
                 var largeGrid = false;
-                var isFcused = false;
+                Ai targetAi = null;
                 if (grid != null)
                 {
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    Ai targetAi;
                     GridMap gridMap;
                     if (s.GridToMasterAi.TryGetValue(grid, out targetAi))
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
 
-                    if (targetAi != null && targetAi.Construct.Data.Repo.FocusData.HasFocus)
+                    if (targetAi != null)
                     {
-                        var fd = targetAi.Construct.Data.Repo.FocusData;
 
-                        foreach (var tId in fd.Target)
-                        {
 
-                            if (isFcused)
-                                break;
-
-                            foreach (var sub in ai.SubGrids)
-                            {
-
-                                if (sub.EntityId == tId)
-                                {
-                                    isFcused = true;
-                                    break;
-                                }
-                            }
-                        }
                     }
                 }
 
                 var state = ai.TargetState[i];
 
-                state.IsFocused = isFcused;
+                state.Aware = targetAi != null ? AggressionState(ai, targetAi) : TargetStatus.Awareness.WONDERING;
                 var displayName = target.DisplayName;
                 var name = string.IsNullOrEmpty(displayName) ? string.Empty : displayName.Length <= maxNameLength ? displayName : displayName.Substring(0, maxNameLength);
 
@@ -499,5 +499,36 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             return validFocus;
         }
 
+        private TargetStatus.Awareness AggressionState(Ai ai, Ai targetAi)
+        {
+
+            if (targetAi.Construct.Data.Repo.FocusData.HasFocus)
+            {
+                var fd = targetAi.Construct.Data.Repo.FocusData;
+                foreach (var tId in fd.Target)
+                {
+                    foreach (var sub in ai.SubGrids)
+                    {
+                        if (sub.EntityId == tId)
+                            return TargetStatus.Awareness.FOCUSFIRE;
+                    }
+                }
+            }
+            var tracking = targetAi.Targets.ContainsKey(ai.GridEntity);
+            var hasAggressed = targetAi.Construct.RootAi.Construct.PreviousTargets.Contains(ai.GridEntity);
+            var stalking = tracking && hasAggressed;
+            var seeking = !tracking && hasAggressed;
+
+            if (stalking)
+                return TargetStatus.Awareness.STALKING;
+
+            if (seeking)
+                return TargetStatus.Awareness.SEEKING;
+
+            if (tracking)
+                return TargetStatus.Awareness.TRACKING;
+
+            return TargetStatus.Awareness.OBLIVIOUS;
+        }
     }
 }
