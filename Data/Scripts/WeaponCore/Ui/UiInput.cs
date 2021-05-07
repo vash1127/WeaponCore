@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Sandbox.Game;
 using Sandbox.ModAPI;
@@ -28,8 +29,10 @@ namespace WeaponCore
         internal bool AltPressed;
         internal bool ControlKeyPressed;
         internal bool ActionKeyPressed;
+        internal bool DetailsKeyPressed;
         internal bool ControlKeyReleased;
         internal bool ActionKeyReleased;
+        internal bool DetailsKeyReleased;
         internal bool BlackListActive1;
         internal bool CtrlPressed;
         internal bool AnyKeyPressed;
@@ -47,6 +50,7 @@ namespace WeaponCore
         internal readonly InputStateData ClientInputState;
         internal MyKeys ControlKey;
         internal MyKeys ActionKey;
+        internal MyKeys DetailsKey;
 
         internal MyMouseButtonsEnum MouseButtonMenu;
 
@@ -155,56 +159,71 @@ namespace WeaponCore
             {
                 //ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
                 ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
-                if (ActionKeyPressed && _session.CanChangeHud)
+                DetailsKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(DetailsKey);
+                if (ActionKeyPressed || DetailsKeyReleased)
                 {
-                    
                     if (!BlackListActive1)
                         BlackList1(true);
 
-                    var evenTicks = _session.Tick % 2 == 0;
-                    if (evenTicks)
+                    if (ActionKeyPressed && _session.CanChangeHud)
                     {
+                        var evenTicks = _session.Tick % 2 == 0;
+                        if (evenTicks)
+                        {
 
-                        if (MyAPIGateway.Input.IsKeyPress(MyKeys.Up))
-                        {
-                            _session.Settings.ClientConfig.HudPos.Y += 0.01f;
-                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                            if (MyAPIGateway.Input.IsKeyPress(MyKeys.Up))
+                            {
+                                _session.Settings.ClientConfig.HudPos.Y += 0.01f;
+                                _session.Settings.VersionControl.UpdateClientCfgFile();
+                            }
+                            else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Down))
+                            {
+                                _session.Settings.ClientConfig.HudPos.Y -= 0.01f;
+                                _session.Settings.VersionControl.UpdateClientCfgFile();
+                            }
+                            else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Left))
+                            {
+                                _session.Settings.ClientConfig.HudPos.X -= 0.01f;
+                                _session.Settings.VersionControl.UpdateClientCfgFile();
+                            }
+                            else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Right))
+                            {
+                                _session.Settings.ClientConfig.HudPos.X += 0.01f;
+                                _session.Settings.VersionControl.UpdateClientCfgFile();
+                            }
+
                         }
-                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Down))
+
+                        if (_session.Tick10)
                         {
-                            _session.Settings.ClientConfig.HudPos.Y -= 0.01f;
-                            _session.Settings.VersionControl.UpdateClientCfgFile();
-                        }
-                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Left))
-                        {
-                            _session.Settings.ClientConfig.HudPos.X -= 0.01f;
-                            _session.Settings.VersionControl.UpdateClientCfgFile();
-                        }
-                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Right))
-                        {
-                            _session.Settings.ClientConfig.HudPos.X += 0.01f;
-                            _session.Settings.VersionControl.UpdateClientCfgFile();
+                            if (MyAPIGateway.Input.IsKeyPress(MyKeys.Add))
+                            {
+                                _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale + 0.01f, 0.1f, 10f);
+                                _session.Settings.VersionControl.UpdateClientCfgFile();
+                            }
+                            else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Subtract))
+                            {
+                                _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale - 0.01f, 0.1f, 10f);
+                                _session.Settings.VersionControl.UpdateClientCfgFile();
+                            }
                         }
                     }
 
-                    if (_session.Tick10)
+                    if (DetailsKeyReleased)
                     {
-                        if (MyAPIGateway.Input.IsKeyPress(MyKeys.Add))
-                        {
-                            _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale + 0.01f, 0.1f, 10f);
-                            _session.Settings.VersionControl.UpdateClientCfgFile();
-                        }
-                        else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Subtract))
-                        {
-                            _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale - 0.01f, 0.1f, 10f);
-                            _session.Settings.VersionControl.UpdateClientCfgFile();
-                        }
+                        _session.Settings.ClientConfig.Details = !_session.Settings.ClientConfig.Details;
+                        _session.Settings.VersionControl.UpdateClientCfgFile();
                     }
+
+
                 }
             }
             else
             {
                 ActionKeyPressed = false;
+                ActionKeyReleased = false;
+                DetailsKeyPressed = false;
+                DetailsKeyReleased = false;
             }
 
             if (_session.MpActive && !s.InGridAiBlock)
@@ -250,6 +269,9 @@ namespace WeaponCore
                 var rightkey = MyAPIGateway.Input.GetControl(MyKeys.Right);
                 var addKey = MyAPIGateway.Input.GetControl(MyKeys.Add);
                 var subKey = MyAPIGateway.Input.GetControl(MyKeys.Subtract);
+                var actionKey = MyAPIGateway.Input.GetControl(MyKeys.NumPad0);
+                var controlKey = MyAPIGateway.Input.GetControl(MyKeys.R);
+                var detailKey = MyAPIGateway.Input.GetControl(MyKeys.Decimal);
 
                 if (upKey != null)
                 {
@@ -276,6 +298,20 @@ namespace WeaponCore
                     MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(subKey.GetGameControlEnum().String, _session.PlayerId, !activate);
                 }
 
+                if (actionKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(actionKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+
+                if (controlKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
+
+                if (detailKey != null)
+                {
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(detailKey.GetGameControlEnum().String, _session.PlayerId, !activate);
+                }
                 BlackListActive1 = activate;
             }
             catch (Exception ex) { Log.Line($"Exception in BlackList1: {ex}"); }

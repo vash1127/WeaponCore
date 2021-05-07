@@ -79,6 +79,7 @@ namespace WeaponCore
         {
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
+            var detailsHud = _session.Settings.ClientConfig.Details;
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -90,7 +91,7 @@ namespace WeaponCore
                 var primary = i == 0;
                 var shielded = targetState.ShieldHealth >= 0;
 
-                var collection = primary ? _primaryTargetHuds : _secondaryTargetHuds;
+                var collection = detailsHud ? primary ? _primaryTargetHuds : _secondaryTargetHuds : primary ? _primaryMinimalHuds : _secondaryMinimalHuds;
 
                 foreach (var hud in collection.Keys)
                 {
@@ -143,7 +144,7 @@ namespace WeaponCore
                             if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
                             {
                                 var textColor = Color.White;
-                                var fontSize = (float)Math.Round(22 * fontScale, 1);
+                                var fontSize = (float)Math.Round(21 * fontScale, 1);
                                 var fontHeight = 0.75f;
                                 var fontAge = !quickUpdate ? 18 : 0;
                                 var fontJustify = Hud.Justify.None;

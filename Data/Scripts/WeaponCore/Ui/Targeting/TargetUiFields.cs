@@ -48,6 +48,18 @@ namespace WeaponCore
 
         internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
 
+        private readonly Dictionary<string, HudInfo> _primaryMinimalHuds = new Dictionary<string, HudInfo>
+        {
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_Minimal_Active"), new Vector2(0f, 0.57f), 0.42f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_Minimal"),  new Vector2(0f, 0.57f), 0.42f)},
+        };
+
+        private readonly Dictionary<string, HudInfo> _secondaryMinimalHuds = new Dictionary<string, HudInfo>
+        {
+            {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(-0.65f, 0.57f), 0.42f)},
+            {"InactiveNoShield", new HudInfo(MyStringId.GetOrCompute("WC_HUD_NoShield"),  new Vector2(-0.65f, 0.57f), 0.42f)},
+        };
+
         private readonly Dictionary<string, HudInfo> _primaryTargetHuds = new Dictionary<string, HudInfo>
         {
             {"ActiveNoShield", new HudInfo (MyStringId.GetOrCompute("WC_HUD_NoShieldPrimary"), new Vector2(0f, 0.57f), 0.42f)},
