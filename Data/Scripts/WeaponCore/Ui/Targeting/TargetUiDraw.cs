@@ -251,7 +251,7 @@ namespace WeaponCore
                     textOffset.Y += yStart - (yStep * 2);
                     break;
                 case 5:
-                    textStr = targetState.IsFocused ? "FOCUSED" : "OBLIVIOUS";
+                    textStr = targetState.Aware.ToString();
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 2);
                     break;
@@ -382,39 +382,25 @@ namespace WeaponCore
                 var grid = target as MyCubeGrid;
                 var partCount = 1;
                 var largeGrid = false;
-                var isFcused = false;
+                GridAi targetAi = null;
                 if (grid != null)  {
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    GridAi targetAi;
                     GridMap gridMap;
                     if (s.GridToMasterAi.TryGetValue(grid, out targetAi))
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
 
-                    if (targetAi != null && targetAi.Construct.Data.Repo.FocusData.HasFocus)
+                    if (targetAi != null)
                     {
-                        var fd = targetAi.Construct.Data.Repo.FocusData;
 
-                        foreach (var tId in fd.Target) {
 
-                            if (isFcused)
-                                break;
-
-                            foreach (var sub in ai.SubGrids) {
-
-                                if (sub.EntityId == tId) {
-                                    isFcused = true;
-                                    break;
-                                }
-                            }
-                        }
                     }
                 }
 
                 var state = ai.TargetState[i];
 
-                state.IsFocused = isFcused;
+                state.Aware = targetAi != null ? AggressionState(ai, targetAi) : TargetStatus.Awareness.WONDERING;
                 var displayName = target.DisplayName;
                 var name = string.IsNullOrEmpty(displayName) ? string.Empty : displayName.Length <= maxNameLength ? displayName : displayName.Substring(0, maxNameLength);
 
@@ -504,5 +490,34 @@ namespace WeaponCore
             return validFocus;
         }
 
+        private TargetStatus.Awareness AggressionState(GridAi ai, GridAi targetAi)
+        {
+
+            if (targetAi.Construct.Data.Repo.FocusData.HasFocus)
+            {
+                var fd = targetAi.Construct.Data.Repo.FocusData;
+                foreach (var tId in fd.Target) {
+                    foreach (var sub in ai.SubGrids) {
+                        if (sub.EntityId == tId) 
+                            return TargetStatus.Awareness.FOCUSFIRE;
+                    }
+                }
+            }
+            var tracking = targetAi.Targets.ContainsKey(ai.MyGrid);
+            var hasAggressed = targetAi.Construct.RootAi.Construct.PreviousTargets.Contains(ai.MyGrid);
+            var stalking = tracking && hasAggressed;
+            var seeking = !tracking && hasAggressed;
+
+            if (stalking)
+                return TargetStatus.Awareness.STALKING;
+
+            if (seeking)
+                return TargetStatus.Awareness.SEEKING;
+
+            if (tracking)
+                return TargetStatus.Awareness.TRACKING;
+
+            return TargetStatus.Awareness.OBLIVIOUS;
+        }
     }
 }

@@ -345,7 +345,6 @@ namespace WeaponCore
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
         internal bool DebugLos = false;
-        internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
         internal bool EwarNetDataDirty;
         internal bool CanChangeHud;

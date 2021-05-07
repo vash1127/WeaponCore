@@ -135,6 +135,7 @@ namespace WeaponCore.Support
             internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
+            internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
             internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
             internal float OptimalDps;
@@ -366,6 +367,7 @@ namespace WeaponCore.Support
                 LargestAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
+                PreviousTargets.Clear();
             }
         }
     }

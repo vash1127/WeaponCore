@@ -511,7 +511,7 @@ namespace WeaponCore
                     if (message.Length <= 3)
                         MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n'/wc remap -- Remap keys'\n'/wc drawlimit 1000' -- Limits total number of projectiles on screen (default unlimited)\n'/wc changehud' to enable moving/resizing of WC Hud\n'/wc setdefaults' -- Resets shield client configs to default values\n", 10000);
                     else if (message.StartsWith("/wc remap"))
-                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (numpad0)\n'/wc remap info' -- Remaps info key (decimal key, aka numpad period key)\n", 10000, "White");
+                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (default numpad0)\n'/wc remap info' -- Remaps info key (default decimal key, aka numpad period key)\n", 10000, "White");
                 }
                 sendToOthers = false;
             }
@@ -733,13 +733,13 @@ namespace WeaponCore
             return false;
         }
 
-        internal void NewThreatLogging(Weapon w)
+        internal void NewThreat(Weapon w)
         {
             try
             {
                 var topmost = w.Target.Entity.GetTopMostParent();
                 GridAi.TargetInfo info;
-                if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
+                if (topmost != null && w.Comp.Ai.Construct.RootAi.Construct.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
                 {
                     IMyPlayer weaponOwner;
                     Players.TryGetValue(w.Comp.MyCube.OwnerId, out weaponOwner);

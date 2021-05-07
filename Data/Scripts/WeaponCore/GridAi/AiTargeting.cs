@@ -309,8 +309,8 @@ namespace WeaponCore.Support
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
 
-                        if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
-                            ai.Session.NewThreatLogging(w);
+                        if (targetType == TargetType.Other && w.Target.Entity != null)
+                            ai.Session.NewThreat(w);
                         
                         return;
                     }
@@ -344,8 +344,8 @@ namespace WeaponCore.Support
                             targetType = TargetType.Other;
                             target.TransferTo(w.Target, w.Comp.Session.Tick);
 
-                            if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
-                                ai.Session.NewThreatLogging(w);
+                            if (targetType == TargetType.Other && w.Target.Entity != null)
+                                ai.Session.NewThreat(w);
 
                             return;
                         }
