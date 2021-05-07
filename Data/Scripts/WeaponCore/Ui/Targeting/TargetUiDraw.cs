@@ -79,7 +79,8 @@ namespace WeaponCore
         {
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
-            var detailsHud = _session.Settings.ClientConfig.Details;
+            var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
+
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -91,7 +92,11 @@ namespace WeaponCore
                 var primary = i == 0;
                 var shielded = targetState.ShieldHealth >= 0;
 
-                var collection = detailsHud ? primary ? _primaryTargetHuds : _secondaryTargetHuds : primary ? _primaryMinimalHuds : _secondaryMinimalHuds;
+                Dictionary<string, HudInfo> collection;
+                if (detailedHud)
+                    collection = primary ? _primaryTargetHuds : _secondaryTargetHuds;
+                else
+                    collection = primary ? _primaryMinimalHuds : _secondaryMinimalHuds;
 
                 foreach (var hud in collection.Keys)
                 {
@@ -141,7 +146,7 @@ namespace WeaponCore
                         {
                             string text;
                             Vector2 textOffset;
-                            if (TextStatus(j, targetState, scale, localOffset, shielded, out text, out textOffset))
+                            if (TextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                             {
                                 var textColor = Color.White;
                                 var fontSize = (float)Math.Round(21 * fontScale, 1);
@@ -182,15 +187,19 @@ namespace WeaponCore
             }
         }
 
-        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, out string textStr, out Vector2 textOffset)
+        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
         {
-            var display = shielded || slot < 6 || slot == 10;
-            if (!display)
-            {
+            var showAll = details && shielded;
+            var minimal = !details;
+            var skipShield = !showAll && !minimal;
+            var skip = minimal && slot != 1 && slot != 2 && slot != 10 || skipShield && slot > 5 && slot != 10;
+            
+            if (skip) {
                 textStr = string.Empty;
                 textOffset = Vector2.Zero;
                 return false;
             }
+
             textOffset = localOffset;
 
             var aspectScale = (2.37037f / _session.AspectRatio);
@@ -219,7 +228,10 @@ namespace WeaponCore
                 case 2:
                     textStr = $"THREAT: {targetState.ThreatLvl}";
                     textOffset.X -= xOdd * aspectScale;
-                    textOffset.Y += yStart - (yStep * 1);
+                    if (minimal)
+                        textOffset.Y += yStart;
+                    else
+                        textOffset.Y += yStart - (yStep * 1);
                     break;
                 case 3:
 
@@ -270,18 +282,19 @@ namespace WeaponCore
                 case 10:
                     textStr = targetState.Name;
                     textOffset.X -= xCenter * aspectScale;
-                    if (shielded)
+                    if (minimal)
+                        textOffset.Y += yStart - (yStep * 1);
+                    else if (shielded)
                         textOffset.Y += yStart - (yStep * 5);
                     else
                         textOffset.Y += yStart - (yStep * 3);
                     break;
                 default:
-                    display = false;
                     textStr = string.Empty;
                     textOffset = Vector2.Zero;
-                    break;
+                    return false;
             }
-            return display;
+            return true;
         }
 
         private void InitTargetOffset()

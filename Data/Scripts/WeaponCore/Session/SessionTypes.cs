@@ -821,7 +821,7 @@ namespace WeaponCore
             None,
             Keyboard,
             Action,
-            Details,
+            Info,
             Mouse,
         }
 

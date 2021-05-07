@@ -29,10 +29,10 @@ namespace WeaponCore
         internal bool AltPressed;
         internal bool ControlKeyPressed;
         internal bool ActionKeyPressed;
-        internal bool DetailsKeyPressed;
+        internal bool InfoKeyPressed;
         internal bool ControlKeyReleased;
         internal bool ActionKeyReleased;
-        internal bool DetailsKeyReleased;
+        internal bool InfoKeyReleased;
         internal bool BlackListActive1;
         internal bool CtrlPressed;
         internal bool AnyKeyPressed;
@@ -50,7 +50,7 @@ namespace WeaponCore
         internal readonly InputStateData ClientInputState;
         internal MyKeys ControlKey;
         internal MyKeys ActionKey;
-        internal MyKeys DetailsKey;
+        internal MyKeys InfoKey;
 
         internal MyMouseButtonsEnum MouseButtonMenu;
 
@@ -159,8 +159,8 @@ namespace WeaponCore
             {
                 //ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
                 ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
-                DetailsKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(DetailsKey);
-                if (ActionKeyPressed || DetailsKeyReleased)
+                InfoKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(InfoKey);
+                if (ActionKeyPressed || InfoKeyReleased)
                 {
                     if (!BlackListActive1)
                         BlackList1(true);
@@ -209,9 +209,9 @@ namespace WeaponCore
                         }
                     }
 
-                    if (DetailsKeyReleased)
+                    if (InfoKeyReleased)
                     {
-                        _session.Settings.ClientConfig.Details = !_session.Settings.ClientConfig.Details;
+                        _session.Settings.ClientConfig.MinimalHud = !_session.Settings.ClientConfig.MinimalHud;
                         _session.Settings.VersionControl.UpdateClientCfgFile();
                     }
 
@@ -222,8 +222,8 @@ namespace WeaponCore
             {
                 ActionKeyPressed = false;
                 ActionKeyReleased = false;
-                DetailsKeyPressed = false;
-                DetailsKeyReleased = false;
+                InfoKeyPressed = false;
+                InfoKeyReleased = false;
             }
 
             if (_session.MpActive && !s.InGridAiBlock)
