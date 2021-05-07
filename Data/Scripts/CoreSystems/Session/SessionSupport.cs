@@ -745,14 +745,14 @@ namespace CoreSystems
             return false;
         }
 
-        internal void NewThreatLogging(Weapon w)
+        internal void NewThreat(Weapon w)
         {
             try
             {
                 var topmost = w.Target.TargetEntity.GetTopMostParent();
                 var ownerId = w.BaseComp.IsBlock ? w.BaseComp.Cube.OwnerId : w.Comp.GunBase.OwnerId;
                 Ai.TargetInfo info;
-                if (topmost != null && w.BaseComp.Ai.PreviousTargets.Add(topmost) && w.BaseComp.Ai.Targets.TryGetValue(topmost, out info))
+                if (topmost != null && w.BaseComp.Ai.Construct.RootAi.Construct.PreviousTargets.Add(topmost) && w.BaseComp.Ai.Targets.TryGetValue(topmost, out info))
                 {
                     IMyPlayer weaponOwner;
                     Players.TryGetValue(ownerId, out weaponOwner);

@@ -303,8 +303,8 @@ namespace CoreSystems.Support
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
 
-                        if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.TargetEntity != null)
-                            ai.Session.NewThreatLogging(w);
+                        if (targetType == TargetType.Other && w.Target.TargetEntity != null)
+                            ai.Session.NewThreat(w);
                         
                         return;
                     }
@@ -338,8 +338,8 @@ namespace CoreSystems.Support
                             targetType = TargetType.Other;
                             target.TransferTo(w.Target, w.Comp.Session.Tick);
 
-                            if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.TargetEntity != null)
-                                ai.Session.NewThreatLogging(w);
+                            if (targetType == TargetType.Other && w.Target.TargetEntity != null)
+                                ai.Session.NewThreat(w);
 
                             return;
                         }

@@ -373,7 +373,6 @@ namespace CoreSystems
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
         internal bool DebugLos = false;
-        internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
         internal bool ColorArmorToggle;
         internal bool EwarNetDataDirty;

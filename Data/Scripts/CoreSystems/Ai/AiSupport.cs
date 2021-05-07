@@ -401,7 +401,6 @@ namespace CoreSystems.Support
             TestShields.Clear();
             NewEntities.Clear();
             SubGridsRegistered.Clear();
-            PreviousTargets.Clear();
             SourceCount = 0;
             PartCount = 0;
             AiOwner = 0;

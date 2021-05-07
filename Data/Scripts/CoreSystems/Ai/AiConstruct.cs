@@ -133,6 +133,7 @@ namespace CoreSystems.Support
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
             internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
+            internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
             internal float OptimalDps;
             internal int BlockCount;
             internal Ai RootAi;
@@ -362,6 +363,7 @@ namespace CoreSystems.Support
                 LargestAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
+                PreviousTargets.Clear();
             }
         }
     }
