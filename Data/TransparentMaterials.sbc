@@ -1181,7 +1181,7 @@
 		<TransparentMaterial>
 			<Id>
 				<TypeId>TransparentMaterialDefinition</TypeId>
-				<SubtypeId>WC_HUD_NoShieldPrimary</SubtypeId>
+				<SubtypeId>WC_HUD_NoShield_Active</SubtypeId>
 			</Id>
 			<AlphaMistingEnable>false</AlphaMistingEnable>
 			<AlphaSaturation>1</AlphaSaturation>
@@ -1234,7 +1234,7 @@
 		<TransparentMaterial>
 			<Id>
 				<TypeId>TransparentMaterialDefinition</TypeId>
-				<SubtypeId>WC_HUD_ShieldPrimary</SubtypeId>
+				<SubtypeId>WC_HUD_Shield_Active</SubtypeId>
 			</Id>
 			<AlphaMistingEnable>false</AlphaMistingEnable>
 			<AlphaSaturation>1</AlphaSaturation>
