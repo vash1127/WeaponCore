@@ -21,10 +21,13 @@ namespace WeaponCore
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
+        public bool SuspectedDrone;
+
         internal void Clean()
         {
             Targeting = null;
             MyCubeBocks.ClearImmediate();
+            MostBlocks = 0;
         }
     }
 
@@ -77,14 +80,14 @@ namespace WeaponCore
                             continue;
                         }
 
-                        ai.TargetingInfo.Clean();
 
                         if (ai.MyPlanetTmp != null)
                             ai.MyPlanetInfo();
 
                         foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add((MyCubeGrid) sub);
                         if (ai.SubGridsChanged) ai.SubGridChanges(false, true);
-
+                        
+                        ai.TargetingInfo.Clean(ai);
                         ai.CleanSortedTargets();
                         ai.Targets.Clear();
 
@@ -110,8 +113,11 @@ namespace WeaponCore
 
                             var checkFocus = ai.Construct.Data.Repo.FocusData.HasFocus && targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[0] || targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[1];
 
-                            if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
-                                ai.RamProximity = true;
+                            if (targetInfo.Drone) 
+                                ai.TargetingInfo.DroneAdd(ai, targetInfo);
+
+                            if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid) 
+                                ai.TargetingInfo.RamProximity = true;
 
                             if (targetInfo.DistSqr < ai.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
                             {
@@ -125,6 +131,12 @@ namespace WeaponCore
                                 {
                                     ai.TargetingInfo.OtherInRange = true;
                                     ai.TargetingInfo.OtherRangeSqr = targetInfo.DistSqr;
+                                }
+
+                                if (targetInfo.Drone && targetInfo.DistSqr < ai.TargetingInfo.DroneRangeSqr)
+                                {
+                                    ai.TargetingInfo.OtherInRange = true;
+                                    ai.TargetingInfo.DroneRangeSqr = targetInfo.DistSqr;
                                 }
                             }
                         }
@@ -219,16 +231,21 @@ namespace WeaponCore
                     var allFat = gridMap.MyCubeBocks;
                     var terminals = 0;
                     var tStatus = gridMap.Targeting == null || gridMap.Targeting.AllowScanning;
+                    var thrusters = 0;
+                    var gyros = 0;
+                    var powerProducers = 0;
+                    var warHead = 0;
+
                     for (int j = 0; j < allFat.Count; j++) {
                         var fat = allFat[j];
                         if (!(fat is IMyTerminalBlock)) continue;
                         terminals++;
                         using (fat.Pin()) {
 
-
                             if (fat.MarkedForClose) continue;
                             var cockpit = fat as MyCockpit;
                             var decoy = fat as IMyDecoy;
+                            var bomb = fat as IMyWarhead;
 
                             if (decoy != null) {
                                 WeaponDefinition.TargetingDef.BlockTypes type;
@@ -243,17 +260,33 @@ namespace WeaponCore
                             }
 
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
-                            else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
-                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                            else if (fat is IMyPowerProducer)
                             {
+                                newTypeMap[Power].Add(fat);
+                                powerProducers++;
+                            }
+                            else if (fat is IMyGunBaseUser || bomb != null || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                            {
+                                if (bomb != null)
+                                    warHead++;
+
                                 if (!tStatus && fat is IMyGunBaseUser && !WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
                                     tStatus = gridMap.Targeting.AllowScanning = true;
 
                                 newTypeMap[Offense].Add(fat);
                             }
                             else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
-                            else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
-                            else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
+                            else if (fat is MyThrust)
+                            {
+                                newTypeMap[Thrust].Add(fat);
+                                thrusters++;
+                            }
+                            else if (fat is MyGyro)
+                            {
+                                newTypeMap[Steering].Add(fat);
+                                gyros++;
+                            }
+
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
                         }
                     }
@@ -262,10 +295,12 @@ namespace WeaponCore
                         type.Value.ApplyAdditions();
                     
                     gridMap.MyCubeBocks.ApplyAdditions();
-
+                    gridMap.SuspectedDrone = warHead > 0 || powerProducers > 0 && thrusters > 0 && gyros > 0;
                     gridMap.Trash = terminals == 0;
                     var gridBlocks = grid.BlocksCount;
+
                     if (gridBlocks > gridMap.MostBlocks) gridMap.MostBlocks = gridBlocks;
+
                     ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap)) {
                         GridToBlockTypeMap[grid] = newTypeMap;

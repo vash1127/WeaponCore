@@ -324,6 +324,20 @@ namespace WeaponCore.Control
             session.CustomActions.Add(action);
         }
 
+        internal static void CreateRepelMode(Session session)
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_RepelMode");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder("Repel Mode");
+            action.Action = CustomActions.TerminalActionToggleRepelMode;
+            action.Writer = CustomActions.RepelWriter;
+            action.Enabled = TerminalHelpers.HasTracking;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            session.CustomActions.Add(action);
+        }
+
         internal static void CreateOnOffActionSet(Session session, IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, bool> enabler, bool group = false)
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");

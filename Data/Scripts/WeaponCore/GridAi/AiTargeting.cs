@@ -28,7 +28,6 @@ namespace WeaponCore.Support
     {
         internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
-            //w.HitOther = false;
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
 

@@ -20,6 +20,11 @@ namespace WeaponCore
             return enableActivator;
         }
 
+        internal bool ActivateDroneNotice()
+        {
+            return _session.TrackingAi.Construct.RootAi.Construct.DroneAlert;
+        }
+
         internal void ResetCache()
         {
             _cachedPointerPos = false;

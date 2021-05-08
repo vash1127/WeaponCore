@@ -19,6 +19,7 @@ namespace WeaponCore
             
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
+            if (ActivateDroneNotice()) DrawDroneNotice();
             if (ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
             {
@@ -75,12 +76,48 @@ namespace WeaponCore
             DrawReticle = true;
         }
 
+        private void DrawDroneNotice()
+        {
+            var s = _session;
+            Vector3D offset;
+            Vector2 localOffset;
+
+            float scale;
+            float screenScale;
+            float fontScale;
+            MyStringId textureName;
+
+            var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+            var color = new Vector4(1, 1, 1, hudOpacity);
+
+            _alertHudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
+
+            MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
+            string textLine1;
+            string textLine2;
+            Vector2 textOffset1;
+            Vector2 textOffset2;
+            Vector4 text1Color;
+            Vector4 text2Color;
+            if (s.Tick20 && DroneText(localOffset, scale, out textLine1, out textLine2, out textOffset1, out textOffset2, out text1Color, out text2Color))
+            {
+                var fontSize = (float)Math.Round(24 * fontScale, 1);
+                var fontHeight = 0.75f;
+                var fontAge = 18;
+                var fontJustify = Hud.Justify.None;
+                var fontType = Hud.FontType.Shadow;
+                var elementId = 123456;
+
+                s.HudUi.AddText(text: textLine1, x: textOffset1.X, y: textOffset1.Y, elementId: elementId, ttl: fontAge, color: text1Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                s.HudUi.AddText(text: textLine2, x: textOffset2.X, y: textOffset2.Y, elementId: elementId + 1, ttl: fontAge, color: text2Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+            }
+        }
+
         private void DrawTarget()
         {
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
             var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
-
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -90,7 +127,7 @@ namespace WeaponCore
                 var targetState = s.TrackingAi.TargetState[i];
                 var isActive = i == focus.ActiveId;
                 var primary = i == 0;
-                var shielded = targetState.ShieldHealth >= 0;
+                var shielded = detailedHud && targetState.ShieldHealth >= 0;
 
                 Dictionary<string, HudInfo> collection;
                 if (detailedHud)
@@ -146,7 +183,7 @@ namespace WeaponCore
                         {
                             string text;
                             Vector2 textOffset;
-                            if (TextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
+                            if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                             {
                                 var textColor = Color.White;
                                 var fontSize = (float)Math.Round(21 * fontScale, 1);
@@ -187,7 +224,7 @@ namespace WeaponCore
             }
         }
 
-        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
+        private bool TargetTextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
         {
             var showAll = details && shielded;
             var minimal = !details;
@@ -226,7 +263,8 @@ namespace WeaponCore
                     textOffset.Y += yStart;
                     break;
                 case 2:
-                    textStr = $"THREAT: {targetState.ThreatLvl}";
+                    var threatLvl = targetState.ThreatLvl > 0 ? targetState.ThreatLvl : 0; 
+                    textStr = $"THREAT: {threatLvl}";
                     textOffset.X -= xOdd * aspectScale;
                     if (minimal)
                         textOffset.Y += yStart;
@@ -239,8 +277,11 @@ namespace WeaponCore
                         textStr = "INTERCEPT";
                     else if (targetState.Engagement == 1)
                         textStr = "RETREATING";
-                    else
+                    else if (targetState.Speed < 1)
                         textStr = "STATIONARY";
+                    else
+                        textStr = "PARALLEL";
+
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 1);
                     break;
@@ -296,6 +337,28 @@ namespace WeaponCore
             }
             return true;
         }
+
+        private bool DroneText(Vector2 localOffset, float scale, out string text1, out string text2, out Vector2 offset1, out Vector2 offset2, out Vector4 color1, out Vector4 color2)
+        {
+            var aspectScale = (2.37037f / _session.AspectRatio);
+            var xCenter = 0.22f * scale;
+            var yStart = 0.885f * scale;
+            var yStep = 0.12f * scale;
+
+            offset1 = localOffset;
+            offset1.X -= xCenter * aspectScale;
+            offset1.Y += yStart;
+            offset2.X = offset1.X;
+            offset2.Y = offset1.Y - yStep;
+
+            text1 = $"Incoming drones detected!";
+            text2 = $"              Threats: {_session.TrackingAi.Construct.RootAi.Construct.DroneCount}";
+
+            color1 = new Vector4(1, 1, 1, 1);
+            color2 = _session.Count < 60 ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0, 0, 1);
+            return true;
+        }
+
 
         private void InitTargetOffset()
         {
@@ -390,12 +453,6 @@ namespace WeaponCore
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
-
-                    if (targetAi != null)
-                    {
-
-
-                    }
                 }
 
                 var state = ai.TargetState[i];

@@ -288,6 +288,19 @@ namespace WeaponCore.Control
                     w.ChangeAmmo(next);
             }
         }
+
+        internal static void TerminalActionToggleRepelMode(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Repel;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Repel", newValue, comp.Session.PlayerId);
+        }
+
         #endregion
 
         #region Writters
@@ -453,6 +466,16 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.AmmoSelectionWeaponIds.Count == 0) return;
             var w = comp.Platform.Weapons[comp.AmmoSelectionWeaponIds[0]];
             sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
+        }
+
+        internal static void RepelWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp.Data.Repo.Base.Set.Overrides.Repel)
+                sb.Append("On");
+            else
+                sb.Append("Off");
         }
         #endregion
     }

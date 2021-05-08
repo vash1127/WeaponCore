@@ -16,11 +16,11 @@ namespace WeaponCore.Control
         {
             AddWeaponOnOff<T>(session, -2, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.RequestSetGuidance, UiGuidance);
 
-            AddSliderDamage<T>(session, -3, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.RequestSetDps, UiDamageSlider);
+            AddSliderDamage<T>(session, -3, "WC_Damage", "Change Damage Per Shot", "Change the damage per shot", WepUi.GetDps, WepUi.RequestSetDps, UiDamageSlider);
 
-            AddSliderRof<T>(session, -4, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.RequestSetRof, UiRofSlider);
+            AddSliderRof<T>(session, -4, "WC_ROF", "Change Rate of Fire", "Change rate of fire", WepUi.GetRof, WepUi.RequestSetRof, UiRofSlider);
 
-            AddCheckbox<T>(session, -5, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.RequestSetOverload, true, UiOverLoad);
+            AddCheckbox<T>(session, -5, "Overload", "Overload Damage", "Overload damage", WepUi.GetOverload, WepUi.RequestSetOverload, true, UiOverLoad);
 
         }
 
@@ -28,39 +28,41 @@ namespace WeaponCore.Control
         {
             Separator<T>(session, -7, "WC_sep2", HasTracking);
 
-            AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange, true);
+            AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Change the min/max targeting range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange, true);
 
-            AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Target Neutrals", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Fire on targets that are neutral", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Target Unowned", WepUi.GetUnowned, WepUi.RequestSetUnowned, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Fire on targets with no owner", WepUi.GetUnowned, WepUi.RequestSetUnowned, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -10, "Biologicals", "Target Biologicals", "Target Biologicals", WepUi.GetBiologicals, WepUi.RequestSetBiologicals, true, TrackBiologicals);
+            AddOnOffSwitchNoAction<T>(session, -10, "Biologicals", "Target Biologicals", "Fire on players and biological NPCs", WepUi.GetBiologicals, WepUi.RequestSetBiologicals, true, TrackBiologicals);
 
-            AddOnOffSwitchNoAction<T>(session, -11, "Projectiles", "Target Projectiles", "Target Projectiles", WepUi.GetProjectiles, WepUi.RequestSetProjectiles, true,TrackProjectiles);
+            AddOnOffSwitchNoAction<T>(session, -11, "Projectiles", "Target Projectiles", "Fire on incoming projectiles", WepUi.GetProjectiles, WepUi.RequestSetProjectiles, true,TrackProjectiles);
 
             AddOnOffSwitchNoAction<T>(session, -12, "Meteors", "Target Meteors", "Target Meteors", WepUi.GetMeteors, WepUi.RequestSetMeteors, true, TrackMeteors);
 
             AddOnOffSwitchNoAction<T>(session, -12, "Grids", "Target Grids", "Target Grids", WepUi.GetGrids, WepUi.RequestSetGrids, true, TrackGrids);
 
-            AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Target FocusFire", WepUi.GetFocusFire,  WepUi.RequestSetFocusFire, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Focus all fire on the specified target", WepUi.GetFocusFire,  WepUi.RequestSetFocusFire, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target SubSystems", WepUi.GetSubSystems, WepUi.RequestSetSubSystems, true, HasTracking);
-
-            Separator<T>(session, -15, "WC_sep3", HasTracking);
-
-            AddComboboxNoAction<T>(session, -16, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetSubSystem, WepUi.RequestSubSystem, WepUi.ListSubSystems, HasTracking);
-
-            AddComboboxNoAction<T>(session, -17, "TrackingMode", "Tracking Mode", "Tracking Mode", WepUi.GetMovementMode, WepUi.RequestMovementMode, WepUi.ListMovementModes, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target specific SubSystems of a target", WepUi.GetSubSystems, WepUi.RequestSetSubSystems, true, HasTracking);
             
-            AddComboboxNoAction<T>(session, -18, "ControlModes", "Control Mode", "Control Mode", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
+            AddOnOffSwitchNoAction<T>(session, -15, "Repel", "Repel Mode", "Aggressively focus and repel small threats", WepUi.GetRepel, WepUi.RequestSetRepel, true, HasTracking);
 
-            Separator<T>(session, -19, "WC_sep4", HasTracking);
+            Separator<T>(session, -16, "WC_sep3", HasTracking);
+
+            AddComboboxNoAction<T>(session, -17, "PickSubSystem", "Pick SubSystem", "Select the target subsystem to focus fire on", WepUi.GetSubSystem, WepUi.RequestSubSystem, WepUi.ListSubSystems, HasTracking);
+
+            AddComboboxNoAction<T>(session, -18, "TrackingMode", "Tracking Mode", "Movement fire control requirements", WepUi.GetMovementMode, WepUi.RequestMovementMode, WepUi.ListMovementModes, HasTracking);
+            
+            AddComboboxNoAction<T>(session, -19, "ControlModes", "Control Mode", "Select the aim control mode for the weapon", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
+
+            Separator<T>(session, -20, "WC_sep4", HasTracking);
         }
 
         internal static void AddDecoyControls<T>(Session session) where T: IMyTerminalBlock
         {
             Separator<T>(session, -7, "WC_decoySep1", Istrue);
-            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetDecoySubSystem, WepUi.RequestDecoySubSystem, WepUi.ListDecoySubSystems, Istrue);
+            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick what subsystem this decoy will imitate", WepUi.GetDecoySubSystem, WepUi.RequestDecoySubSystem, WepUi.ListDecoySubSystems, Istrue);
         }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock

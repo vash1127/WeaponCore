@@ -117,7 +117,9 @@ namespace WeaponCore.Projectiles
                     if (checkShield && !p.Info.ShieldBypassed && !p.Info.EwarActive || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
                         shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
-                            if (p.Info.IsShrapnel && p.Info.Age < 1 || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
+
+                            var shrapnelSpawn = p.Info.IsShrapnel && p.Info.Age < 1;
+                            if (Vector3D.Transform(!shrapnelSpawn ? p.Info.Origin : p.Info.Target.FiringCube.PositionComp.WorldMatrixRef.Translation, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
 
                                 p.EntitiesNear = true;
                                 var dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(p.Beam.From, p.Beam.Direction));

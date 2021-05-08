@@ -316,6 +316,22 @@ namespace WeaponCore
             block.RefreshCustomInfo();
         }
 
+        internal static bool GetRepel(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Base.Set.Overrides.Repel;
+        }
+
+        internal static void RequestSetRepel(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            WeaponComponent.RequestSetValue(comp, "Repel", value, comp.Session.PlayerId);
+        }
+
         internal static void ListSubSystems(List<MyTerminalControlComboBoxItem> subSystemList)
         {
             foreach (var sub in SubList) subSystemList.Add(sub);

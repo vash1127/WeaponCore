@@ -265,6 +265,10 @@ namespace WeaponCore.Support
                     o.Neutrals = enabled;
                     clearTargets = true;
                     break;
+                case "Repel":
+                    o.Repel = enabled;
+                    clearTargets = true;
+                    break;
             }
 
             ResetCompState(comp, playerId, clearTargets);

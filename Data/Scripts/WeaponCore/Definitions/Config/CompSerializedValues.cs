@@ -418,6 +418,8 @@ namespace WeaponCore
         [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
         [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
+        [ProtoMember(15)] public bool Repel;
+
 
         public GroupOverrides() { }
 
@@ -437,6 +439,7 @@ namespace WeaponCore
             Grids = syncFrom.Grids;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
+            Repel = syncFrom.Repel;
         }
     }
 }

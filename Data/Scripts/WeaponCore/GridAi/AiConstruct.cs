@@ -138,12 +138,15 @@ namespace WeaponCore.Support
             internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
             internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
-            internal float OptimalDps;
-            internal int BlockCount;
             internal GridAi RootAi;
             internal GridAi LargestAi;
+            internal float OptimalDps;
+            internal int BlockCount;
+            internal int DroneCount;
+            internal uint LastDroneTick;
             internal bool NewInventoryDetected;
-            
+            internal bool DroneAlert;
+
             internal enum RefreshCaller
             {
                 Init,
@@ -212,6 +215,11 @@ namespace WeaponCore.Support
                 LargestAi = null;
             }
 
+            internal void DroneCleanup()
+            {
+                DroneAlert = false;
+                DroneCount = 0;
+            }
 
             internal void UpdateConstruct(UpdateType type, bool sync = true)
             {

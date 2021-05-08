@@ -134,6 +134,7 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateGrids(session);
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
+            CreateCustomActions<T>.CreateRepelMode(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)

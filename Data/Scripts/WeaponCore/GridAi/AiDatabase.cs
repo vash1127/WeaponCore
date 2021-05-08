@@ -87,6 +87,7 @@ namespace WeaponCore.Support
                             continue;
 
                         var loneWarhead = false;
+                        var hostileDrone = false;
                         if (fatCount <= 20)  { // possible debris
 
                             var valid = false;
@@ -94,6 +95,7 @@ namespace WeaponCore.Support
                                 var fat = allFat[j];
                                 var warhead = fat is IMyWarhead;
                                 if (warhead || fat is IMyTerminalBlock && fat.IsWorking) {
+                                    hostileDrone = warhead || gridMap.SuspectedDrone;
                                     loneWarhead = warhead && fatCount == 1;
                                     valid = true;
                                     break;
@@ -111,10 +113,10 @@ namespace WeaponCore.Support
                         else 
                             partCount = gridMap.MostBlocks; 
 
-                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead? fatCount : 2));// bump warhead to 2 fatblocks so its not ignored by targeting
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead? fatCount : 2, hostileDrone, loneWarhead));// bump warhead to 2 fatblocks so its not ignored by targeting
                         ValidGrids.Add(ent);
                     }
-                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
+                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0, false, false));
                 }
             }
             FinalizeTargetDb();

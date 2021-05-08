@@ -115,7 +115,6 @@ namespace WeaponCore.Support
         internal bool FadeOut;
         internal bool Concealed;
         internal bool RamProtection = true;
-        internal bool RamProximity;
         internal bool AccelChecked;
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
