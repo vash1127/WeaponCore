@@ -16,13 +16,13 @@ namespace WeaponCore
             if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
-            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed || _session.UiInput.CameraBlockView;
             return enableActivator;
         }
 
         internal bool ActivateDroneNotice()
         {
-            return _session.TrackingAi.Construct.RootAi.Construct.DroneAlert;
+            return _session.TrackingAi.Construct.DroneAlert;
         }
 
         internal void ResetCache()
@@ -58,7 +58,14 @@ namespace WeaponCore
             var cockPit = s.ActiveCockPit;
             Vector3D end;
 
-            if (!s.UiInput.FirstPersonView) {
+            if (s.UiInput.CameraBlockView)
+            {
+                var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
+                AimPosition = offetPosition;
+                AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
+                end = offetPosition + (AimDirection * ai.MaxTargetingRange);
+            }
+            else if (!s.UiInput.FirstPersonView) {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);

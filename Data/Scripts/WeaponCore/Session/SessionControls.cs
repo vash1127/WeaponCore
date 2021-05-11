@@ -19,7 +19,12 @@ namespace WeaponCore
         {
             CreateCustomDecoyActions<T>(session);
             TerminalHelpers.AddDecoyControls<T>(session);
+        }
 
+        public static void CreateCameraTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomCameraActions<T>(session);
+            TerminalHelpers.AddCameraControls<T>(session);
         }
 
         public static void EarlyInitControls(Session session)
@@ -116,6 +121,10 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateDecoy(session);
         }
 
+        internal static void CreateCustomCameraActions<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateCamera(session);
+        }
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateCycleAmmo(session);
@@ -135,6 +144,7 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
             CreateCustomActions<T>.CreateRepelMode(session);
+            CreateCustomActions<T>.CreateWeaponCameraGroups(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)

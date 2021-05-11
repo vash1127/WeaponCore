@@ -239,7 +239,7 @@ namespace WeaponCore
                     if (HudUi.TexturesToAdd > 0 || HudUi.KeepBackground) 
                         HudUi.DrawTextures();
 
-                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.CameraBlockView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
                         TargetUi.DrawTargetUi();
 
                     if (HudUi.AgingTextures)

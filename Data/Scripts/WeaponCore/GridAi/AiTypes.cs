@@ -64,7 +64,6 @@ namespace WeaponCore.Support
             internal double DroneRangeSqr;
             internal bool SomethingInRange;
             internal bool RamProximity;
-            internal bool DroneAlert;
             internal int DroneCount;
 
             internal bool ValidTargetExists(Weapon w)
@@ -81,15 +80,14 @@ namespace WeaponCore.Support
             {
                 var rootConstruct = ai.Construct.RootAi.Construct;
                 DroneCount++;
-                rootConstruct.LastDroneTick = ai.Session.Tick;
 
-                if (DroneCount > rootConstruct.DroneCount)
+                if (DroneCount > rootConstruct.DroneCount) {
                     rootConstruct.DroneCount = DroneCount;
-
-                if (info.DistSqr < 2250000) {
-                    DroneAlert = true;
-                    rootConstruct.DroneAlert = true;
+                    rootConstruct.LastDroneTick = ai.Session.Tick + 1;
                 }
+
+                if (info.DistSqr < 9000000) 
+                    rootConstruct.DroneAlert = true;
             }
 
             internal void Clean(GridAi ai)
@@ -101,7 +99,6 @@ namespace WeaponCore.Support
                 DroneInRange = false;
                 DroneRangeSqr = double.MaxValue;
                 SomethingInRange = false;
-                DroneAlert = false;
                 RamProximity = false;
                 DroneCount = 0;
 
@@ -160,8 +157,8 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
-                var xDroneThreat = (x.Approaching && x.DistSqr < 2250000 || x.DistSqr < 640000) && x.Drone;
-                var yDroneThreat = (y.Approaching && y.DistSqr < 2250000 || y.DistSqr < 640000) && y.Drone;
+                var xDroneThreat = (x.Approaching && x.DistSqr < 9000000 || x.DistSqr < 1000000) && x.Drone;
+                var yDroneThreat = (y.Approaching && y.DistSqr < 9000000 || y.DistSqr < 1000000) && y.Drone;
                 var droneCompare = xDroneThreat.CompareTo(yDroneThreat);
 
                 if (droneCompare != 0) return -droneCompare;

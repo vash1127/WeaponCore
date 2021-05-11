@@ -34,8 +34,11 @@ namespace WeaponCore
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
-
-            if (s.UiInput.FirstPersonView)
+            if (s.UiInput.CameraBlockView)
+            {
+                _pointerPosition.Y = 0f;
+            }
+            else if (s.UiInput.FirstPersonView)
             {
                 if (!MyUtils.IsZero(_pointerPosition.Y))
                 {

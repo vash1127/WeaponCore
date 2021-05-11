@@ -50,6 +50,7 @@ namespace WeaponCore
         internal volatile bool FixedGunDetected;
         internal volatile bool SorterDetected;
         internal volatile bool DecoyDetected;
+        internal volatile bool CameraDetected;
         internal volatile bool BaseControlsActions;
         internal volatile bool EarlyInitOver;
         internal volatile uint LastDeform;
@@ -99,6 +100,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraGroupMappings = new ConcurrentDictionary<MyCubeBlock, long>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -144,6 +146,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
+
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -228,6 +231,7 @@ namespace WeaponCore
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
         internal MyCubeBlock ActiveControlBlock;
+        internal MyCameraBlock ActiveCameraBlock;
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;

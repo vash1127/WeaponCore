@@ -32,6 +32,10 @@ namespace WeaponCore
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
+                var camera = Session.CameraController?.Entity as MyCameraBlock;
+                if (camera == null || !GroupedCamera(camera))
+                    ActiveCameraBlock = null;
+
                 InGridAiBlock = true;
                 TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
@@ -57,9 +61,22 @@ namespace WeaponCore
                 TrackingAi = null;
                 ActiveCockPit = null;
                 ActiveControlBlock = null;
+                ActiveCameraBlock = null;
             }
             return InGridAiBlock;
         }
+
+        private bool GroupedCamera(MyCameraBlock camera)
+        {
+            long cameraGroupId;
+            if (CameraGroupMappings.TryGetValue(camera, out cameraGroupId) && cameraGroupId != 0) {
+                ActiveCameraBlock = camera;
+                return true;
+            }
+            ActiveCameraBlock = null;
+            return false;
+        }
+
 
         internal void EntityControlUpdate()
         {

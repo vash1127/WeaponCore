@@ -135,7 +135,7 @@ namespace WeaponCore
 
                                 if (targetInfo.Drone && targetInfo.DistSqr < ai.TargetingInfo.DroneRangeSqr)
                                 {
-                                    ai.TargetingInfo.OtherInRange = true;
+                                    ai.TargetingInfo.DroneInRange = true;
                                     ai.TargetingInfo.DroneRangeSqr = targetInfo.DistSqr;
                                 }
                             }

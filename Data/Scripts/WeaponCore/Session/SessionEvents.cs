@@ -34,6 +34,8 @@ namespace WeaponCore
                 var turret = cube as IMyLargeTurretBase;
                 var controllableGun = cube as IMyUserControllableGun;
                 var decoy = cube as IMyDecoy;
+                var camera = cube as MyCameraBlock;
+
                 if (sorter != null || turret != null || controllableGun != null)
                 {
                     if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id)) return;
@@ -78,6 +80,16 @@ namespace WeaponCore
                     }
 
                     cube.AddedToScene += DecoyAddedToScene;
+                }
+                else if (camera != null)
+                {
+                    if (!CameraDetected)
+                    {
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateCameraTerminalUi<IMyCameraBlock>(this));
+                        CameraDetected = true;
+                    }
+
+                    cube.AddedToScene += CameraAddedToScene;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
@@ -131,6 +143,44 @@ namespace WeaponCore
                     addColletion.ApplyAdditions();
                     DecoyMap[entity] = newType;
                 }
+            }
+        }
+
+        private void CameraAddedToScene(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged += CameraCustomDataChanged;
+            term.AppendingCustomInfo += CameraAppendingCustomInfo;
+            myEntity.OnMarkForClose += CameraOnMarkForClose;
+            CameraCustomDataChanged(term);
+        }
+
+        private void CameraAppendingCustomInfo(IMyTerminalBlock term, StringBuilder stringBuilder)
+        {
+            if (term.CustomData.Length == 1)
+                CameraCustomDataChanged(term);
+        }
+
+        private void CameraOnMarkForClose(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged -= CameraCustomDataChanged;
+            term.AppendingCustomInfo -= CameraAppendingCustomInfo;
+            myEntity.OnMarkForClose -= CameraOnMarkForClose;
+        }
+
+        private void CameraCustomDataChanged(IMyTerminalBlock term)
+        {
+            var entity = (MyEntity)term;
+            var cube = (MyCubeBlock)entity;
+            long value = -1;
+            if (long.TryParse(term.CustomData, out value))
+            {
+                CameraGroupMappings[cube] = value;
+            }
+            else
+            {
+                CameraGroupMappings[cube] = 0;
             }
         }
 

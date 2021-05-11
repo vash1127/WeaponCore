@@ -87,6 +87,7 @@ namespace WeaponCore.Support
                     FatBlockAdded(cube);
                 }
             }
+
         }
 
         public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
@@ -415,8 +416,13 @@ namespace WeaponCore.Support
             var session = ai.Session;
             var fd = ai.Construct.Data.Repo.FocusData;
 
-            fd.Target[fd.ActiveId] = target.EntityId;
-            ai.TargetResetTick = session.Tick + 1;
+            var oldTargetId = fd.Target[fd.ActiveId];
+            if (oldTargetId != target.EntityId)
+            {
+                fd.Target[fd.ActiveId] = target.EntityId;
+                ai.TargetResetTick = session.Tick + 1;
+            }
+
             ServerIsFocused(ai);
 
             ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));

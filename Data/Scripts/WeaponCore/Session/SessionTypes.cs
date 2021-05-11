@@ -323,6 +323,7 @@ namespace WeaponCore
                     {"FocusTargets", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                     {"MaxSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
                     {"MinSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
+                    {"CameraGroup", () => GetComp()?.Data.Repo.Base.Set.Overrides.CameraGroup.ToString() ?? string.Empty },
                 };
 
                 return compFields;

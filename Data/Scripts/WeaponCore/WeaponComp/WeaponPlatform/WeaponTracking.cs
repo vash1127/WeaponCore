@@ -232,7 +232,7 @@ namespace WeaponCore.Platform
             return targetCenter;
         }
 
-        internal static bool TrackingTarget(Weapon weapon, Target target, out bool targetLock)
+        internal static bool TrackingTarget(Weapon w, Target target, out bool targetLock)
         {
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
@@ -240,8 +240,12 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
             targetLock = false;
 
-            if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
-                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Position;
+            var baseData = w.Comp.Data.Repo.Base;
+            var session = w.System.Session;
+            var ai = w.Comp.Ai;
+
+            if (baseData.State.TrackingReticle)
+                targetCenter = session.PlayerDummyTargets[baseData.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -250,11 +254,11 @@ namespace WeaponCore.Platform
                 targetCenter = Vector3D.Zero;
 
             var validEstimate = true;
-            if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
+            if (w.System.Prediction != Prediction.Off && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
-                if (weapon.Comp.Data.Repo.Base.State.TrackingReticle) {
-                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].LinearVelocity;
-                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Acceleration;
+                if (baseData.State.TrackingReticle) {
+                    targetLinVel = session.PlayerDummyTargets[baseData.State.PlayerId].LinearVelocity;
+                    targetAccel = session.PlayerDummyTargets[baseData.State.PlayerId].Acceleration;
                 }
                 else {
                     var cube = target.Entity as MyCubeBlock;
@@ -271,59 +275,62 @@ namespace WeaponCore.Platform
                 }
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel, out validEstimate);
+                targetPos = TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate);
             }
             else
                 targetPos = targetCenter;
 
-            weapon.Target.TargetPos = targetPos;
+            w.Target.TargetPos = targetPos;
 
             double rangeToTargetSqr;
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
+            Vector3D.DistanceSquared(ref targetPos, ref w.MyPivotPos, out rangeToTargetSqr);
 
-            var targetDir = targetPos - weapon.MyPivotPos;
-            var readyToTrack = validEstimate && !weapon.Comp.ResettingSubparts && (weapon.Comp.Data.Repo.Base.State.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
+            var targetDir = targetPos - w.MyPivotPos;
+            var readyToTrack = validEstimate && !w.Comp.ResettingSubparts && (baseData.State.TrackingReticle || rangeToTargetSqr <= w.MaxTargetDistanceSqr && rangeToTargetSqr >= w.MinTargetDistanceSqr);
             
             var locked = true;
             var isTracking = false;
-            if (readyToTrack && weapon.Comp.Data.Repo.Base.State.Control != CompStateValues.ControlMode.Camera) {
+            if (readyToTrack && baseData.State.Control != CompStateValues.ControlMode.Camera) {
 
-                if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
+                if (MathFuncs.WeaponLookAt(w, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
 
-                    weapon.ReturingHome = false;
+                    w.ReturingHome = false;
                     locked = false;
-                    weapon.AimBarrel();
+                    w.AimBarrel();
                 }
             }
             
-            weapon.Rotating = !locked;
+            w.Rotating = !locked;
 
-            if (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
+            if (baseData.State.Control == CompStateValues.ControlMode.Camera)
                 return isTracking;
 
             var isAligned = false;
 
             if (isTracking)
-                isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
+                isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref w.MyPivotFwd, ref targetDir, w.AimingTolerance);
 
-            var wasAligned = weapon.Target.IsAligned;
-            weapon.Target.IsAligned = isAligned;
+            var wasAligned = w.Target.IsAligned;
+            w.Target.IsAligned = isAligned;
             var alignedChange = wasAligned != isAligned;
-            if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer && alignedChange) { 
-                for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++) {
-                    var w = weapon.Comp.Platform.Weapons[i];
-                    if (isAligned && !w.System.DesignatorWeapon)
-                        w.Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
-                    else if (!isAligned && w.System.DesignatorWeapon)
-                        w.Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
+            if (w.System.DesignatorWeapon && session.IsServer && alignedChange) { 
+                for (int i = 0; i < w.Comp.Platform.Weapons.Length; i++) {
+                    var weapon = w.Comp.Platform.Weapons[i];
+                    if (isAligned && !weapon.System.DesignatorWeapon)
+                        weapon.Target.Reset(session.Tick, Target.States.Designator);
+                    else if (!isAligned && weapon.System.DesignatorWeapon)
+                        weapon.Target.Reset(session.Tick, Target.States.Designator);
                 }
             }
 
-            targetLock = isTracking && weapon.Target.IsAligned;
+            targetLock = isTracking && w.Target.IsAligned;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && targetLock && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
-            
-            if (rayCheckTest && !weapon.RayCheckTest())
+            if (session.IsServer && baseData.Set.Overrides.Repel && ai.TargetingInfo.DroneInRange && !target.IsDrone && (session.AwakeCount == w.Acquire.SlotId || ai.Construct.RootAi.Construct.LastDroneTick == session.Tick) && GridAi.SwitchToDrone(w))
+                return true;
+
+            var rayCheckTest = !w.Comp.Session.IsClient && targetLock && (baseData.State.Control == CompStateValues.ControlMode.None || baseData.State.Control == CompStateValues.ControlMode.Ui) && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!w.Casting && session.Tick - w.Comp.LastRayCastTick > 29 || w.System.Values.HardPoint.Other.MuzzleCheck && session.Tick - w.LastMuzzleCheck > 29);
+
+            if (rayCheckTest && !w.RayCheckTest())
                 return false;
             
             return isTracking;

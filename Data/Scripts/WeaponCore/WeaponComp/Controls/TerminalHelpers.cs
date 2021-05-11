@@ -56,13 +56,21 @@ namespace WeaponCore.Control
             
             AddComboboxNoAction<T>(session, -19, "ControlModes", "Control Mode", "Select the aim control mode for the weapon", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
 
-            Separator<T>(session, -20, "WC_sep4", HasTracking);
+            AddWeaponCameraSliderRange<T>(session, -20, "WeaponCamera", "Weapon Camera Group", "Assign this weapon to a camera group", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraGroup, WepUi.GetMaxCameraGroup, true);
+
+            Separator<T>(session, -21, "WC_sep4", HasTracking);
         }
 
         internal static void AddDecoyControls<T>(Session session) where T: IMyTerminalBlock
         {
             Separator<T>(session, -7, "WC_decoySep1", Istrue);
             AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick what subsystem this decoy will imitate", WepUi.GetDecoySubSystem, WepUi.RequestDecoySubSystem, WepUi.ListDecoySubSystems, Istrue);
+        }
+
+        internal static void AddCameraControls<T>(Session session) where T : IMyTerminalBlock
+        {
+            Separator<T>(session, -7, "WC_cameraSep1", Istrue);
+            AddBlockCameraSliderRange<T>(session, -8, "WC_PickCameraGroup", "Camera Group", "Assign the camera weapon group to this camera", WepUi.GetBlockCamera, WepUi.RequestBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraGroup, WepUi.GetMaxCameraGroup, true);
         }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
@@ -181,6 +189,29 @@ namespace WeaponCore.Control
             builder.Append(WepUi.GetRange(block).ToString("N2"));
         }
 
+        internal static void SliderBlockCameraWriterRange(IMyTerminalBlock block, StringBuilder builder)
+        {
+            long value = -1;
+            string message;
+            if (string.IsNullOrEmpty(block.CustomData) || long.TryParse(block.CustomData, out value))
+            {
+                var group = value >= 0 ? value : 0;
+                message = value == 0 ? "Disabled" : group.ToString();
+            }
+            else message = "Invalid CustomData";
+
+            builder.Append(message);
+        }
+
+        internal static void SliderWeaponCameraWriterRange(IMyTerminalBlock block, StringBuilder builder)
+        {
+
+            var value = Convert.ToInt64(WepUi.GetWeaponCamera(block));
+            var message = value > 0 ? value.ToString() : "Disabled";
+
+            builder.Append(message);
+        }
+
         internal static void SliderWriterDamage(IMyTerminalBlock block, StringBuilder builder)
         {
             builder.Append(WepUi.GetDps(block).ToString("N2"));
@@ -259,6 +290,50 @@ namespace WeaponCore.Control
             c.Getter = getter;
             c.Setter = setter;
             c.Writer = SliderWriterRange;
+
+            if (minGetter != null)
+                c.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            session.CustomControls.Add(c);
+
+            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
+            return c;
+        }
+
+        internal static IMyTerminalControlSlider AddBlockCameraSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Enabled = Istrue;
+            c.Visible = visibleGetter;
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Writer = SliderBlockCameraWriterRange;
+
+            if (minGetter != null)
+                c.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            session.CustomControls.Add(c);
+
+            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
+            return c;
+        }
+
+        internal static IMyTerminalControlSlider AddWeaponCameraSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Enabled = Istrue;
+            c.Visible = visibleGetter;
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Writer = SliderWeaponCameraWriterRange;
 
             if (minGetter != null)
                 c.SetLimits(minGetter, maxGetter);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Sandbox.ModAPI;
+using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponComponent.ShootActions;
@@ -97,6 +98,7 @@ namespace WeaponCore.Control
             blk.CustomData = value.ToString();
             blk.RefreshCustomInfo();
         }
+
 
         internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
         {
@@ -230,6 +232,24 @@ namespace WeaponCore.Control
             WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
         }
 
+        internal static void TerminalActionCameraIncrease(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
+        }
+
+        internal static void TerminalActionCameraDecrease(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
+        }
+
         internal static void TerminalActionMinSizeIncrease(IMyTerminalBlock blk)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
@@ -299,6 +319,30 @@ namespace WeaponCore.Control
             var newValue = newBool ? 1 : 0;
 
             WeaponComponent.RequestSetValue(comp, "Repel", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionCameraGroupIncrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.CameraGroup);
+            var nextValue = MathHelper.Clamp(value + 1, 0, 24);
+
+            WeaponComponent.RequestSetValue(comp, "CameraGroup", nextValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionCameraGroupDecrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.CameraGroup);
+            var nextValue = MathHelper.Clamp(value - 1, 0, 24);
+
+            WeaponComponent.RequestSetValue(comp, "CameraGroup", nextValue, comp.Session.PlayerId);
         }
 
         #endregion
@@ -458,6 +502,24 @@ namespace WeaponCore.Control
             {
                 sb.Append(((WeaponDefinition.TargetingDef.BlockTypes)value).ToString());
             }
+        }
+
+        internal static void CameraWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            long value;
+            if (long.TryParse(blk.CustomData, out value))
+            {
+                var group = $"Camera Group {value}";
+                sb.Append(group);
+            }
+        }
+
+        internal static void WeaponCameraGroupWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            sb.Append(comp.Data.Repo.Base.Set.Overrides.CameraGroup);
         }
 
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)

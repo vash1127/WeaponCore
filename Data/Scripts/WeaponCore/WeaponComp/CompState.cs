@@ -269,6 +269,9 @@ namespace WeaponCore.Support
                     o.Repel = enabled;
                     clearTargets = true;
                     break;
+                case "CameraGroup":
+                    o.CameraGroup = v;
+                    break;
             }
 
             ResetCompState(comp, playerId, clearTargets);
