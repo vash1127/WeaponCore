@@ -18,7 +18,7 @@ namespace WeaponCore
         private const float ReloadHeightConst = 4f * MetersInPixel;
         private const float ReloadWidthConst = ReloadHeightConst;
         private const float ReloadHeightOffsetConst = ReloadHeightConst;
-        private const float HeatWidthConst = 35 * MetersInPixel;
+        private const float HeatWidthConst = 35 * MetersInPixel;    
         private const float HeatWidthOffset = HeatWidthConst + (PaddingConst * 1.8f);
         private const float HeatHeightConst = HeatWidthConst * 0.0625f;
         private const float InfoPanelOffset = WeaponHudFontHeight + (HeatHeightConst * 2f);
@@ -59,7 +59,9 @@ namespace WeaponCore
         private readonly TextureMap[] _chargingTexture = new TextureMap[10];
         private readonly TextureMap[] _infoBackground = new TextureMap[3];
         private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
-        private readonly Color _bgColor = new Color(40, 54, 62, 1);
+        //private readonly Color _bgColor = new Color(40, 54, 62, 1);
+        private Vector4 _bgColor = new Vector4(1, 1, 1, 0);
+
         private readonly FontType _hudFont = FontType.Mono;
         private int _currentLargestName;
         private float _paddingHeat;
@@ -159,7 +161,7 @@ namespace WeaponCore
         {
             internal readonly CachingList<TextData> Data = new CachingList<TextData>(32);
             internal string Text;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position;
             internal FontType Font;
             internal long ElementId;
@@ -206,7 +208,7 @@ namespace WeaponCore
         internal struct TextDrawRequest
         {
             internal string Text;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position;
             internal float FontSize;
             internal FontType Font;
@@ -215,7 +217,7 @@ namespace WeaponCore
         internal class TextureDrawData
         {
             internal MyStringId Material;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position = new Vector3D();
             internal Vector3 Up;
             internal Vector3 Left;

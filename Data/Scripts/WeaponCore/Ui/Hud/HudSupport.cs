@@ -12,6 +12,45 @@ namespace WeaponCore
         internal uint TicksSinceUpdated => _session.Tick - _lastHudUpdateTick;
         internal bool KeepBackground => _session.Tick - _lastHudUpdateTick < MinUpdateTicks;
 
+        internal void UpdateHudSettings()
+        {
+            //runs once on first draw then only again if a menu is closed
+            var fovScale = (float)(0.1 * _session.ScaleFov);
+
+            var fovModifier = (float)(1.5 * _session.ScaleFov);
+            NeedsUpdate = false;
+            _lastHudUpdateTick = 0;
+            _viewPortSize.X = (fovScale * _session.AspectRatio);
+            _viewPortSize.Y = fovScale;
+            _viewPortSize.Z = -0.1f;
+
+            _currWeaponDisplayPos.X = _viewPortSize.X;
+            _currWeaponDisplayPos.Y = _viewPortSize.Y * .6f;
+
+            _padding = PaddingConst * ((float)_session.ScaleFov * _session.AspectRatio);
+            _reloadWidth = ReloadWidthConst * fovModifier;
+            _reloadHeight = ReloadHeightConst * fovModifier;
+            _reloadOffset = _reloadWidth * fovModifier;
+
+            _textSize = WeaponHudFontHeight * fovModifier;
+            _sTextSize = _textSize * .75f;
+            _textWidth = (WeaponHudFontHeight * _session.AspectRatioInv) * fovModifier;
+            _stextWidth = (_textWidth * .75f);
+            _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
+
+            _heatWidth = HeatWidthConst * fovModifier;
+            _heatHeight = HeatHeightConst * fovModifier;
+            _heatOffsetX = HeatWidthOffset * fovModifier;
+            _heatOffsetY = (_heatHeight * 2.5f);
+
+            _infoPaneloffset = InfoPanelOffset * fovModifier;
+            _paddingHeat = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.0001f, 0.0001f, 0.0003f) : 0;
+            _paddingReload = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.002f, 0.0002f, 0.001f) : 0.001f;
+
+            _symbolWidth = _heatWidth + _padding;
+            _bgColor = new Vector4(1f, 1f, 1f, 0f);
+        }
+
         internal void AddText(string text, float x, float y, long elementId, int ttl, Vector4 color, Justify justify = Justify.None, FontType fontType = FontType.Mono, float fontSize = 10f, float heightScale = 0.65f)
         {
             AgingTextures = true;
@@ -43,88 +82,6 @@ namespace WeaponCore
             _agingTextRequests.TryAdd(elementId, request);
         }
 
-        internal void AddTextureUVSimple(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
-        {
-            TextureDrawData tdd;
-            if (!_textureDrawPool.TryDequeue(out tdd))
-                tdd = new TextureDrawData();
-
-            tdd.Material = material;
-            tdd.Color = color;
-            tdd.Position.X = x;
-            tdd.Position.Y = y;
-            tdd.Width = width * MetersInPixel;
-            tdd.Height = height * MetersInPixel;
-            tdd.P0 = new Vector2(uvOffsetX / textureSizeX, uvOffsetY / textureSizeY);
-            tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
-            tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
-            tdd.P3 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
-            tdd.UvDraw = true;
-            _textureAddList.Add(tdd);
-
-            TexturesToAdd++;
-
-            TexturesToAdd++;
-        }
-
-        internal void AddTextureUV(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
-        {
-            TextureDrawData tdd;
-            if (!_textureDrawPool.TryDequeue(out tdd))
-                tdd = new TextureDrawData();
-
-            tdd.Material = material;
-            tdd.Color = color;
-            tdd.Position.X = x;
-            tdd.Position.Y = y;
-            tdd.Width = width * MetersInPixel;
-            tdd.Height = height * MetersInPixel;
-            tdd.P0 = new Vector2(uvOffsetX / textureSizeX, uvOffsetY / textureSizeY);
-            tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
-            tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
-            tdd.P3 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
-            tdd.UvDraw = true;
-            _textureAddList.Add(tdd);
-
-            TexturesToAdd++;
-        }
-
-        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float scale)
-        {
-            TextureDrawData tdd;
-            if (!_textureDrawPool.TryDequeue(out tdd))
-                tdd = new TextureDrawData();
-
-            tdd.Material = material;
-            tdd.Color = color;
-            tdd.Position.X = x;
-            tdd.Position.Y = y;
-            tdd.Height = scale * MetersInPixel;
-            tdd.UvDraw = false;
-            _textureAddList.Add(tdd);
-
-            TexturesToAdd++;
-        }
-
-
-        internal void AddTextureSimple(MyStringId material, Vector4 color, float x, float y, float scale)
-        {
-            TextureDrawData tdd;
-
-            if (!_textureDrawPool.TryDequeue(out tdd))
-                tdd = new TextureDrawData();
-
-            tdd.Material = material;
-            tdd.Color = color;
-            tdd.Position.X = x;
-            tdd.Position.Y = y;
-            tdd.Height = scale * MetersInPixel;
-            tdd.UvDraw = false;
-            _textureAddList.Add(tdd);
-
-            TexturesToAdd++;
-        }
-
         internal Vector2 GetScreenSpace(Vector2 offset)
         {
             var fovScale = (float)(0.1 * _session.ScaleFov);
@@ -133,44 +90,6 @@ namespace WeaponCore
             position.X *= fovScale * _session.AspectRatio;
             position.Y *= fovScale;
             return position;
-        }
-
-        internal void UpdateHudSettings()
-        {
-            //runs once on first draw then only again if a menu is closed
-            var fovScale = (float)(0.1 * _session.ScaleFov);
-
-            var fovModifier = (float)(1.5 * _session.ScaleFov);
-            NeedsUpdate = false;
-            _lastHudUpdateTick = 0;
-            _viewPortSize.X = (fovScale * _session.AspectRatio);
-            _viewPortSize.Y = fovScale;
-            _viewPortSize.Z = -0.1f;
-
-            _currWeaponDisplayPos.X = _viewPortSize.X;
-            _currWeaponDisplayPos.Y = _viewPortSize.Y * .6f;
-
-            _padding = PaddingConst * ((float)_session.ScaleFov * _session.AspectRatio);
-            _reloadWidth = ReloadWidthConst * fovModifier;
-            _reloadHeight = ReloadHeightConst * fovModifier;
-            _reloadOffset = _reloadWidth * fovModifier;
-
-            _textSize = WeaponHudFontHeight * fovModifier;
-            _sTextSize = _textSize * .75f;
-            _textWidth = (WeaponHudFontHeight * _session.AspectRatioInv) * fovModifier;
-            _stextWidth = (_textWidth * .75f);
-            _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
-
-            _heatWidth = HeatWidthConst * fovModifier;
-            _heatHeight = HeatHeightConst * fovModifier;
-            _heatOffsetX = HeatWidthOffset * fovModifier;
-            _heatOffsetY = (_heatHeight * 3f) * fovModifier;
-
-            _infoPaneloffset = InfoPanelOffset * fovModifier;
-            _paddingHeat = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.0001f, 0.0001f, 0.0003f) : 0;
-            _paddingReload = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.002f, 0.0002f, 0.001f) : 0.001f;
-
-            _symbolWidth = _heatWidth + _padding;
         }
 
         internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)

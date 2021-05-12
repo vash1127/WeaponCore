@@ -91,7 +91,6 @@ namespace WeaponCore
                 }
 
                 var height = textAdd.FontSize * textAdd.HeightScale;
-                //var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
                 var remove = textAdd.Ttl-- < 0;
 
                 for (int i = 0; i < textAdd.Data.Count; i++) { 
@@ -105,7 +104,7 @@ namespace WeaponCore
                         MyQuadD quad;
                         MyUtils.GetBillboardQuadOriented(out quad, ref textPos, width, height, ref left, ref up);
 
-                        if (textAdd.Color != Color.Transparent) {
+                        if (textAdd.Color != Vector4.Zero) {
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P1, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P2, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                         }
