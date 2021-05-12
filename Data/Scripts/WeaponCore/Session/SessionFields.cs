@@ -100,7 +100,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
-        internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraGroupMappings = new ConcurrentDictionary<MyCubeBlock, long>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraChannelMappings = new ConcurrentDictionary<MyCubeBlock, long>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 

@@ -321,28 +321,28 @@ namespace WeaponCore.Control
             WeaponComponent.RequestSetValue(comp, "Repel", newValue, comp.Session.PlayerId);
         }
 
-        internal static void TerminalActionCameraGroupIncrease(IMyTerminalBlock blk)
+        internal static void TerminalActionCameraChannelIncrease(IMyTerminalBlock blk)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.CameraGroup);
+            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.CameraChannel);
             var nextValue = MathHelper.Clamp(value + 1, 0, 24);
 
-            WeaponComponent.RequestSetValue(comp, "CameraGroup", nextValue, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "CameraChannel", nextValue, comp.Session.PlayerId);
         }
 
-        internal static void TerminalActionCameraGroupDecrease(IMyTerminalBlock blk)
+        internal static void TerminalActionCameraChannelDecrease(IMyTerminalBlock blk)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.CameraGroup);
+            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.CameraChannel);
             var nextValue = MathHelper.Clamp(value - 1, 0, 24);
 
-            WeaponComponent.RequestSetValue(comp, "CameraGroup", nextValue, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "CameraChannel", nextValue, comp.Session.PlayerId);
         }
 
         #endregion
@@ -509,17 +509,17 @@ namespace WeaponCore.Control
             long value;
             if (long.TryParse(blk.CustomData, out value))
             {
-                var group = $"Camera Group {value}";
+                var group = $"Camera Channel {value}";
                 sb.Append(group);
             }
         }
 
-        internal static void WeaponCameraGroupWriter(IMyTerminalBlock blk, StringBuilder sb)
+        internal static void WeaponCameraChannelWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            sb.Append(comp.Data.Repo.Base.Set.Overrides.CameraGroup);
+            sb.Append(comp.Data.Repo.Base.Set.Overrides.CameraChannel);
         }
 
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)

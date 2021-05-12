@@ -353,7 +353,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
-            return comp.Data.Repo.Base.Set.Overrides.CameraGroup;
+            return comp.Data.Repo.Base.Set.Overrides.CameraChannel;
         }
 
         internal static void RequestSetBlockCamera(IMyTerminalBlock block, float newValue)
@@ -362,9 +362,9 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var value = Convert.ToInt32(newValue);
-            if (value != comp.Data.Repo.Base.Set.Overrides.CameraGroup)
+            if (value != comp.Data.Repo.Base.Set.Overrides.CameraChannel)
             {
-                WeaponComponent.RequestSetValue(comp, "CameraGroup", value, comp.Session.PlayerId);
+                WeaponComponent.RequestSetValue(comp, "CameraChannel", value, comp.Session.PlayerId);
             }
         }
 
@@ -373,12 +373,12 @@ namespace WeaponCore
             return true;
         }
 
-        internal static float GetMinCameraGroup(IMyTerminalBlock block)
+        internal static float GetMinCameraChannel(IMyTerminalBlock block)
         {
             return 0;
         }
 
-        internal static float GetMaxCameraGroup(IMyTerminalBlock block)
+        internal static float GetMaxCameraChannel(IMyTerminalBlock block)
         {
             return 24;
         }

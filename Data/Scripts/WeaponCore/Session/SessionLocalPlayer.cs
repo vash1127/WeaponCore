@@ -69,7 +69,7 @@ namespace WeaponCore
         private bool GroupedCamera(MyCameraBlock camera)
         {
             long cameraGroupId;
-            if (CameraGroupMappings.TryGetValue(camera, out cameraGroupId) && cameraGroupId != 0) {
+            if (CameraChannelMappings.TryGetValue(camera, out cameraGroupId) && cameraGroupId > 0) {
                 ActiveCameraBlock = camera;
                 return true;
             }

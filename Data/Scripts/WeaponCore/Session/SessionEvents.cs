@@ -176,11 +176,11 @@ namespace WeaponCore
             long value = -1;
             if (long.TryParse(term.CustomData, out value))
             {
-                CameraGroupMappings[cube] = value;
+                CameraChannelMappings[cube] = value;
             }
             else
             {
-                CameraGroupMappings[cube] = 0;
+                CameraChannelMappings[cube] = - 1;
             }
         }
 

@@ -56,7 +56,7 @@ namespace WeaponCore.Control
             
             AddComboboxNoAction<T>(session, -19, "ControlModes", "Control Mode", "Select the aim control mode for the weapon", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
 
-            AddWeaponCameraSliderRange<T>(session, -20, "WeaponCamera", "Weapon Camera Group", "Assign this weapon to a camera group", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraGroup, WepUi.GetMaxCameraGroup, true);
+            AddWeaponCameraSliderRange<T>(session, -20, "WeaponCamera", "Weapon Camera Channel", "Assign this weapon to a camera channel", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
 
             Separator<T>(session, -21, "WC_sep4", HasTracking);
         }
@@ -70,7 +70,7 @@ namespace WeaponCore.Control
         internal static void AddCameraControls<T>(Session session) where T : IMyTerminalBlock
         {
             Separator<T>(session, -7, "WC_cameraSep1", Istrue);
-            AddBlockCameraSliderRange<T>(session, -8, "WC_PickCameraGroup", "Camera Group", "Assign the camera weapon group to this camera", WepUi.GetBlockCamera, WepUi.RequestBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraGroup, WepUi.GetMaxCameraGroup, true);
+            AddBlockCameraSliderRange<T>(session, -8, "WC_PickCameraChannel", "Camera Channel", "Assign the camera weapon channel to this camera", WepUi.GetBlockCamera, WepUi.RequestBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
         }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock

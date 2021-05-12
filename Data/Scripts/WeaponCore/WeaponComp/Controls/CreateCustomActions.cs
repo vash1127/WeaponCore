@@ -67,9 +67,9 @@ namespace WeaponCore.Control
 
         public static void CreateCamera(Session session)
         {
-            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"Next Camera Group");
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"Next Camera Channel");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder($"Next Group");
+            action0.Name = new StringBuilder($"Next Channel");
             action0.Action = CustomActions.TerminalActionCameraIncrease;
             action0.Writer = CustomActions.CameraWriter;
             action0.Enabled = TerminalHelpers.Istrue;
@@ -78,9 +78,9 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
 
-            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"Previous Camera Group");
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"Previous Camera Channel");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder($"Previous Group");
+            action1.Name = new StringBuilder($"Previous Channel");
             action1.Action = CustomActions.TerminalActionCameraDecrease;
             action1.Writer = CustomActions.CameraWriter;
             action1.Enabled = TerminalHelpers.Istrue;
@@ -364,24 +364,24 @@ namespace WeaponCore.Control
             session.CustomActions.Add(action);
         }
 
-        public static void CreateWeaponCameraGroups(Session session)
+        public static void CreateWeaponCameraChannels(Session session)
         {
-            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_CameraGroup");
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_CameraChannel");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
             action0.Name = new StringBuilder($"Next Group");
-            action0.Action = CustomActions.TerminalActionCameraGroupIncrease;
-            action0.Writer = CustomActions.WeaponCameraGroupWriter;
+            action0.Action = CustomActions.TerminalActionCameraChannelIncrease;
+            action0.Writer = CustomActions.WeaponCameraChannelWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
 
-            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_CameraGroup");
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_CameraChannel");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
             action1.Name = new StringBuilder($"Previous Group");
-            action1.Action = CustomActions.TerminalActionCameraGroupDecrease;
-            action1.Writer = CustomActions.WeaponCameraGroupWriter;
+            action1.Action = CustomActions.TerminalActionCameraChannelDecrease;
+            action1.Writer = CustomActions.WeaponCameraChannelWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
             action1.ValidForGroups = true;
 

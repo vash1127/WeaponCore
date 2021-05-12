@@ -269,8 +269,8 @@ namespace WeaponCore.Support
                     o.Repel = enabled;
                     clearTargets = true;
                     break;
-                case "CameraGroup":
-                    o.CameraGroup = v;
+                case "CameraChannel":
+                    o.CameraChannel = v;
                     break;
             }
 

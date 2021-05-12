@@ -42,6 +42,7 @@ namespace WeaponCore
         internal bool PlayerCamera;
         internal bool FirstPersonView;
         internal bool CameraBlockView;
+        internal long CameraChannelId;
         internal bool Debug = true;
         internal bool MouseShootWasOn;
         internal bool MouseShootOn;
@@ -136,7 +137,12 @@ namespace WeaponCore
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
+               
                 CameraBlockView = !PlayerCamera && !FirstPersonView && s.ActiveCameraBlock != null && s.ActiveCameraBlock.IsActive && s.ActiveCameraBlock.IsWorking;
+                if (CameraBlockView && s.ActiveCameraBlock != null)
+                    CameraChannelId = s.CameraChannelMappings[s.ActiveCameraBlock];
+                else CameraChannelId = 0;
+
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
@@ -149,6 +155,7 @@ namespace WeaponCore
             {
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
                 ControlKeyPressed = MyAPIGateway.Input.IsKeyPress(ControlKey);
+                CameraChannelId = 0;
 
                 if (CtrlPressed && ControlKeyPressed && GetAimRay(s, out AimRay) && Debug)
                 {

@@ -419,7 +419,7 @@ namespace WeaponCore
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
         [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
         [ProtoMember(15)] public bool Repel;
-        [ProtoMember(16)] public long CameraGroup;
+        [ProtoMember(16)] public long CameraChannel;
 
 
         public GroupOverrides() { }
@@ -441,7 +441,7 @@ namespace WeaponCore
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
             Repel = syncFrom.Repel;
-            CameraGroup = syncFrom.CameraGroup;
+            CameraChannel = syncFrom.CameraChannel;
         }
     }
 }
