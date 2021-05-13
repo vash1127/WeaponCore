@@ -140,8 +140,17 @@ namespace WeaponCore
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Reloading && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
-                        if (HandlesInput && (w.Reloading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        
+                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
+                        var addWeaponToHud = HandlesInput && (w.Reloading && w.System.ReloadTime >= 240 || isWaitingForBurstDelay && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240 || w.HeatPerc >= 0.01);
+
+                        if (addWeaponToHud)
+                        {
+                            //Log.Line($"{w.System.WeaponName} - reloadTime:{w.System.ReloadTime} - heat:{w.HeatPerc} - delayBurst:{w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst} - wait:{isWaitingForBurstDelay} - Reloading:{w.Reloading} -  delay:{w.System.Values.HardPoint.Loading.DelayAfterBurst}");
+                        }
+                        //if (HandlesInput && (w.Reloading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid))                        {
+
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }

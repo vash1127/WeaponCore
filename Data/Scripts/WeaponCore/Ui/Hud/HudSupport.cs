@@ -34,14 +34,14 @@ namespace WeaponCore
 
             _textSize = WeaponHudFontHeight * fovModifier;
             _sTextSize = _textSize * .75f;
-            _textWidth = (WeaponHudFontHeight * _session.AspectRatioInv) * fovModifier;
+            _textWidth = (WeaponHudFontHeight * _session.AspectRatioInv) * fovScale;
             _stextWidth = (_textWidth * .75f);
             _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
 
             _heatWidth = HeatWidthConst * fovModifier;
             _heatHeight = HeatHeightConst * fovModifier;
             _heatOffsetX = HeatWidthOffset * fovModifier;
-            _heatOffsetY = (_heatHeight * 2.5f);
+            _heatOffsetY = (_heatHeight * 3f);
 
             _infoPaneloffset = InfoPanelOffset * fovModifier;
             _paddingHeat = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.0001f, 0.0001f, 0.0003f) : 0;
@@ -51,7 +51,7 @@ namespace WeaponCore
             _bgColor = new Vector4(1f, 1f, 1f, 0f);
         }
 
-        internal void AddText(string text, float x, float y, long elementId, int ttl, Vector4 color, Justify justify = Justify.None, FontType fontType = FontType.Mono, float fontSize = 10f, float heightScale = 0.65f)
+        internal void AddText(string text, float x, float y, long elementId, int ttl, Vector4 color, Justify justify = Justify.None, FontType fontType = FontType.Shadow, float fontSize = 10f, float heightScale = 0.65f)
         {
             AgingTextures = true;
 
@@ -78,7 +78,7 @@ namespace WeaponCore
             request.Ttl = ttl;
             request.ElementId = elementId;
             request.Justify = justify;
-            request.HeightScale = heightScale;
+            request.HeightScale = ShadowHeightScaler;
             _agingTextRequests.TryAdd(elementId, request);
         }
 

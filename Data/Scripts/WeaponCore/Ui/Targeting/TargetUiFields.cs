@@ -91,7 +91,7 @@ namespace WeaponCore
             _session = session;
             var cm = session.HudUi.CharacterMap;
             Dictionary<char, Hud.TextureMap> monoText;
-            if (cm.TryGetValue(Hud.FontType.Mono, out monoText))
+            if (cm.TryGetValue(Hud.FontType.Shadow, out monoText))
             {
                 FocusTextureMap = monoText[FocusChar];
             }

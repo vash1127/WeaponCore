@@ -71,7 +71,7 @@ namespace WeaponCore
                 textAdd.Position.Z = _viewPortSize.Z;
                 var requestPos = textAdd.Position;
                 requestPos.Z = _viewPortSize.Z;
-                var widthScaler = textAdd.Font == FontType.Shadow ? 1.5f : 1f;
+                var widthScaler = textAdd.Font == FontType.Shadow ? ShadowSizeScaler : 1f;
 
                 var textPos = Vector3D.Transform(requestPos, _cameraWorldMatrix);
                 switch (textAdd.Justify)

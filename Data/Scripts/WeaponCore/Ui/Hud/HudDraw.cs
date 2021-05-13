@@ -27,7 +27,7 @@ namespace WeaponCore
 
                     _lastHudUpdateTick = _session.Tick;
                 }
-                else if (ticksSinceUpdate + 1 >= MinUpdateTicks && TexturesToAdd > 0)
+                else if (ticksSinceUpdate + 1 >= MinUpdateTicks)
                     reset = true;
 
                 BuildHud(reset);
@@ -35,6 +35,7 @@ namespace WeaponCore
             
             AddTextAndTextures();
             DrawHudOnce();
+
 
             WeaponsToDisplay.Clear();
             _textAddList.Clear();
@@ -107,7 +108,7 @@ namespace WeaponCore
 
                 var textAdd = _textAddList[i];
 
-                var height = textAdd.FontSize;
+                var height = textAdd.FontSize * ShadowHeightScaler;
                 var width = textAdd.FontSize * _session.AspectRatioInv;
                 textAdd.Position.Z = _viewPortSize.Z;
                 var textPos = Vector3D.Transform(textAdd.Position, _cameraWorldMatrix);
@@ -128,7 +129,7 @@ namespace WeaponCore
                     tdd.Position = textPos;
                     tdd.Up = _cameraWorldMatrix.Up;
                     tdd.Left = _cameraWorldMatrix.Left;
-                    tdd.Width = width;
+                    tdd.Width = width * ShadowWidthScaler;
                     tdd.Height = height;
                     tdd.P0 = cm.P0;
                     tdd.P1 = cm.P1;
@@ -138,7 +139,7 @@ namespace WeaponCore
 
                     _drawList.Add(tdd);
 
-                    textPos -= _cameraWorldMatrix.Left * height;
+                    textPos -= (_cameraWorldMatrix.Left * (width * 0.5f) * ShadowSizeScaler);
                 }
 
                 _textDrawPool.Enqueue(textAdd);
@@ -222,9 +223,9 @@ namespace WeaponCore
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var showReloadIcon = weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30 ||
-                    (weapon.ShowBurstDelayAsReload && !weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastShootTick > 30 && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst && weapon.ShootTick > weapon.Comp.Session.Tick);
-
+                //var showReloadIcon = weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30 || (weapon.ShowBurstDelayAsReload && !weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastShootTick > 30 && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst && weapon.ShootTick > weapon.Comp.Session.Tick);
+                var isWaitingForBurstDelay = weapon.ShowBurstDelayAsReload && weapon.ShootTick > _session.Tick && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst;
+                var showReloadIcon = _session.HandlesInput && (weapon.Reloading && weapon.System.ReloadTime >= 240 || isWaitingForBurstDelay && weapon.System.Values.HardPoint.Loading.DelayAfterBurst >= 240);
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();
@@ -250,7 +251,7 @@ namespace WeaponCore
 
                     textInfo.Position.Y = currWeaponDisplayPos.Y - (_sTextSize * .5f);
                     textInfo.FontSize = _sTextSize;
-                    textInfo.Font = FontType.Mono;
+                    textInfo.Font = FontType.Shadow;
                     _textAddList.Add(textInfo);
                 }
 
@@ -272,7 +273,10 @@ namespace WeaponCore
         {
             int heatBarIndex;
             if (weapon.State.Overheated)
-                heatBarIndex = _heatBarTexture.Length - 1;
+            {
+                var index = _session.SCount < 30 ? 1 : 2;
+                heatBarIndex = _heatBarTexture.Length - 2;
+            }
             else
                 heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
 
@@ -297,7 +301,6 @@ namespace WeaponCore
         {
             var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
             var texture = mustCharge ? _chargingTexture : _reloadingTexture;
-
             if (texture.Length > 0) {
 
                 if (mustCharge)
