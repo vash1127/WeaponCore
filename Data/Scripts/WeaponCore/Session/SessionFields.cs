@@ -40,20 +40,21 @@ namespace WeaponCore
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 4;
-        internal const int ClientCfgVersion = 2;
+        internal const int ClientCfgVersion = 5;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
-        internal volatile bool TurretControls;
-        internal volatile bool FixedMissileControls;
-        internal volatile bool FixedMissileReloadControls;
-        internal volatile bool FixedGunControls;
-        internal volatile bool SorterControls;
-        internal volatile bool DecoyControls;
+        internal volatile bool TurretDetected;
+        internal volatile bool FixedMissileDetected;
+        internal volatile bool FixedMissileReloadDetected;
+        internal volatile bool FixedGunDetected;
+        internal volatile bool SorterDetected;
+        internal volatile bool DecoyDetected;
+        internal volatile bool CameraDetected;
         internal volatile bool BaseControlsActions;
+        internal volatile bool EarlyInitOver;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
-
         internal readonly TargetCompare TargetCompare = new TargetCompare();
         internal readonly WaterModAPI WApi = new WaterModAPI();
 
@@ -78,10 +79,11 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<EwarValues> EwarDataPool = new MyConcurrentPool<EwarValues>(64);
+
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
         internal readonly MyConcurrentPool<MyConcurrentList<BetterInventoryItem>> BetterItemsListPool = new MyConcurrentPool<MyConcurrentList<BetterInventoryItem>>(256, list => list.Clear());
-
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
 
@@ -98,6 +100,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraChannelMappings = new ConcurrentDictionary<MyCubeBlock, long>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -110,6 +113,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
+        internal readonly ConcurrentQueue<Type> ControlQueue = new ConcurrentQueue<Type>();
 
         internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
 
@@ -142,6 +146,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
+
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -155,6 +160,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Weapon> WeaponLosDebugActive = new HashSet<Weapon>();
+        internal readonly HashSet<Type> ControlTypeActivated = new HashSet<Type>();
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
@@ -177,7 +183,6 @@ namespace WeaponCore
         internal readonly HashSet<GridAi> GridsToUpdateInventories = new HashSet<GridAi>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
-
         internal readonly int[] AuthorSettings = new int[6];
 
         ///
@@ -204,10 +209,10 @@ namespace WeaponCore
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
+        private readonly EwaredBlocksPacket _cachedEwarPacket = new EwaredBlocksPacket();
 
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
-
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
 
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
@@ -226,6 +231,7 @@ namespace WeaponCore
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
         internal MyCubeBlock ActiveControlBlock;
+        internal MyCameraBlock ActiveCameraBlock;
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
@@ -298,6 +304,7 @@ namespace WeaponCore
         internal float AspectRatioInv;
         internal float UiBkOpacity;
         internal float UiOpacity;
+        internal float UIHudOpacity;
         internal float CurrentFovWithZoom;
         internal bool PurgedAll;
         internal bool InMenu;
@@ -342,8 +349,20 @@ namespace WeaponCore
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
         internal bool DebugLos = false;
-        internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
+        internal bool EwarNetDataDirty;
+        internal bool CanChangeHud;
+
+        internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
+        {
+             // Muzzled SteamId goes here
+        };
+
+        internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
+        {
+            76561198025274552,
+        };
+
         [Flags]
         internal enum SafeZoneAction
         {
@@ -422,6 +441,7 @@ namespace WeaponCore
             Projectiles = new Projectiles.Projectiles(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
+            _cachedEwarPacket.Data = new List<EwarValues>(32);
 
             ProblemRep = new ProblemReport(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
@@ -434,6 +454,7 @@ namespace WeaponCore
 
             for (int i = 0; i < AuthorSettings.Length; i++)
                 AuthorSettings[i] = -1;
+
         }
     }
 }

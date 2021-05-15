@@ -50,6 +50,7 @@ namespace WeaponCore
         WeaponReload,
         WeaponAmmo,
         QueueShot,
+        EwaredBlocks,
     }
 
     #region packets
@@ -79,6 +80,7 @@ namespace WeaponCore
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
     [ProtoInclude(28, typeof(QueuedShotPacket))]
     [ProtoInclude(29, typeof(WeaponAmmoPacket))]
+    [ProtoInclude(30, typeof(EwaredBlocksPacket))]
 
     public class Packet
     {
@@ -212,6 +214,21 @@ namespace WeaponCore
             PlayerId = -1;
         }
     }
+
+    [ProtoContract]
+    public class EwaredBlocksPacket : Packet
+    {
+        [ProtoMember(1)] internal List<EwarValues> Data = new List<EwarValues>(32);
+
+        public EwaredBlocksPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data.Clear();
+        }
+    }
+
 
     [ProtoContract]
     public class WeaponAmmoPacket : Packet

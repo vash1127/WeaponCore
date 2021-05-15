@@ -25,6 +25,7 @@ namespace WeaponCore.Support
         internal bool ParentIsWeapon;
         internal bool IsTargetStorage;
         internal bool ClientDirty;
+        internal bool IsDrone;
         internal Weapon Weapon;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
@@ -122,13 +123,12 @@ namespace WeaponCore.Support
                 w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
                 w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
                 ClientDirty = false;
-
-                //Log.Line($"UpdateTarget: id:{tData.EntityId}({TargetId}) - entity:{Entity != null}({targetEntity != null}) - state:{CurrentState}({PreviousState}) - hasTarget:{tData.EntityId != 0}({HasTarget})");
             }
         }
 
-        internal void TransferTo(Target target, uint expireTick)
+        internal void TransferTo(Target target, uint expireTick, bool drone = false)
         {
+            target.IsDrone = drone;
             target.Entity = Entity;
             target.Projectile = Projectile;
             target.IsProjectile = target.Projectile != null;
@@ -184,6 +184,7 @@ namespace WeaponCore.Support
             IsFakeTarget = false;
             IsAligned = false;
             Projectile = null;
+            IsDrone = false;
             TargetPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;

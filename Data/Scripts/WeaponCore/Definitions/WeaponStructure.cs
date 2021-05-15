@@ -108,9 +108,12 @@ namespace WeaponCore.Support
         public readonly bool HasGuidedAmmo;
         public readonly bool SuppressFire;
         public readonly bool NoSubParts;
+
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
+        public readonly double HomeAzimuth;
+        public readonly double HomeElevation;
 
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
@@ -175,7 +178,7 @@ namespace WeaponCore.Support
             AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
             HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
             AltScopeName = HasScope ? "subpart_" + Values.Assignments.Scope : string.Empty;
-            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out HomeAzimuth, out HomeElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
@@ -240,7 +243,7 @@ namespace WeaponCore.Support
             shotsPerBurst = Values.HardPoint.Loading.ShotsInBurst;
         }
 
-        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out double homeAzimuth, out double homeElevation, out TurretType turretMove)
         {
             azStep = Values.HardPoint.HardWare.RotateRate;
             elStep = Values.HardPoint.HardWare.ElevateRate;
@@ -248,7 +251,10 @@ namespace WeaponCore.Support
             maxAzimuth = Values.HardPoint.HardWare.MaxAzimuth;
             minElevation = Values.HardPoint.HardWare.MinElevation;
             maxElevation = Values.HardPoint.HardWare.MaxElevation;
-            
+
+            homeAzimuth = MathHelperD.ToRadians((((Values.HardPoint.HardWare.HomeAzimuth + 180) % 360) - 180));
+            homeElevation = MathHelperD.ToRadians((((Values.HardPoint.HardWare.HomeElevation + 180) % 360) - 180));
+
             turretMove = TurretType.Full;
 
             if (minAzimuth == maxAzimuth)
@@ -514,9 +520,10 @@ namespace WeaponCore.Support
         public readonly bool GuidedAmmoDetected;
         public readonly bool FixedFireAmmo;
         public readonly bool ClientPredictedAmmo;
+        public readonly bool AlwaysDraw;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
-        public readonly float ShieldBypassMod;
+        public readonly float ShieldDamageBypassMod;
         public readonly float MagMass;
         public readonly float MagVolume;
         public readonly float BaseDamage;
@@ -623,9 +630,6 @@ namespace WeaponCore.Support
 
             ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
 
-            var shieldBypass = ammo.AmmoDef.DamageScales.Shields.Type == AmmoDef.DamageScaleDef.ShieldDef.ShieldType.Bypass;
-            ShieldBypassMod = shieldBypass && ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier <= 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 0f;
-            
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
             FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
@@ -634,6 +638,7 @@ namespace WeaponCore.Support
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
 
+            ComputeShieldBypass(ammo, out ShieldDamageBypassMod);
             ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out GuidedAmmoDetected);
 
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
@@ -656,7 +661,17 @@ namespace WeaponCore.Support
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             HasShotFade =  ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
             MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
-            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
+            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep, out AlwaysDraw);
+        }
+
+        internal void ComputeShieldBypass(WeaponSystem.WeaponAmmoTypes ammo, out float shieldDamageBypassMod)
+        {
+            if (ammo.AmmoDef.DamageScales.Shields.BypassModifier <= 0)
+                shieldDamageBypassMod = 0;
+            else if (ammo.AmmoDef.DamageScales.Shields.BypassModifier >= 1)
+                shieldDamageBypassMod = 0.00001f;
+            else
+                shieldDamageBypassMod = MathHelper.Clamp(1 - ammo.AmmoDef.DamageScales.Shields.BypassModifier, 0.00001f, 0.99999f);
         }
 
         internal void ComputeTextures(WeaponSystem.WeaponAmmoTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
@@ -715,12 +730,13 @@ namespace WeaponCore.Support
         }
 
 
-        private void ComputeSteps(WeaponSystem.WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
+        private void ComputeSteps(WeaponSystem.WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep, out bool alwaysDraw)
         {
             var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
             shotFadeStep = 1f / changeFadeSteps;
 
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
+            alwaysDraw = (Trail || HasShotFade) && ShotsPerSec < 0.1;
         }
 
         private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)

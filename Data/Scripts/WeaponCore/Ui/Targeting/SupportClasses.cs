@@ -7,52 +7,57 @@ namespace WeaponCore
 {
     public class TargetStatus
     {
-        public int ShieldHealth;
-        public int ThreatLvl;
-        public int Size;
-        public int Speed;
-        public int Distance;
-        public int Engagement;
-        public float SizeExtended;
-        public double RealDistance;
-    }
-
-    public class IconInfo
-    {
-        private readonly MyStringId _textureName;
-        private readonly Vector2D _screenPosition;
-        private readonly double _definedScale;
-        private readonly int _slotId;
-        private readonly bool _canShift;
-        private readonly int[] _prevSlotId;
-
-        public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool canShift)
+        public enum Awareness
         {
-            _textureName = textureName;
-            _definedScale = definedScale;
-            _screenPosition = screenPosition;
-            _slotId = slotId;
-            _canShift = canShift;
-            _prevSlotId = new int[2];
-            for (int i = 0; i < _prevSlotId.Length; i++)
-                _prevSlotId[i] = -1;
+            SEEKING,
+            FOCUSFIRE,
+            TRACKING,
+            STALKING,
+            OBLIVIOUS,
+            WONDERING,
         }
 
-        public void GetTextureInfo(int index, int displayCount, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
+        public float ShieldHealth;
+        public int ShieldHeat;
+        public Vector3I ShieldFaces;
+        public int ThreatLvl;
+        public float Speed;
+        public int Engagement;
+        public float ShieldMod;
+        public float SizeExtended;
+        public double RealDistance;
+        public Awareness Aware;
+        public string Name;
+    }
+
+    public class HudInfo
+    {
+        private readonly MyStringId _textureName;
+        private readonly Vector2 _screenPosition;
+        private readonly float _definedScale;
+
+        public HudInfo(MyStringId textureName, Vector2 screenPosition, float scale)
         {
-            var screenScale = 0.075 * session.ScaleFov;
-            var needShift = _slotId != displayCount;
-            var shiftSize = _canShift && needShift ? -(0.06f * (_slotId - displayCount)) : 0;
+            _definedScale = scale;
+            _textureName = textureName;
+            _screenPosition = screenPosition;
+        }
 
-            scale = (float)(_definedScale * screenScale);
+        public void GetTextureInfo(Session session, out MyStringId textureName, out float scale, out float screenScale, out float fontScale, out Vector3D offset, out Vector2 localOffset)
+        {
+            var fovScale = (float)(0.1 * session.ScaleFov);
 
-            var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y, 0);
-            position.X *= screenScale * session.AspectRatio;
-            position.Y *= screenScale;
+            localOffset = _screenPosition + session.Settings.ClientConfig.HudPos;
+
+            scale = session.Settings.ClientConfig.HudScale * _definedScale;
+            screenScale = scale * fovScale;
+            fontScale = (float)(scale * session.ScaleFov);
+            var position = new Vector2(localOffset.X , localOffset.Y);
+            position.X *= fovScale * session.AspectRatio;
+            position.Y *= fovScale;
+
             offset = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), session.CameraMatrix);
-
             textureName = _textureName;
-            _prevSlotId[index] = displayCount;
         }
     }
 }

@@ -122,11 +122,11 @@ namespace WeaponCore.Support
                             MyParticleEffect hitEffect;
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
 
-                                hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                                //hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                                 var scaler = 1;
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                                var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
-                                hitEffect.UserScale = scale * scaler;
+                                //var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
+                                //hitEffect.UserScale = scale * scaler;
                                 hitEffect.Velocity = av.Hit.HitVelocity;
                             }
                         }
@@ -410,29 +410,24 @@ namespace WeaponCore.Support
                 var particles = weapon.System.Values.HardPoint.Graphics.Barrel1;
                 var renderId = info.Entity.Render.GetRenderObjectID();
                 var matrix = info.DummyMatrix;
-                var pos = particles.Extras.Loop ? info.LocalPosition : info.Position;
-                pos += Vector3D.Rotate(particles.Offset, matrix);
+                var pos = info.Position;
+                matrix.Translation = info.LocalPosition + particles.Offset;
 
                 if (!effectExists && ticksAgo <= 0) {
-
                     if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
 
                         effect = weapon.BarrelEffects1[muzzle.MuzzleId];
-                        effect.UserColorMultiplier = particles.Color;
+                        //effect.UserColorMultiplier = particles.Color;
                         effect.UserRadiusMultiplier = particles.Extras.Scale;
                         muzzle.Av1Looping = effect.Loop || effect.DurationMax <= 0;
                     }
                 }
                 else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped) {
-
                     effect.WorldMatrix = matrix;
-                    effect.SetTranslation(ref pos);
                     effect.Play();
                 }
                 else if (effectExists) {
-
                     effect.WorldMatrix = matrix;
-                    effect.SetTranslation(ref pos);
                 }
             }
         }
@@ -480,28 +475,23 @@ namespace WeaponCore.Support
                     var particles = weapon.System.Values.HardPoint.Graphics.Barrel2;
                     var renderId = info.Entity.Render.GetRenderObjectID();
                     var matrix = info.DummyMatrix;
-                    var pos = particles.Extras.Loop ? info.LocalPosition : info.Position;
-                    pos += Vector3D.Rotate(particles.Offset, matrix);
+                    var pos = info.Position;
+                    matrix.Translation = info.LocalPosition + particles.Offset;
 
                     if (!effectExists && ticksAgo <= 0)  {
-
                         if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
                             effect = weapon.BarrelEffects2[muzzle.MuzzleId];
-                            effect.UserColorMultiplier = particles.Color;
+                            //effect.UserColorMultiplier = particles.Color;
                             effect.UserRadiusMultiplier = particles.Extras.Scale;
                             muzzle.Av2Looping = effect.Loop || effect.DurationMax <= 0;
                         }
                     }
                     else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped)  {
-
                         effect.WorldMatrix = matrix;
-                        effect.SetTranslation(ref pos);
                         effect.Play();
                     }
                     else if (effectExists)  {
-
                         effect.WorldMatrix = matrix;
-                        effect.SetTranslation(ref pos);
                     }
                 }
                 catch (Exception ex) { Log.Line($"Exception in RunAvBarrels2: {ex} weapon:{weapon.System.WeaponName} - particleName:{weapon.System.Values.HardPoint.Graphics.Barrel2.Name} - aiNull:{weapon.Comp.Ai == null}"); }

@@ -171,9 +171,12 @@ namespace WeaponCore.Platform
             if (!syncUp) {
                 var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
                 if (Ammo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
-                    if (!NoMagsToLoad) 
-                        EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
-                    NoMagsToLoad = true;
+
+                    if (!Comp.Session.IsCreative) {
+                        if (!NoMagsToLoad)
+                            EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
+                        NoMagsToLoad = true;
+                    }
                 }
                 return false;
             }
@@ -181,9 +184,12 @@ namespace WeaponCore.Platform
             ClientMakeUpShots += Ammo.CurrentAmmo;
             Ammo.CurrentAmmo = 0;
 
-            if (NoMagsToLoad) {
-                EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
-                NoMagsToLoad = false;
+            if (!Comp.Session.IsCreative) {
+
+                if (NoMagsToLoad) {
+                    EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
+                    NoMagsToLoad = false;
+                }
             }
 
             ClientReloading = true;
@@ -322,7 +328,6 @@ namespace WeaponCore.Platform
                     CancelableReloadAction -= Reloaded;
                     ReloadSubscribed = false;
                 }
-
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
                 Ammo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
@@ -330,6 +335,7 @@ namespace WeaponCore.Platform
                 if (System.Session.IsServer) {
                     
                     ++Reload.EndId;
+                    ClientEndId = Reload.EndId;
                     ShootOnce = false;
                     if (System.Session.MpActive)
                         System.Session.SendWeaponReload(this);
@@ -337,9 +343,8 @@ namespace WeaponCore.Platform
                 else {
                     ClientReloading = false;
                     ClientMakeUpShots = 0;
+                    ClientEndId = Reload.EndId;
                 }
-
-                ++ClientEndId;
                 Reloading = false;
             }
 
@@ -348,7 +353,7 @@ namespace WeaponCore.Platform
         {
             Comp.CurrentCharge -= Ammo.CurrentCharge;
             Ammo.CurrentCharge = 0;
-            Ammo.CurrentAmmo = 0;
+            //Ammo.CurrentAmmo = 0;
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
 
             if (!Comp.UnlimitedPower)

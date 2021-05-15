@@ -19,13 +19,73 @@ namespace WeaponCore
         {
             CreateCustomDecoyActions<T>(session);
             TerminalHelpers.AddDecoyControls<T>(session);
+        }
 
+        public static void CreateCameraTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomCameraActions<T>(session);
+            TerminalHelpers.AddCameraControls<T>(session);
+        }
+
+        public static void EarlyInitControls(Session session)
+        {
+            Type controlObject;
+            while (session.ControlQueue.TryDequeue(out controlObject))
+            {
+                if (controlObject == typeof(IMyConveyorSorter))
+                {
+                    CreateTerminalUi<IMyConveyorSorter>(session);
+                }
+                else if (controlObject == typeof(IMyLargeTurretBase))
+                {
+                    CreateTerminalUi<IMyLargeTurretBase>(session);
+                }
+                else if (controlObject == typeof(IMySmallMissileLauncherReload))
+                {
+                    CreateTerminalUi<IMySmallMissileLauncherReload>(session);
+                }
+                else if (controlObject == typeof(IMySmallMissileLauncher))
+                {
+                    CreateTerminalUi<IMySmallMissileLauncher>(session);
+                }
+                else if (controlObject == typeof(IMySmallGatlingGun))
+                {
+                    CreateTerminalUi<IMySmallGatlingGun>(session);
+                }
+            }
+            session.ControlQueue.Clear();
+            session.EarlyInitOver = true;
+        }
+
+        public static bool ControlsAlreadyExist<T>(Session session)
+        {
+            if (typeof(T) == typeof(IMyConveyorSorter) && session.ControlTypeActivated.Contains(typeof(IMyConveyorSorter)))
+                return true;
+
+            if (typeof(T) == typeof(IMyLargeTurretBase) && session.ControlTypeActivated.Contains(typeof(IMyLargeTurretBase)))
+                return true;
+
+            if (typeof(T) == typeof(IMySmallMissileLauncherReload) && session.ControlTypeActivated.Contains(typeof(IMySmallMissileLauncherReload)))
+                return true;
+
+            if (typeof(T) == typeof(IMySmallMissileLauncher) && session.ControlTypeActivated.Contains(typeof(IMySmallMissileLauncher)))
+                return true;
+
+            if (typeof(T) == typeof(IMySmallGatlingGun) && session.ControlTypeActivated.Contains(typeof(IMySmallGatlingGun)))
+                return true;
+
+            session.ControlTypeActivated.Add(typeof(T));
+            return false;
         }
 
         public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {
             try
             {
+                if (ControlsAlreadyExist<T>(session))
+                {
+                    return;
+                }
                 AlterActions<T>(session);
                 AlterControls<T>(session);
 
@@ -61,6 +121,10 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateDecoy(session);
         }
 
+        internal static void CreateCustomCameraActions<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateCamera(session);
+        }
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateCycleAmmo(session);
@@ -79,6 +143,8 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateGrids(session);
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
+            CreateCustomActions<T>.CreateRepelMode(session);
+            CreateCustomActions<T>.CreateWeaponCameraChannels(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
@@ -324,6 +390,7 @@ namespace WeaponCore
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
                         if (!w.Comp.Session.IsClient) w.Target.Reset(comp.Session.Tick, Target.States.AnimationOff);
+
                         w.ScheduleWeaponHome(true);
                     }
 

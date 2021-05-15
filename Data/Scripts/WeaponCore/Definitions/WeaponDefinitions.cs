@@ -272,6 +272,8 @@ namespace WeaponCore.Support
                 [ProtoMember(8)] internal int MinElevation;
                 [ProtoMember(9)] internal float InventorySize;
                 [ProtoMember(10)] internal ArmorState Armor;
+                [ProtoMember(11)] internal int HomeAzimuth;
+                [ProtoMember(12)] internal int HomeElevation;
             }
 
             [ProtoContract]
@@ -733,6 +735,8 @@ namespace WeaponCore.Support
                     [ProtoMember(8)] internal bool NoTargetExpire;
                     [ProtoMember(9)] internal bool Roam;
                     [ProtoMember(10)] internal bool KeepAliveAfterTargetLoss;
+                    [ProtoMember(11)] internal float OffsetRatio;
+                    [ProtoMember(12)] internal int OffsetTime;
                 }
 
                 [ProtoContract]

@@ -13,21 +13,22 @@ namespace WeaponCore
     {
         private const float MetersInPixel = 0.0002645833f;
         private const float PaddingConst = 10 * MetersInPixel;
-        private const float WeaponHudFontSize = 4f;
+        private const float WeaponHudFontSize = 8f;
         private const float WeaponHudFontHeight = WeaponHudFontSize * MetersInPixel;
         private const float ReloadHeightConst = 4f * MetersInPixel;
         private const float ReloadWidthConst = ReloadHeightConst;
-        private const float ReloadHeightOffsetConst = ReloadHeightConst;
-        private const float HeatWidthConst = 35 * MetersInPixel;
+        private const float HeatWidthConst = 35 * MetersInPixel;    
         private const float HeatWidthOffset = HeatWidthConst + (PaddingConst * 1.8f);
         private const float HeatHeightConst = HeatWidthConst * 0.0625f;
         private const float InfoPanelOffset = WeaponHudFontHeight + (HeatHeightConst * 2f);
-        private const float DefaultFov = 1.22f;
         private const float BgBorderRatio = .166f;
         private const float MonoWidthScaler = 0.75f;
         private const float ShadowWidthScaler = 0.7f;
+        private const float ShadowHeightScaler = 0.65f;
+        private const float ShadowSizeScaler = 1.5f;
+
         private const int InitialPoolCapacity = 512;
-        private const uint MinUpdateTicks = 120;
+        private const uint MinUpdateTicks = 60;
 
         private readonly MyConcurrentPool<AgingTextRequest> _agingTextRequestPool = new MyConcurrentPool<AgingTextRequest>(64, data => data.Clean() );
         private readonly MyConcurrentPool<TextData> _textDataPool = new MyConcurrentPool<TextData>(128);
@@ -42,7 +43,7 @@ namespace WeaponCore
         private readonly List<TextureDrawData> _drawList = new List<TextureDrawData>(InitialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
 
-        private readonly ConcurrentDictionary<ElementNames, AgingTextRequest> _agingTextRequests = new ConcurrentDictionary<ElementNames, AgingTextRequest>();
+        private readonly ConcurrentDictionary<long, AgingTextRequest> _agingTextRequests = new ConcurrentDictionary<long, AgingTextRequest>();
 
         private readonly Session _session;
         private readonly MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
@@ -58,9 +59,10 @@ namespace WeaponCore
         private readonly TextureMap[] _outofAmmoTexture = new TextureMap[2];
         private readonly TextureMap[] _chargingTexture = new TextureMap[10];
         private readonly TextureMap[] _infoBackground = new TextureMap[3];
-        private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
-        private readonly Color _bgColor = new Color(40, 54, 62, 1);
-        private readonly FontType _hudFont = FontType.Mono;
+        private readonly TextureMap[] _heatBarTexture = new TextureMap[12];
+        private Vector4 _bgColor = new Vector4(1, 1, 1, 0);
+
+        private readonly FontType _hudFont = FontType.Shadow;
         private int _currentLargestName;
         private float _paddingHeat;
         private float _paddingReload;
@@ -82,7 +84,6 @@ namespace WeaponCore
         private float _bgBorderHeight;
         private float _bgCenterHeight;
         private float _symbolWidth;
-        private float _reloadHeightOffset;
 
 
         ///
@@ -101,14 +102,6 @@ namespace WeaponCore
             Mono,
             Shadow,
             Whitespace
-        }
-
-        internal enum ElementNames
-        {
-            Invalid,
-            Test1,
-            Test2,
-            Test3,
         }
 
         internal enum Justify
@@ -168,10 +161,10 @@ namespace WeaponCore
         {
             internal readonly CachingList<TextData> Data = new CachingList<TextData>(32);
             internal string Text;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position;
             internal FontType Font;
-            internal ElementNames Type;
+            internal long ElementId;
             internal Justify Justify;
             internal float FontSize;
             internal float MessageWidth;
@@ -199,7 +192,7 @@ namespace WeaponCore
             internal Vector2 P3;
             internal float ScaledWidth;
             internal bool UvDraw;
-            internal bool TooWide;
+            internal bool ReSize;
             internal MyBillboard.BlendTypeEnum Blend = PostPP;
         }
 
@@ -215,7 +208,7 @@ namespace WeaponCore
         internal struct TextDrawRequest
         {
             internal string Text;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position;
             internal float FontSize;
             internal FontType Font;
@@ -224,7 +217,7 @@ namespace WeaponCore
         internal class TextureDrawData
         {
             internal MyStringId Material;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position = new Vector3D();
             internal Vector3 Up;
             internal Vector3 Left;

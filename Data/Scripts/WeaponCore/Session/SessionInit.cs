@@ -75,8 +75,17 @@ namespace WeaponCore
             Settings = new CoreSettings(this);
             LocalVersion = ModContext.ModId == "WeaponCore";
             CounterKeenLogMessage();
+
+            if (ShieldMod && !ShieldApiLoaded && SApi.Load())
+            {
+                ShieldApiLoaded = true;
+                ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
+            }
+
             if (!CompsToStart.IsEmpty)
                 StartComps();
+
+            EarlyInitControls(this);
         }
 
         internal void GenerateButtonMap()

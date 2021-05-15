@@ -229,7 +229,7 @@ namespace WeaponCore.Support
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
-                    stringBuilder.Append($"\nName: {w.System.WeaponName }{shots }{ burst }\nReloading: { w.Reloading }{ endReturn}");
+                    stringBuilder.Append("\nName: " + w.System.WeaponName + shots + burst + "\nReloading: " + w.Reloading  + "\nLoS: " + !w.PauseShoot + endReturn);
 
                     string otherAmmo = null;
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)

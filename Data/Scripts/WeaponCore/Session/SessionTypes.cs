@@ -203,7 +203,6 @@ namespace WeaponCore
                             PType = PacketType.ProblemReport,
                             Data = data,
                             Type = ProblemReportPacket.RequestType.SendReport,
-
                         },
                         SingleClient = true,
                     });
@@ -324,6 +323,7 @@ namespace WeaponCore
                     {"FocusTargets", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                     {"MaxSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
                     {"MinSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
+                    {"CameraChannel", () => GetComp()?.Data.Repo.Base.Set.Overrides.CameraChannel.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -462,6 +462,10 @@ namespace WeaponCore
                     {"LastEventCanDelay", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.LastEventCanDelay}"); }
+                    },
+                    {"LastEvent", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.LastEvent}"); }
                     },
                     {"AnimationDelay", () => {
                             var message = string.Empty;
@@ -817,6 +821,8 @@ namespace WeaponCore
         {
             None,
             Keyboard,
+            Action,
+            Info,
             Mouse,
         }
 

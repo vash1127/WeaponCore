@@ -68,7 +68,7 @@ namespace WeaponCore
                     TerminalMon.Monitor();
 
                 MyCubeBlock cube;
-                if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                if (Tick60 && UiInput.ControlKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
                     ProblemRep.GenerateReport(cube);
 
                 if (!IsClient && !InventoryUpdate && WeaponToPullAmmo.Count > 0 && ITask.IsComplete)
@@ -176,6 +176,9 @@ namespace WeaponCore
                     if (PacketsToServer.Count > 0) 
                         ProccessClientPacketsForServer();
 
+                    if (EwarNetDataDirty)
+                        SendEwaredBlocks();
+
                     DsUtil.Complete("network1", true);
                 }
 
@@ -214,7 +217,7 @@ namespace WeaponCore
                 
                 if (DebugLos)
                     LosDebuging();
-                
+
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
                 CameraMatrix = Session.Camera.WorldMatrix;
@@ -236,7 +239,7 @@ namespace WeaponCore
                     if (HudUi.TexturesToAdd > 0 || HudUi.KeepBackground) 
                         HudUi.DrawTextures();
 
-                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.CameraBlockView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
                         TargetUi.DrawTargetUi();
 
                     if (HudUi.AgingTextures)
@@ -260,9 +263,11 @@ namespace WeaponCore
                 UiInput.UpdateInputState();
                 if (MpActive)  {
 
-                    if (UiInput.InputChanged && ActiveControlBlock != null) 
+                    if (UiInput.InputChanged && ActiveControlBlock != null)
+                    {
                         SendMouseUpdate(TrackingAi, ActiveControlBlock);
-                    
+                    }
+
                     if (TrackingAi != null && TargetUi.DrawReticle)  {
                         var dummyTarget = PlayerDummyTargets[PlayerId];
                         if (dummyTarget.LastUpdateTick == Tick)

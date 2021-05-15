@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using ProtoBuf;
 using VRage;
+using VRage.Sync;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -21,9 +22,6 @@ namespace WeaponCore
 
         public void ResetToFreshLoadState()
         {
-            //Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
-            //Base.State.Control = CompStateValues.ControlMode.None;
-            //Base.State.PlayerId = -1;
             Base.State.TrackingReticle = false;
             if (Base.State.TerminalAction == ShootActions.ShootOnce) 
                 Base.State.TerminalAction = ShootActions.ShootOff;
@@ -72,7 +70,19 @@ namespace WeaponCore
             if (sync.Revision > Revision)
             {
                 Revision = sync.Revision;
-                CurrentAmmo = sync.CurrentAmmo;
+
+                if (CurrentAmmo != sync.CurrentAmmo) {
+
+                    var ammoSpent = w.ClientLastShotId == w.Reload.StartId && CurrentAmmo == 0;
+                    var notShotBlocked = !w.PreFired && !w.Reloading && !w.FinishBurst && !w.IsShooting;
+                    if (!notShotBlocked && !ammoSpent) {
+
+                        //Log.Line($"Syncing AmmoValues: - currentAmmo:{CurrentAmmo}({sync.CurrentAmmo}) - Charge:{CurrentCharge}({sync.CurrentCharge}) - Mags:{CurrentMags}({sync.CurrentMags}) - LastShootTick:{w.System.Session.Tick - w.LastShootTick} - IsShooting:{w.IsShooting} - finish:{w.FinishBurst} - start:{w.ClientStartId}({w.Reload.StartId})[{w.ClientLastShotId}] - end:{w.ClientEndId}({w.Reload.EndId})");
+                        CurrentAmmo = sync.CurrentAmmo;
+                    }
+                    //else Log.Line($"spent:{ammoSpent} - notBlocked:{notShotBlocked} - syncAmmo:{sync.CurrentAmmo} - endIdMatch:{w.Reload.EndId == w.ClientEndId}() - startIdMatch:{w.Reload.StartId == w.ClientStartId}");
+                }
+
                 CurrentCharge = sync.CurrentCharge;
 
                 if (sync.CurrentMags <= 0 && CurrentMags != sync.CurrentMags)
@@ -89,6 +99,16 @@ namespace WeaponCore
             }
             return false;
         }
+    }
+
+    [ProtoContract]
+    public class EwarValues
+    {
+        [ProtoMember(1)] public long FiringBlockId;
+        [ProtoMember(2)] public long EwaredBlockId;
+        [ProtoMember(3)] public int SystemId; 
+        [ProtoMember(4)] public int AmmoId; 
+        [ProtoMember(5)] public uint EndTick; 
     }
 
     [ProtoContract]
@@ -398,6 +418,9 @@ namespace WeaponCore
         [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
         [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
+        [ProtoMember(15)] public bool Repel;
+        [ProtoMember(16)] public long CameraChannel;
+
 
         public GroupOverrides() { }
 
@@ -417,6 +440,8 @@ namespace WeaponCore
             Grids = syncFrom.Grids;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
+            Repel = syncFrom.Repel;
+            CameraChannel = syncFrom.CameraChannel;
         }
     }
 }

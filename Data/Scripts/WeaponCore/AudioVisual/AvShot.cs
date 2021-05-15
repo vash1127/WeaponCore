@@ -57,6 +57,7 @@ namespace WeaponCore.Support
         internal bool FakeExplosion;
         internal bool MarkForClose;
         internal bool ProEnded;
+        internal bool SmartOn;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -159,11 +160,12 @@ namespace WeaponCore.Support
         }
 
         #region Run
-        internal void Init(ProInfo info, double firstStepSize, double maxSpeed, ref Vector3D originDir)
+        internal void Init(ProInfo info, bool smartsOn, double firstStepSize, double maxSpeed, ref Vector3D originDir)
         {
             System = info.System;
             AmmoDef = info.AmmoDef;
             IsShrapnel = info.IsShrapnel;
+            SmartOn = smartsOn;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
             Model = (info.AmmoDef.Const.PrimeModel || info.AmmoDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
@@ -248,7 +250,7 @@ namespace WeaponCore.Support
                 a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
 
                 a.VisualLength = d.VisualLength;
-                if (a.AmmoDef.Const.ConvergeBeams)
+                if (a.SmartOn || a.AmmoDef.Const.IsBeamWeapon && a.AmmoDef.Const.ConvergeBeams)
                     a.VisualDir = d.Direction;
                 else if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;
@@ -283,7 +285,7 @@ namespace WeaponCore.Support
                     double? dist;
                     s.CameraFrustrum.Intersects(ref rayTracer, out dist);
 
-                    if (dist != null && dist <= a.VisualLength)
+                    if (a.AmmoDef.Const.AlwaysDraw || dist != null && dist <= a.VisualLength)
                         a.OnScreen = Screen.Tracer;
                     else if (a.AmmoDef.Const.Trail)
                     {
@@ -395,9 +397,10 @@ namespace WeaponCore.Support
                 {
                     if (a.OnScreen != Screen.None)
                     {
+                        /*
                         if (!a.AmmoDef.Const.IsBeamWeapon && !a.AmmoParticleStopped && a.AmmoEffect != null && a.AmmoDef.Const.AmmoParticleShrinks)
                             a.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1f);
-
+                        */
                         if ((a.AmmoParticleStopped || !a.AmmoParticleInited))
                             a.PlayAmmoParticle();
                     }
@@ -409,9 +412,10 @@ namespace WeaponCore.Support
                 {
                     if (a.OnScreen != Screen.None)
                     {
+                        /*
                         if (!a.AmmoDef.Const.IsBeamWeapon && !a.FieldParticleStopped && a.FieldEffect != null && a.AmmoDef.Const.FieldParticleShrinks)
                             a.FieldEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AreaEffect.Pulse.Particle.Extras.MaxDistance), 0.05f, 1f);
-
+                        */
                         if ((a.FieldParticleStopped || !a.FieldParticleInited))
                             a.PlayFieldParticle();
                     }
@@ -444,8 +448,6 @@ namespace WeaponCore.Support
             }
             else
             {
-                //frontPos = Back && !onlyStep ? TracerBack : TracerFront;
-                //backPos = Back && !extStart ? TracerBack : TracerFront;
                 var futureStep = (VisualDir * ShortStepSize);
                 var pastStep = (-VisualDir * ShortStepSize);
                 if (!Back) futureStep -= velStep;
@@ -909,9 +911,9 @@ namespace WeaponCore.Support
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect))
             {
 
-                AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
+                //AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                 AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
-                AmmoEffect.UserScale = 1;
+                //AmmoEffect.UserScale = 1;
 
 
                 AmmoParticleStopped = false;
@@ -927,9 +929,9 @@ namespace WeaponCore.Support
             var pos = TriggerEntity.PositionComp.WorldAABB.Center;
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
             {
-                FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
+                //FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
                 FieldEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
-                FieldEffect.UserScale = 1;
+                //FieldEffect.UserScale = 1;
                 FieldParticleStopped = false;
                 FieldParticleInited = true;
             }
@@ -981,9 +983,9 @@ namespace WeaponCore.Support
                     System.Session.Av.BeamEffects[UniqueMuzzleId] = effect;
 
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                //effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 //effect.WorldMatrix = matrix;
-                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                //effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
                 //if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
             }
@@ -991,7 +993,7 @@ namespace WeaponCore.Support
 
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                 Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
-                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                //effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 // if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
                 effect.WorldMatrix = matrix;
             }
@@ -1013,9 +1015,8 @@ namespace WeaponCore.Support
             if (EndState.DetonateFakeExp){
 
                 HitParticle = ParticleState.Dirty;
-                if (System.Session.Av.ExplosionReady) {
-                    if (OnScreen != Screen.None)
-                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.Const.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef, Hit.HitVelocity);
+                if (OnScreen != Screen.None && (!string.IsNullOrEmpty(AmmoDef.AreaEffect.Explosions.CustomParticle) || System.Session.Av.ExplosionReady)) {
+                    SUtils.CreateFakeExplosion(System.Session, AmmoDef.Const.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef, Hit.HitVelocity);
                 }
             }
 

@@ -5,6 +5,8 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
+
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -115,11 +117,13 @@ namespace WeaponCore.Platform
             FireCounter = 0;
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
-            
+            FinishBurst = false;
             if (System.Session.IsServer)
                 ShootOnce = false;
 
-            PreFired = false;
+            if (PreFired)
+                UnSetPreFire();
+
             if (IsShooting && !System.DesignatorWeapon)
             {
                 EventTriggerStateChanged(EventTriggers.Firing, false);
@@ -164,6 +168,21 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
+        internal void LostPowerIsThisEverUsed()
+        {
+            if (System.Session.IsServer)
+            {
+                State.WeaponMode(Comp, ShootOff);
+                //w.Ammo.CurrentAmmo = 0;
+                Log.Line($"power off set ammo to 0");
+            }
+
+            Reloading = false;
+            FinishBurst = false;
+
+            if (IsShooting)
+                StopShooting();
+        }
 
         internal double GetMaxWeaponRange()
         {

@@ -78,7 +78,7 @@ namespace WeaponCore
                         var wasTrack = comp.Data.Repo.Base.State.TrackingReticle;
 
                         var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
+                        var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId) && (!UiInput.CameraBlockView || UiInput.CameraChannelId > 0 && UiInput.CameraChannelId == comp.Data.Repo.Base.Set.Overrides.CameraChannel));
                         if (!MpActive && IsServer)
                             comp.Data.Repo.Base.State.TrackingReticle = track;
 
@@ -116,19 +116,8 @@ namespace WeaponCore
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
 
-                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.Action != ShootOff) {
-
-                            if (IsServer) {
-                                w.State.WeaponMode(comp, ShootOff);
-                                w.Ammo.CurrentAmmo = 0;
-                            }
-
-                            w.Reloading = false;
-                            w.FinishBurst = false;
-
-                            if (w.IsShooting)
-                                w.StopShooting();
-                        }
+                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.Action != ShootOff)
+                            w.LostPowerIsThisEverUsed();
 
                         ///
                         ///Check Reload
@@ -151,8 +140,17 @@ namespace WeaponCore
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Reloading && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
-                        if (HandlesInput && (w.Reloading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        
+                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
+                        var addWeaponToHud = HandlesInput && (w.Reloading && w.System.ReloadTime >= 240 || isWaitingForBurstDelay && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240 || w.HeatPerc >= 0.01);
+
+                        if (addWeaponToHud)
+                        {
+                            //Log.Line($"{w.System.WeaponName} - reloadTime:{w.System.ReloadTime} - heat:{w.HeatPerc} - delayBurst:{w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst} - wait:{isWaitingForBurstDelay} - Reloading:{w.Reloading} -  delay:{w.System.Values.HardPoint.Loading.DelayAfterBurst}");
+                        }
+                        //if (HandlesInput && (w.Reloading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid))                        {
+
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }

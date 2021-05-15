@@ -86,19 +86,23 @@ namespace WeaponCore.Support
                         if (fatCount <= 0)
                             continue;
 
+                        var loneWarhead = false;
+                        var hostileDrone = false;
                         if (fatCount <= 20)  { // possible debris
 
                             var valid = false;
                             for (int j = 0; j < fatCount; j++) {
                                 var fat = allFat[j];
-                                if (fat is IMyTerminalBlock && fat.IsWorking) {
+                                var warhead = fat is IMyWarhead;
+                                if (warhead || fat is IMyTerminalBlock && fat.IsWorking) {
+                                    hostileDrone = warhead || gridMap.SuspectedDrone;
+                                    loneWarhead = warhead && fatCount == 1;
                                     valid = true;
                                     break;
                                 }
                             }
                             if (!valid) continue;
                         }
-
                         int partCount;
                         GridAi targetAi;
                         if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi)) {
@@ -107,12 +111,12 @@ namespace WeaponCore.Support
                             partCount = targetAi.Construct.BlockCount;
                         }
                         else 
-                            partCount = gridMap.MostBlocks;
+                            partCount = gridMap.MostBlocks; 
 
-                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount));
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead? fatCount : 2, hostileDrone, loneWarhead));// bump warhead to 2 fatblocks so its not ignored by targeting
                         ValidGrids.Add(ent);
                     }
-                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
+                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0, false, false));
                 }
             }
             FinalizeTargetDb();

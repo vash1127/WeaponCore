@@ -37,10 +37,10 @@ namespace WeaponCore
 
                     var c = textAdd.Text[j];
 
-                    float reSize;
-                    var tooWide = remap.TryGetValue(c, out reSize);
-  
-                    var scaledWidth = textAdd.FontSize * (tooWide ? reSize : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
+                    float size;
+                    var needResize = remap.TryGetValue(c, out size);
+
+                    var scaledWidth = textAdd.FontSize * (needResize ? size : scaleShadow ? ShadowWidthScaler : MonoWidthScaler);
                     messageLength += scaledWidth;
 
                     var cm = CharacterMap[textAdd.Font][c];
@@ -52,7 +52,7 @@ namespace WeaponCore
                     td.P2 = cm.P2;
                     td.P3 = cm.P3;
                     td.UvDraw = true;
-                    td.TooWide = tooWide;
+                    td.ReSize = needResize;
                     td.ScaledWidth = scaledWidth;
                     textAdd.Data.Add(td);
                 }
@@ -71,7 +71,7 @@ namespace WeaponCore
                 textAdd.Position.Z = _viewPortSize.Z;
                 var requestPos = textAdd.Position;
                 requestPos.Z = _viewPortSize.Z;
-                var widthScaler = textAdd.Font == FontType.Shadow ? 1.5f : 1f;
+                var widthScaler = textAdd.Font == FontType.Shadow ? ShadowSizeScaler : 1f;
 
                 var textPos = Vector3D.Transform(requestPos, _cameraWorldMatrix);
                 switch (textAdd.Justify)
@@ -91,7 +91,6 @@ namespace WeaponCore
                 }
 
                 var height = textAdd.FontSize * textAdd.HeightScale;
-                var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
                 var remove = textAdd.Ttl-- < 0;
 
                 for (int i = 0; i < textAdd.Data.Count; i++) { 
@@ -101,10 +100,11 @@ namespace WeaponCore
 
                     if (textData.UvDraw) {
 
+                        var width = (textData.ScaledWidth * widthScaler) * _session.AspectRatioInv;
                         MyQuadD quad;
                         MyUtils.GetBillboardQuadOriented(out quad, ref textPos, width, height, ref left, ref up);
 
-                        if (textAdd.Color != Color.Transparent) {
+                        if (textAdd.Color != Vector4.Zero) {
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P1, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P2, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                         }
@@ -124,9 +124,9 @@ namespace WeaponCore
 
                 textAdd.Data.ApplyRemovals();
                 AgingTextRequest request;
-                if (textAdd.Data.Count == 0 && _agingTextRequests.TryRemove(textAdd.Type, out request))
+                if (textAdd.Data.Count == 0 && _agingTextRequests.TryRemove(textAdd.ElementId, out request))
                 {
-                    _agingTextRequests.Remove(textAdd.Type);
+                    _agingTextRequests.Remove(textAdd.ElementId);
                     _agingTextRequestPool.Return(request);
                 }
 

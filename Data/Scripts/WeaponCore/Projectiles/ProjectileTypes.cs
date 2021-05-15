@@ -68,6 +68,7 @@ namespace WeaponCore.Support
         internal bool IsVirtual;
         internal bool InPlanetGravity;
         internal bool ShieldBypassed;
+        internal bool ShieldInLine;
         internal float ShieldResistMod = 1f;
         internal float ShieldBypassMod = 1f;
 
@@ -146,6 +147,7 @@ namespace WeaponCore.Support
             ClientSent = false;
             InPlanetGravity = false;
             ShieldBypassed = false;
+            ShieldInLine = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
@@ -410,6 +412,7 @@ namespace WeaponCore.Support
                 frag.Velocity = p.Velocity;
                 frag.DeadSphere = p.DeadSphere;
                 frag.LockOnFireState = p.Info.LockOnFireState;
+                frag.IgnoreShield = p.Info.ShieldBypassed && p.Info.AmmoDef.Const.ShieldDamageBypassMod > 0;
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
@@ -475,7 +478,7 @@ namespace WeaponCore.Support
                 p.Info.LockOnFireState = frag.LockOnFireState;
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
-
+                p.Info.ShieldBypassed = frag.IgnoreShield;
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
 
@@ -514,6 +517,7 @@ namespace WeaponCore.Support
         public bool ClientSent;
         public bool IsFiringPlayer;
         public bool LockOnFireState;
+        public bool IgnoreShield;
     }
 
     public class VoxelCache
@@ -521,7 +525,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
         internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);
         internal BoundingSphereD PlanetSphere = new BoundingSphereD(Vector3D.Zero, 0.1f);
-        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
+        //internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
         internal Vector3D FirstPlanetHit;
 
         internal uint HitRefreshed;

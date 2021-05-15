@@ -56,7 +56,8 @@ namespace WeaponCore.Platform
                 ShootTick = tick + TicksPerShot;
                 LastShootTick = tick;
 
-                if (!IsShooting) StartShooting();
+                if (!IsShooting)
+                    StartShooting();
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
@@ -101,14 +102,26 @@ namespace WeaponCore.Platform
                                 if (!skipMuzzle) break;
                             }
                         }
-                        
+
                         if (Ammo.CurrentAmmo > 0) {
+
                             --Ammo.CurrentAmmo;
                             if (ShootOnce)
                                 DequeueShot();
+
+                            if (Ammo.CurrentAmmo == 0) {
+                                FinishBurst = false;
+                                ClientLastShotId = Reload.StartId;
+                            }
                         }
                         else if (ClientMakeUpShots > 0)
+                        {
                             --ClientMakeUpShots;
+                            if (ClientMakeUpShots == 0)
+                                FinishBurst = false;
+
+                        }
+
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
                             if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
                             {
@@ -404,11 +417,11 @@ namespace WeaponCore.Platform
                 var matrix = MatrixD.CreateTranslation(eInfo.Position);
                 
                 if (MyParticlesManager.TryCreateParticleEffect(particle.Name, ref matrix, ref eInfo.Position, uint.MaxValue, out ejectEffect)) {
-                    ejectEffect.UserColorMultiplier = particle.Color;
+                    //ejectEffect.UserColorMultiplier = particle.Color;
                     var scaler = 1;
                     ejectEffect.UserRadiusMultiplier = particle.Extras.Scale * scaler;
-                    var scale = particle.ShrinkByDistance ? MathHelper.Clamp(MathHelper.Lerp(1, 0, Vector3D.Distance(System.Session.CameraPos, eInfo.Position) / particle.Extras.MaxDistance), 0.05f, 1) : 1;
-                    ejectEffect.UserScale = (float)scale * scaler;
+                    //var scale = particle.ShrinkByDistance ? MathHelper.Clamp(MathHelper.Lerp(1, 0, Vector3D.Distance(System.Session.CameraPos, eInfo.Position) / particle.Extras.MaxDistance), 0.05f, 1) : 1;
+                    //ejectEffect.UserScale = (float)scale * scaler;
                     ejectEffect.Velocity = eInfo.Direction * ActiveAmmoDef.AmmoDef.Ejection.Speed;
                 }
             }

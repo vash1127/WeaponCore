@@ -19,8 +19,12 @@ namespace WeaponCore
             
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
+            if (ActivateDroneNotice()) DrawDroneNotice();
             if (ActivateSelector()) DrawSelector();
-            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s)) DrawTarget();
+            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
+            {
+                DrawTarget();
+            }
         }
 
         private void DrawSelector()
@@ -30,8 +34,11 @@ namespace WeaponCore
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
-
-            if (s.UiInput.FirstPersonView)
+            if (s.UiInput.CameraBlockView)
+            {
+                _pointerPosition.Y = 0f;
+            }
+            else if (s.UiInput.FirstPersonView)
             {
                 if (!MyUtils.IsZero(_pointerPosition.Y))
                 {
@@ -72,32 +79,91 @@ namespace WeaponCore
             DrawReticle = true;
         }
 
+        private void DrawDroneNotice()
+        {
+            var s = _session;
+            Vector3D offset;
+            Vector2 localOffset;
+
+            float scale;
+            float screenScale;
+            float fontScale;
+            MyStringId textureName;
+
+            var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+            var color = new Vector4(1, 1, 1, hudOpacity);
+
+            _alertHudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
+
+            MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
+            string textLine1;
+            string textLine2;
+            Vector2 textOffset1;
+            Vector2 textOffset2;
+            Vector4 text1Color;
+            Vector4 text2Color;
+            if (s.Tick20 && DroneText(localOffset, scale, out textLine1, out textLine2, out textOffset1, out textOffset2, out text1Color, out text2Color))
+            {
+                var fontSize = (float)Math.Round(24 * fontScale, 1);
+                var fontHeight = 0.75f;
+                var fontAge = 18;
+                var fontJustify = Hud.Justify.None;
+                var fontType = Hud.FontType.Shadow;
+                var elementId = 123456;
+
+                s.HudUi.AddText(text: textLine1, x: textOffset1.X, y: textOffset1.Y, elementId: elementId, ttl: fontAge, color: text1Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                s.HudUi.AddText(text: textLine2, x: textOffset2.X, y: textOffset2.Y, elementId: elementId + 1, ttl: fontAge, color: text2Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+            }
+        }
+
         private void DrawTarget()
         {
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
-            for (int i = 0; i < s.TrackingAi.TargetState.Length; i++) {
+            var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
+            for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
+            {
 
                 if (focus.Target[i] <= 0) continue;
                 var lockMode = focus.Locked[i];
 
                 var targetState = s.TrackingAi.TargetState[i];
-                var displayCount = 0;
+                var isActive = i == focus.ActiveId;
+                var primary = i == 0;
+                var shielded = detailedHud && targetState.ShieldHealth >= 0;
 
-                foreach (var icon in _targetIcons.Keys) {
+                Dictionary<string, HudInfo> collection;
+                if (detailedHud)
+                    collection = primary ? _primaryTargetHuds : _secondaryTargetHuds;
+                else
+                    collection = primary ? _primaryMinimalHuds : _secondaryMinimalHuds;
 
-                    int iconLevel;
-                    if (!IconStatus(icon, targetState, out iconLevel)) continue;
+                foreach (var hud in collection.Keys)
+                {
+                    if (isActive && (hud == InactiveShield || hud == InactiveNoShield))
+                        continue;
+
+                    if (!isActive && (hud == ActiveShield || hud == ActiveNoShield))
+                        continue;
+
+                    if (shielded && (hud == ActiveNoShield || hud == InactiveNoShield))
+                        continue;
+                    if (!shielded && (hud == ActiveShield || hud == InactiveShield))
+                        continue;
 
                     Vector3D offset;
+                    Vector2 localOffset;
+
                     float scale;
+                    float screenScale;
+                    float fontScale;
                     MyStringId textureName;
-                    var iconInfo = _targetIcons[icon][iconLevel];
-                    iconInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset);
+                    var hudInfo = collection[hud];
+                    hudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
 
                     var color = Color.White;
-
-                    switch (lockMode) {
+                    switch (lockMode)
+                    {
                         case FocusData.LockModes.None:
                             color = Color.White;
                             break;
@@ -107,97 +173,195 @@ namespace WeaponCore
                         case FocusData.LockModes.ExclusiveLock:
                             color = s.SCount < 30 ? Color.White : new Color(255, 255, 255, 64);
                             break;
-                            
+
                     }
 
-                    var skipSize = !s.Settings.ClientConfig.ShowHudTargetSizes && icon.Equals("size");
+                    var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+                    color = new Vector4(1, 1, 1, hudOpacity);
+                    MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
+                    var quickUpdate = _session.UiInput.FirstPersonView && _session.HudUi.NeedsUpdate && _session.ControlledEntity is IMyGunBaseUser;
+                    if (s.Tick20 || quickUpdate)
+                    {
+                        for (int j = 0; j < 11; j++)
+                        {
+                            string text;
+                            Vector2 textOffset;
+                            if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
+                            {
+                                var textColor = Color.White;
+                                var fontSize = (float)Math.Round(21 * fontScale, 1);
+                                var fontHeight = 0.75f;
+                                var fontAge = !quickUpdate ? 18 : 0;
+                                var fontJustify = Hud.Justify.None;
+                                var fontType = Hud.FontType.Shadow;
+                                var elementId = MathFuncs.UniqueId(i, j);
 
-                    if (!skipSize) 
-                        MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
-
-                    if (focus.ActiveId == i && displayCount == 0) {
-
-                        if (!skipSize) {
-                            var focusTexture = focus.ActiveId == 0 ? _focus : _focusSecondary;
-                            MyTransparentGeometry.AddBillboardOriented(focusTexture, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
-                        }
-                        else {
-
-                            var focusColor = focus.ActiveId == 0 ? Color.Red : Color.LightBlue;
-                            MyQuadD quad;
-                            var up = (Vector3)s.CameraMatrix.Up;
-                            var left = (Vector3)s.CameraMatrix.Left;
-
-                            MyUtils.GetBillboardQuadOriented(out quad, ref offset, 0.002f, 0.002f, ref left, ref up);
-                            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, FocusTextureMap.P0, FocusTextureMap.P1, FocusTextureMap.P3, FocusTextureMap.Material, 0, offset, focusColor, BlendTypeEnum.PostPP);
-                            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, FocusTextureMap.P0, FocusTextureMap.P2, FocusTextureMap.P3, FocusTextureMap.Material, 0, offset, focusColor, BlendTypeEnum.PostPP);
+                                s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                            }
                         }
                     }
-
-                    displayCount++;
                 }
 
                 MyEntity target;
-                if (i == focus.ActiveId && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target)) {
+                if (isActive && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
+                {
 
                     var targetSphere = target.PositionComp.WorldVolume;
                     var targetCenter = targetSphere.Center;
                     var screenPos = s.Camera.WorldToScreen(ref targetCenter);
-                    var screenScale = 0.1 * s.ScaleFov;
 
-                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0) {
+                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
+                    {
                         screenPos.X *= -1;
                         screenPos.Y = -1;
                     }
 
                     var dotpos = new Vector2D(MathHelper.Clamp(screenPos.X, -0.98, 0.98), MathHelper.Clamp(screenPos.Y, -0.98, 0.98));
-
+                    var screenScale = 0.1 * s.ScaleFov;
                     dotpos.X *= (float)(screenScale * _session.AspectRatio);
                     dotpos.Y *= (float)screenScale;
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
-                    if (s.Tick20) s.HudUi.AddText(text: $"RANGE: {targetState.RealDistance:#.0}  -  SIZE: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
         }
 
-        private static bool IconStatus(string icon, TargetStatus targetState, out int iconLevel)
+        private bool TargetTextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
         {
-            bool display;
-            switch (icon)
+            var showAll = details && shielded;
+            var minimal = !details;
+            var skipShield = !showAll && !minimal;
+            var skip = minimal && slot != 1 && slot != 2 && slot != 10 || skipShield && slot > 5 && slot != 10;
+            
+            if (skip) {
+                textStr = string.Empty;
+                textOffset = Vector2.Zero;
+                return false;
+            }
+
+            textOffset = localOffset;
+
+            var aspectScale = (2.37037f / _session.AspectRatio);
+
+            var xOdd = 0.3755f * scale;
+            var xEven = 0.07f * scale;
+            var xCenter = 0.19f * scale;
+            var yStart = 0.9f * scale;
+            var yStep = 0.151f * scale;
+
+            switch (slot)
             {
-                case "speed":
-                    display = targetState.Speed > -1;
-                    iconLevel = !display ? 0 : targetState.Speed;
+                case 0:
+                    textStr = $"SIZE: {targetState.SizeExtended}";
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart;
                     break;
-                case "size":
-                    display = targetState.Size > -1;
-                    iconLevel = !display ? 0 : targetState.Size;
+                case 1:
+                    var inKm = targetState.RealDistance >= 1000;
+                    var unit = inKm ? "km" : "m";
+                    var measure = inKm ? targetState.RealDistance / 1000 : targetState.RealDistance;
+                    textStr = $"RANGE: {measure:#.0} {unit}";
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart;
                     break;
-                case "threat":
-                    display = targetState.ThreatLvl > -1;
-                    iconLevel = !display ? 0 : targetState.ThreatLvl;
+                case 2:
+                    var threatLvl = targetState.ThreatLvl > 0 ? targetState.ThreatLvl : 0; 
+                    textStr = $"THREAT: {threatLvl}";
+                    textOffset.X -= xOdd * aspectScale;
+                    if (minimal)
+                        textOffset.Y += yStart;
+                    else
+                        textOffset.Y += yStart - (yStep * 1);
                     break;
-                case "shield":
-                    display = targetState.ShieldHealth > -1;
-                    iconLevel = !display ? 0 : targetState.ShieldHealth;
+                case 3:
+
+                    if (targetState.Engagement == 0)
+                        textStr = "INTERCEPT";
+                    else if (targetState.Engagement == 1)
+                        textStr = "RETREATING";
+                    else if (targetState.Speed < 1)
+                        textStr = "STATIONARY";
+                    else
+                        textStr = "PARALLEL";
+
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 1);
                     break;
-                case "engagement":
-                    display = targetState.Engagement > -1;
-                    iconLevel = !display ? 0 : targetState.Engagement;
+                case 4:
+                    var speed = MathHelper.Clamp(targetState.Speed, 0, int.MaxValue);
+                    textStr = $"SPEED: {speed}";
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 2);
                     break;
-                case "distance":
-                    display = targetState.Distance > -1;
-                    iconLevel = !display ? 0 : targetState.Distance;
+                case 5:
+                    textStr = targetState.Aware.ToString();
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 2);
+                    break;
+                case 6:
+                    var hp = targetState.ShieldHealth < 0 ? 0 : targetState.ShieldHealth;
+                    textStr = $"SHIELD HP: {hp}%";
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 3);
+                    break;
+                case 7:
+                    var type = targetState.ShieldMod > 0 ? "ENERGY" : targetState.ShieldMod < 0 ? "KINETIC" : "NEUTRAL";
+                    var value = !MyUtils.IsZero(targetState.ShieldMod) ? Math.Round(1 / (2 - targetState.ShieldMod), 1) : 1;
+                    textStr = $"{type}: {value}x";
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 3);
+                    break;
+                case 8:
+                    textStr = ShieldSides(targetState.ShieldFaces);
+                    textOffset.X -= xOdd * aspectScale;
+                    textOffset.Y += yStart - (yStep * 4);
+                    break;
+                case 9:
+                    var reduction = ExpChargeReductions[targetState.ShieldHeat];
+                    textStr = $"CHARGE RATE: {Math.Round(1f / reduction, 1)}x";
+                    textOffset.X += xEven * aspectScale;
+                    textOffset.Y += yStart - (yStep * 4);
+                    break;
+                case 10:
+                    textStr = targetState.Name;
+                    textOffset.X -= xCenter * aspectScale;
+                    if (minimal)
+                        textOffset.Y += yStart - (yStep * 1);
+                    else if (shielded)
+                        textOffset.Y += yStart - (yStep * 5);
+                    else
+                        textOffset.Y += yStart - (yStep * 3);
                     break;
                 default:
-                    display = false;
-                    iconLevel = 0;
-                    break;
+                    textStr = string.Empty;
+                    textOffset = Vector2.Zero;
+                    return false;
             }
-            return display;
+            return true;
         }
+
+        private bool DroneText(Vector2 localOffset, float scale, out string text1, out string text2, out Vector2 offset1, out Vector2 offset2, out Vector4 color1, out Vector4 color2)
+        {
+            var aspectScale = (2.37037f / _session.AspectRatio);
+            var xCenter = 0.22f * scale;
+            var yStart = 0.885f * scale;
+            var yStep = 0.12f * scale;
+
+            offset1 = localOffset;
+            offset1.X -= xCenter * aspectScale;
+            offset1.Y += yStart;
+            offset2.X = offset1.X;
+            offset2.Y = offset1.Y - yStep;
+
+            text1 = $"Incoming drones detected!";
+            text2 = $"              Threats: {_session.TrackingAi.Construct.RootAi.Construct.DroneCount}";
+
+            color1 = new Vector4(1, 1, 1, 1);
+            color2 = _session.Count < 60 ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0, 0, 1);
+            return true;
+        }
+
 
         private void InitTargetOffset()
         {
@@ -213,19 +377,64 @@ namespace WeaponCore
             _cachedTargetPos = true;
         }
 
+        public string ShieldSides(Vector3I shunts)
+        {
+            string text = string.Empty;
+            var left = shunts.X == -1 || shunts.X == 2;
+            var right = shunts.X == 1 || shunts.X == 2;
+            var up = shunts.Y == 1 || shunts.Y == 2;
+            var down = shunts.Y == -1 || shunts.Y == 2;
+            var forward = shunts.Z == -1 || shunts.Y == 2;
+            var backward = shunts.Z == 1 || shunts.Y == 2;
+
+            if (forward || backward) {
+
+                var both = forward && backward;
+
+                if (both) {
+                    text += "FR:BA:";
+                }
+                else if (forward)
+                    text += "FR:";
+                else
+                    text += "BA:";
+            }
+
+            if (up || down) {
+
+                var both = up && down;
+
+                if (both) {
+                    text += "TO:BO:";
+                }
+                else if (up)
+                    text += "TO:";
+                else
+                    text += "BO:";
+            }
+
+            if (left || right) {
+
+                var both = left && right;
+
+                if (both) {
+                    text += "LE:RI:";
+                }
+                else if (left)
+                    text += "LE:";
+                else
+                    text += "RI:";
+            }
+            return text;
+        }
+
         internal bool GetTargetState(Session s)
         {
             var ai = s.TrackingAi;
             var validFocus = false;
-            var size0 = s.Settings.Enforcement.ShipSizes[0];
-            var size1 = s.Settings.Enforcement.ShipSizes[1];
-            var size2 = s.Settings.Enforcement.ShipSizes[2];
-            var size3 = s.Settings.Enforcement.ShipSizes[3];
-            var size4 = s.Settings.Enforcement.ShipSizes[4];
-            var size5 = s.Settings.Enforcement.ShipSizes[5];
-            var size6 = s.Settings.Enforcement.ShipSizes[6];
-            
-            if (s.Tick - MasterUpdateTick > 600 || MasterUpdateTick < 600 && _masterTargets.Count == 0)
+            var maxNameLength = 18;
+
+            if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
             for (int i = 0; i < ai.Construct.Data.Repo.FocusData.Target.Length; i++)
@@ -239,18 +448,21 @@ namespace WeaponCore
                 var grid = target as MyCubeGrid;
                 var partCount = 1;
                 var largeGrid = false;
-                var smallGrid = false;
+                GridAi targetAi = null;
                 if (grid != null)  {
-
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    smallGrid = !largeGrid;
-                    GridAi targetAi;
                     GridMap gridMap;
                     if (s.GridToMasterAi.TryGetValue(grid, out targetAi))
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
                 }
+
+                var state = ai.TargetState[i];
+
+                state.Aware = targetAi != null ? AggressionState(ai, targetAi) : TargetStatus.Awareness.WONDERING;
+                var displayName = target.DisplayName;
+                var name = string.IsNullOrEmpty(displayName) ? string.Empty : displayName.Length <= maxNameLength ? displayName : displayName.Substring(0, maxNameLength);
 
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
                 if (MyUtils.IsZero(targetVel, 1E-01F)) targetVel = Vector3.Zero;
@@ -260,77 +472,47 @@ namespace WeaponCore
                 var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
-                if ((size6.LargeGrid && largeGrid || !size6.LargeGrid && smallGrid) && partCount > size6.BlockCount) ai.TargetState[i].Size = 6;
-                else if ((size5.LargeGrid && largeGrid || !size5.LargeGrid && smallGrid) && partCount > size5.BlockCount) ai.TargetState[i].Size = 5;
-                else if ((size4.LargeGrid && largeGrid || !size4.LargeGrid && smallGrid) && partCount > size4.BlockCount) ai.TargetState[i].Size = 4;
-                else if ((size3.LargeGrid && largeGrid || !size3.LargeGrid && smallGrid) && partCount > size3.BlockCount) ai.TargetState[i].Size = 3;
-                else if ((size2.LargeGrid && largeGrid || !size2.LargeGrid && smallGrid) && partCount > size2.BlockCount) ai.TargetState[i].Size = 2;
-                else if ((size1.LargeGrid && largeGrid || !size1.LargeGrid && smallGrid) && partCount > size1.BlockCount) ai.TargetState[i].Size = 1;
-                else ai.TargetState[i].Size = 0;
-
-                ai.TargetState[i].SizeExtended = partCount / (largeGrid ? 100f : 500f);
-
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, s.ApproachDegrees);
                 var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, s.ApproachDegrees);
-                if (intercept) ai.TargetState[i].Engagement = 0;
-                else if (retreat) ai.TargetState[i].Engagement = 1;
-                else ai.TargetState[i].Engagement = 2;
 
                 var distanceFromCenters = Vector3D.Distance(ai.MyGrid.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
                 distanceFromCenters -= ai.MyGrid.PositionComp.LocalVolume.Radius;
                 distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
                 distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
-                ai.TargetState[i].RealDistance = distanceFromCenters;
 
-                var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
-                if (distPercent > 95) ai.TargetState[i].Distance = 9;
-                else if (distPercent > 90) ai.TargetState[i].Distance = 8;
-                else if (distPercent > 80) ai.TargetState[i].Distance = 7;
-                else if (distPercent > 70) ai.TargetState[i].Distance = 6;
-                else if (distPercent > 60) ai.TargetState[i].Distance = 5;
-                else if (distPercent > 50) ai.TargetState[i].Distance = 4;
-                else if (distPercent > 40) ai.TargetState[i].Distance = 3;
-                else if (distPercent > 30) ai.TargetState[i].Distance = 2;
-                else if (distPercent > 20) ai.TargetState[i].Distance = 1;
-                else if (distPercent > 0) ai.TargetState[i].Distance = 0;
-                else ai.TargetState[i].Distance = -1;
+                var speed = (float)Math.Round(target.Physics?.Speed ?? 0, 1);
 
-                var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
-                if (speed <= 0) ai.TargetState[i].Speed = -1;
-                else
-                {
-                    var speedPercent = (speed / s.MaxEntitySpeed) * 100;
-                    if (speedPercent > 95) ai.TargetState[i].Speed = 9;
-                    else if (speedPercent > 90) ai.TargetState[i].Speed = 8;
-                    else if (speedPercent > 80) ai.TargetState[i].Speed = 7;
-                    else if (speedPercent > 70) ai.TargetState[i].Speed = 6;
-                    else if (speedPercent > 60) ai.TargetState[i].Speed = 5;
-                    else if (speedPercent > 50) ai.TargetState[i].Speed = 4;
-                    else if (speedPercent > 40) ai.TargetState[i].Speed = 3;
-                    else if (speedPercent > 30) ai.TargetState[i].Speed = 2;
-                    else if (speedPercent > 20) ai.TargetState[i].Speed = 1;
-                    else if (speedPercent > 0.3) ai.TargetState[i].Speed = 0;
-                    else ai.TargetState[i].Speed = -1;
-                }
+                state.Name = name;
+
+                state.RealDistance = distanceFromCenters;
+
+                state.SizeExtended = (float)Math.Round(partCount / (largeGrid ? 100f : 500f), 1);
+
+                state.Speed = speed;
+
+                if (intercept) state.Engagement = 0;
+                else if (retreat) state.Engagement = 1;
+                else state.Engagement = 2;
 
                 MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
                 if (s.ShieldApiLoaded) shieldInfo = s.SApi.GetShieldInfo(target);
                 if (shieldInfo.Item1)
                 {
-                    var shieldPercent = shieldInfo.Item5;
-                    if (shieldPercent > 95) ai.TargetState[i].ShieldHealth = 9;
-                    else if (shieldPercent > 90) ai.TargetState[i].ShieldHealth = 8;
-                    else if (shieldPercent > 80) ai.TargetState[i].ShieldHealth = 7;
-                    else if (shieldPercent > 70) ai.TargetState[i].ShieldHealth = 6;
-                    else if (shieldPercent > 60) ai.TargetState[i].ShieldHealth = 5;
-                    else if (shieldPercent > 50) ai.TargetState[i].ShieldHealth = 4;
-                    else if (shieldPercent > 40) ai.TargetState[i].ShieldHealth = 3;
-                    else if (shieldPercent > 30) ai.TargetState[i].ShieldHealth = 2;
-                    else if (shieldPercent > 20) ai.TargetState[i].ShieldHealth = 1;
-                    else if (shieldPercent > 0) ai.TargetState[i].ShieldHealth = 0;
-                    else ai.TargetState[i].ShieldHealth = -1;
+                    var modInfo = s.SApi.GetModulationInfo(target);
+                    var modValue = MyUtils.IsEqual(modInfo.Item3, modInfo.Item4) ? 0 : modInfo.Item3 > modInfo.Item4 ? modInfo.Item3 : -modInfo.Item4;
+                    var faceInfo = s.SApi.GetFacesFast(target);
+                    state.ShieldFaces = faceInfo.Item1 ? faceInfo.Item2 : Vector3I.Zero;
+                    state.ShieldHeat = shieldInfo.Item6 / 10;
+                    state.ShieldMod = modValue;
+                    state.ShieldHealth = (float) Math.Round(shieldInfo.Item5);
                 }
-                else ai.TargetState[i].ShieldHealth = -1;
+                else
+                {
+                    state.ShieldHeat = 0;
+                    state.ShieldMod = 0;
+                    state.ShieldHealth = -1;
+                    state.ShieldFaces = Vector3I.Zero;
+                }
 
                 var friend = false;
                 if (grid != null && grid.BigOwners.Count != 0)
@@ -339,7 +521,7 @@ namespace WeaponCore
                     if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
                 }
 
-                if (friend) ai.TargetState[i].ThreatLvl = -1;
+                if (friend) state.ThreatLvl = -1;
                 else
                 {
                     int shieldBonus = 0;
@@ -352,22 +534,50 @@ namespace WeaponCore
                         else if (myShieldInfo.Item1) shieldBonus = -1;
                     }
 
-                    if (offenseRating > 5) ai.TargetState[i].ThreatLvl = shieldBonus < 0 ? 8 : 9;
-                    else if (offenseRating > 4) ai.TargetState[i].ThreatLvl = 8 + shieldBonus;
-                    else if (offenseRating > 3) ai.TargetState[i].ThreatLvl = 7 + shieldBonus;
-                    else if (offenseRating > 2) ai.TargetState[i].ThreatLvl = 6 + shieldBonus;
-                    else if (offenseRating > 1) ai.TargetState[i].ThreatLvl = 5 + shieldBonus;
-                    else if (offenseRating > 0.5) ai.TargetState[i].ThreatLvl = 4 + shieldBonus;
-                    else if (offenseRating > 0.25) ai.TargetState[i].ThreatLvl = 3 + shieldBonus;
-
-                    else if (offenseRating > 0.125) ai.TargetState[i].ThreatLvl = 2 + shieldBonus;
-                    else if (offenseRating > 0.0625) ai.TargetState[i].ThreatLvl = 1 + shieldBonus;
-                    else if (offenseRating > 0) ai.TargetState[i].ThreatLvl = shieldBonus > 0 ? 1 : 0;
-                    else ai.TargetState[i].ThreatLvl = -1;
+                    if (offenseRating > 5) state.ThreatLvl = shieldBonus < 0 ? 8 : 9;
+                    else if (offenseRating > 4) state.ThreatLvl = 8 + shieldBonus;
+                    else if (offenseRating > 3) state.ThreatLvl = 7 + shieldBonus;
+                    else if (offenseRating > 2) state.ThreatLvl = 6 + shieldBonus;
+                    else if (offenseRating > 1) state.ThreatLvl = 5 + shieldBonus;
+                    else if (offenseRating > 0.5) state.ThreatLvl = 4 + shieldBonus;
+                    else if (offenseRating > 0.25) state.ThreatLvl = 3 + shieldBonus;
+                    else if (offenseRating > 0.125) state.ThreatLvl = 2 + shieldBonus;
+                    else if (offenseRating > 0.0625) state.ThreatLvl = 1 + shieldBonus;
+                    else if (offenseRating > 0) state.ThreatLvl = shieldBonus > 0 ? 1 : 0;
+                    else state.ThreatLvl = -1;
                 }
             }
             return validFocus;
         }
 
+        private TargetStatus.Awareness AggressionState(GridAi ai, GridAi targetAi)
+        {
+
+            if (targetAi.Construct.Data.Repo.FocusData.HasFocus)
+            {
+                var fd = targetAi.Construct.Data.Repo.FocusData;
+                foreach (var tId in fd.Target) {
+                    foreach (var sub in ai.SubGrids) {
+                        if (sub.EntityId == tId) 
+                            return TargetStatus.Awareness.FOCUSFIRE;
+                    }
+                }
+            }
+            var tracking = targetAi.Targets.ContainsKey(ai.MyGrid);
+            var hasAggressed = targetAi.Construct.RootAi.Construct.PreviousTargets.Contains(ai.MyGrid);
+            var stalking = tracking && hasAggressed;
+            var seeking = !tracking && hasAggressed;
+
+            if (stalking)
+                return TargetStatus.Awareness.STALKING;
+
+            if (seeking)
+                return TargetStatus.Awareness.SEEKING;
+
+            if (tracking)
+                return TargetStatus.Awareness.TRACKING;
+
+            return TargetStatus.Awareness.OBLIVIOUS;
+        }
     }
 }

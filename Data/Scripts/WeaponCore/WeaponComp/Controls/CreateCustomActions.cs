@@ -64,6 +64,32 @@ namespace WeaponCore.Control
             session.CustomActions.Add(action);
         }
 
+
+        public static void CreateCamera(Session session)
+        {
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"Next Camera Channel");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
+            action0.Name = new StringBuilder($"Next Channel");
+            action0.Action = CustomActions.TerminalActionCameraIncrease;
+            action0.Writer = CustomActions.CameraWriter;
+            action0.Enabled = TerminalHelpers.Istrue;
+            action0.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
+            session.CustomActions.Add(action0);
+
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"Previous Camera Channel");
+            action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
+            action1.Name = new StringBuilder($"Previous Channel");
+            action1.Action = CustomActions.TerminalActionCameraDecrease;
+            action1.Writer = CustomActions.CameraWriter;
+            action1.Enabled = TerminalHelpers.Istrue;
+            action1.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
+            session.CustomActions.Add(action1);
+        }
+
         public static void CreateShootOff(Session session)
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Shoot_Off");
@@ -322,6 +348,45 @@ namespace WeaponCore.Control
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
             session.CustomActions.Add(action);
+        }
+
+        internal static void CreateRepelMode(Session session)
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_RepelMode");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder("Repel Mode");
+            action.Action = CustomActions.TerminalActionToggleRepelMode;
+            action.Writer = CustomActions.RepelWriter;
+            action.Enabled = TerminalHelpers.HasTracking;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            session.CustomActions.Add(action);
+        }
+
+        public static void CreateWeaponCameraChannels(Session session)
+        {
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_CameraChannel");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
+            action0.Name = new StringBuilder($"Next Group");
+            action0.Action = CustomActions.TerminalActionCameraChannelIncrease;
+            action0.Writer = CustomActions.WeaponCameraChannelWriter;
+            action0.Enabled = TerminalHelpers.HasTracking;
+            action0.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
+            session.CustomActions.Add(action0);
+
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_CameraChannel");
+            action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
+            action1.Name = new StringBuilder($"Previous Group");
+            action1.Action = CustomActions.TerminalActionCameraChannelDecrease;
+            action1.Writer = CustomActions.WeaponCameraChannelWriter;
+            action1.Enabled = TerminalHelpers.HasTracking;
+            action1.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
+            session.CustomActions.Add(action1);
         }
 
         internal static void CreateOnOffActionSet(Session session, IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, bool> enabler, bool group = false)

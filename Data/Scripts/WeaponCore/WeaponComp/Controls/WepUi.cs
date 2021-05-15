@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
@@ -14,27 +15,35 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            if (comp.Session.IsServer) {
-                comp.Data.Repo.Base.Set.RofModifier = newValue;
-                WeaponComponent.SetRof(comp);
+            if (!MyUtils.IsEqual(newValue, comp.Data.Repo.Base.Set.RofModifier)) {
+
+                if (comp.Session.IsServer)
+                {
+                    comp.Data.Repo.Base.Set.RofModifier = newValue;
+                    WeaponComponent.SetRof(comp);
+                }
+                else
+                    comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetRof);
             }
-            else
-                comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetRof);
         }
 
         internal static void RequestSetDps(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            
-            if (comp.Session.IsServer)  {
-                comp.Data.Repo.Base.Set.DpsModifier = newValue;
-                WeaponComponent.SetDps(comp, true);
-                if (comp.Session.MpActive)
-                    comp.Session.SendCompBaseData(comp);
+
+            if (!MyUtils.IsEqual(newValue, comp.Data.Repo.Base.Set.DpsModifier)) {
+
+                if (comp.Session.IsServer)
+                {
+                    comp.Data.Repo.Base.Set.DpsModifier = newValue;
+                    WeaponComponent.SetDps(comp, true);
+                    if (comp.Session.MpActive)
+                        comp.Session.SendCompBaseData(comp);
+                }
+                else
+                    comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetDps);
             }
-            else
-                comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetDps);
         }
 
 
@@ -43,15 +52,20 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             
-            if (comp.Session.IsServer)  {
-                
-                comp.Data.Repo.Base.Set.Range = newValue;
-                WeaponComponent.SetRange(comp);
-                if (comp.Session.MpActive)
-                    comp.Session.SendCompBaseData(comp);
+            if (!MyUtils.IsEqual(newValue, comp.Data.Repo.Base.Set.Range)) {
+
+                if (comp.Session.IsServer)
+                {
+
+                    comp.Data.Repo.Base.Set.Range = newValue;
+                    WeaponComponent.SetRange(comp);
+                    if (comp.Session.MpActive)
+                        comp.Session.SendCompBaseData(comp);
+                }
+                else
+                    comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetRange);
             }
-            else
-                comp.Session.SendSetCompFloatRequest(comp, newValue, PacketType.RequestSetRange);
+
         }
 
         internal static void RequestSetGuidance(IMyTerminalBlock block, bool newValue)
@@ -288,13 +302,6 @@ namespace WeaponCore
             comp.RequestShootUpdate(value, comp.Session.MpServer ? comp.Session.PlayerId : -1);
         }
 
-        internal static long GetDecoySubSystem(IMyTerminalBlock block)
-        {
-            long value;
-            long.TryParse(block.CustomData, out value);
-            return value;
-        }
-
         internal static long GetSubSystem(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
@@ -310,10 +317,86 @@ namespace WeaponCore
             WeaponComponent.RequestSetValue(comp, "SubSystems", (int) newValue, comp.Session.PlayerId);
         }
 
+        internal static long GetDecoySubSystem(IMyTerminalBlock block)
+        {
+            long value;
+            long.TryParse(block.CustomData, out value);
+            return value;
+        }
+
         internal static void RequestDecoySubSystem(IMyTerminalBlock block, long newValue)
         {
             block.CustomData = newValue.ToString();
             block.RefreshCustomInfo();
+        }
+
+        internal static float GetBlockCamera(IMyTerminalBlock block)
+        {
+            long value;
+            var group = long.TryParse(block.CustomData, out value) ? value : 0;
+            return group;
+        }
+
+        internal static void RequestBlockCamera(IMyTerminalBlock block, float newValue)
+        {
+            var value = Convert.ToInt64(newValue);
+            var customData = block.CustomData;
+            long valueLong;
+            if (string.IsNullOrEmpty(customData) || long.TryParse(block.CustomData, out valueLong))
+            {
+                block.CustomData = value.ToString();
+                block.RefreshCustomInfo();
+            }
+        }
+
+        internal static float GetWeaponCamera(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            return comp.Data.Repo.Base.Set.Overrides.CameraChannel;
+        }
+
+        internal static void RequestSetBlockCamera(IMyTerminalBlock block, float newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = Convert.ToInt32(newValue);
+            if (value != comp.Data.Repo.Base.Set.Overrides.CameraChannel)
+            {
+                WeaponComponent.RequestSetValue(comp, "CameraChannel", value, comp.Session.PlayerId);
+            }
+        }
+
+        internal static bool ShowCamera(IMyTerminalBlock block)
+        {
+            return true;
+        }
+
+        internal static float GetMinCameraChannel(IMyTerminalBlock block)
+        {
+            return 0;
+        }
+
+        internal static float GetMaxCameraChannel(IMyTerminalBlock block)
+        {
+            return 24;
+        }
+
+        internal static bool GetRepel(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Base.Set.Overrides.Repel;
+        }
+
+        internal static void RequestSetRepel(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            WeaponComponent.RequestSetValue(comp, "Repel", value, comp.Session.PlayerId);
         }
 
         internal static void ListSubSystems(List<MyTerminalControlComboBoxItem> subSystemList)

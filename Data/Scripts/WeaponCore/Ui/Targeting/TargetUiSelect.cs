@@ -16,8 +16,13 @@ namespace WeaponCore
             if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
-            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed || _session.UiInput.CameraBlockView;
             return enableActivator;
+        }
+
+        internal bool ActivateDroneNotice()
+        {
+            return _session.TrackingAi.Construct.DroneAlert;
         }
 
         internal void ResetCache()
@@ -45,7 +50,7 @@ namespace WeaponCore
             var s = _session;
             var ai = s.TrackingAi;
 
-            if (s.Tick - MasterUpdateTick > 600 || MasterUpdateTick < 600 && _masterTargets.Count == 0)
+            if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
@@ -53,7 +58,14 @@ namespace WeaponCore
             var cockPit = s.ActiveCockPit;
             Vector3D end;
 
-            if (!s.UiInput.FirstPersonView) {
+            if (s.UiInput.CameraBlockView)
+            {
+                var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
+                AimPosition = offetPosition;
+                AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
+                end = offetPosition + (AimDirection * ai.MaxTargetingRange);
+            }
+            else if (!s.UiInput.FirstPersonView) {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
@@ -144,11 +156,10 @@ namespace WeaponCore
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
-            var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
+            var updateTick = s.Tick - _cacheIdleTicks > 300 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
             
-            if (s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed || updateTick && !UpdateCache()) return;
-            _cacheIdleTicks = s.Tick;
-
+            if (updateTick && !UpdateCache(s.Tick) || s.UiInput.ShiftPressed || s.UiInput.ControlKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
+            
             var canMoveForward = _currentIdx + 1 <= _endIdx;
             var canMoveBackward = _currentIdx - 1 >= 0;
             if (s.UiInput.WheelForward)
@@ -170,8 +181,9 @@ namespace WeaponCore
             s.SetTarget(ent, ai, _masterTargets);
         }
 
-        private bool UpdateCache()
+        private bool UpdateCache(uint tick)
         {
+            _cacheIdleTicks = tick;
             var ai = _session.TrackingAi;
             var focus = ai.Construct.Data.Repo.FocusData;
             _currentIdx = 0;

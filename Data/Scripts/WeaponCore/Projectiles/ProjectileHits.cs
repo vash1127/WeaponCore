@@ -30,9 +30,12 @@ namespace WeaponCore.Projectiles
             MyAPIGateway.Parallel.For(0, ValidateHits.Count, x => {
 
                 var p = ValidateHits[x];
-                var shieldByPass = p.Info.AmmoDef.Const.ShieldBypassMod > 0;
+                var shieldByPass = p.Info.AmmoDef.Const.ShieldDamageBypassMod > 0;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
+                
                 p.FinalizeIntersection = false;
+                p.Info.ShieldInLine = false;
+
                 var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
                 var ewarProjectile = (p.Info.EwarActive || p.Info.AmmoDef.Const.EwarEffect);
 
@@ -111,10 +114,12 @@ namespace WeaponCore.Projectiles
                     var checkShield = Session.ShieldApiLoaded && Session.ShieldHash == ent.DefinitionId?.SubtypeId && ent.Render.Visible;
                     MyTuple<IMyTerminalBlock, MyTuple<bool, bool, float, float, float, int>, MyTuple<MatrixD, MatrixD>>? shieldInfo = null;
 
-                    if (checkShield && !p.Info.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
+                    if (checkShield && !p.Info.ShieldBypassed && !p.Info.EwarActive || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
                         shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
-                            if (p.Info.IsShrapnel && p.Info.Age < 1 || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
+
+                            var shrapnelSpawn = p.Info.IsShrapnel && p.Info.Age < 1;
+                            if (Vector3D.Transform(!shrapnelSpawn ? p.Info.Origin : p.Info.Target.FiringCube.PositionComp.WorldMatrixRef.Translation, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
 
                                 p.EntitiesNear = true;
                                 var dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(p.Beam.From, p.Beam.Direction));
@@ -128,24 +133,21 @@ namespace WeaponCore.Projectiles
                                     var hitPos = p.Beam.From + (p.Beam.Direction * dist.Value); 
                                     hitEntity.HitPos = p.Beam.From + (p.Beam.Direction * dist.Value);
                                     hitEntity.HitDist = dist;
-
                                     if (shieldInfo.Value.Item2.Item2) {
 
                                         var faceInfo = Session.SApi.GetFaceInfo(shieldInfo.Value.Item1, hitPos);
-                                        var modifiedBypassMod = ((1 - p.Info.AmmoDef.Const.ShieldBypassMod) + faceInfo.Item5);
+                                        var modifiedBypassMod = ((1 - p.Info.AmmoDef.Const.ShieldDamageBypassMod) + faceInfo.Item5);
                                         var validRange = modifiedBypassMod >= 0 && modifiedBypassMod <= 1 || faceInfo.Item1;
-                                        var notSupressed = validRange && modifiedBypassMod <= 1 && faceInfo.Item5 < 1;
-                                        var bypassAmmo = p.Info.AmmoDef.Const.ShieldBypassMod > 0 && notSupressed;
+                                        var notSupressed = validRange && modifiedBypassMod < 1 && faceInfo.Item5 < 1;
+                                        var bypassAmmo = shieldByPass && notSupressed;
                                         var bypass = bypassAmmo || faceInfo.Item1;
-
-                                        //Log.Line($"bypass:{bypass}({validRange}) - faceInfo.Item5:{faceInfo.Item5} - modifiedBypassMod: {modifiedBypassMod} - constMod:{p.Info.AmmoDef.Const.ShieldBypassMod} - value:{p.Info.AmmoDef.DamageScales.Shields.BypassModifier}");
 
                                         p.Info.ShieldResistMod = faceInfo.Item4;
 
                                         if (bypass) {
                                             p.Info.ShieldBypassed = true;
                                             modifiedBypassMod = bypassAmmo && faceInfo.Item1 ? 0f : modifiedBypassMod;
-                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.1f;
+                                            p.Info.ShieldBypassMod = bypassAmmo ? modifiedBypassMod : 0.2f;
                                         }
                                         else p.Info.ShieldBypassMod = 1f;
                                     }
@@ -153,9 +155,8 @@ namespace WeaponCore.Projectiles
                                     {
                                         p.Info.ShieldBypassed = true;
                                         p.Info.ShieldResistMod = 1f;
-                                        p.Info.ShieldBypassMod = p.Info.AmmoDef.Const.ShieldBypassMod > 0 ? p.Info.AmmoDef.Const.ShieldBypassMod : 1f; 
+                                        p.Info.ShieldBypassMod = p.Info.AmmoDef.Const.ShieldDamageBypassMod; 
                                     }
-
                                 }
                                 else continue;
                             }
@@ -286,6 +287,25 @@ namespace WeaponCore.Projectiles
 
                                     if (hitEntity.Vector3ICache.Count > 0) {
 
+                                        bool hitself = false;
+                                        for (int j = 0; j < hitEntity.Vector3ICache.Count; j++) {
+
+                                            MyCube myCube;
+                                            if (grid.TryGetCube(hitEntity.Vector3ICache[j], out myCube)) {
+
+                                                if (((IMySlimBlock)myCube.CubeBlock).Position != p.Info.Target.FiringCube.Position) {
+
+                                                    hitself = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (!hitself) {
+                                            HitEntityPool.Return(hitEntity);
+                                            continue;
+                                        }
+
                                         IHitInfo hitInfo;
                                         p.Info.System.Session.Physics.CastRay(forwardPos, p.Beam.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
                                         var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
@@ -347,12 +367,27 @@ namespace WeaponCore.Projectiles
                         if (dist <= hitTolerance || p.Info.AmmoDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
                             rayCheck = true;
                     }
-                    
+
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
+                    /*
+                    var targetCapsule = new CapsuleD(p.Position, p.LastPosition, (float) p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize / 2);
+                    var dVec = Vector3D.Zero;
+                    var eVec = Vector3.Zero;
+                    */
 
                     if (rayCheck || sphere.Intersects(testSphere))
+                    {
+                        /*
+                        var dir = p.Info.Target.Projectile.Position - p.Info.Target.Projectile.LastPosition;
+                        var delta = dir.Normalize();
+                        var radius = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
+                        var size = p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize;
+                        var obb = new MyOrientedBoundingBoxD((p.Info.Target.Projectile.Position + p.Info.Target.Projectile.LastPosition) / 2, new Vector3(size, size, delta / 2 + radius), Quaternion.CreateFromForwardUp(dir, Vector3D.CalculatePerpendicularVector(dir)));
+                        if (obb.Intersects(ref testSphere))
+                        */
                         ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref p.Beam);
+                    }
                 }
 
                 if (!useEntityCollection)
@@ -535,11 +570,15 @@ namespace WeaponCore.Projectiles
             }
 
             var finalCount = p.Info.HitList.Count;
-
             if (finalCount > 0) {
 
-                var blockingEnt = !p.Info.ShieldBypassed || p.Info.HitList.Count == 1 ? 0 : 1;
+                var checkHit = (!p.Info.AmmoDef.Const.IsBeamWeapon || !p.Info.ShieldBypassed || finalCount > 1); ;
+
+                var blockingEnt = !p.Info.ShieldBypassed || finalCount == 1 ? 0 : 1;
                 var hitEntity = p.Info.HitList[blockingEnt];
+
+                if (!checkHit)
+                    hitEntity.HitPos = p.Beam.To;
 
                 if (hitEntity.EventType == Shield)
                 {
@@ -623,6 +662,7 @@ namespace WeaponCore.Projectiles
                 else if (shield != null) {
                     hitEnt.Hit = true;
                     dist = hitEnt.HitDist.Value;
+                    info.ShieldInLine = true;
                 }
                 else if (grid != null) {
 
@@ -756,35 +796,39 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in system.Session.GridToInfoMap[grid].MyCubeBocks)
+                GridMap map;
+                if (system.Session.GridToInfoMap.TryGetValue(grid, out map))
                 {
-                    if (!(cube is IMyTerminalBlock)) continue;
-                    switch (fieldType)
+                    foreach (var cube in map.MyCubeBocks)
                     {
-                        case JumpNullField:
-                            if (!(cube is MyJumpDrive)) continue;
-                            break;
-                        case EnergySinkField:
-                            if (!(cube is IMyPowerProducer)) continue;
-                            break;
-                        case AnchorField:
-                            if (!(cube is MyThrust)) continue;
-                            break;
-                        case NavField:
-                            if (!(cube is MyGyro)) continue;
-                            break;
-                        case OffenseField:
-                            if (!(cube is IMyGunBaseUser)) continue;
-                            break;
-                        case EmpField:
-                        case DotField:
-                            break;
-                        default: continue;
+                        if (!(cube is IMyTerminalBlock)) continue;
+                        switch (fieldType)
+                        {
+                            case JumpNullField:
+                                if (!(cube is MyJumpDrive)) continue;
+                                break;
+                            case EnergySinkField:
+                                if (!(cube is IMyPowerProducer)) continue;
+                                break;
+                            case AnchorField:
+                                if (!(cube is MyThrust)) continue;
+                                break;
+                            case NavField:
+                                if (!(cube is MyGyro)) continue;
+                                break;
+                            case OffenseField:
+                                if (!(cube is IMyGunBaseUser)) continue;
+                                break;
+                            case EmpField:
+                            case DotField:
+                                break;
+                            default: continue;
+                        }
+                        var block = cube.SlimBlock as IMySlimBlock;
+                        if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                            continue;
+                        blocks.Add(block);
                     }
-                    var block = cube.SlimBlock as IMySlimBlock;
-                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                        continue;
-                    blocks.Add(block);
                 }
             }
             else

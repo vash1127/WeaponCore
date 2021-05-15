@@ -38,7 +38,6 @@ namespace WeaponCore
             for (int x = 0; x < Hits.Count; x++)
             {
                 var p = Hits[x];
-
                 var info = p.Info;
                 var maxObjects = info.AmmoDef.Const.MaxObjectsHit;
                 var phantom = info.AmmoDef.BaseDamage <= 0;
@@ -47,21 +46,11 @@ namespace WeaponCore
                 if (tInvalid) info.Target.Reset(Tick, Target.States.ProjectileClosed);
                 var skip = pInvalid || tInvalid;
                 var canDamage = IsServer && (p.Info.ClientSent || !p.Info.AmmoDef.Const.ClientPredictedAmmo);
-                /*
-                if (!p.Info.IsShrapnel)
-                    Log.Line($"ProcessHits: canDamage:{canDamage} - notPredicted:{!p.Info.AmmoDef.Const.ClientPredictedAmmo} - clientSent:{p.Info.ClientSent} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
-
-                if (canDamage && !p.Info.ClientSent)
-                    Log.Line($"invalid damage: shrapnel:{p.Info.IsShrapnel} - ClientSent:{p.Info.ClientSent} - ClientPredictedAmmo:{p.Info.AmmoDef.Const.ClientPredictedAmmo} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
-                else if (canDamage)
-                    Log.Line($"valid damage: shrapnel:{p.Info.IsShrapnel} - ClientSent:{p.Info.ClientSent} - ClientPredictedAmmo:{p.Info.AmmoDef.Const.ClientPredictedAmmo} - beam:{p.Info.AmmoDef.Const.IsBeamWeapon} - ammo:{p.Info.AmmoDef.AmmoRound}");
-                */
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
                     var hitEnt = info.HitList[i];
                     var hitMax = info.ObjectsHit >= maxObjects;
                     var outOfPew = info.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
-
                     if (skip || hitMax || outOfPew)
                     {
                         if (hitMax || outOfPew || pInvalid)
@@ -114,6 +103,7 @@ namespace WeaponCore
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             if (!info.ShieldBypassed)
                 info.ObjectsHit++;
+
             AmmoModifer ammoModifer;
             AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
             var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
@@ -126,8 +116,7 @@ namespace WeaponCore
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
             var heal = damageType == ShieldDef.ShieldType.Heal;
-            var energy = damageType == ShieldDef.ShieldType.Energy || info.ShieldBypassed || heal;
-
+            var energy = damageType != ShieldDef.ShieldType.Kinetic;
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !info.ShieldBypassed;
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;
@@ -143,7 +132,6 @@ namespace WeaponCore
             scaledDamage = (scaledDamage * info.ShieldResistMod) * info.ShieldBypassMod;
             var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
             var detonateDamage = detonateOnEnd ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * detDmgGlobal) * info.ShieldResistMod : 0;
-            //Log.Line($"scaledBaseDamage:{scaledBaseDamage} - scaledDamage: {scaledDamage} - ShieldResistMod:{info.ShieldResistMod} - ShieldBypassMod:{info.ShieldBypassMod} - ShieldModifier:{info.AmmoDef.Const.ShieldModifier}");
             if (heal) {
                 var heat = SApi.GetShieldHeat(shield);
 
@@ -169,8 +157,9 @@ namespace WeaponCore
                     }
                 }
             }
-            var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
-            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, applyToShield);
+            //var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
+            var hitWave = info.AmmoDef.Const.RealShotsPerMin <= 120;
+            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, hitWave);
             if (hit.HasValue) {
 
                 if (heal) {
@@ -188,7 +177,7 @@ namespace WeaponCore
                     if (!info.ShieldBypassed)
                         info.BaseDamagePool = 0;
                     else
-                        info.BaseDamagePool -= ((scaledBaseDamage * info.ShieldResistMod) * info.ShieldBypassMod);
+                        info.BaseDamagePool -= (info.BaseDamagePool * info.ShieldResistMod) * info.ShieldBypassMod;
                 }
                 else info.BaseDamagePool = (objHp * -1);
 
@@ -211,11 +200,12 @@ namespace WeaponCore
                 hitEnt.Blocks?.Clear();
                 return;
             }
-            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsSameConstructAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
             {
                 t.BaseDamagePool = 0;
                 return;
             }
+
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -228,8 +218,8 @@ namespace WeaponCore
             var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.AmmoDef.AreaEffect.Detonation.MinArmingTime;
             var detonateDmg = t.AmmoDef.Const.DetonationDamage;
 
-            var attackerId = t.ShieldBypassed ? grid.EntityId : t.Target.FiringCube.EntityId;
-            var attacker = t.ShieldBypassed ? (MyEntity)grid : t.Target.FiringCube;
+            var attackerId = t.Target.FiringCube.EntityId;
+            var attacker = t.Target.FiringCube;
             
             var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
@@ -274,12 +264,15 @@ namespace WeaponCore
 
             var done = false;
             var nova = false;
+            var earlyExit = false;
             var outOfPew = false;
+            var partialShield = t.ShieldInLine && !t.ShieldBypassed && SApi.MatchEntToShieldFast(grid, true) != null;
             IMySlimBlock rootBlock = null;
+
             var destroyed = 0;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
-                if (done || outOfPew && !nova) break;
+                if (done || earlyExit || outOfPew && !nova) break;
 
                 rootBlock = hitEnt.Blocks[i];
 
@@ -318,6 +311,12 @@ namespace WeaponCore
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
+
+                    if (partialShield && SApi.IsBlockProtected(block)) {
+                        earlyExit = true;
+                        break;
+                    }
+
                     var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
                     float cachedIntegrity;
                     var blockHp = !IsClient ? block.Integrity - block.AccumulatedDamage : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
@@ -691,8 +690,7 @@ namespace WeaponCore
                     info.BaseDamagePool -= objHp;
                     if (oRadius < minTestRadius) oRadius = minTestRadius;
                 }
-
-                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)(oRadius * info.AmmoDef.Const.VoxelHitModifier), true);
+                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)(oRadius * info.AmmoDef.Const.VoxelHitModifier), false);
 
                 if (detonateOnEnd && info.BaseDamagePool <= 0)
                 {

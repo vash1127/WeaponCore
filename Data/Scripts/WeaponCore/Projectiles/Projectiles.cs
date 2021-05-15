@@ -97,6 +97,9 @@ namespace WeaponCore.Projectiles
             if (Session.Tick60)
                 Session.GridEffects();
 
+            if (Session.IsClient && (Session.ClientEwarStale || Session.CurrentClientEwaredCubes.Count > 0 && Session.Tick120))
+                Session.SyncClientEwarBlocks();
+
             if (Session.Hits.Count > 0) Session.ProcessHits();
         }
 
@@ -119,6 +122,14 @@ namespace WeaponCore.Projectiles
                 ++p.Info.Age;
                 ++p.Info.Ai.MyProjectiles;
                 p.Info.Ai.ProjectileTicker = p.Info.System.Session.Tick;
+
+                if (p.ASleep) {
+                    if (p.FieldTime > 300 && p.Info.Age % 100 != 0) {
+                        p.FieldTime--;
+                        continue;
+                    }
+                    p.ASleep = false;
+                }
 
                 switch (p.State) {
                     case ProjectileState.Destroy:
@@ -272,7 +283,7 @@ namespace WeaponCore.Projectiles
 
                 var p = ActiveProjetiles[x];
                 
-                if ((int) p.State > 3)
+                if ((int) p.State > 3 || p.ASleep)
                     continue;
 
                 if (p.Info.AmmoDef.Const.IsBeamWeapon)
@@ -285,6 +296,7 @@ namespace WeaponCore.Projectiles
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.EwarAreaPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = (triggerRange > 0 || p.Info.EwarActive) && p.Info.AmmoDef.Const.Pulse;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
+
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)) {
                     
@@ -377,6 +389,11 @@ namespace WeaponCore.Projectiles
                 if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
                     ValidateHits.Add(p);
                 }
+                else if (p.MineSeeking && !p.MineTriggered && p.Info.Age - p.ChaseAge > 600)
+                { 
+                    p.ASleep = true;
+                }
+
             }, stride);
             ValidateHits.ApplyAdditions();
         }
@@ -396,7 +413,7 @@ namespace WeaponCore.Projectiles
                         var vs = vp.AvShot;
 
                         vp.TracerLength = p.Info.TracerLength;
-                        vs.Init(vp, p.AccelInMetersPerSec * StepConst, p.MaxSpeed, ref p.AccelDir);
+                        vs.Init(vp, p.SmartsOn, p.AccelInMetersPerSec * StepConst, p.MaxSpeed, ref p.AccelDir);
 
                         if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
                             vs.ProEnded = true;

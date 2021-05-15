@@ -22,6 +22,7 @@ namespace WeaponCore.Projectiles
         internal MyEntityQueryType PruneQuery;
         internal Vector3D AccelDir;
         internal Vector3D Position;
+        internal Vector3D OffsetDir;
         internal Vector3D LastPosition;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
@@ -91,6 +92,7 @@ namespace WeaponCore.Projectiles
         internal bool FinalizeIntersection;
         internal bool SphereCheck;
         internal bool LineCheck;
+        internal bool ASleep;
         internal enum CheckTypes
         {
             Ray,
@@ -112,6 +114,7 @@ namespace WeaponCore.Projectiles
         internal void Start()
         {
             PrevVelocity = Vector3D.Zero;
+            OffsetDir = Vector3D.Zero;
             Position = Info.Origin;
             AccelDir = Info.Direction;
             var cameraStart = Info.System.Session.CameraPos;
@@ -141,6 +144,7 @@ namespace WeaponCore.Projectiles
             HadTarget = false;
             WasTracking = false;
             Intersecting = false;
+            ASleep = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -236,11 +240,9 @@ namespace WeaponCore.Projectiles
             if (MoveToAndActivate)
             {
                 var distancePos = !Vector3D.IsZero(PredictedTargetPos) ? PredictedTargetPos : OriginTargetPos;
-                if (variance > 0)
+                if (!MyUtils.IsZero(variance))
                 {
-                    var forward = Info.WeaponRng.ClientProjectileRandom.Next(100) < 50;
-                    Info.WeaponRng.ClientProjectileCurrentCounter++;
-                    distancePos = forward ? distancePos + (AccelDir * variance) : distancePos + (-AccelDir * variance);
+                    distancePos -= (AccelDir * variance);
                 }
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }
@@ -289,8 +291,9 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
+                var originDir = !Info.IsShrapnel ? AccelDir : Info.Direction;
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
-                Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed, ref AccelDir);
+                Info.AvShot.Init(Info, SmartsOn, AccelInMetersPerSec * StepConst, MaxSpeed, ref originDir);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr); //Pool initted sounds per Projectile type... this is expensive
                 if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.Const.AreaEffectSize > 0 && Info.AmmoDef.Const.AreaEffectDamage > 0)
                 {
@@ -433,17 +436,6 @@ namespace WeaponCore.Projectiles
             TravelMagnitude = Velocity * StepConst;
         }
 
-        internal void TriggerMine(bool startTimer)
-        {
-            DistanceToTravelSqr = double.MinValue;
-            if (Info.AmmoDef.Const.Ewar) {
-                Info.AvShot.Triggered = true;
-                if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
-            }
-            else if (startTimer) FieldTime = 0;
-            MineTriggered = true;
-        }
-
         internal void RunSmart()
         {
             Vector3D newVel;
@@ -528,6 +520,10 @@ namespace WeaponCore.Projectiles
                             PredictedTargetPos = PrevTargetPos;
                         }
                     }
+                    else if (MineSeeking) {
+                        ResetMine();
+                        return;
+                    }
                 }
 
                 var missileToTarget = Vector3D.Normalize(PrevTargetPos - Position);
@@ -546,8 +542,28 @@ namespace WeaponCore.Projectiles
                     commandedAccel = Math.Sqrt(Math.Max(0, AccelInMetersPerSec * AccelInMetersPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
                 }
 
+                var offsetTime = Info.AmmoDef.Trajectory.Smarts.OffsetTime;
+                if (offsetTime > 0)
+                {
+                    if ((Info.Age % offsetTime == 0))
+                    {
+                        double angle = Info.WeaponRng.ClientProjectileRandom.NextDouble() * MathHelper.TwoPi;
+                        Info.WeaponRng.ClientProjectileCurrentCounter += 1;
+                        var up = Vector3D.Normalize(Vector3D.CalculatePerpendicularVector(Info.Direction));
+                        var right = Vector3D.Cross(Info.Direction, up);
+                        OffsetDir = Math.Sin(angle) * up + Math.Cos(angle) * right;
+                        OffsetDir *= Info.AmmoDef.Trajectory.Smarts.OffsetRatio;
+                    }
+
+                    commandedAccel += AccelInMetersPerSec * OffsetDir;
+                    commandedAccel = Vector3D.Normalize(commandedAccel) * AccelInMetersPerSec;
+                }
+
                 newVel = Velocity + (commandedAccel * StepConst);
-                AccelDir = commandedAccel / AccelInMetersPerSec;
+                var accelDir = commandedAccel / AccelInMetersPerSec;
+ 
+                AccelDir = accelDir;
+
                 Vector3D.Normalize(ref newVel, out Info.Direction);
             }
             else
@@ -753,6 +769,55 @@ namespace WeaponCore.Projectiles
                 TriggerMine(false);
                 MyEntityList.Add(Info.Target.Entity);
             }
+        }
+
+        internal void TriggerMine(bool startTimer)
+        {
+            DistanceToTravelSqr = double.MinValue;
+            if (Info.AmmoDef.Const.Ewar)
+            {
+                Info.AvShot.Triggered = true;
+            }
+
+            if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
+            MineTriggered = true;
+        }
+
+        internal void ResetMine()
+        {
+            if (MineTriggered)
+            {
+                SmartsOn = false;
+                Info.DistanceTraveled = double.MaxValue;
+                FieldTime = 0;
+                return;
+            }
+
+            FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
+            DistanceToTravelSqr = MaxTrajectorySqr;
+
+            Info.AvShot.Triggered = false;
+            MineTriggered = false;
+            MineActivated = false;
+            LockedTarget = false;
+            MineSeeking = true;
+
+            if (Info.AmmoDef.Trajectory.Guidance == GuidanceType.DetectSmart)
+            {
+                SmartsOn = false;
+                MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
+                MaxChaseTime = int.MaxValue;
+                SmartsOn = false;
+                SmartSlot = 0;
+                TargetOffSet = Vector3D.Zero;
+                OffsetSqr = 0;
+            }
+
+            Info.Direction = Vector3D.Zero;
+            AccelDir = Vector3D.Zero;
+            Velocity = Vector3D.Zero;
+            TravelMagnitude = Vector3D.Zero;
+            VelocityLengthSqr = 0;
         }
 
         internal void OffSetTarget(bool roam = false)

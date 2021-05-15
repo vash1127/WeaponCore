@@ -87,6 +87,7 @@ namespace WeaponCore.Support
                     FatBlockAdded(cube);
                 }
             }
+
         }
 
         public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
@@ -135,14 +136,18 @@ namespace WeaponCore.Support
             internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
+            internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
             internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
-            internal float OptimalDps;
-            internal int BlockCount;
             internal GridAi RootAi;
             internal GridAi LargestAi;
+            internal float OptimalDps;
+            internal int BlockCount;
+            internal int DroneCount;
+            internal uint LastDroneTick;
             internal bool NewInventoryDetected;
-            
+            internal bool DroneAlert;
+
             internal enum RefreshCaller
             {
                 Init,
@@ -211,6 +216,11 @@ namespace WeaponCore.Support
                 LargestAi = null;
             }
 
+            internal void DroneCleanup()
+            {
+                DroneAlert = false;
+                DroneCount = 0;
+            }
 
             internal void UpdateConstruct(UpdateType type, bool sync = true)
             {
@@ -366,6 +376,7 @@ namespace WeaponCore.Support
                 LargestAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
+                PreviousTargets.Clear();
             }
         }
     }
@@ -375,6 +386,7 @@ namespace WeaponCore.Support
         public readonly long[] OldTarget = new long[2];
         public readonly LockModes[] OldLocked = new LockModes[2];
 
+        public uint LastUpdateTick;
         public int OldActiveId;
         public bool OldHasFocus;
         public float OldDistToNearestFocusSqr;
@@ -382,7 +394,8 @@ namespace WeaponCore.Support
         public bool ChangeDetected(GridAi ai)
         {
             var fd = ai.Construct.Data.Repo.FocusData;
-            if (fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.Locked[0] != OldLocked[0] || fd.Locked[1] != OldLocked[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0)  {
+            var forceUpdate = LastUpdateTick == 0 || ai.Session.Tick - LastUpdateTick > 600;
+            if (forceUpdate || fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.Locked[0] != OldLocked[0] || fd.Locked[1] != OldLocked[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0)  {
 
                 OldTarget[0] = fd.Target[0];
                 OldTarget[1] = fd.Target[1];
@@ -391,7 +404,7 @@ namespace WeaponCore.Support
                 OldActiveId = fd.ActiveId;
                 OldHasFocus = fd.HasFocus;
                 OldDistToNearestFocusSqr = fd.DistToNearestFocusSqr;
-
+                LastUpdateTick = ai.Session.Tick;
                 return true;
             }
 
@@ -403,8 +416,13 @@ namespace WeaponCore.Support
             var session = ai.Session;
             var fd = ai.Construct.Data.Repo.FocusData;
 
-            fd.Target[fd.ActiveId] = target.EntityId;
-            ai.TargetResetTick = session.Tick + 1;
+            var oldTargetId = fd.Target[fd.ActiveId];
+            if (oldTargetId != target.EntityId)
+            {
+                fd.Target[fd.ActiveId] = target.EntityId;
+                ai.TargetResetTick = session.Tick + 1;
+            }
+
             ServerIsFocused(ai);
 
             ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));
@@ -538,7 +556,6 @@ namespace WeaponCore.Support
             bool focus = false;
             for (int i = 0; i < fd.Target.Length; i++)
             {
-
                 if (fd.Target[i] > 0)
                     if (MyEntities.GetEntityById(fd.Target[fd.ActiveId]) != null)
                         focus = true;

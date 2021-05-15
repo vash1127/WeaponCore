@@ -946,15 +946,11 @@ namespace WeaponCore
                         {
                             if (currentEmissive.CycleParts)
                             {
-                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor,
-                                    currentEmissive.CurrentIntensity);
+                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
                                 if (!currentEmissive.LeavePreviousOn)
                                 {
-                                    var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts
-                                        .Length - 1;
-                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
-                                        Color.Transparent,
-                                        0);
+                                    var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts.Length - 1;
+                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev], Color.Transparent, 0);
                                 }
                             }
                             else
@@ -1016,8 +1012,8 @@ namespace WeaponCore
                     var dummyInfo = particleEvent.MyDummy.Info;
                     var ent = particleEvent.MyDummy.Entity;
                     var pos = particleEvent.EmptyPos;
-                    var matrix = dummyInfo.ParentMatrix;
-                    matrix.Translation = pos;
+                    var matrix = dummyInfo.DummyMatrix;
+                    matrix.Translation = dummyInfo.LocalPosition + particleEvent.Offset;
 
                     if (particleEvent.Effect == null)
                     {
@@ -1029,7 +1025,7 @@ namespace WeaponCore
                             continue;
                         }
                         particleEvent.Effect.WorldMatrix = matrix;
-                        particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
+                        //particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
                         particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                     }
                     else if (particleEvent.Effect.IsStopped)
