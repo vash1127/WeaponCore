@@ -214,29 +214,22 @@ namespace WeaponCore
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             GridAi ai;
-            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
-            {
-                //var mid = ai.MIds[(int)packet.PType];
-                //var newUpdate = mid == 0 || mid < packet.MId;
+            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
-                //if (newUpdate) {
-                    //ai.MIds[(int)packet.PType] = packet.MId;
+                long playerId;
+                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId)) {
 
-                    long playerId;
-                    if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                    FakeTargets dummyTargets;
+                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTargets))
                     {
-                        FakeTarget dummyTarget;
-                        if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
-                        {
-                            dummyTarget.Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
-                        }
-                        else
-                            return Error(data, Msg("Player dummy target not found"));
+                        dummyTargets.AimTarget.Sync(targetPacket, ai);
+                        dummyTargets.MarkedTarget.Sync(targetPacket, ai);
                     }
                     else
-                        return Error(data, Msg("SteamToPlayer missing Player"));
-                //}
-                //else Log.Line($"ClientFakeTargetUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
+                        return Error(data, Msg("Player dummy target not found"));
+                }
+                else
+                    return Error(data, Msg("SteamToPlayer missing Player"));
 
                 data.Report.PacketValid = true;
             }

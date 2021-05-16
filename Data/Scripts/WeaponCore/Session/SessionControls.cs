@@ -172,7 +172,7 @@ namespace WeaponCore
                         {
                             controls.RemoveAt(i);
                         }
-                        else if (control.Id.Equals("WC_Range"))
+                        else if (control.Id.Equals("Weapon Range"))
                         {
                             wcRangeControl = control;
                             controls.RemoveAt(i);

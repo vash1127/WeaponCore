@@ -113,18 +113,12 @@ namespace WeaponCore
 
             if (!PlayersLoaded && KeenFuckery())
                 PlayersLoaded = true;
-
-            if (WaterMod && !WaterApiLoaded && !Settings.ClientWaiting && WApi.Waters != null)
-            {
-                WaterApiLoaded = true;
-                WApiReceiveData();
-            }
         }
 
         internal void AddLosCheck(LosDebug debug)
         {
-            if (!WeaponLosDebugActive.Add(debug.Weapon))
-                return;
+            //if (!WeaponLosDebugActive.Add(debug.Weapon))
+                //return;
             
             LosDebugList.Add(debug);
         }

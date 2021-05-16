@@ -13,8 +13,6 @@ namespace WeaponCore
         internal Vector3D TargetOffset;
         internal Vector3D AimPosition;
         internal Vector3D AimDirection;
-        internal Vector3D AimUp = MatrixD.Identity.Up;
-        internal MatrixD AimMatrix;
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
         internal bool DrawReticle;
@@ -32,8 +30,6 @@ namespace WeaponCore
 
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
-        private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
-        private readonly MyStringId _focusSecondary = MyStringId.GetOrCompute("DS_TargetFocusSecondary");
         private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
@@ -46,7 +42,7 @@ namespace WeaponCore
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;
         private readonly HudInfo _alertHudInfo = new HudInfo(MyStringId.GetOrCompute("WC_HUD_DroneAlert"), new Vector2(0.55f, 0.66f), 0.33f);
-        internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
+        internal readonly int[] ExpChargeReductions = { 1, 2, 3, 5, 8, 10, 12, 14, 16, 18, 20 };
 
         private readonly Dictionary<string, HudInfo> _primaryMinimalHuds = new Dictionary<string, HudInfo>
         {

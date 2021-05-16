@@ -44,7 +44,7 @@ namespace WeaponCore
         private long _lastFakeTargetUpdateErrorId = long.MinValue;
         private bool Error(PacketObj data, params NetResult[] messages)
         {
-            var fakeTargetUpdateError = data.Packet.PType == PacketType.FakeTargetUpdate; // why does this happen so often
+            var fakeTargetUpdateError = data.Packet.PType == PacketType.AimTargetUpdate; // why does this happen so often
            
             if (fakeTargetUpdateError) {
                 if (data.Packet.EntityId == _lastFakeTargetUpdateErrorId)
@@ -768,7 +768,7 @@ namespace WeaponCore
             else Log.Line($"SendActiveTerminal should never be called on Dedicated");
         }
 
-        internal void SendFakeTargetUpdate(GridAi ai, GridAi.FakeTarget fake)
+        internal void SendAimTargetUpdate(GridAi ai, GridAi.FakeTarget fake)
         {
             if (IsClient)
             {
@@ -776,11 +776,11 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))  {
                     PacketsToServer.Add(new FakeTargetPacket
                     {
-                        MId = ++mIds[(int)PacketType.FakeTargetUpdate],
+                        MId = ++mIds[(int)PacketType.AimTargetUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.FakeTargetUpdate,
-                        Pos = fake.Position,
+                        PType = PacketType.AimTargetUpdate,
+                        Pos = fake.EntityId != 0  ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
                         TargetId = fake.EntityId,
                     });
                 }
@@ -793,17 +793,56 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FakeTargetPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FakeTargetUpdate],
+                        MId = ++ai.MIds[(int)PacketType.AimTargetUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.FakeTargetUpdate,
-                        Pos = fake.Position,
+                        PType = PacketType.AimTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
                         TargetId = fake.EntityId,
                     }
                 });
             }
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
+
+        internal void SendMarkedTargetUpdate(GridAi ai, GridAi.FakeTarget fake)
+        {
+            if (IsClient)
+            {
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new FakeTargetPacket
+                    {
+                        MId = ++mIds[(int)PacketType.MarkedTargetUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = ai.Session.MultiplayerId,
+                        PType = PacketType.MarkedTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
+                        TargetId = fake.EntityId,
+                    });
+                }
+                else Log.Line($"SendFakeTargetUpdate no player MIds found");
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new FakeTargetPacket
+                    {
+                        MId = ++ai.MIds[(int)PacketType.MarkedTargetUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = ai.Session.MultiplayerId,
+                        PType = PacketType.MarkedTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
+                        TargetId = fake.EntityId,
+                    }
+                });
+            }
+            else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
+        }
+
 
         internal void SendPlayerControlRequest(WeaponComponent comp, long playerId, CompStateValues.ControlMode mode)
         {

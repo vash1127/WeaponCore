@@ -17,7 +17,7 @@ namespace WeaponCore
             //runs once on first draw then only again if a menu is closed
             var fovScale = (float)(0.1 * _session.ScaleFov);
 
-            var fovModifier = (float)(1.5 * _session.ScaleFov);
+            var fovModifier = (float)((_session.Settings.ClientConfig.HudScale * 1.5) * _session.ScaleFov);
             NeedsUpdate = false;
             _lastHudUpdateTick = 0;
             _viewPortSize.X = (fovScale * _session.AspectRatio);

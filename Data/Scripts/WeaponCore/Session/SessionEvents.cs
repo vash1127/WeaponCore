@@ -385,7 +385,7 @@ namespace WeaponCore
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
                 PlayerMouseStates[id] = new InputStateData();
-                PlayerDummyTargets[id] = new FakeTarget();
+                PlayerDummyTargets[id] = new FakeTargets();
                 PlayerEntityIdInRange[player.SteamUserId] = new HashSet<long>();
                 PlayerMIds[player.SteamUserId] = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
@@ -401,25 +401,6 @@ namespace WeaponCore
                     ParticleJokes();
             }
             return false;
-        }
-
-        private void WApiReceiveData()
-        {
-            if (WApi.Registered) {
-                WaterMap.Clear();
-                MaxWaterHeightSqr.Clear();
-                for (int i = 0; i < WApi.Waters.Count; i++) {
-                    
-                    var water = WApi.Waters[i];
-                    if (water.planet != null) {
-
-                        WaterMap[water.planet] = water;
-                        var maxWaterHeight = water.radius;
-                        var maxWaterHeightSqr = maxWaterHeight * maxWaterHeight;
-                        MaxWaterHeightSqr[water.planet] = maxWaterHeightSqr;
-                    }
-                }
-            }
         }
     }
 }

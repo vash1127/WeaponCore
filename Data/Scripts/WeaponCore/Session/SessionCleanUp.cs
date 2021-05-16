@@ -273,6 +273,8 @@ namespace WeaponCore
             Placer = null;
             TargetGps = null;
             SApi.Unload();
+            if (WaterApiLoaded)
+                WApi.Unload();
             SApi = null;
             Api = null;
             ApiServer = null;

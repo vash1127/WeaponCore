@@ -41,7 +41,7 @@ namespace WeaponCore.Platform
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
-                    if (!Comp.Data.Repo.Base.State.TrackingReticle)
+                    if (!Comp.Data.Repo.Base.State.TrackingReticle && Comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Painter)
                         Target.PushTargetToClient(this);
                 } 
             }
@@ -184,6 +184,26 @@ namespace WeaponCore.Platform
                 StopShooting();
         }
 
+
+        internal bool ValidFakeTargetInfo(long playerId, out GridAi.FakeTarget.FakeWorldTargetInfo fakeTargetInfo, bool preferMarked = true)
+        {
+            fakeTargetInfo = null;
+            GridAi.FakeTargets fakeTargets;
+            if (Comp.Session.PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
+            {
+                var validAim = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && Comp.Data.Repo.Base.State.TrackingReticle && fakeTargets.AimTarget.LocalPosition != Vector3D.Zero;
+                var validPainter = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && !fakeTargets.MarkedTarget.Dirty && fakeTargets.MarkedTarget.LocalPosition != Vector3D.Zero;
+                var fakeTarget = validPainter && preferMarked ? fakeTargets.MarkedTarget : validAim ? fakeTargets.AimTarget : null;
+                if (fakeTarget == null || fakeTarget.Dirty)
+                    return false;
+
+                fakeTargetInfo = fakeTarget.LastInfoTick != System.Session.Tick ? fakeTarget.GetFakeTargetInfo(Comp.Ai) : fakeTarget.FakeInfo;
+            }
+
+            return fakeTargetInfo != null;
+        }
+
+
         internal double GetMaxWeaponRange()
         {
             var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
@@ -193,9 +213,9 @@ namespace WeaponCore.Platform
 
         internal void UpdateWeaponRange()
         {
-            var range = Comp.Data.Repo.Base.Set.Range < 0 ? double.MaxValue : Comp.Data.Repo.Base.Set.Range; 
-            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
+            var range = Comp.Data.Repo.Base.Set.Range < 0 ? hardPointMax : Comp.Data.Repo.Base.Set.Range; 
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var weaponRange = Math.Min(hardPointMax, ammoMax);
             MaxTargetDistance = Math.Min(range, weaponRange);
             MaxTargetDistanceSqr = MaxTargetDistance * MaxTargetDistance;

@@ -27,30 +27,108 @@ namespace WeaponCore.Support
             internal int Max;
         }
 
+        public class FakeTargets
+        {
+            public FakeTarget AimTarget = new FakeTarget(FakeTarget.FakeType.Aim);
+            public FakeTarget MarkedTarget = new FakeTarget(FakeTarget.FakeType.Marked);
+        }
+
         public class FakeTarget
         {
-            public Vector3D Position;
-            public Vector3 LinearVelocity;
-            public Vector3 Acceleration;
+            
+            public FakeTarget(FakeType type)
+            {
+                Type = type;
+            }
+
+            public enum FakeType
+            {
+                Aim,
+                Marked,
+            }
+
+            public FakeWorldTargetInfo FakeInfo = new FakeWorldTargetInfo();
+            public readonly FakeType Type;
+            public Vector3D LocalPosition;
             public long EntityId;
             public uint LastUpdateTick;
+            public uint LastInfoTick;
+            public bool Dirty;
 
             internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, long entId = 0)
             {
-                Position = hitPos;
-                if (ai.Session.HandlesInput && ent != null) {
+                if ((ent != null || entId != 0 && MyEntities.TryGetEntityById(entId, out ent)) && ent.Physics != null) {
+                    var referenceWorldMatrix = ent.PositionComp.WorldMatrixRef;
+                    Vector3D referenceWorldPosition = referenceWorldMatrix.Translation; 
+                    Vector3D worldDirection = hitPos - referenceWorldPosition;
+                    
                     EntityId = ent.EntityId;
-                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
-                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
+                    LocalPosition = Vector3D.TransformNormal(worldDirection, MatrixD.Transpose(referenceWorldMatrix));
                 }
-                else if (entId != 0 && MyEntities.TryGetEntityById(entId, out ent))
+                else
                 {
-                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
-                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
-                    EntityId = entId;
+                    if (Type == FakeType.Aim)
+                        FakeInfo.WorldPosition = hitPos;
+
+                    EntityId = 0;
+                    LocalPosition = Vector3D.Zero;
+                    FakeInfo.LinearVelocity = Vector3.Zero;
+                    FakeInfo.Acceleration = Vector3.Zero;
                 }
 
+                Dirty = false;
+                LastInfoTick = 0;
                 LastUpdateTick = ai.Session.Tick;
+            }
+
+            internal void Sync(FakeTargetPacket packet, GridAi ai)
+            {
+                if (packet.TargetId == 0) {
+
+                    EntityId = 0;
+                    LocalPosition = Vector3D.Zero;
+                    FakeInfo.WorldPosition = packet.Pos;
+                    FakeInfo.LinearVelocity = Vector3.Zero;
+                    FakeInfo.Acceleration = Vector3.Zero;
+                }
+                else {
+                    EntityId = packet.TargetId;
+                    LocalPosition = packet.Pos;
+                }
+
+                LastInfoTick = 0;
+                LastUpdateTick = ai.Session.Tick;
+            }
+
+            internal FakeWorldTargetInfo GetFakeTargetInfo(GridAi ai)
+            {
+                MyEntity ent;
+                if (EntityId != 0 && (MyEntities.TryGetEntityById(EntityId, out ent) && ent.Physics != null))
+                {
+                    if (ai.Session.Tick != LastInfoTick)
+                    {
+                        LastInfoTick = ai.Session.Tick;
+                        if (Type != FakeType.Marked || ai.Targets.ContainsKey(ent))
+                        {
+                            FakeInfo.WorldPosition = Vector3D.Transform(LocalPosition, ent.PositionComp.WorldMatrixRef);
+                            FakeInfo.LinearVelocity = ent.Physics.LinearVelocity;
+                            FakeInfo.Acceleration = ent.Physics.LinearAcceleration;
+                        }
+                        else if (Type == FakeType.Marked)
+                            Dirty = true;
+                    }
+                }
+                else if (Type == FakeType.Marked)
+                    Dirty = true;
+
+                return FakeInfo;
+            }
+
+            public class FakeWorldTargetInfo
+            {
+                public Vector3D WorldPosition;
+                public Vector3 LinearVelocity;
+                public Vector3 Acceleration;
             }
         }
 

@@ -186,30 +186,30 @@ namespace WeaponCore.Support
                 var status = GetSystemStatus();
 
                 stringBuilder.Append(status)
-                    .Append($"\nConstruct DPS: {Ai.EffectiveDps.ToString("0.0")}")
-                    .Append($"\nShotsPerSec: {ShotsPerSec.ToString("0.000")}")
+                    .Append($"\nConstruct DPS: {Ai.EffectiveDps:0.0}")
+                    .Append($"\nShotsPerSec: {ShotsPerSec:0.000}")
                     .Append("\n")
-                    .Append($"\nRealDps: {EffectiveDps.ToString("0.0")}")
-                    .Append($"\nPeakDps: {PeakDps.ToString("0.0")}")
-                    .Append($"\nBaseDps: {BaseDps.ToString("0.0")}")
-                    .Append($"\nAreaDps: {AreaDps.ToString("0.0")}")
-                    .Append($"\nExplode: { DetDps.ToString("0.0")}")
-                    .Append($"\nCurrent: { CurrentDps.ToString("0.0")} ({(CurrentDps / PeakDps).ToString("P")})");
+                    .Append($"\nRealDps: {EffectiveDps:0.0}")
+                    .Append($"\nPeakDps: {PeakDps:0.0}")
+                    .Append($"\nBaseDps: {BaseDps:0.0}")
+                    .Append($"\nAreaDps: {AreaDps:0.0}")
+                    .Append($"\nExplode: { DetDps:0.0}")
+                    .Append($"\nCurrent: { CurrentDps:0.0} ({(CurrentDps / PeakDps):P})");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append($"\n__________________________________")
-                    .Append($"\nHeat Generated: {HeatPerSecond.ToString("0.0")} W ({(HeatPerSecond / MaxHeat).ToString("P") }/s)")
-                    .Append($"\nHeat Dissipated: {HeatSinkRate.ToString("0.0")} W ({(HeatSinkRate / MaxHeat).ToString("P")}/s)")
-                    .Append($"\nCurrent Heat: {CurrentHeat.ToString("0.0")} J ({(CurrentHeat / MaxHeat).ToString("P")})");
+                    .Append($"\nHeat Generated: {HeatPerSecond:0.0} W ({(HeatPerSecond / MaxHeat) :P}/s)")
+                    .Append($"\nHeat Dissipated: {HeatSinkRate:0.0} W ({(HeatSinkRate / MaxHeat):P}/s)")
+                    .Append($"\nCurrent Heat: {CurrentHeat:0.0} J ({(CurrentHeat / MaxHeat):P})");
 
                 if (HeatPerSecond > 0 && HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");
 
                 if (HasEnergyWeapon)
                 {
-                    stringBuilder.Append($"\nCurrent Draw: {SinkPower.ToString("0.00")} MW");
-                    if (HasChargeWeapon) stringBuilder.Append($"\nCurrent Charge: {CurrentCharge.ToString("0.00")} MJ");
-                    stringBuilder.Append($"\nRequired Power: {MaxRequiredPower.ToString("0.00")} MJ");
+                    stringBuilder.Append($"\nCurrent Draw: {SinkPower:0.00} MW");
+                    if (HasChargeWeapon) stringBuilder.Append($"\nCurrent Charge: {CurrentCharge:0.00} MJ");
+                    stringBuilder.Append($"\nRequired Power: {MaxRequiredPower:0.00} MJ");
                 }
 
                 stringBuilder.Append("\n\n==== Weapons ====");
@@ -248,7 +248,7 @@ namespace WeaponCore.Support
                         stringBuilder.Append(otherAmmo);
                 }
 
-                if (Debug)
+                if (Debug || Data.Repo.Base.Set.Overrides.Debug)
                 {
                     foreach (var weapon in Platform.Weapons)
                     {

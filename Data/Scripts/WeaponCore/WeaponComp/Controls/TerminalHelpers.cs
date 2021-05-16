@@ -16,9 +16,9 @@ namespace WeaponCore.Control
         {
             AddWeaponOnOff<T>(session, -2, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.RequestSetGuidance, UiGuidance);
 
-            AddSliderDamage<T>(session, -3, "WC_Damage", "Change Damage Per Shot", "Change the damage per shot", WepUi.GetDps, WepUi.RequestSetDps, UiDamageSlider);
+            AddSliderDamage<T>(session, -3, "Weapon Damage", "Change Damage Per Shot", "Change the damage per shot", WepUi.GetDps, WepUi.RequestSetDps, UiDamageSlider);
 
-            AddSliderRof<T>(session, -4, "WC_ROF", "Change Rate of Fire", "Change rate of fire", WepUi.GetRof, WepUi.RequestSetRof, UiRofSlider);
+            AddSliderRof<T>(session, -4, "Weapon ROF", "Change Rate of Fire", "Change rate of fire", WepUi.GetRof, WepUi.RequestSetRof, UiRofSlider);
 
             AddCheckbox<T>(session, -5, "Overload", "Overload Damage", "Overload damage", WepUi.GetOverload, WepUi.RequestSetOverload, true, UiOverLoad);
 
@@ -28,7 +28,7 @@ namespace WeaponCore.Control
         {
             Separator<T>(session, -7, "WC_sep2", HasTracking);
 
-            AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Change the min/max targeting range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange, true);
+            AddSliderRange<T>(session, -8, " Weapon Range", "Aiming Radius", "Change the min/max targeting range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange, true, false);
 
             AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Fire on targets that are neutral", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTracking);
 
@@ -56,7 +56,7 @@ namespace WeaponCore.Control
             
             AddComboboxNoAction<T>(session, -19, "ControlModes", "Control Mode", "Select the aim control mode for the weapon", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
 
-            AddWeaponCameraSliderRange<T>(session, -20, "WeaponCamera", "Weapon Camera Channel", "Assign this weapon to a camera channel", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
+            AddWeaponCameraSliderRange<T>(session, -20, "Weapon Camera", "Weapon Camera Channel", "Assign this weapon to a camera channel", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
 
             Separator<T>(session, -21, "WC_sep4", HasTracking);
         }
@@ -75,7 +75,10 @@ namespace WeaponCore.Control
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
-            AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, IsReady);
+            AddOnOffSwitchNoAction<T>(session, -25, "Debug", "Debug", "Debug On/Off", WepUi.GetDebug, WepUi.RequestDebug, true, IsReady);
+            Separator<T>(session, -26, "WC_sep4", HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -27, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, IsReady);
+
         }
 
         internal static bool Istrue(IMyTerminalBlock block)
@@ -279,7 +282,7 @@ namespace WeaponCore.Control
             return c;
         }
 
-        internal static IMyTerminalControlSlider AddSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        internal static IMyTerminalControlSlider AddSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false, bool addAction = true) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
 
@@ -297,7 +300,7 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             session.CustomControls.Add(c);
 
-            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
+            if (addAction) CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
             return c;
         }
 

@@ -8,6 +8,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -212,7 +213,6 @@ namespace WeaponCore
         {
             try
             {
-
                 if (SuppressWc || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 
                 if (DebugLos)
@@ -269,9 +269,13 @@ namespace WeaponCore
                     }
 
                     if (TrackingAi != null && TargetUi.DrawReticle)  {
-                        var dummyTarget = PlayerDummyTargets[PlayerId];
-                        if (dummyTarget.LastUpdateTick == Tick)
-                            SendFakeTargetUpdate(TrackingAi, dummyTarget);
+                        var dummyTargets = PlayerDummyTargets[PlayerId];
+
+                        if (dummyTargets.AimTarget.LastUpdateTick == Tick)
+                            SendAimTargetUpdate(TrackingAi, dummyTargets.AimTarget);
+
+                        if (dummyTargets.MarkedTarget.LastUpdateTick == Tick)
+                            SendMarkedTargetUpdate(TrackingAi, dummyTargets.MarkedTarget);
                     }
 
                     if (PacketsToServer.Count > 0)
@@ -308,13 +312,6 @@ namespace WeaponCore
                 if (SuppressWc)
                     return;
 
-                if (WaterMod)
-                {
-                    WaterHash = MyStringHash.GetOrCompute("Water");
-                    WApi.Register("WeaponCore");
-                    WApi.RecievedData += WApiReceiveData;
-                }
-
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
@@ -348,12 +345,6 @@ namespace WeaponCore
 
                 if (!ITask.IsComplete)
                     ITask.Wait();
-
-                if (WaterMod)
-                {
-                    WApi.Unregister();
-                    WApi.RecievedData -= WApiReceiveData;
-                }
 
                 if (IsServer || DedicatedServer)
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ProccessServerPacket);

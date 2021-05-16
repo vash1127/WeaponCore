@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Jakaria;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -18,6 +17,7 @@ using VRage.Utils;
 using VRage.Voxels;
 using VRageMath;
 using WeaponCore.Api;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -56,7 +56,7 @@ namespace WeaponCore
         internal volatile uint LastDeform;
         internal volatile uint Tick;
         internal readonly TargetCompare TargetCompare = new TargetCompare();
-        internal readonly WaterModAPI WApi = new WaterModAPI();
+        internal readonly WaterApi WApi = new WaterApi();
 
         internal static readonly HashSet<ulong> AuthorIds = new HashSet<ulong> { 76561197969691953, 76561198061737246, 76561198116813162 };
         internal readonly MyStringHash ShieldBypassDamageType = MyStringHash.GetOrCompute("bypass");
@@ -128,7 +128,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<MyStringHash, WeaponAreaRestriction> WeaponAreaRestrictions = new Dictionary<MyStringHash, WeaponAreaRestriction>(MyStringHash.Comparer);
         internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>() {[-1] = new InputStateData()};
-        internal readonly Dictionary<long, FakeTarget> PlayerDummyTargets = new Dictionary<long, FakeTarget>() { [-1] = new FakeTarget() };
+        internal readonly Dictionary<long, FakeTargets> PlayerDummyTargets = new Dictionary<long, FakeTargets> { [-1] = new FakeTargets() };
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<ulong, AvInfoCache> AvShotCache = new Dictionary<ulong, AvInfoCache>();
@@ -142,8 +142,6 @@ namespace WeaponCore
         internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
-        internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
-        internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
 

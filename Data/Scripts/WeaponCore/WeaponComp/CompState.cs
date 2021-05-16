@@ -132,7 +132,8 @@ namespace WeaponCore.Support
                 Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
 
             playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-            var newId = action == ShootActions.ShootOff && !Data.Repo.Base.State.TrackingReticle ? -1 : playerId;
+            var noReset = !Data.Repo.Base.State.TrackingReticle && Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Painter;
+            var newId = action == ShootActions.ShootOff && noReset ? -1 : playerId;
             Data.Repo.Base.State.PlayerId = newId;
         }
 
@@ -214,7 +215,7 @@ namespace WeaponCore.Support
             var o = comp.Data.Repo.Base.Set.Overrides;
             var enabled = v > 0;
             var clearTargets = false;
-
+            var resetState = false;
             switch (setting)
             {
                 case "MaxSize":
@@ -233,6 +234,7 @@ namespace WeaponCore.Support
                 case "ControlModes":
                     o.Control = (GroupOverrides.ControlModes)v;
                     clearTargets = true;
+                    resetState = true;
                     break;
                 case "FocusSubSystem":
                     o.FocusSubSystem = enabled;
@@ -265,6 +267,9 @@ namespace WeaponCore.Support
                     o.Neutrals = enabled;
                     clearTargets = true;
                     break;
+                case "Debug":
+                    o.Debug = enabled;
+                    break;
                 case "Repel":
                     o.Repel = enabled;
                     clearTargets = true;
@@ -274,14 +279,14 @@ namespace WeaponCore.Support
                     break;
             }
 
-            ResetCompState(comp, playerId, clearTargets);
+            ResetCompState(comp, playerId, clearTargets, resetState);
 
             if (comp.Session.MpActive)
                 comp.Session.SendCompBaseData(comp);
         }
 
 
-        internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
+        internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, bool resetState, Dictionary<string, int> settings = null)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var userControl = o.Control != GroupOverrides.ControlModes.Auto;
@@ -291,6 +296,10 @@ namespace WeaponCore.Support
                 comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
                 if (settings != null) settings["ControlModes"] = (int)o.Control;
                 comp.Data.Repo.Base.State.TerminalActionSetter(comp, ShootActions.ShootOff);
+            }
+            else if (resetState)
+            {
+                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             }
             /*
             else

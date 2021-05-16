@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using Jakaria;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -238,11 +237,13 @@ namespace WeaponCore.Support
 
         private bool GridTouchingWater()
         {
+            /*
             Water water;
             if (Session.WaterMap.TryGetValue(MyPlanet, out water)) {
                 WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.radius + water.waveHeight);
                 return new MyOrientedBoundingBoxD(MyGrid.PositionComp.LocalAABB, MyGrid.PositionComp.WorldMatrixRef).Intersects(ref WaterVolume);
             }
+            */
             return false;
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Jakaria;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -47,11 +46,11 @@ namespace WeaponCore.Projectiles
                 var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
                 var myGrid = p.Info.Target.FiringCube.CubeGrid;
-                
+                /*
                 Water water = null;
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
                     Session.WaterMap.TryGetValue(p.Info.MyPlanet, out water);
-
+                */
                 for (int i = 0; i < collectionCount; i++) {
 
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
@@ -187,7 +186,7 @@ namespace WeaponCore.Projectiles
                             if (voxel == p.Info.MyPlanet && p.Info.VoxelCache.MissSphere.Contains(p.Beam.To) == ContainmentType.Disjoint) {
 
                                 if (p.LinePlanetCheck) {
-
+                                    /*
                                     if (water != null && !p.Info.AmmoDef.IgnoreWater) {
                                         var waterSphere = new BoundingSphereD(p.Info.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
                                         var estiamtedSurfaceDistance = ray.Intersects(waterSphere);
@@ -198,7 +197,7 @@ namespace WeaponCore.Projectiles
                                             voxelState = VoxelIntersectBranch.PseudoHit2;
                                         }
                                     }
-
+                                    */
                                     if (voxelState != VoxelIntersectBranch.PseudoHit2) {
 
                                         var surfacePos = p.Info.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);

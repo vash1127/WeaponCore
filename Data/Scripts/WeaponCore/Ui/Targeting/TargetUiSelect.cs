@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Input;
@@ -91,7 +89,8 @@ namespace WeaponCore
 
             MyEntity closestEnt = null;
             _session.Physics.CastRay(AimPosition, end, _hitInfo);
-
+            var markTargetPos = MyAPIGateway.Input.IsNewRightMouseReleased();
+            var fakeTarget = !markTargetPos ? ai.Session.PlayerDummyTargets[ai.Session.PlayerId].AimTarget : ai.Session.PlayerDummyTargets[ai.Session.PlayerId].MarkedTarget;
             for (int i = 0; i < _hitInfo.Count; i++) {
 
                 var hit = _hitInfo[i];
@@ -116,14 +115,14 @@ namespace WeaponCore
                 }
 
                 foundTarget = true;
-                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hit.Position, ai, closestEnt);
+                fakeTarget.Update(hit.Position, ai, closestEnt);
                 break;
             }
 
             if (rayHitSelf) {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
-                if (rayOnlyHitSelf) ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
+                if (rayOnlyHitSelf) fakeTarget.Update(end, ai);
             }
             else ReticleAgeOnSelf = 0;
 
@@ -135,15 +134,15 @@ namespace WeaponCore
                     s.SetTarget(closestEnt, ai, _masterTargets);
                     return true;
                 }
-                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hitPos, ai, closestEnt);
+                fakeTarget.Update(hitPos, ai, closestEnt);
             }
 
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
                
-                if (!foundTarget) 
-                    ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
+                if (!foundTarget)
+                    fakeTarget.Update(end, ai);
             }
 
             return foundTarget || foundOther;

@@ -11,6 +11,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.GridAi.FakeTarget;
 
 namespace WeaponCore.Projectiles
 {
@@ -455,8 +456,13 @@ namespace WeaponCore.Projectiles
                         OffSetTarget();
                     }
                     var targetPos = Vector3D.Zero;
-                    if (fake)
-                        targetPos = Info.DummyTarget.Position;
+
+                    FakeWorldTargetInfo fakeTargetInfo = null;
+                    if (fake) {
+                        var fakeTarget = Info.DummyTargets.MarkedTarget.EntityId != 0 ? Info.DummyTargets.MarkedTarget : Info.DummyTargets.AimTarget;
+                        fakeTargetInfo = fakeTarget.LastInfoTick != Info.System.Session.Tick ? fakeTarget.GetFakeTargetInfo(Info.Ai) : fakeTarget.FakeInfo;
+                        targetPos = fakeTargetInfo.WorldPosition;
+                    }
                     else if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
                     else if (Info.Target.Entity != null) targetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
 
@@ -480,7 +486,7 @@ namespace WeaponCore.Projectiles
                         PrevTargetPos = targetPos;
 
                     var tVel = Vector3.Zero;
-                    if (fake) tVel = Info.DummyTarget.LinearVelocity;
+                    if (fake && fakeTargetInfo != null) tVel = fakeTargetInfo.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
                     if (Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {

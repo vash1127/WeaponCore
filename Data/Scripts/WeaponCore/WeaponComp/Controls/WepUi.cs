@@ -176,6 +176,22 @@ namespace WeaponCore
             WeaponComponent.RequestSetValue(comp, "Neutrals", value, comp.Session.PlayerId);
         }
 
+        internal static bool GetDebug(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Base.Set.Overrides.Debug;
+        }
+
+        internal static void RequestDebug(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            WeaponComponent.RequestSetValue(comp, "Debug", value, comp.Session.PlayerId);
+        }
+
         internal static bool GetUnowned(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();

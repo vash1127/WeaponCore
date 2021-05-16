@@ -139,7 +139,7 @@ namespace WeaponCore
 
                     _drawList.Add(tdd);
 
-                    textPos -= (_cameraWorldMatrix.Left * (width * 0.5f) * ShadowSizeScaler);
+                    textPos -= (_cameraWorldMatrix.Left * (width * 0.6f) * ShadowSizeScaler);
                 }
 
                 _textDrawPool.Enqueue(textAdd);
@@ -246,10 +246,10 @@ namespace WeaponCore
                         textInfo = new TextDrawRequest();
 
                     textInfo.Text = $"(x{stackedInfo.WeaponStack})";
-                    textInfo.Color = color;
-                    textInfo.Position.X = textOffset + (name.Length * _textSize) - (_padding * .5f);
+                    textInfo.Color = new Vector4(0.5f,0.5f,1,1);
+                    textInfo.Position.X = textOffset + (name.Length * ((_textSize * _session.AspectRatioInv) * 0.6f) * ShadowSizeScaler);
 
-                    textInfo.Position.Y = currWeaponDisplayPos.Y - (_sTextSize * .5f);
+                    textInfo.Position.Y = currWeaponDisplayPos.Y;
                     textInfo.FontSize = _sTextSize;
                     textInfo.Font = FontType.Shadow;
                     _textAddList.Add(textInfo);

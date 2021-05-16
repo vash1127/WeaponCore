@@ -116,7 +116,11 @@ namespace WeaponCore.Support
                         if (targetType == GridAi.TargetType.None) {
                             if (w.NewTarget.CurrentState != States.NoTargetsSeen)
                                 w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
+
+                            if (w.Target.CurrentState != States.NoTargetsSeen)
+                            {
+                                w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle && w.Comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Painter);
+                            }
                         }
                     }
                 }

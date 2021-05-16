@@ -206,11 +206,13 @@ namespace WeaponCore
                         {
                             if (MyAPIGateway.Input.IsKeyPress(MyKeys.Add))
                             {
+                                _session.HudUi.NeedsUpdate = true;
                                 _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale + 0.01f, 0.1f, 10f);
                                 _session.Settings.VersionControl.UpdateClientCfgFile();
                             }
                             else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Subtract))
                             {
+                                _session.HudUi.NeedsUpdate = true;
                                 _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale - 0.01f, 0.1f, 10f);
                                 _session.Settings.VersionControl.UpdateClientCfgFile();
                             }

@@ -9,6 +9,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
@@ -173,6 +174,8 @@ namespace WeaponCore
         private BoundingSphereD _nearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);
         private readonly List<MyEntity> _gridsNearCamera = new List<MyEntity>();
         private readonly List<MyCubeBlock> _uninitializedBlocks = new List<MyCubeBlock>();
+        private readonly List<WeaponComponent> _debugBlocks = new List<WeaponComponent>();
+
         private void DrawDisabledGuns()
         {
             if (Tick600 || Tick60 && QuickDisableGunsCheck) {
@@ -181,6 +184,7 @@ namespace WeaponCore
                 _nearbyGridsTestSphere.Center = CameraPos;
                 _gridsNearCamera.Clear();
                 _uninitializedBlocks.Clear();
+                _debugBlocks.Clear();
 
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref _nearbyGridsTestSphere, _gridsNearCamera);
                 for (int i = _gridsNearCamera.Count - 1; i >= 0; i--)
@@ -195,8 +199,11 @@ namespace WeaponCore
                             if (block.IsFunctional && WeaponPlatforms.ContainsKey(block.BlockDefinition.Id)) {
 
                                 GridAi gridAi;
-                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.WeaponBase.ContainsKey(block)) 
+                                WeaponComponent comp;
+                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.WeaponBase.TryGetValue(block, out comp)) 
                                     _uninitializedBlocks.Add(block);
+                                else if (comp != null && comp.Data.Repo.Base.Set.Overrides.Debug)
+                                    _debugBlocks.Add(comp); 
                             }
                         }
                     }
@@ -214,6 +221,24 @@ namespace WeaponCore
                         MyOrientedBoundingBoxD blockBox;
                         SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
                         DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
+                    }
+                }
+            }
+
+            for (int i = 0; i < _debugBlocks.Count; i++) {
+
+                var comp = _debugBlocks[i];
+                if (comp.MyCube.InScene) {
+
+                    var lookSphere = new BoundingSphereD(comp.MyCube.PositionComp.WorldAABB.Center, 100f);
+
+                    if (Camera.IsInFrustum(ref lookSphere)) {
+
+                        foreach (var w in comp.Platform.Weapons) {
+
+                            if (!w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart)
+                                w.SmartLosDebug();
+                        }
                     }
                 }
             }
