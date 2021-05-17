@@ -214,6 +214,7 @@ namespace WeaponCore.Platform
         internal bool ParentIsSubpart;
         internal bool AlternateForward;
         internal bool CheckInventorySystem = true;
+
         internal bool ShotReady
         {
             get

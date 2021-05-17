@@ -41,7 +41,7 @@ namespace WeaponCore.Platform
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
-                    if (!Comp.Data.Repo.Base.State.TrackingReticle && Comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Painter)
+                    if (!Comp.FakeMode)
                         Target.PushTargetToClient(this);
                 } 
             }
@@ -185,15 +185,15 @@ namespace WeaponCore.Platform
         }
 
 
-        internal bool ValidFakeTargetInfo(long playerId, out GridAi.FakeTarget.FakeWorldTargetInfo fakeTargetInfo, bool preferMarked = true)
+        internal bool ValidFakeTargetInfo(long playerId, out GridAi.FakeTarget.FakeWorldTargetInfo fakeTargetInfo, bool preferPainted = true)
         {
             fakeTargetInfo = null;
             GridAi.FakeTargets fakeTargets;
             if (Comp.Session.PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
             {
-                var validAim = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && Comp.Data.Repo.Base.State.TrackingReticle && fakeTargets.AimTarget.LocalPosition != Vector3D.Zero;
-                var validPainter = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && !fakeTargets.MarkedTarget.Dirty && fakeTargets.MarkedTarget.LocalPosition != Vector3D.Zero;
-                var fakeTarget = validPainter && preferMarked ? fakeTargets.MarkedTarget : validAim ? fakeTargets.AimTarget : null;
+                var validManual = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && Comp.Data.Repo.Base.State.TrackingReticle && fakeTargets.ManualTarget.LocalPosition != Vector3D.Zero;
+                var validPainter = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && !fakeTargets.PaintedTarget.Dirty && fakeTargets.PaintedTarget.LocalPosition != Vector3D.Zero;
+                var fakeTarget = validPainter && preferPainted ? fakeTargets.PaintedTarget : validManual ? fakeTargets.ManualTarget : null;
                 if (fakeTarget == null || fakeTarget.Dirty)
                     return false;
 

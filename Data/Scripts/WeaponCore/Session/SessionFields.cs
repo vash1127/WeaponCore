@@ -101,6 +101,8 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
         internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraChannelMappings = new ConcurrentDictionary<MyCubeBlock, long>();
+        internal readonly ConcurrentDictionary<long, WaterData> WaterMap = new ConcurrentDictionary<long, WaterData>();
+        internal readonly ConcurrentDictionary<long, MyPlanet> PlanetMap = new ConcurrentDictionary<long, MyPlanet>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -181,6 +183,7 @@ namespace WeaponCore
         internal readonly HashSet<GridAi> GridsToUpdateInventories = new HashSet<GridAi>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
+        internal readonly List<MyTuple<IMyPlayer, FakeTarget>> ActiveMarks = new List<MyTuple<IMyPlayer, FakeTarget>>();
         internal readonly int[] AuthorSettings = new int[6];
 
         ///

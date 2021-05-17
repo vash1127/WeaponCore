@@ -250,7 +250,7 @@ namespace WeaponCore
                     ServerAimTargetUpdate(packetObj);
                     break;
                 }
-                case PacketType.MarkedTargetUpdate:
+                case PacketType.PaintedTargetUpdate:
                 {
                     ServerMarkedTargetUpdate(packetObj);
                     break;

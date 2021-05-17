@@ -22,6 +22,11 @@ namespace WeaponCore
             try
             {
                 if (!Inited) lock (InitObj) Init();
+
+                var planet = myEntity as MyPlanet;
+                if (planet != null)
+                    PlanetMap.TryAdd(planet.EntityId, planet);
+
                 var grid = myEntity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
                 if (!PbApiInited && myEntity is IMyProgrammableBlock) PbActivate = true;

@@ -18,7 +18,7 @@ namespace WeaponCore
         private const float ReloadHeightConst = 4f * MetersInPixel;
         private const float ReloadWidthConst = ReloadHeightConst;
         private const float HeatWidthConst = 35 * MetersInPixel;    
-        private const float HeatWidthOffset = HeatWidthConst + (PaddingConst * 1.8f);
+        private const float HeatWidthOffset = HeatWidthConst + (PaddingConst * 3f);
         private const float HeatHeightConst = HeatWidthConst * 0.0625f;
         private const float InfoPanelOffset = WeaponHudFontHeight + (HeatHeightConst * 2f);
         private const float BgBorderRatio = .166f;
@@ -54,17 +54,10 @@ namespace WeaponCore
         private Vector3D _viewPortSize;
         private uint _lastHudUpdateTick;
 
-
-        private readonly TextureMap[] _reloadingTexture = new TextureMap[6];
-        private readonly TextureMap[] _outofAmmoTexture = new TextureMap[2];
-        private readonly TextureMap[] _chargingTexture = new TextureMap[10];
-        private readonly TextureMap[] _infoBackground = new TextureMap[3];
-        private readonly TextureMap[] _heatBarTexture = new TextureMap[12];
         private Vector4 _bgColor = new Vector4(1, 1, 1, 0);
 
         private readonly FontType _hudFont = FontType.Shadow;
         private int _currentLargestName;
-        private float _paddingHeat;
         private float _paddingReload;
         private float _padding;
         private float _reloadHeight;
@@ -92,6 +85,12 @@ namespace WeaponCore
 
         internal readonly Dictionary<FontType, Dictionary<char, TextureMap>> CharacterMap;
         internal readonly List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
+        internal readonly TextureMap[] PaintedTexture = new TextureMap[10];
+        internal readonly TextureMap[] ReloadingTexture = new TextureMap[6];
+        internal readonly TextureMap[] OutofAmmoTexture = new TextureMap[2];
+        internal readonly TextureMap[] ChargingTexture = new TextureMap[10];
+        internal readonly TextureMap[] InfoBackground = new TextureMap[3];
+        internal readonly TextureMap[] HeatBarTexture = new TextureMap[12];
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
@@ -119,12 +118,12 @@ namespace WeaponCore
 
             LoadTextMaps("EN", out CharacterMap); // possible translations in future
 
-            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 0, 128, 768, 128, 768, 384, ref _infoBackground);
-            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref _heatBarTexture);
-            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 0, 0, 64, 64, 64, 64, 512, ref _reloadingTexture);
-            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 0, 64, 64, 64, 64, 512, ref _outofAmmoTexture);
-            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 0, 0, 64, 64, 64, 64, 640, ref _chargingTexture);
-            
+            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 0, 128, 768, 128, 768, 384, ref InfoBackground);
+            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref HeatBarTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 0, 0, 64, 64, 64, 64, 512, ref ReloadingTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 0, 64, 64, 64, 64, 512, ref OutofAmmoTexture);
+            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 0, 0, 64, 64, 64, 64, 640, ref ChargingTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref PaintedTexture);
 
             for (int i = 0; i < InitialPoolCapacity; i++)
             {

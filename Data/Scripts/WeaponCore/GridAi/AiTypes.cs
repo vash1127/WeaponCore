@@ -29,8 +29,8 @@ namespace WeaponCore.Support
 
         public class FakeTargets
         {
-            public FakeTarget AimTarget = new FakeTarget(FakeTarget.FakeType.Aim);
-            public FakeTarget MarkedTarget = new FakeTarget(FakeTarget.FakeType.Marked);
+            public FakeTarget ManualTarget = new FakeTarget(FakeTarget.FakeType.Manual);
+            public FakeTarget PaintedTarget = new FakeTarget(FakeTarget.FakeType.Painted);
         }
 
         public class FakeTarget
@@ -43,8 +43,8 @@ namespace WeaponCore.Support
 
             public enum FakeType
             {
-                Aim,
-                Marked,
+                Manual,
+                Painted,
             }
 
             public FakeWorldTargetInfo FakeInfo = new FakeWorldTargetInfo();
@@ -67,7 +67,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    if (Type == FakeType.Aim)
+                    if (Type == FakeType.Manual)
                         FakeInfo.WorldPosition = hitPos;
 
                     EntityId = 0;
@@ -108,17 +108,17 @@ namespace WeaponCore.Support
                     if (ai.Session.Tick != LastInfoTick)
                     {
                         LastInfoTick = ai.Session.Tick;
-                        if (Type != FakeType.Marked || ai.Targets.ContainsKey(ent))
+                        if (Type != FakeType.Painted || ai.Targets.ContainsKey(ent))
                         {
                             FakeInfo.WorldPosition = Vector3D.Transform(LocalPosition, ent.PositionComp.WorldMatrixRef);
                             FakeInfo.LinearVelocity = ent.Physics.LinearVelocity;
                             FakeInfo.Acceleration = ent.Physics.LinearAcceleration;
                         }
-                        else if (Type == FakeType.Marked)
+                        else if (Type == FakeType.Painted)
                             Dirty = true;
                     }
                 }
-                else if (Type == FakeType.Marked)
+                else if (Type == FakeType.Painted)
                     Dirty = true;
 
                 return FakeInfo;

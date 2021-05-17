@@ -19,6 +19,7 @@ namespace WeaponCore
             
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
+            if (ActivateMarks()) DrawActiveMarks();
             if (ActivateDroneNotice()) DrawDroneNotice();
             if (ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
@@ -113,6 +114,62 @@ namespace WeaponCore
 
                 s.HudUi.AddText(text: textLine1, x: textOffset1.X, y: textOffset1.Y, elementId: elementId, ttl: fontAge, color: text1Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
                 s.HudUi.AddText(text: textLine2, x: textOffset2.X, y: textOffset2.Y, elementId: elementId + 1, ttl: fontAge, color: text2Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+            }
+        }
+
+        private void DrawActiveMarks()
+        {
+            var s = _session;
+
+            var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+            var color = new Vector4(1, 1, 1, hudOpacity);
+
+            var animationStep = s.Tick % 6;
+            var textureMap = s.HudUi.ReloadingTexture[animationStep];
+            var left = (Vector3)s.CameraMatrix.Left;
+            var up = (Vector3)s.CameraMatrix.Up;
+            var scale = s.Settings.ClientConfig.HudScale;
+            var screenScale = 0.1 * s.ScaleFov;
+            var size = (float)((0.0025f * scale) * s.ScaleFov);
+            var fontYOffset = (float)((-0.05f * scale) * s.ScaleFov);
+            var fontScale = scale * s.ScaleFov;
+
+            for (int i = 0; i < s.ActiveMarks.Count; i++)
+            {
+                var mark = s.ActiveMarks[i];
+                var player = mark.Item1;
+                var fakeTarget = mark.Item2;
+
+                var targetCenter = fakeTarget.GetFakeTargetInfo(s.TrackingAi).WorldPosition;
+
+                var screenPos = s.Camera.WorldToScreen(ref targetCenter);
+
+                Vector3D drawPos = screenPos;
+                if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
+                {
+                    drawPos.X *= -1;
+                    drawPos.Y = -1;
+                }
+
+                var dotpos = new Vector2D(MathHelper.Clamp(drawPos.X, -0.98, 0.98), MathHelper.Clamp(drawPos.Y, -0.98, 0.98));
+                dotpos.X *= (float)(screenScale * _session.AspectRatio);
+                dotpos.Y *= (float)screenScale;
+                drawPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
+
+
+                MyQuadD quad;
+                MyUtils.GetBillboardQuadOriented(out quad, ref drawPos, size, size, ref left, ref up);
+                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, drawPos, color, BlendTypeEnum.PostPP);
+                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, color, BlendTypeEnum.PostPP);
+
+                string textLine1 = player.DisplayName;
+                var fontSize = (float)Math.Round(6 * fontScale, 1);
+                var fontHeight = 0.75f;
+                var fontAge = -1;
+                var fontJustify = Hud.Justify.Center;
+                var fontType = Hud.FontType.Shadow;
+                var elementId = 3102 + (100 + i);
+                s.HudUi.AddText(text: textLine1, x: (float)screenPos.X, y: (float)screenPos.Y + fontYOffset, elementId: elementId, ttl: fontAge, color: color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
         }
 

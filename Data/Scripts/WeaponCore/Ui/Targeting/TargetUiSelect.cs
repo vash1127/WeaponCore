@@ -23,6 +23,11 @@ namespace WeaponCore
             return _session.TrackingAi.Construct.DroneAlert;
         }
 
+        internal bool ActivateMarks()
+        {
+            return _session.ActiveMarks.Count > 0;
+        }
+
         internal void ResetCache()
         {
             _cachedPointerPos = false;
@@ -90,7 +95,7 @@ namespace WeaponCore
             MyEntity closestEnt = null;
             _session.Physics.CastRay(AimPosition, end, _hitInfo);
             var markTargetPos = MyAPIGateway.Input.IsNewRightMouseReleased();
-            var fakeTarget = !markTargetPos ? ai.Session.PlayerDummyTargets[ai.Session.PlayerId].AimTarget : ai.Session.PlayerDummyTargets[ai.Session.PlayerId].MarkedTarget;
+            var fakeTarget = !markTargetPos ? ai.Session.PlayerDummyTargets[ai.Session.PlayerId].ManualTarget : ai.Session.PlayerDummyTargets[ai.Session.PlayerId].PaintedTarget;
             for (int i = 0; i < _hitInfo.Count; i++) {
 
                 var hit = _hitInfo[i];

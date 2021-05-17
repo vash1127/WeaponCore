@@ -132,7 +132,7 @@ namespace WeaponCore.Support
                 Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
 
             playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-            var noReset = !Data.Repo.Base.State.TrackingReticle && Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Painter;
+            var noReset = !Data.Repo.Base.State.TrackingReticle;
             var newId = action == ShootActions.ShootOff && noReset ? -1 : playerId;
             Data.Repo.Base.State.PlayerId = newId;
         }

@@ -132,7 +132,7 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                     mIds[(int) packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].AimTarget.Sync(targetPacket, ai);
+                    PlayerDummyTargets[playerId].ManualTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;
@@ -163,7 +163,7 @@ namespace WeaponCore
                 {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].MarkedTarget.Sync(targetPacket, ai);
+                    PlayerDummyTargets[playerId].PaintedTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;

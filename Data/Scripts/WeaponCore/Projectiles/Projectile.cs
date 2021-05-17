@@ -459,7 +459,7 @@ namespace WeaponCore.Projectiles
 
                     FakeWorldTargetInfo fakeTargetInfo = null;
                     if (fake) {
-                        var fakeTarget = Info.DummyTargets.MarkedTarget.EntityId != 0 ? Info.DummyTargets.MarkedTarget : Info.DummyTargets.AimTarget;
+                        var fakeTarget = Info.DummyTargets.PaintedTarget.EntityId != 0 && !Info.DummyTargets.PaintedTarget.Dirty ? Info.DummyTargets.PaintedTarget : Info.DummyTargets.ManualTarget;
                         fakeTargetInfo = fakeTarget.LastInfoTick != Info.System.Session.Tick ? fakeTarget.GetFakeTargetInfo(Info.Ai) : fakeTarget.FakeInfo;
                         targetPos = fakeTargetInfo.WorldPosition;
                     }

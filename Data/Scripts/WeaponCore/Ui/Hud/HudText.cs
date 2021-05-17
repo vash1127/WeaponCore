@@ -77,13 +77,13 @@ namespace WeaponCore
                 switch (textAdd.Justify)
                 {
                     case Justify.Center:
-                        textPos += _cameraWorldMatrix.Left * ((textAdd.MessageWidth * 0.5f) * widthScaler);
+                        textPos += _cameraWorldMatrix.Left * (((textAdd.MessageWidth * ShadowWidthScaler) * 0.5f) * widthScaler);
                         break;
                     case Justify.Right:
-                        textPos -= _cameraWorldMatrix.Left * (textAdd.MessageWidth * widthScaler);
+                        textPos -= _cameraWorldMatrix.Left * ((textAdd.MessageWidth * ShadowWidthScaler)* widthScaler);
                         break;
                     case Justify.Left:
-                        textPos -= _cameraWorldMatrix.Right * (textAdd.MessageWidth * widthScaler);
+                        textPos -= _cameraWorldMatrix.Right * ((textAdd.MessageWidth * ShadowWidthScaler) * widthScaler);
                         break;
                     case Justify.None:
                         textPos -= _cameraWorldMatrix.Left * ((textAdd.FontSize * 0.5f) * widthScaler);

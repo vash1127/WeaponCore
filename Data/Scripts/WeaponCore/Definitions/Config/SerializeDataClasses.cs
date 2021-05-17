@@ -27,7 +27,7 @@ namespace WeaponCore
         RequestSetRange,
         OverRidesUpdate,
         AimTargetUpdate,
-        MarkedTargetUpdate,
+        PaintedTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
         PlayerIdUpdate,

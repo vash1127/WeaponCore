@@ -167,9 +167,7 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
 
             FakeWorldTargetInfo fakeTargetInfo = null;
-            if (weapon.Comp.Data.Repo.Base.State.TrackingReticle && weapon.Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual || weapon.Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter) {
-                var fakeTarget = weapon.Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual ? weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].AimTarget : weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].MarkedTarget;
-                fakeTargetInfo = fakeTarget.LastInfoTick != weapon.System.Session.Tick ? fakeTarget.GetFakeTargetInfo(weapon.Comp.Ai) : fakeTarget.FakeInfo;
+            if (weapon.Comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto && weapon.ValidFakeTargetInfo(weapon.Comp.Data.Repo.Base.State.PlayerId, out fakeTargetInfo)) {
                 targetCenter = fakeTargetInfo.WorldPosition;
             }
             else if (target.IsProjectile)
@@ -182,7 +180,7 @@ namespace WeaponCore.Platform
             var validEstimate = true;
             if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)) {
 
-                if ((weapon.Comp.Data.Repo.Base.State.TrackingReticle || weapon.Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter) && fakeTargetInfo != null) {
+                if (fakeTargetInfo != null) {
                     targetLinVel = fakeTargetInfo.LinearVelocity;
                     targetAccel = fakeTargetInfo.Acceleration;
                 }
@@ -233,12 +231,8 @@ namespace WeaponCore.Platform
             var ai = w.Comp.Ai;
 
             FakeWorldTargetInfo fakeTargetInfo = null;
-            if (baseData.State.TrackingReticle && baseData.Set.Overrides.Control == GroupOverrides.ControlModes.Manual || baseData.Set.Overrides.Control == GroupOverrides.ControlModes.Painter) {
-
-                var fakeTarget = baseData.Set.Overrides.Control == GroupOverrides.ControlModes.Manual ? session.PlayerDummyTargets[baseData.State.PlayerId].AimTarget : session.PlayerDummyTargets[baseData.State.PlayerId].MarkedTarget;
-                fakeTargetInfo = fakeTarget.LastInfoTick != session.Tick ? fakeTarget.GetFakeTargetInfo(ai) : fakeTarget.FakeInfo;
+            if (baseData.Set.Overrides.Control != GroupOverrides.ControlModes.Auto && w.ValidFakeTargetInfo(baseData.State.PlayerId, out fakeTargetInfo)) 
                 targetCenter = fakeTargetInfo.WorldPosition;
-            }
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -249,7 +243,7 @@ namespace WeaponCore.Platform
             var validEstimate = true;
             if (w.System.Prediction != Prediction.Off && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
-                if ((baseData.State.TrackingReticle || baseData.Set.Overrides.Control == GroupOverrides.ControlModes.Painter) && fakeTargetInfo != null) {
+                if (fakeTargetInfo != null) {
                     targetLinVel = fakeTargetInfo.LinearVelocity;
                     targetAccel = fakeTargetInfo.Acceleration;
                 }
@@ -677,9 +671,8 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
-                    var noExpire = !Comp.Data.Repo.Base.State.TrackingReticle && Comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Painter;
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, noExpire);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, noExpire);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, !Comp.FakeMode);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, !Comp.FakeMode);
                     return false;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
@@ -701,7 +694,7 @@ namespace WeaponCore.Platform
                 return true;
             }
 
-            if (Comp.Data.Repo.Base.State.TrackingReticle || Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter) return true;
+            if (Comp.FakeMode) return true;
 
 
             if (Target.IsProjectile)
@@ -740,7 +733,7 @@ namespace WeaponCore.Platform
                 }
             }
             
-            var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
+            var targetPos = Target.Projectile?.Position ?? Target.Entity?.PositionComp.WorldMatrixRef.Translation ?? Vector3D.Zero;
             var distToTargetSqr = Vector3D.DistanceSquared(targetPos, trackingCheckPosition);
             if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {
@@ -748,11 +741,10 @@ namespace WeaponCore.Platform
                 if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckDistExceeded);
                 return false;
             }
-            /*
-            Water water = null;
-            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
+            WaterData water = null;
+            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet.EntityId, out water))
             {
-                var waterSphere = new BoundingSphereD(Comp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
+                var waterSphere = new BoundingSphereD(Comp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius);
                 if (waterSphere.Contains(targetPos) != ContainmentType.Disjoint)
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
@@ -760,7 +752,6 @@ namespace WeaponCore.Platform
                     return false;
                 }
             }
-            */
             Casting = true;
 
             Comp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);

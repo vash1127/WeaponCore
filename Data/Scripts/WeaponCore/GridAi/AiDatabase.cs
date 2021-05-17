@@ -237,13 +237,11 @@ namespace WeaponCore.Support
 
         private bool GridTouchingWater()
         {
-            /*
-            Water water;
-            if (Session.WaterMap.TryGetValue(MyPlanet, out water)) {
-                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.radius + water.waveHeight);
+            WaterData water;
+            if (Session.WaterMap.TryGetValue(MyPlanet.EntityId, out water)) {
+                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius + water.WaveHeight);
                 return new MyOrientedBoundingBoxD(MyGrid.PositionComp.LocalAABB, MyGrid.PositionComp.WorldMatrixRef).Intersects(ref WaterVolume);
             }
-            */
             return false;
         }
 

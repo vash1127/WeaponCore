@@ -805,7 +805,7 @@ namespace WeaponCore
             else Log.Line($"SendFakeTargetUpdate should never be called on Dedicated");
         }
 
-        internal void SendMarkedTargetUpdate(GridAi ai, GridAi.FakeTarget fake)
+        internal void SendPaintedTargetUpdate(GridAi ai, GridAi.FakeTarget fake)
         {
             if (IsClient)
             {
@@ -814,10 +814,10 @@ namespace WeaponCore
                 {
                     PacketsToServer.Add(new FakeTargetPacket
                     {
-                        MId = ++mIds[(int)PacketType.MarkedTargetUpdate],
+                        MId = ++mIds[(int)PacketType.PaintedTargetUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.MarkedTargetUpdate,
+                        PType = PacketType.PaintedTargetUpdate,
                         Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
                         TargetId = fake.EntityId,
                     });
@@ -831,10 +831,10 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FakeTargetPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.MarkedTargetUpdate],
+                        MId = ++ai.MIds[(int)PacketType.PaintedTargetUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.MarkedTargetUpdate,
+                        PType = PacketType.PaintedTargetUpdate,
                         Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
                         TargetId = fake.EntityId,
                     }

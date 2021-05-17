@@ -201,6 +201,12 @@ namespace WeaponCore
                 if (GridTask.IsComplete)
                     CheckDirtyGridInfos();
                 
+                if (WaterApiLoaded && (Tick3600 || WaterMap.IsEmpty))
+                    UpdateWaters();
+
+                if (HandlesInput && Tick60)
+                    UpdatePlayerPainters();
+
                 if (DebugLos && Tick1800) {
                     var averageMisses = RayMissAmounts > 0 ? RayMissAmounts / Rays : 0; 
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
@@ -271,11 +277,11 @@ namespace WeaponCore
                     if (TrackingAi != null && TargetUi.DrawReticle)  {
                         var dummyTargets = PlayerDummyTargets[PlayerId];
 
-                        if (dummyTargets.AimTarget.LastUpdateTick == Tick)
-                            SendAimTargetUpdate(TrackingAi, dummyTargets.AimTarget);
+                        if (dummyTargets.ManualTarget.LastUpdateTick == Tick)
+                            SendAimTargetUpdate(TrackingAi, dummyTargets.ManualTarget);
 
-                        if (dummyTargets.MarkedTarget.LastUpdateTick == Tick)
-                            SendMarkedTargetUpdate(TrackingAi, dummyTargets.MarkedTarget);
+                        if (dummyTargets.PaintedTarget.LastUpdateTick == Tick)
+                            SendPaintedTargetUpdate(TrackingAi, dummyTargets.PaintedTarget);
                     }
 
                     if (PacketsToServer.Count > 0)

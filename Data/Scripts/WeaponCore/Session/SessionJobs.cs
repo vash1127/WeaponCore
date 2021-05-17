@@ -9,6 +9,9 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.Utils;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi.Constructs;
@@ -203,6 +206,47 @@ namespace WeaponCore
                     TaskHasErrors(ref GridTask, "GridTask");
                 if (!GameLoaded) UpdateGrids();
                 else GridTask = MyAPIGateway.Parallel.StartBackground(UpdateGrids);
+            }
+        }
+
+        private void UpdateWaters()
+        {
+            foreach (var planet in PlanetMap.Values)
+            {
+                WaterData data;
+                if (WaterApi.HasWater(planet.EntityId))
+                {
+                    if (!WaterMap.TryGetValue(planet.EntityId, out data))
+                    {
+                        data = new WaterData(planet);
+                        WaterMap[planet.EntityId] = data;
+                    }
+
+                    var radiusInfo = WaterApi.GetRadiusData(data.WaterId);
+                    data.Center = radiusInfo.Item1;
+                    data.Radius = radiusInfo.Item2;
+                    data.MinRadius = radiusInfo.Item3;
+                    data.MaxRadius = radiusInfo.Item3;
+                    var waveInfo = WaterApi.GetWaveData(data.WaterId);
+                    data.WaveHeight = waveInfo.Item1;
+                    data.WaveSpeed = waveInfo.Item2;
+                }
+                else WaterMap.TryRemove(planet.EntityId, out data);
+            }
+        }
+
+        private void UpdatePlayerPainters()
+        {
+            ActiveMarks.Clear();
+            foreach (var pair in PlayerDummyTargets)
+            {
+                IMyPlayer player;
+                if (Players.TryGetValue(pair.Key, out player))
+                {
+                    var painted = pair.Value.PaintedTarget;
+                    if (!painted.Dirty && painted.EntityId != 0 && Tick - painted.LastInfoTick < 300 && !MyUtils.IsZero(painted.LocalPosition))
+                        ActiveMarks.Add(new MyTuple<IMyPlayer, GridAi.FakeTarget>(player, painted));
+                }
             }
         }
 
