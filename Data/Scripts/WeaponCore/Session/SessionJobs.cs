@@ -5,17 +5,29 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using Sandbox.Game;
+using Sandbox.ModAPI.Ingame;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi.Constructs;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using IMyDecoy = Sandbox.ModAPI.IMyDecoy;
+using IMyPowerProducer = Sandbox.ModAPI.IMyPowerProducer;
+using IMyProductionBlock = Sandbox.ModAPI.IMyProductionBlock;
+using IMyRadioAntenna = Sandbox.ModAPI.IMyRadioAntenna;
+using IMyShipDrill = Sandbox.ModAPI.IMyShipDrill;
+using IMyShipGrinder = Sandbox.ModAPI.IMyShipGrinder;
+using IMyTerminalBlock = Sandbox.ModAPI.IMyTerminalBlock;
+using IMyUpgradeModule = Sandbox.ModAPI.IMyUpgradeModule;
+using IMyWarhead = Sandbox.ModAPI.IMyWarhead;
+
 namespace WeaponCore
 {
     public class GridMap
@@ -244,8 +256,16 @@ namespace WeaponCore
                 if (Players.TryGetValue(pair.Key, out player))
                 {
                     var painted = pair.Value.PaintedTarget;
-                    if (!painted.Dirty && painted.EntityId != 0 && Tick - painted.LastInfoTick < 300 && !MyUtils.IsZero(painted.LocalPosition))
-                        ActiveMarks.Add(new MyTuple<IMyPlayer, GridAi.FakeTarget>(player, painted));
+                    MyEntity target;
+                    if (!painted.Dirty && painted.EntityId != 0 && Tick - painted.LastInfoTick < 300 && !MyUtils.IsZero(painted.LocalPosition) && MyEntities.TryGetEntityById(painted.EntityId, out target))
+                    {
+                        var rep = MyIDModule.GetRelationPlayerPlayer(PlayerId, player.IdentityId);
+                        var self = rep == MyRelationsBetweenPlayers.Self;
+                        var friend = rep == MyRelationsBetweenPlayers.Allies;
+                        var neut = rep == MyRelationsBetweenPlayers.Neutral;
+                        var color = neut ? new Vector4(1, 1, 1, 1) : self ? new Vector4(0.025f, 1f, 0.25f, 2) : friend ? new Vector4(0.025f, 0.025f, 1, 2) : new Vector4(1, 0.025f, 0.025f, 2);
+                        ActiveMarks.Add(new MyTuple<IMyPlayer, Vector4, GridAi.FakeTarget>(player, color, painted));
+                    }
                 }
             }
         }

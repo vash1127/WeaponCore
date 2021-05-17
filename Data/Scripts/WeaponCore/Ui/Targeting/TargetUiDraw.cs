@@ -121,11 +121,16 @@ namespace WeaponCore
         {
             var s = _session;
 
-            var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
-            var color = new Vector4(1, 1, 1, hudOpacity);
+            var iconStep = s.Tick % 10;
+            var colorStep = s.Tick % 120;
 
-            var animationStep = s.Tick % 10;
-            var textureMap = s.HudUi.PaintedTexture[animationStep];
+            var textureMap = s.HudUi.PaintedTexture[iconStep];
+            var amplify = colorStep <= 60;
+            var ampAmount = 1;
+
+            var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS * ampAmount;
+            var cMod1 = MathHelper.Clamp(amplify ? (colorStep * modifyStep) :  2 - (+ (colorStep * modifyStep)), 0.1f, 1f);
+
             var left = (Vector3)s.CameraMatrix.Left;
             var up = (Vector3)s.CameraMatrix.Up;
             var scale = s.Settings.ClientConfig.HudScale;
@@ -137,6 +142,7 @@ namespace WeaponCore
 
             if (invScaler >= invScaleLimit) {
                 fontScale *=  (invScaler / invScaleLimit);
+                size *= (float)(invScaler / invScaleLimit);
                 invScaler = MathHelper.Clamp(20f / invScaler, 1, 20);
             }
 
@@ -146,10 +152,16 @@ namespace WeaponCore
             {
                 var mark = s.ActiveMarks[i];
                 var player = mark.Item1;
-                var fakeTarget = mark.Item2;
+                var repColor = mark.Item2;
+                var fakeTarget = mark.Item3;
+
+                var textColor = new Vector4(repColor.X, repColor.Y, repColor.Z, cMod1 * repColor.W);
 
                 var targetCenter = fakeTarget.GetFakeTargetInfo(s.TrackingAi).WorldPosition;
-
+                var viewSphere = new BoundingSphereD(targetCenter, 100f);
+                if (!s.Camera.IsInFrustum(ref viewSphere))
+                    continue;
+                
                 var screenPos = s.Camera.WorldToScreen(ref targetCenter);
 
                 Vector3D drawPos = screenPos;
@@ -167,17 +179,17 @@ namespace WeaponCore
 
                 MyQuadD quad;
                 MyUtils.GetBillboardQuadOriented(out quad, ref drawPos, size, size, ref left, ref up);
-                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, drawPos, color, BlendTypeEnum.PostPP);
-                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, color, BlendTypeEnum.PostPP);
+                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, drawPos, repColor, BlendTypeEnum.PostPP);
+                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, repColor, BlendTypeEnum.PostPP);
 
                 string textLine1 = player.DisplayName;
-                var fontSize = (float)Math.Round(9 * fontScale, 1);
+                var fontSize = (float)Math.Round(10 * fontScale, 1);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;
                 var fontType = Hud.FontType.Shadow;
                 var elementId = 3102 + (100 + i);
-                s.HudUi.AddText(text: textLine1, x: (float)screenPos.X, y: (float)screenPos.Y + fontYOffset, elementId: elementId, ttl: fontAge, color: color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                s.HudUi.AddText(text: textLine1, x: (float)screenPos.X, y: (float)screenPos.Y + fontYOffset, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
         }
 

@@ -183,7 +183,7 @@ namespace WeaponCore
         internal readonly HashSet<GridAi> GridsToUpdateInventories = new HashSet<GridAi>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
-        internal readonly List<MyTuple<IMyPlayer, FakeTarget>> ActiveMarks = new List<MyTuple<IMyPlayer, FakeTarget>>();
+        internal readonly List<MyTuple<IMyPlayer, Vector4, FakeTarget>> ActiveMarks = new List<MyTuple<IMyPlayer, Vector4, FakeTarget>>();
         internal readonly int[] AuthorSettings = new int[6];
 
         ///
