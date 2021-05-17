@@ -246,7 +246,7 @@ namespace WeaponCore.Platform
 
         internal bool ServerReload()
         {
-            if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+            if (AnimationDelayTick > Comp.Session.Tick && LastEventCanDelay)
                 return false;
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
