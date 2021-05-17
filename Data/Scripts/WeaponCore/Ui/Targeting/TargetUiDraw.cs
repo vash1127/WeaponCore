@@ -131,8 +131,16 @@ namespace WeaponCore
             var scale = s.Settings.ClientConfig.HudScale;
             var screenScale = 0.1 * s.ScaleFov;
             var size = (float)((0.0025f * scale) * s.ScaleFov);
-            var fontYOffset = (float)((-0.05f * scale) * s.ScaleFov);
+            var invScaler = MathHelper.Clamp(1 / s.ScaleFov, 0, 20);
             var fontScale = scale * s.ScaleFov;
+            var invScaleLimit = 4.2;
+
+            if (invScaler >= invScaleLimit) {
+                fontScale *=  (invScaler / invScaleLimit);
+                invScaler = MathHelper.Clamp(20f / invScaler, 1, 20);
+            }
+
+            var fontYOffset = (float)((-0.05f * scale) * invScaler);
 
             for (int i = 0; i < s.ActiveMarks.Count; i++)
             {
@@ -163,7 +171,7 @@ namespace WeaponCore
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, color, BlendTypeEnum.PostPP);
 
                 string textLine1 = player.DisplayName;
-                var fontSize = (float)Math.Round(6 * fontScale, 1);
+                var fontSize = (float)Math.Round(9 * fontScale, 1);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;
