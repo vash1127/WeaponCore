@@ -145,6 +145,7 @@ namespace WeaponCore.Platform
                     AnimationDelayTick = Comp.Session.Tick;
 
                 var set = false;
+                uint startDelay = 0;
 
                 switch (state)
                 {
@@ -169,7 +170,10 @@ namespace WeaponCore.Platform
 
                                     animation.StartTick = session.Tick + animation.MotionDelay;
                                     if (state == EventTriggers.StopFiring)
-                                        animation.StartTick += (AnimationDelayTick - session.Tick);
+                                    {
+                                        startDelay = AnimationDelayTick - session.Tick;
+                                        animation.StartTick += startDelay; 
+                                    }
 
                                     Comp.Session.AnimationsToProcess.Add(animation);
                                     animation.Running = true;
@@ -209,7 +213,10 @@ namespace WeaponCore.Platform
                                     animation.StartTick = session.Tick + animation.MotionDelay;
 
                                     if (LastEvent == EventTriggers.StopTracking || LastEvent == EventTriggers.Tracking)
-                                        animation.StartTick += (AnimationDelayTick - session.Tick);
+                                    {
+                                        startDelay = (AnimationDelayTick - session.Tick);
+                                        animation.StartTick += startDelay;
+                                    }
 
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
@@ -237,7 +244,11 @@ namespace WeaponCore.Platform
                                     animation.CanPlay = true;
 
                                     animation.StartTick = session.Tick + animation.MotionDelay + (AnimationDelayTick - session.Tick);
-                                    if (state == EventTriggers.TurnOff) animation.StartTick += OffDelay;
+                                    if (state == EventTriggers.TurnOff)
+                                    {
+                                        startDelay = OffDelay;
+                                        animation.StartTick += startDelay;
+                                    }
 
                                     session.ThreadedAnimations.Enqueue(animation);
                                 }
@@ -293,7 +304,12 @@ namespace WeaponCore.Platform
                     LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
 
                     if (System.WeaponAnimationLengths.TryGetValue(state, out animationLength))
-                        AnimationDelayTick += animationLength;
+                    {
+                        var delay = session.Tick + animationLength + startDelay;
+                        if (delay > AnimationDelayTick)
+                            AnimationDelayTick = delay;
+                    }
+
                 }
             }
             catch (Exception e)
