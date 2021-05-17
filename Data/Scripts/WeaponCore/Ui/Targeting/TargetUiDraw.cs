@@ -124,8 +124,8 @@ namespace WeaponCore
             var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
             var color = new Vector4(1, 1, 1, hudOpacity);
 
-            var animationStep = s.Tick % 6;
-            var textureMap = s.HudUi.ReloadingTexture[animationStep];
+            var animationStep = s.Tick % 10;
+            var textureMap = s.HudUi.PaintedTexture[animationStep];
             var left = (Vector3)s.CameraMatrix.Left;
             var up = (Vector3)s.CameraMatrix.Up;
             var scale = s.Settings.ClientConfig.HudScale;
