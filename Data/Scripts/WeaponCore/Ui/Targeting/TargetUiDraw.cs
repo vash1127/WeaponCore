@@ -121,16 +121,16 @@ namespace WeaponCore
         {
             var s = _session;
 
+            var time = s.Tick % 120;
+            var increase = time < 60;
+            var directionalTimeStep = increase ? time  : 119 - time;
             var iconStep = s.Tick % 10;
-            var colorStep = s.Tick % 120;
-
             var textureMap = s.HudUi.PaintedTexture[iconStep];
+
+            var colorStep = s.Tick % 120;
             var amplify = colorStep <= 60;
-            var ampAmount = 1;
-
-            var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS * ampAmount;
+            var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             var cMod1 = MathHelper.Clamp(amplify ? (colorStep * modifyStep) :  2 - (+ (colorStep * modifyStep)), 0.1f, 1f);
-
             var left = (Vector3)s.CameraMatrix.Left;
             var up = (Vector3)s.CameraMatrix.Up;
             var scale = s.Settings.ClientConfig.HudScale;
