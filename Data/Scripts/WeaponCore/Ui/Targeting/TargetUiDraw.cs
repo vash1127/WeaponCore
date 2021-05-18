@@ -121,11 +121,11 @@ namespace WeaponCore
         {
             var s = _session;
 
-            var time = s.Tick % 120;
+            var time = s.Tick % 120; // forward and backward total time
             var increase = time < 60;
             var directionalTimeStep = increase ? time  : 119 - time;
             var iconStep = s.Tick % 10;
-            var textureMap = s.HudUi.PaintedTexture[iconStep];
+            var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
 
             var colorStep = s.Tick % 120;
             var amplify = colorStep <= 60;
