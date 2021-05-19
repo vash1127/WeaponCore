@@ -78,7 +78,7 @@ namespace WeaponCore
                         var wasTrack = comp.Data.Repo.Base.State.TrackingReticle;
 
                         var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId) && (!UiInput.CameraBlockView || UiInput.CameraChannelId > 0 && UiInput.CameraChannelId == comp.Data.Repo.Base.Set.Overrides.CameraChannel));
+                        var track = (isControllingPlayer && comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId) && (!UiInput.CameraBlockView && comp.Data.Repo.Base.Set.Overrides.CameraChannel == 0|| UiInput.CameraChannelId > 0 && UiInput.CameraChannelId == comp.Data.Repo.Base.Set.Overrides.CameraChannel));
                         if (!MpActive && IsServer)
                             comp.Data.Repo.Base.State.TrackingReticle = track;
 

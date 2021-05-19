@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -9,6 +8,7 @@ using VRage.Utils;
 using VRageMath;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using WeaponCore.Support;
+
 namespace WeaponCore
 {
     internal partial class TargetUi
@@ -124,9 +124,7 @@ namespace WeaponCore
             var time = s.Tick % 20; // forward and backward total time
             var increase = time < 10;
             var directionalTimeStep = increase ? time  : 19 - time;
-            var iconStep = s.Tick % 10;
             var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
-
             var colorStep = s.Tick % 120;
             var amplify = colorStep <= 60;
             var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;

@@ -47,15 +47,16 @@ namespace WeaponCore.Support
                 Painted,
             }
 
-            public FakeWorldTargetInfo FakeInfo = new FakeWorldTargetInfo();
+            public readonly FakeWorldTargetInfo FakeInfo = new FakeWorldTargetInfo();
             public readonly FakeType Type;
             public Vector3D LocalPosition;
             public long EntityId;
             public uint LastUpdateTick;
             public uint LastInfoTick;
+            public int MissCount;
             public bool Dirty;
 
-            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, long entId = 0)
+            internal void Update(Vector3D hitPos, uint tick, MyEntity ent = null, long entId = 0)
             {
                 if ((ent != null || entId != 0 && MyEntities.TryGetEntityById(entId, out ent)) && ent.Physics != null) {
                     var referenceWorldMatrix = ent.PositionComp.WorldMatrixRef;
@@ -78,7 +79,8 @@ namespace WeaponCore.Support
 
                 Dirty = false;
                 LastInfoTick = 0;
-                LastUpdateTick = ai.Session.Tick;
+                MissCount = 0;
+                LastUpdateTick = tick;
             }
 
             internal void Sync(FakeTargetPacket packet, GridAi ai)
@@ -97,6 +99,7 @@ namespace WeaponCore.Support
                 }
 
                 LastInfoTick = 0;
+                MissCount = 0;
                 LastUpdateTick = ai.Session.Tick;
             }
 
@@ -122,6 +125,19 @@ namespace WeaponCore.Support
                     Dirty = true;
 
                 return FakeInfo;
+            }
+
+            internal void ClearMark(uint tick)
+            {
+                EntityId = 0;
+                MissCount = 0;
+                LastInfoTick = 0;
+                LastUpdateTick = tick;
+                LocalPosition = Vector3D.Zero;
+                FakeInfo.WorldPosition = Vector3D.Zero;
+                FakeInfo.LinearVelocity = Vector3.Zero;
+                FakeInfo.Acceleration = Vector3.Zero;
+                Dirty = true;
             }
 
             public class FakeWorldTargetInfo

@@ -120,34 +120,34 @@ namespace WeaponCore
                 }
 
                 foundTarget = true;
-                fakeTarget.Update(hit.Position, ai, closestEnt);
+                fakeTarget.Update(hit.Position, s.Tick, closestEnt);
                 break;
             }
 
             if (rayHitSelf) {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
-                if (rayOnlyHitSelf) fakeTarget.Update(end, ai);
+                if (rayOnlyHitSelf && !markTargetPos) fakeTarget.Update(end, s.Tick);
             }
             else ReticleAgeOnSelf = 0;
 
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
+            if (!foundTarget && !markTargetPos && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
                 foundTarget = true;
                 if (manualSelect) {
                     s.SetTarget(closestEnt, ai, _masterTargets);
                     return true;
                 }
-                fakeTarget.Update(hitPos, ai, closestEnt);
+                fakeTarget.Update(hitPos, s.Tick, closestEnt);
             }
 
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
                
-                if (!foundTarget)
-                    fakeTarget.Update(end, ai);
+                if (!foundTarget && !markTargetPos)
+                    fakeTarget.Update(end, s.Tick);
             }
 
             return foundTarget || foundOther;
@@ -236,13 +236,10 @@ namespace WeaponCore
                 if (hit == null) continue;
                 var ray = new RayD(origin, dir);
                 var dist = ray.Intersects(info.PositionComp.WorldVolume);
-                if (dist.HasValue)
+                if (dist < closestDist)
                 {
-                    if (dist.Value < closestDist)
-                    {
-                        closestDist = dist.Value;
-                        closestEnt = hit;
-                    }
+                    closestDist = dist.Value;
+                    closestEnt = hit;
                 }
             }
 
@@ -256,14 +253,11 @@ namespace WeaponCore
                     {
                         var ray = new RayD(origin, dir);
                         var dist = ray.Intersects(otherEnt.PositionComp.WorldVolume);
-                        if (dist.HasValue)
+                        if (dist < closestDist)
                         {
-                            if (dist.Value < closestDist)
-                            {
-                                closestDist = dist.Value;
-                                closestEnt = otherEnt;
-                                foundOther = true;
-                            }
+                            closestDist = dist.Value;
+                            closestEnt = otherEnt;
+                            foundOther = true;
                         }
                     }
                 }

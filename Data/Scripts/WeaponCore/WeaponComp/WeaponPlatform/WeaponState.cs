@@ -191,7 +191,7 @@ namespace WeaponCore.Platform
             GridAi.FakeTargets fakeTargets;
             if (Comp.Session.PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
             {
-                var validManual = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && Comp.Data.Repo.Base.State.TrackingReticle && fakeTargets.ManualTarget.LocalPosition != Vector3D.Zero;
+                var validManual = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && Comp.Data.Repo.Base.State.TrackingReticle && fakeTargets.ManualTarget.FakeInfo.WorldPosition != Vector3D.Zero;
                 var validPainter = Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && !fakeTargets.PaintedTarget.Dirty && fakeTargets.PaintedTarget.LocalPosition != Vector3D.Zero;
                 var fakeTarget = validPainter && preferPainted ? fakeTargets.PaintedTarget : validManual ? fakeTargets.ManualTarget : null;
                 if (fakeTarget == null || fakeTarget.Dirty)
