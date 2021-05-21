@@ -33,17 +33,24 @@ namespace WeaponCore
 {
     public class GridMap
     {
+        public readonly MyShipController FakeController = new MyShipController();
         public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
+        public uint PowerCheckTick;
         public bool SuspectedDrone;
+        public bool Powered;
 
         internal void Clean()
         {
             Targeting = null;
+            FakeController.SlimBlock = null;
             MyCubeBocks.ClearImmediate();
             MostBlocks = 0;
+            PowerCheckTick = 0;
+            SuspectedDrone = false;
+            Powered = false;
         }
     }
 
@@ -374,7 +381,7 @@ namespace WeaponCore
                     var gyros = 0;
                     var powerProducers = 0;
                     var warHead = 0;
-
+                    var working = 0;
                     for (int j = 0; j < allFat.Count; j++) {
                         var fat = allFat[j];
                         if (!(fat is IMyTerminalBlock)) continue;
@@ -382,6 +389,15 @@ namespace WeaponCore
                         using (fat.Pin()) {
 
                             if (fat.MarkedForClose) continue;
+                            if (fat.IsWorking && ++ working == 1) {
+
+                                var oldCube = (gridMap.FakeController.SlimBlock as IMySlimBlock)?.FatBlock as MyCubeBlock;
+                                if (oldCube == null || oldCube.MarkedForClose || oldCube.CubeGrid != grid) {
+                                    gridMap.FakeController.SlimBlock = fat.SlimBlock;
+                                    GridDistributors[grid] = gridMap;
+                                }
+                            }
+
                             var cockpit = fat as MyCockpit;
                             var decoy = fat as IMyDecoy;
                             var bomb = fat as IMyWarhead;
@@ -432,12 +448,19 @@ namespace WeaponCore
 
                     foreach (var type in newTypeMap)
                         type.Value.ApplyAdditions();
-                    
+
+                    GridMap oldMap;
+                    if (terminals == 0 && !gridMap.Trash && GridDistributors.TryRemove(grid, out oldMap))
+                        oldMap.FakeController.SlimBlock = null;
+
                     gridMap.MyCubeBocks.ApplyAdditions();
                     gridMap.SuspectedDrone = warHead > 0 || powerProducers > 0 && thrusters > 0 && gyros > 0;
                     gridMap.Trash = terminals == 0;
-                    var gridBlocks = grid.BlocksCount;
+                    gridMap.Powered = working > 0;
+                    gridMap.PowerCheckTick = Tick;
 
+                    var gridBlocks = grid.BlocksCount;
+                    
                     if (gridBlocks > gridMap.MostBlocks) gridMap.MostBlocks = gridBlocks;
 
                     ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 

@@ -12,6 +12,7 @@ using VRage.Utils;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
+using IMyControllableEntity = VRage.Game.ModAPI.Interfaces.IMyControllableEntity;
 
 namespace WeaponCore
 {
@@ -371,6 +372,8 @@ namespace WeaponCore
                     PlayerMouseStates.Remove(playerId);
                     PlayerDummyTargets.Remove(playerId);
                     PlayerMIds.Remove(removedPlayer.SteamUserId);
+                    if (PlayerControllerMonitor.Remove(removedPlayer))
+                        removedPlayer.Controller.ControlledEntityChanged -= OnPlayerController;
 
                     if (IsServer && MpActive)
                         SendPlayerConnectionUpdate(l, false);
@@ -393,6 +396,12 @@ namespace WeaponCore
                 PlayerDummyTargets[id] = new FakeTargets();
                 PlayerEntityIdInRange[player.SteamUserId] = new HashSet<long>();
                 PlayerMIds[player.SteamUserId] = new uint[Enum.GetValues(typeof(PacketType)).Length];
+                
+                var controller = player.Controller;
+                if (controller != null && PlayerControllerMonitor.Add(player)) {
+                    controller.ControlledEntityChanged += OnPlayerController;
+                    OnPlayerController(null, controller.ControlledEntity);
+                }
 
                 PlayerEventId++;
                 if (AuthorIds.Contains(player.SteamUserId)) 
@@ -403,9 +412,54 @@ namespace WeaponCore
                     SendServerStartup(player.SteamUserId);
                 }
                 else if (MpActive && MultiplayerId != player.SteamUserId && JokePlayerList.Contains(player.SteamUserId))
-                    ParticleJokes();
+                    PracticalJokes();
             }
             return false;
+        }
+
+        private void OnPlayerController(IMyControllableEntity arg1, IMyControllableEntity arg2)
+        {
+            try
+            {
+                var ent1 = arg1 as MyEntity;
+                var ent2 = arg2 as MyEntity;
+                HashSet<long> players;
+
+                if (ent1 != null)
+                {
+                    var cube = ent1 as MyCubeBlock;
+                    if (cube != null && PlayerGrids.TryGetValue(cube.CubeGrid, out players) && arg2 != null)
+                    {
+                        players.Remove(arg2.ControllerInfo.ControllingIdentityId);
+
+                        if (players.Count == 0)
+                        {
+                            PlayerGridPool.Return(players);
+                        }
+                    }
+                }
+                if (ent2 != null)
+                {
+                    var cube = ent2 as MyCubeBlock;
+
+                    if (cube != null)
+                    {
+                        if (PlayerGrids.TryGetValue(cube.CubeGrid, out players))
+                        {
+                            players.Add(arg2.ControllerInfo.ControllingIdentityId);
+                        }
+                        else
+                        {
+                            players = PlayerGridPool.Get();
+                            players.Add(arg2.ControllerInfo.ControllingIdentityId);
+                            PlayerGrids[cube.CubeGrid] = players;
+                        }
+
+                    }
+
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnPlayerController: {ex}"); }
         }
     }
 }

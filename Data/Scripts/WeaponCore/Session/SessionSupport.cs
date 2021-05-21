@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using Sandbox.Game.EntityComponents;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -649,7 +650,7 @@ namespace WeaponCore
             CounterKeenLogMessage(false);
         }
 
-        private void ParticleJokes()
+        private void PracticalJokes()
         {
             var chance = MyUtils.GetRandomInt(0, 4);
             if (chance == 2)
@@ -727,6 +728,46 @@ namespace WeaponCore
             return false;
         }
 
+        internal bool GridHasPower(MyCubeGrid grid, GridMap map = null)
+        {
+            bool state = false;
+            if (map != null || GridDistributors.TryGetValue(grid, out map)) {
+                var slim = map.FakeController.SlimBlock as IMySlimBlock;
+                var cube = slim?.FatBlock as MyCubeBlock;
+
+                if (cube != null && cube.CubeGrid == grid) {
+                    var dist = map.FakeController.GridResourceDistributor;
+                    state = dist?.ResourceState != MyResourceStateEnum.NoPower; 
+                }
+
+                map.PowerCheckTick = Tick;
+                map.Powered = state;
+            }
+            return state;
+        }
+
+        internal void UpdateGridPowerState()
+        {
+            foreach (var pair in DirtyPowerGrids)
+                GridHasPower(pair.Key, pair.Value);
+
+            DirtyPowerGrids.Clear();
+        }
+
+        internal void CheckGridPowerState(MyCubeGrid grid, GridMap map)
+        {
+            if ((!map.Powered && Tick - map.PowerCheckTick > 600 || map.Powered && Tick - map.PowerCheckTick > 1800))
+                DirtyPowerGrids.TryAdd(grid, map);
+        }
+
+        internal void MatchPlayersToGrids()
+        {
+            foreach (var playerInfo in Players)
+            {
+                //var controlCube = playerInfo.Value.Controller?. as MyCubeBlock;
+            }
+        }
+        
         internal void NewThreat(Weapon w)
         {
             try

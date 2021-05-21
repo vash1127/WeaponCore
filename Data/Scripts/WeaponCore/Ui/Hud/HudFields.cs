@@ -26,6 +26,8 @@ namespace WeaponCore
         private const float ShadowWidthScaler = 0.7f;
         private const float ShadowHeightScaler = 0.65f;
         private const float ShadowSizeScaler = 1.5f;
+        private const int WeaponLimit = 50;
+        private const int StackThreshold = 10;
 
         private const int InitialPoolCapacity = 512;
         private const uint MinUpdateTicks = 60;

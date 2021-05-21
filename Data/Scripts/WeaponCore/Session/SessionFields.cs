@@ -80,6 +80,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<EwarValues> EwarDataPool = new MyConcurrentPool<EwarValues>(64);
+        internal readonly MyConcurrentPool<HashSet<long>> PlayerGridPool = new MyConcurrentPool<HashSet<long>>(16);
 
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
@@ -103,6 +104,9 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraChannelMappings = new ConcurrentDictionary<MyCubeBlock, long>();
         internal readonly ConcurrentDictionary<long, WaterData> WaterMap = new ConcurrentDictionary<long, WaterData>();
         internal readonly ConcurrentDictionary<long, MyPlanet> PlanetMap = new ConcurrentDictionary<long, MyPlanet>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> GridDistributors = new ConcurrentDictionary<MyCubeGrid, GridMap>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> DirtyPowerGrids = new ConcurrentDictionary<MyCubeGrid, GridMap>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, HashSet<long>> PlayerGrids = new ConcurrentDictionary<MyCubeGrid, HashSet<long>>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -161,6 +165,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Weapon> WeaponLosDebugActive = new HashSet<Weapon>();
         internal readonly HashSet<Type> ControlTypeActivated = new HashSet<Type>();
+        internal readonly HashSet<IMyPlayer> PlayerControllerMonitor = new HashSet<IMyPlayer>();
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();

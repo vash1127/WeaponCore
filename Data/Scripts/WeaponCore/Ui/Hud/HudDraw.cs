@@ -222,9 +222,8 @@ namespace WeaponCore
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                //var showReloadIcon = weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30 || (weapon.ShowBurstDelayAsReload && !weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastShootTick > 30 && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst && weapon.ShootTick > weapon.Comp.Session.Tick);
                 var isWaitingForBurstDelay = weapon.ShowBurstDelayAsReload && weapon.ShootTick > _session.Tick && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst;
-                var showReloadIcon = _session.HandlesInput && (weapon.Reloading && weapon.System.ReloadTime >= 240 || isWaitingForBurstDelay && weapon.System.Values.HardPoint.Loading.DelayAfterBurst >= 240);
+                var showReloadIcon = _session.HandlesInput && ((weapon.Reloading || _session.Tick - weapon.LastLoadedTick < 60) && weapon.System.ReloadTime >= 240 || isWaitingForBurstDelay && weapon.System.Values.HardPoint.Loading.DelayAfterBurst >= 240);
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();

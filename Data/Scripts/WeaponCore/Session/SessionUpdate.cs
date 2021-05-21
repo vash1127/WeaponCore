@@ -23,7 +23,6 @@ namespace WeaponCore
                 ai.MyProjectiles = 0;
                 ai.ProInMinCacheRange = 0;
                 ai.AccelChecked = false;
-                
                 if (ai.MarkedForClose || !ai.GridInit || ai.MyGrid == null || ai.Construct.RootAi == null || ai.MyGrid.MarkedForClose)
                     continue;
                 
@@ -235,6 +234,10 @@ namespace WeaponCore
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
+                        if (Tick20 && w.System.WeaponName.Contains("400"))
+                        {
+                            Log.Line($"{w.Reloading} - {!w.LastEventCanDelay} - {w.AnimationDelayTick <= Tick} - {w.FinishBurst}");
+                        }
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))

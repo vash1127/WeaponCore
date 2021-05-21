@@ -103,7 +103,7 @@ namespace WeaponCore
             if (!_weaponInfoListPool.TryDequeue(out finalList))
                 finalList = new List<StackedWeaponInfo>();
 
-            for (int h = length / 2; h > 0; h /= 2)
+            for (int h = length / 2; h > 0; h /= 2) // switch a proper comparer, performance not an issue.  Sort by heat duration and then estimated time to reload complete, longest to shortest
             {
                 for (int i = h; i < length; i += 1)
                 {
@@ -120,9 +120,9 @@ namespace WeaponCore
                 }
             }
 
-            if(list.Count > 50) //limit to top 50 based on heat
-                list.RemoveRange(50, list.Count - 50);
-            else if (list.Count <= 12)
+            if(list.Count > WeaponLimit) //limit to top 50 based on heat
+                list.RemoveRange(WeaponLimit, list.Count - WeaponLimit);
+            else if (list.Count <= StackThreshold)
             {
                 for(int i = 0; i < list.Count; i++)
                 {
@@ -215,7 +215,7 @@ namespace WeaponCore
                     {
                         var subL = subLists[i];                        
 
-                        if (finalCount < 12)
+                        if (finalCount < StackThreshold)
                         {
                             StackedWeaponInfo swi;
                             if (!_weaponStackedInfoPool.TryDequeue(out swi))
@@ -246,7 +246,7 @@ namespace WeaponCore
                 }
                 else
                 {
-                    if (finalCount < 12)
+                    if (finalCount < StackThreshold)
                     {
                         StackedWeaponInfo swi;
                         if (!_weaponStackedInfoPool.TryDequeue(out swi))

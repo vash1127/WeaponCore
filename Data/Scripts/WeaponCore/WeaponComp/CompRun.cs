@@ -171,7 +171,7 @@ namespace WeaponCore.Support
         {
             try {
                 if (Ai.MarkedForClose)
-                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{MyCube.BlockDefinition.Id.SubtypeName} - grid:{MyCube.CubeGrid.DebugName} - CubeMarked:{MyCube.MarkedForClose} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} - AiContainsMe:{Ai.WeaponBase.ContainsKey(MyCube)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(MyCube.CubeGrid)}[{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}]");
+                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{MyCube.BlockDefinition.Id.SubtypeName} - grid:{MyCube.CubeGrid.DebugName} - CubeMarked:{MyCube.MarkedForClose}({Entity?.MarkedForClose}) - GridMarked:{MyCube.CubeGrid.MarkedForClose}({Entity?.GetTopMostParent()?.MarkedForClose}) - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} - AiContainsMe:{Ai.WeaponBase.ContainsKey(MyCube)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(MyCube.CubeGrid)}[{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}]");
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
                 if (!Ai.GridInit) {

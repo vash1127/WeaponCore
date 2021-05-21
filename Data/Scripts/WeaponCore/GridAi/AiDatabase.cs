@@ -53,18 +53,21 @@ namespace WeaponCore.Support
                 using (ent.Pin()) {
 
                     if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
-
                     var grid = ent as MyCubeGrid;
-                    if (grid != null && MyGrid.IsSameConstructAs(grid)) {
-                        PrevSubGrids.Add(grid);
-                        continue;
+
+                    GridMap gridMap = null;
+                    if (grid != null) {
+                        if (MyGrid.IsSameConstructAs(grid)) {
+                            PrevSubGrids.Add(grid);
+                            continue;
+                        }
+                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
+                            continue;
                     }
 
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                     if (!CreateEntInfo(ent, AiOwner, out entInfo))
-                    {
                         continue;
-                    }
 
                     switch (entInfo.Relationship) {
                         case MyRelationsBetweenPlayerAndBlock.Owner:
@@ -73,17 +76,16 @@ namespace WeaponCore.Support
                             continue;
                     }
 
-                    if (grid != null) {
-
-                        GridMap gridMap;
-                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
-                            continue;
+                    if (gridMap != null) {
 
                         var allFat = gridMap.MyCubeBocks;
                         var fatCount = allFat.Count;
 
                         if (fatCount <= 0)
                             continue;
+
+                        if (Session.Tick - gridMap.PowerCheckTick > 600)
+                            Session.CheckGridPowerState(grid, gridMap);
 
                         var loneWarhead = false;
                         var hostileDrone = false;

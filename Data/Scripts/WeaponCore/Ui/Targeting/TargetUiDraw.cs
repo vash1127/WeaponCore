@@ -105,7 +105,7 @@ namespace WeaponCore
             Vector4 text2Color;
             if (s.Tick20 && DroneText(localOffset, scale, out textLine1, out textLine2, out textOffset1, out textOffset2, out text1Color, out text2Color))
             {
-                var fontSize = (float)Math.Round(24 * fontScale, 1);
+                var fontSize = (float)Math.Round(24 * fontScale, 2);
                 var fontHeight = 0.75f;
                 var fontAge = 18;
                 var fontJustify = Hud.Justify.None;
@@ -181,7 +181,7 @@ namespace WeaponCore
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, repColor, BlendTypeEnum.PostPP);
 
                 string textLine1 = player.DisplayName;
-                var fontSize = (float)Math.Round(10 * fontScale, 1);
+                var fontSize = (float)Math.Round(10 * fontScale, 2);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;
@@ -254,7 +254,7 @@ namespace WeaponCore
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
-                    var quickUpdate = _session.UiInput.FirstPersonView && _session.HudUi.NeedsUpdate && _session.ControlledEntity is IMyGunBaseUser;
+                    var quickUpdate = _session.HudUi.NeedsUpdate && (_session.UiInput.FirstPersonView && _session.ControlledEntity is IMyGunBaseUser || _session.UiInput.CameraBlockView);
                     if (s.Tick20 || quickUpdate)
                     {
                         for (int j = 0; j < 11; j++)
@@ -264,7 +264,7 @@ namespace WeaponCore
                             if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                             {
                                 var textColor = Color.White;
-                                var fontSize = (float)Math.Round(21 * fontScale, 1);
+                                var fontSize = (float)Math.Round(21 * fontScale, 2);
                                 var fontHeight = 0.75f;
                                 var fontAge = !quickUpdate ? 18 : 0;
                                 var fontJustify = Hud.Justify.None;

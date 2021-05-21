@@ -301,7 +301,7 @@ namespace WeaponCore.Platform
                     var animationLength = 0u;
 
                     LastEvent = state;
-                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
+                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn || state == EventTriggers.Firing;
 
                     if (System.WeaponAnimationLengths.TryGetValue(state, out animationLength))
                     {

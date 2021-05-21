@@ -182,7 +182,6 @@ namespace WeaponCore
 
                     DsUtil.Complete("network1", true);
                 }
-
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -201,6 +200,9 @@ namespace WeaponCore
                 if (GridTask.IsComplete)
                     CheckDirtyGridInfos();
                 
+                if (!DirtyPowerGrids.IsEmpty)
+                    UpdateGridPowerState();
+
                 if (WaterApiLoaded && (Tick3600 || WaterMap.IsEmpty))
                     UpdateWaters();
 
