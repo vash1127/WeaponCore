@@ -298,7 +298,10 @@ namespace WeaponCore.Platform
                     CancelableReloadAction += Reloaded;
                     ReloadSubscribed = true;
                     var reloadTime = (uint)(burstDelay ? System.ReloadTime + delayTime : System.ReloadTime);
-                    ReloadEndTick = Comp.Session.Tick + reloadTime;
+                    
+                    if (burstDelay) 
+                        ReloadEndTick = Comp.Session.Tick + reloadTime;
+                    
                     Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, reloadTime);
                 }
                 else Reloaded();
