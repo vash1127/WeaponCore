@@ -56,9 +56,11 @@ namespace WeaponCore.Control
             
             AddComboboxNoAction<T>(session, -19, "ControlModes", "Control Mode", "Select the aim control mode for the weapon", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
 
-            AddWeaponCameraSliderRange<T>(session, -20, "Weapon Camera", "Weapon Camera Channel", "Assign this weapon to a camera channel", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, WepUi.ShowCamera, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
+            AddWeaponCameraSliderRange<T>(session, -20, "Camera Channel", "Weapon Camera Channel", "Assign this weapon to a camera channel", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, HasTracking, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
 
-            Separator<T>(session, -21, "WC_sep4", HasTracking);
+            AddLeadGroupSliderRange<T>(session, -21, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", WepUi.GetLeadGroup, WepUi.RequestSetLeadGroup, NoTurret, WepUi.GetMinLeadGroup, WepUi.GetMaxLeadGroup, true);
+
+            Separator<T>(session, -22, "WC_sep4", HasTracking);
         }
 
         internal static void AddDecoyControls<T>(Session session) where T: IMyTerminalBlock
@@ -215,6 +217,15 @@ namespace WeaponCore.Control
             builder.Append(message);
         }
 
+        internal static void SliderLeadGroupWriterRange(IMyTerminalBlock block, StringBuilder builder)
+        {
+
+            var value = Convert.ToInt64(WepUi.GetLeadGroup(block));
+            var message = value > 0 ? value.ToString() : "Disabled";
+
+            builder.Append(message);
+        }
+
         internal static void SliderWriterDamage(IMyTerminalBlock block, StringBuilder builder)
         {
             builder.Append(WepUi.GetDps(block).ToString("N2"));
@@ -344,7 +355,26 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             session.CustomControls.Add(c);
 
-            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
+            return c;
+        }
+
+        internal static IMyTerminalControlSlider AddLeadGroupSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Enabled = Istrue;
+            c.Visible = visibleGetter;
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Writer = SliderLeadGroupWriterRange;
+
+            if (minGetter != null)
+                c.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            session.CustomControls.Add(c);
             return c;
         }
 

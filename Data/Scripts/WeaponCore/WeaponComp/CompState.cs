@@ -277,6 +277,9 @@ namespace WeaponCore.Support
                 case "CameraChannel":
                     o.CameraChannel = v;
                     break;
+                case "LeadGroup":
+                    o.LeadGroup = v;
+                    break;
             }
 
             ResetCompState(comp, playerId, clearTargets, resetState);

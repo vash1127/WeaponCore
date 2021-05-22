@@ -93,7 +93,7 @@ namespace WeaponCore.Support
         public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
         {
             if (!SubGridsRegistered.Contains(grid)) {
-                Log.Line($"sub Grid Already UnRegistered: [Main]:{grid == MyGrid}");
+                Log.Line($"sub Grid Already UnRegistered: [Main]:{grid == MyGrid} - clean:{clean}");
             }
 
             if (!clean) SubGrids.Remove(grid);

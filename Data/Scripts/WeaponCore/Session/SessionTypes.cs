@@ -324,6 +324,7 @@ namespace WeaponCore
                     {"MaxSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
                     {"MinSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
                     {"CameraChannel", () => GetComp()?.Data.Repo.Base.Set.Overrides.CameraChannel.ToString() ?? string.Empty },
+                    {"LeadChannel", () => GetComp()?.Data.Repo.Base.Set.Overrides.LeadGroup.ToString() ?? string.Empty },
                 };
 
                 return compFields;

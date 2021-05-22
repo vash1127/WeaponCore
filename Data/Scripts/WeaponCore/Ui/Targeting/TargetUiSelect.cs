@@ -28,6 +28,11 @@ namespace WeaponCore
             return _session.ActiveMarks.Count > 0;
         }
 
+        internal bool ActivateLeads()
+        {
+            return _session.LeadGroupActive && _session.TrackingAi.Construct.Data.Repo.FocusData.HasFocus;
+        }
+
         internal void ResetCache()
         {
             _cachedPointerPos = false;

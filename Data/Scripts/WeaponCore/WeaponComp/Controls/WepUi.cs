@@ -384,6 +384,25 @@ namespace WeaponCore
             }
         }
 
+        internal static float GetLeadGroup(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            return comp.Data.Repo.Base.Set.Overrides.LeadGroup;
+        }
+
+        internal static void RequestSetLeadGroup(IMyTerminalBlock block, float newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = Convert.ToInt32(newValue);
+            if (value != comp.Data.Repo.Base.Set.Overrides.LeadGroup)
+            {
+                WeaponComponent.RequestSetValue(comp, "LeadGroup", value, comp.Session.PlayerId);
+            }
+        }
+
         internal static bool ShowCamera(IMyTerminalBlock block)
         {
             return true;
@@ -397,6 +416,17 @@ namespace WeaponCore
         internal static float GetMaxCameraChannel(IMyTerminalBlock block)
         {
             return 24;
+        }
+
+
+        internal static float GetMinLeadGroup(IMyTerminalBlock block)
+        {
+            return 0;
+        }
+
+        internal static float GetMaxLeadGroup(IMyTerminalBlock block)
+        {
+            return 5;
         }
 
         internal static bool GetRepel(IMyTerminalBlock block)

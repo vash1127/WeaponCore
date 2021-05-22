@@ -217,13 +217,12 @@ namespace WeaponCore
 
                 TextDrawRequest textInfo;
                 var stackedInfo = _weapontoDraw[i];
-                var weapon = stackedInfo.HighestValueWeapon;
+                var weapon = stackedInfo.HighestValueWeapon;    
                 var name = weapon.System.WeaponName + ": ";
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var isWaitingForBurstDelay = weapon.ShowBurstDelayAsReload && weapon.ShootTick > _session.Tick && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst;
-                var showReloadIcon = _session.HandlesInput && ((weapon.Reloading || _session.Tick - weapon.LastLoadedTick < 60) && weapon.System.ReloadTime >= 240 || isWaitingForBurstDelay && weapon.System.Values.HardPoint.Loading.DelayAfterBurst >= 240);
+                var showReloadIcon = (weapon.Reloading || _session.Tick - weapon.LastLoadedTick < 60);
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();

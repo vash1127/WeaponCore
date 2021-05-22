@@ -309,7 +309,8 @@ namespace WeaponCore
                 var blockInfo = item.Value;
                 var functBlock = blockInfo.FunctBlock;
                 var health = blockInfo.Health;
-                if (functBlock == null || functBlock.MarkedForClose) {
+                var cube = (MyCubeBlock)blockInfo.FunctBlock;
+                if (functBlock?.SlimBlock == null || functBlock.SlimBlock.IsDestroyed || cube  == null || cube.MarkedForClose || cube.Closed || cube.CubeGrid.MarkedForClose || !cube.IsFunctional || !cube.InScene) { // keen is failing to check for null when they null out functional block types
                     _effectPurge.Enqueue(cubeid);
                     continue;
                 }
@@ -446,6 +447,10 @@ namespace WeaponCore
 
         private static void ForceDisable(IMyTerminalBlock myTerminalBlock)
         {
+            var cube = (MyCubeBlock)myTerminalBlock;
+            if (cube == null || myTerminalBlock?.SlimBlock == null || myTerminalBlock.SlimBlock.IsDestroyed || cube.MarkedForClose || cube.Closed || cube.CubeGrid.MarkedForClose || !cube.IsFunctional || !cube.InScene) // keen is failing to check for null when they null out functional block types
+                return;
+
             ((IMyFunctionalBlock)myTerminalBlock).Enabled = false;
         }
 

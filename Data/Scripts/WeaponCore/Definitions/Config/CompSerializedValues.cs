@@ -427,6 +427,7 @@ namespace WeaponCore
         [ProtoMember(15)] public bool Repel;
         [ProtoMember(16)] public long CameraChannel;
         [ProtoMember(17)] public bool Debug;
+        [ProtoMember(18)] public long LeadGroup;
 
 
         public GroupOverrides() { }
@@ -450,6 +451,7 @@ namespace WeaponCore
             Repel = syncFrom.Repel;
             CameraChannel = syncFrom.CameraChannel;
             Debug = syncFrom.Debug;
+            LeadGroup = syncFrom.LeadGroup;
         }
     }
 }

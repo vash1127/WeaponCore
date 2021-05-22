@@ -100,6 +100,64 @@ namespace WeaponCore.Platform
             return false;
         }
 
+        internal static void LeadTarget(Weapon weapon, MyEntity target, out Vector3D targetPos, out bool couldHit, out bool willHit)
+        {
+            var vel = target.Physics?.LinearVelocity ?? Vector3.Zero;
+            var accel = target.Physics?.LinearAcceleration ?? Vector3.Zero;
+            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
+            var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
+
+            var box = target.PositionComp.LocalAABB;
+            var obb = new MyOrientedBoundingBoxD(box, target.PositionComp.WorldMatrixRef);
+
+            var validEstimate = true;
+            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
+                targetPos = TrajectoryEstimation(weapon, obb.Center, vel, accel, out validEstimate);
+            else
+                targetPos = obb.Center;
+
+            obb.Center = targetPos;
+            weapon.TargetBox = obb;
+
+            var obbAbsMax = obb.HalfExtent.AbsMax();
+            var maxRangeSqr = obbAbsMax + weapon.MaxTargetDistance;
+            var minRangeSqr = obbAbsMax + weapon.MinTargetDistance;
+
+            maxRangeSqr *= maxRangeSqr;
+            minRangeSqr *= minRangeSqr;
+            double rangeToTarget;
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
+            couldHit = validEstimate && rangeToTarget <= maxRangeSqr && rangeToTarget >= minRangeSqr;
+
+            bool canTrack = false;
+            if (validEstimate && rangeToTarget <= maxRangeSqr && rangeToTarget >= minRangeSqr)
+            {
+                var targetDir = targetPos - weapon.MyPivotPos;
+                if (weapon == trackingWeapon)
+                {
+                    double checkAzimuth;
+                    double checkElevation;
+
+                    MathFuncs.GetRotationAngles(ref targetDir, ref weapon.WeaponConstMatrix, out checkAzimuth, out checkElevation);
+
+                    var azConstraint = Math.Min(weapon.MaxAzToleranceRadians, Math.Max(weapon.MinAzToleranceRadians, checkAzimuth));
+                    var elConstraint = Math.Min(weapon.MaxElToleranceRadians, Math.Max(weapon.MinElToleranceRadians, checkElevation));
+
+                    Vector3D constraintVector;
+                    Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out constraintVector);
+                    Vector3D.Rotate(ref constraintVector, ref weapon.WeaponConstMatrix, out constraintVector);
+
+                    var testRay = new RayD(ref weapon.MyPivotPos, ref constraintVector);
+                    if (obb.Intersects(ref testRay) != null) canTrack = true;
+
+                    if (weapon.Comp.Debug)
+                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
+                }
+                else
+                    canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
+            }
+            willHit =  canTrack;
+        }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {

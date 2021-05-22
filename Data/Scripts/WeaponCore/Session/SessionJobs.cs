@@ -4,9 +4,6 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using Sandbox.Game;
-using Sandbox.ModAPI.Ingame;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
@@ -15,19 +12,8 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
-using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi.Constructs;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
-using IMyDecoy = Sandbox.ModAPI.IMyDecoy;
-using IMyPowerProducer = Sandbox.ModAPI.IMyPowerProducer;
-using IMyProductionBlock = Sandbox.ModAPI.IMyProductionBlock;
-using IMyRadioAntenna = Sandbox.ModAPI.IMyRadioAntenna;
-using IMyShipDrill = Sandbox.ModAPI.IMyShipDrill;
-using IMyShipGrinder = Sandbox.ModAPI.IMyShipGrinder;
-using IMyTerminalBlock = Sandbox.ModAPI.IMyTerminalBlock;
-using IMyUpgradeModule = Sandbox.ModAPI.IMyUpgradeModule;
-using IMyWarhead = Sandbox.ModAPI.IMyWarhead;
 
 namespace WeaponCore
 {

@@ -345,6 +345,29 @@ namespace WeaponCore.Control
             WeaponComponent.RequestSetValue(comp, "CameraChannel", nextValue, comp.Session.PlayerId);
         }
 
+        internal static void TerminalActionLeadGroupIncrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.LeadGroup);
+            var nextValue = MathHelper.Clamp(value + 1, 0, 5);
+
+            WeaponComponent.RequestSetValue(comp, "LeadGroup", nextValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionLeadGroupDecrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Base.Set.Overrides.LeadGroup);
+            var nextValue = MathHelper.Clamp(value - 1, 0, 5);
+
+            WeaponComponent.RequestSetValue(comp, "LeadGroup", nextValue, comp.Session.PlayerId);
+        }
         #endregion
 
         #region Writters
@@ -520,6 +543,14 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             sb.Append(comp.Data.Repo.Base.Set.Overrides.CameraChannel);
+        }
+
+        internal static void LeadGroupWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            sb.Append(comp.Data.Repo.Base.Set.Overrides.LeadGroup);
         }
 
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)

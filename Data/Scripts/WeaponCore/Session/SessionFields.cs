@@ -189,8 +189,8 @@ namespace WeaponCore
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
         internal readonly List<MyTuple<IMyPlayer, Vector4, FakeTarget>> ActiveMarks = new List<MyTuple<IMyPlayer, Vector4, FakeTarget>>();
+        internal readonly List<Weapon>[] LeadGroups = new List<Weapon>[4];
         internal readonly int[] AuthorSettings = new int[6];
-
         ///
         ///
         ///
@@ -299,6 +299,7 @@ namespace WeaponCore
         internal ulong MultiplayerId;
         internal ulong MuzzleIdCounter;
         internal long PlayerId;
+
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
@@ -312,6 +313,7 @@ namespace WeaponCore
         internal float UiOpacity;
         internal float UIHudOpacity;
         internal float CurrentFovWithZoom;
+        internal float LastOptimalDps;
         internal bool PurgedAll;
         internal bool InMenu;
         internal bool GunnerBlackList;
@@ -358,6 +360,7 @@ namespace WeaponCore
         internal bool QuickDisableGunsCheck;
         internal bool EwarNetDataDirty;
         internal bool CanChangeHud;
+        internal bool LeadGroupActive;
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
@@ -461,6 +464,8 @@ namespace WeaponCore
             for (int i = 0; i < AuthorSettings.Length; i++)
                 AuthorSettings[i] = -1;
 
+            for (int i = 0; i < LeadGroups.Length; i++)
+                LeadGroups[i] = new List<Weapon>();
         }
     }
 }

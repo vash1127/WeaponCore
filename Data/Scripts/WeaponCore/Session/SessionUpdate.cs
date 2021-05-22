@@ -141,8 +141,7 @@ namespace WeaponCore
                         /// Update Weapon Hud Info
                         /// 
                         
-                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
-                        var addWeaponToHud = HandlesInput && (w.Reloading && w.System.ReloadTime >= 240 || isWaitingForBurstDelay && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240 || w.HeatPerc >= 0.01);
+                        var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Reloading && (w.System.ReloadTime >= 240 || w.ShowBurstDelayAsReload && Tick - w.ReloadEndTick > 0 && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240));
                         if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
 
                             HudUi.TexturesToAdd++;
@@ -234,10 +233,6 @@ namespace WeaponCore
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
-                        if (Tick20 && w.System.WeaponName.Contains("400"))
-                        {
-                            Log.Line($"{w.Reloading} - {!w.LastEventCanDelay} - {w.AnimationDelayTick <= Tick} - {w.FinishBurst}");
-                        }
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))

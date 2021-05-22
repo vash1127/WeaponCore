@@ -145,6 +145,7 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateFocusSubSystem(session);
             CreateCustomActions<T>.CreateRepelMode(session);
             CreateCustomActions<T>.CreateWeaponCameraChannels(session);
+            CreateCustomActions<T>.CreateLeadGroups(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)

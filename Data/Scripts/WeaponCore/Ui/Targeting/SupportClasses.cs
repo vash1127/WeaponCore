@@ -30,6 +30,14 @@ namespace WeaponCore
         public string Name;
     }
 
+    public struct LeadInfo
+    {
+        public bool WillHit;
+        public long Group;
+        public Vector3D Position;
+        public float Length;
+    }
+
     public class HudInfo
     {
         private readonly MyStringId _textureName;

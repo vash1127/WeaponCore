@@ -368,7 +368,7 @@ namespace WeaponCore.Control
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_CameraChannel");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action0.Name = new StringBuilder($"Next Group");
+            action0.Name = new StringBuilder($"Next Camera Channel");
             action0.Action = CustomActions.TerminalActionCameraChannelIncrease;
             action0.Writer = CustomActions.WeaponCameraChannelWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
@@ -379,10 +379,35 @@ namespace WeaponCore.Control
 
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_CameraChannel");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action1.Name = new StringBuilder($"Previous Group");
+            action1.Name = new StringBuilder($"Previous Camera Channel");
             action1.Action = CustomActions.TerminalActionCameraChannelDecrease;
             action1.Writer = CustomActions.WeaponCameraChannelWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
+            action1.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
+            session.CustomActions.Add(action1);
+        }
+
+        public static void CreateLeadGroups(Session session)
+        {
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>("WC_Increase_LeadGroup");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
+            action0.Name = new StringBuilder($"Next Lead Group");
+            action0.Action = CustomActions.TerminalActionLeadGroupIncrease;
+            action0.Writer = CustomActions.LeadGroupWriter;
+            action0.Enabled = TerminalHelpers.NoTurret;
+            action0.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
+            session.CustomActions.Add(action0);
+
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Decrease_LeadGroup");
+            action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
+            action1.Name = new StringBuilder($"Previous Lead Group");
+            action1.Action = CustomActions.TerminalActionLeadGroupDecrease;
+            action1.Writer = CustomActions.LeadGroupWriter;
+            action1.Enabled = TerminalHelpers.NoTurret;
             action1.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -470,7 +495,7 @@ namespace WeaponCore.Control
             action0.Name = new StringBuilder($"Increase {name}");
             action0.Action = (b) => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
             action0.Writer = TerminalHelpers.EmptyStringBuilder;
-            action0.Enabled = enabler;
+            action0.Enabled = TerminalHelpers.HasTracking;
             action0.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -481,7 +506,7 @@ namespace WeaponCore.Control
             action1.Name = new StringBuilder($"Decrease {name}");
             action1.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action1.Writer = TerminalHelpers.EmptyStringBuilder;
-            action1.Enabled = enabler;
+            action1.Enabled = TerminalHelpers.HasTracking;
             action1.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);

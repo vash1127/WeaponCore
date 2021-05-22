@@ -29,9 +29,9 @@ namespace WeaponCore
         private const string InactiveShield = "InactiveShield";
 
 
-        private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
-        private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
-        private readonly MyStringId _paint = MyStringId.GetOrCompute("BlockTargetAtlas");
+        private readonly MyStringId _reticle = MyStringId.GetOrCompute("TargetReticle");
+        private readonly MyStringId _targetCircle = MyStringId.GetOrCompute("DS_ActiveTarget");
+        private readonly MyStringId _laserLine = MyStringId.GetOrCompute("WeaponLaser");
 
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
@@ -44,7 +44,6 @@ namespace WeaponCore
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;
         private readonly HudInfo _alertHudInfo = new HudInfo(MyStringId.GetOrCompute("WC_HUD_DroneAlert"), new Vector2(0.55f, 0.66f), 0.33f);
-        private readonly HudInfo _paintedHudInfo = new HudInfo(MyStringId.GetOrCompute("TargetReticle"), new Vector2(0f, 0f), 1f);
 
         internal readonly int[] ExpChargeReductions = { 1, 2, 3, 5, 8, 10, 12, 14, 16, 18, 20 };
 

@@ -84,8 +84,9 @@ namespace WeaponCore.Platform
 
                     if (active && particle.Restart && particle.Triggered) continue;
 
+                    /*
                     var obb = particle.MyDummy.Entity.PositionComp.WorldAABB;
-                    //var inView = Comp.Session.Camera.IsInFrustum(ref obb);
+                    var inView = Comp.Session.Camera.IsInFrustum(ref obb);
 
                     var canPlay = true;
                     if (muzzles != null)
@@ -103,6 +104,7 @@ namespace WeaponCore.Platform
                         canPlay = true;
 
                     if (!canPlay) return;
+                    */
 
                     if (active && !particle.Playing && distance <= particle.Distance)
                     {
@@ -301,7 +303,7 @@ namespace WeaponCore.Platform
                     var animationLength = 0u;
 
                     LastEvent = state;
-                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn || state == EventTriggers.Firing;
+                    LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
 
                     if (System.WeaponAnimationLengths.TryGetValue(state, out animationLength))
                     {

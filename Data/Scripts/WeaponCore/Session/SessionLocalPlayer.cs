@@ -8,6 +8,7 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -41,8 +42,13 @@ namespace WeaponCore
                 TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
                 if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, true);
-                if (HandlesInput && oldBlockId != ActiveControlBlock.EntityId)
+                if (oldBlockId != ActiveControlBlock.EntityId)
+                {
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
+                    TargetLeadUpdate();
+                }
+                else if (!MyUtils.IsEqual(LastOptimalDps, TrackingAi.Construct.OptimalDps))
+                    TargetLeadUpdate();
             }
             else
             {
@@ -54,8 +60,10 @@ namespace WeaponCore
                     if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
 
                         if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, false);
-                        if (HandlesInput)
-                            SendActiveControlUpdate(TrackingAi, oldBlock, false);
+
+                        SendActiveControlUpdate(TrackingAi, oldBlock, false);
+                        foreach (var list in LeadGroups) list.Clear();
+                        LeadGroupActive = false;
                     }
                 }
 
@@ -65,6 +73,27 @@ namespace WeaponCore
                 ActiveCameraBlock = null;
             }
             return InGridAiBlock;
+        }
+
+        private void TargetLeadUpdate()
+        {
+            Log.Line($"TargetLeadUpdate");
+            LastOptimalDps = TrackingAi.Construct.OptimalDps;
+            LeadGroupActive = false;
+            foreach (var list in LeadGroups)
+                list.Clear();
+            
+            foreach (var ai in TrackingAi.Construct.RefreshedAis) {
+                foreach (var comp in ai.Weapons) {
+                    foreach (var w in comp.Platform.Weapons) {
+                        if (!w.System.Values.HardPoint.Ai.TurretAttached && w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup > 0)
+                        {
+                            LeadGroups[w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup].Add(w);
+                            LeadGroupActive = true;
+                        }
+                    }
+                }
+            }
         }
 
         private bool GroupedCamera(MyCameraBlock camera)
