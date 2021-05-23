@@ -47,7 +47,7 @@ namespace WeaponCore
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
                     TargetLeadUpdate();
                 }
-                else if (!MyUtils.IsEqual(LastOptimalDps, TrackingAi.Construct.OptimalDps))
+                else if (LeadGroupsDirty || !MyUtils.IsEqual(LastOptimalDps, TrackingAi.Construct.OptimalDps))
                     TargetLeadUpdate();
             }
             else
@@ -77,9 +77,11 @@ namespace WeaponCore
 
         private void TargetLeadUpdate()
         {
-            Log.Line($"TargetLeadUpdate");
-            LastOptimalDps = TrackingAi.Construct.OptimalDps;
             LeadGroupActive = false;
+            LeadGroupsDirty = false;
+
+            LastOptimalDps = TrackingAi.Construct.OptimalDps;
+
             foreach (var list in LeadGroups)
                 list.Clear();
             

@@ -104,15 +104,15 @@ namespace WeaponCore.Platform
         {
             var vel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             var accel = target.Physics?.LinearAcceleration ?? Vector3.Zero;
-            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
 
             var box = target.PositionComp.LocalAABB;
             var obb = new MyOrientedBoundingBoxD(box, target.PositionComp.WorldMatrixRef);
 
             var validEstimate = true;
-            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
-                targetPos = TrajectoryEstimation(weapon, obb.Center, vel, accel, out validEstimate);
+            var ammoAccel = weapon.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec > 0 || weapon.Comp.Ai.InPlanetGravity;
+            if (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
+                targetPos = TrajectoryEstimation(weapon, obb.Center, vel, accel, out validEstimate, ammoAccel);
             else
                 targetPos = obb.Center;
 
@@ -496,7 +496,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
+        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid, bool forceAdvanced = false)
         {
             valid = true;
             var ai = weapon.Comp.Ai;
@@ -523,7 +523,7 @@ namespace WeaponCore.Platform
             var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
             var gravity = weapon.GravityPoint;
-            var basic = weapon.System.Prediction != Prediction.Advanced;
+            var basic = !forceAdvanced && weapon.System.Prediction != Prediction.Advanced;
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
             Vector3D deltaPosNorm;

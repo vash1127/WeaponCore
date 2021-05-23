@@ -399,6 +399,9 @@ namespace WeaponCore
             var value = Convert.ToInt32(newValue);
             if (value != comp.Data.Repo.Base.Set.Overrides.LeadGroup)
             {
+                if (comp.Session.HandlesInput)
+                    comp.Session.LeadGroupsDirty = true;
+
                 WeaponComponent.RequestSetValue(comp, "LeadGroup", value, comp.Session.PlayerId);
             }
         }

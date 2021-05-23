@@ -361,6 +361,7 @@ namespace WeaponCore
         internal bool EwarNetDataDirty;
         internal bool CanChangeHud;
         internal bool LeadGroupActive;
+        internal bool LeadGroupsDirty;
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
