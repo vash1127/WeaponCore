@@ -231,7 +231,11 @@ namespace WeaponCore
             var worldLine = new LineD(lineEnd, lineStart, maxLeadLength);
 
             var lineLength = obb.Intersects(ref worldLine) ?? 0;
-
+            if (lineLength < 1)
+            {
+                Log.Line($"line too short :{lineLength}");
+                return;
+            }
             var culledLineStart = lineEnd - (lineNormDir * lineLength);
             var culledStartScreenPos = s.Camera.WorldToScreen(ref culledLineStart);
             var culledStartDotPos = new Vector2D(MathHelper.Clamp(culledStartScreenPos.X, -0.98, 0.98), MathHelper.Clamp(culledStartScreenPos.Y, -0.98, 0.98));
@@ -253,8 +257,8 @@ namespace WeaponCore
 
             var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
 
-            var lineColor = new Vector4(0.5f, 0.5f, 1, 2);
-            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.01f);
+            var lineColor = new Vector4(0.5f, 0.5f, 1, 1);
+            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
             //MyTransparentGeometry.AddBillboardOriented(_targetCircle, Color.White, lineEndScreenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, lineScale * 0.025f, BlendTypeEnum.PostPP);
 
             var scale = s.Settings.ClientConfig.HudScale;
@@ -291,7 +295,11 @@ namespace WeaponCore
                 if (obb.Contains(ref info.Position))
                     continue;
 
+                var test = Vector3D.Distance(info.Position, lineStart);
+
                 var screenPos = s.Camera.WorldToScreen(ref info.Position);
+                if (MyUtils.IsZero(test - maxLeadLength)) Log.Line($"maxLen:{maxLeadLength} - distFromStart:{test}");
+
                 var lockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref screenPos);
                 var textColor = new Vector4(1, 1, 1, 1);
 

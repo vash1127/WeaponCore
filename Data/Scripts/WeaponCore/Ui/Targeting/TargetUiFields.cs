@@ -31,7 +31,7 @@ namespace WeaponCore
 
         private readonly MyStringId _reticle = MyStringId.GetOrCompute("TargetReticle");
         private readonly MyStringId _targetCircle = MyStringId.GetOrCompute("DS_ActiveTarget");
-        private readonly MyStringId _laserLine = MyStringId.GetOrCompute("WeaponLaser");
+        private readonly MyStringId _laserLine = MyStringId.GetOrCompute("LeadingLine");
 
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
