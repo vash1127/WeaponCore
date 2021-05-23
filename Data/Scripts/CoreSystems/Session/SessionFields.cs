@@ -135,7 +135,6 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> GridDistributors = new ConcurrentDictionary<MyCubeGrid, GridMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> DirtyPowerGrids = new ConcurrentDictionary<MyCubeGrid, GridMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, HashSet<long>> PlayerGrids = new ConcurrentDictionary<MyCubeGrid, HashSet<long>>();
-        internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraGroupMappings = new ConcurrentDictionary<MyCubeBlock, long>();
 
         internal readonly Dictionary<CoreStructure, int> PowerGroups = new Dictionary<CoreStructure, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();

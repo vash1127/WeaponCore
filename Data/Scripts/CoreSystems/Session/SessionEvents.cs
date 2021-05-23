@@ -76,35 +76,37 @@ namespace CoreSystems
                             FixedGunControls = true;
                             if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMySmallGatlingGun));
                         }
-                        else if (decoy != null)
-                        {
-                            if (!DecoyControls)
-                            {
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateDecoyTerminalUi<IMyDecoy>(this));
-                                DecoyControls = true;
-                                if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyDecoy));
-                            }
 
-                            cube.AddedToScene += DecoyAddedToScene;
-                        }
-                        else if (camera != null)
-                        {
-                            if (!CameraDetected)
-                            {
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateCameraTerminalUi<IMyCameraBlock>(this));
-                                CameraDetected = true;
-                            }
-
-                            cube.AddedToScene += CameraAddedToScene;
-                        }
                     }
 
                     var def = cube?.BlockDefinition.Id ?? rifle?.DefinitionId ?? entity.DefinitionId;
                     InitComp(entity, ref def);
                 }
+                else if (decoy != null)
+                {
+                    if (!DecoyControls)
+                    {
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateDecoyTerminalUi<IMyDecoy>(this));
+                        DecoyControls = true;
+                        if (!EarlyInitOver) ControlQueue.Enqueue(typeof(IMyDecoy));
+                    }
+
+                    cube.AddedToScene += DecoyAddedToScene;
+                }
+                else if (camera != null)
+                {
+                    if (!CameraDetected)
+                    {
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateCameraTerminalUi<IMyCameraBlock>(this));
+                        CameraDetected = true;
+                    }
+
+                    cube.AddedToScene += CameraAddedToScene;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}", null, true); }
         }
+
 
         private void DecoyAddedToScene(MyEntity myEntity)
         {
@@ -148,7 +150,6 @@ namespace CoreSystems
                 ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypes;
                 if (GridToBlockTypeMap.TryGetValue(cube.CubeGrid, out blockTypes) && DecoyMap.TryGetValue(entity, out type) && type != newType)
                 {
-                    Log.Line($"removed decoy type: {type} adding type: {newType}");
                     blockTypes[type].Remove(cube, true);
                     var addColletion = blockTypes[newType];
                     addColletion.Add(cube);
@@ -188,11 +189,11 @@ namespace CoreSystems
             long value = -1;
             if (long.TryParse(term.CustomData, out value))
             {
-                CameraGroupMappings[cube] = value;
+                CameraChannelMappings[cube] = value;
             }
             else
             {
-                CameraGroupMappings[cube] = 0;
+                CameraChannelMappings[cube] = -1;
             }
         }
 

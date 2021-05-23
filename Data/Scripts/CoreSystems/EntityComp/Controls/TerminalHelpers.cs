@@ -58,7 +58,7 @@ namespace CoreSystems.Control
 
             AddWeaponCameraSliderRange<T>(session, -20, "Camera Channel", "Weapon Camera Channel", "Assign this weapon to a camera channel", BlockUi.GetWeaponCamera, BlockUi.RequestSetBlockCamera, HasTracking, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
 
-            AddLeadGroupSliderRange<T>(session, -21, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", BlockUi.GetLeadGroup, BlockUi.RequestSetLeadGroup, NoTurret, BlockUi.GetMinLeadGroup, BlockUi.GetMaxLeadGroup, true);
+            AddLeadGroupSliderRange<T>(session, -21, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", BlockUi.GetLeadGroup, BlockUi.RequestSetLeadGroup, TargetLead, BlockUi.GetMinLeadGroup, BlockUi.GetMaxLeadGroup, true);
 
             Separator<T>(session, -22, "WC_sep4", HasTracking);
         }
@@ -71,6 +71,7 @@ namespace CoreSystems.Control
 
         internal static void AddCameraControls<T>(Session session) where T : IMyTerminalBlock
         {
+            Log.Line($"test");
             Separator<T>(session, -7, "WC_cameraSep1", Istrue);
             AddBlockCameraSliderRange<T>(session, -8, "WC_PickCameraChannel", "Camera Channel", "Assign the camera weapon channel to this camera", BlockUi.GetBlockCamera, BlockUi.RequestBlockCamera, BlockUi.ShowCamera, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
         }
@@ -203,6 +204,12 @@ namespace CoreSystems.Control
         {
             var comp = block?.Components?.Get<CoreComponent>();
             return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && !comp.HasTurret && comp.Type == CoreComponent.CompType.Weapon;
+        }
+
+        internal static bool TargetLead(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>();
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && (!comp.HasTurret || comp.ForceTargetLead) && comp.Type == CoreComponent.CompType.Weapon;
         }
 
         internal static bool GuidedAmmo(IMyTerminalBlock block)

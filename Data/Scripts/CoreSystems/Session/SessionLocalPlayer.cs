@@ -34,7 +34,6 @@ namespace CoreSystems
             if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 var camera = Session.CameraController?.Entity as MyCameraBlock;
-                Log.Line($"{camera == null} - {camera != null && !GroupedCamera(camera)}");
                 if (camera == null || !GroupedCamera(camera))
                     ActiveCameraBlock = null;
 
@@ -92,7 +91,7 @@ namespace CoreSystems
                 {
                     foreach (var w in comp.Platform.Weapons)
                     {
-                        if (!w.System.Values.HardPoint.Ai.TurretAttached && w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup > 0)
+                        if ((!w.Comp.HasTurret || w.Comp.ForceTargetLead) && w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup > 0)
                         {
                             LeadGroups[w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup].Add(w);
                             LeadGroupActive = true;

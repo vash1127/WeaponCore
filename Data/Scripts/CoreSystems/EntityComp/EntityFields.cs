@@ -70,6 +70,7 @@ namespace CoreSystems.Support
         internal bool HasStrengthSlider;
         internal bool CanOverload;
         internal bool HasTurret;
+        internal bool ForceTargetLead;
         internal bool WasControlled;
         internal bool UpdatedState;
         internal bool UserControlled;
