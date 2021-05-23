@@ -22,11 +22,13 @@ namespace WeaponCore
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
             if (ActivateMarks()) DrawActiveMarks();
-            if (ActivateLeads()) DrawActiveLeads();
             if (ActivateDroneNotice()) DrawDroneNotice();
             if (ActivateSelector()) DrawSelector();
-            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
-            {
+            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s)) {
+
+                if (ActivateLeads()) 
+                    DrawActiveLeads();
+
                 DrawTarget();
             }
         }
@@ -235,8 +237,6 @@ namespace WeaponCore
             var startScreenPos = s.Camera.WorldToScreen(ref lineStart);
             var scaledAspect = lineScale * _session.AspectRatio;
 
-
-
             var scale = s.Settings.ClientConfig.HudScale;
             var fontScale = scale * s.ScaleFov;
             Vector3D fursthestScreenPos = Vector3D.Zero;
@@ -249,17 +249,19 @@ namespace WeaponCore
                     continue;
 
                 var screenPos = s.Camera.WorldToScreen(ref info.Position);
-
                 var lockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref screenPos);
+
                 var distSqr = Vector3D.DistanceSquared(lockedScreenPos, startScreenPos);
                 if (distSqr > furthestDist) {
                     furthestDist = distSqr;
                     fursthestScreenPos = lockedScreenPos;
                 }
-                var textColor = new Vector4(1, 1, 1, 1);
+
+                var textColor = !info.WillHit ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0.025f, 0.025f, 1);
 
                 string textLine1 = (i + 1).ToString();
-                var fontSize = (float)Math.Round(8 * fontScale, 2);
+                var size = !info.WillHit ? 8 : 11;
+                var fontSize = (float)Math.Round(size * fontScale, 2);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;

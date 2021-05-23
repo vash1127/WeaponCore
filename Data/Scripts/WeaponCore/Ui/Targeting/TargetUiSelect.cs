@@ -30,7 +30,7 @@ namespace WeaponCore
 
         internal bool ActivateLeads()
         {
-            return _session.LeadGroupActive && _session.TrackingAi.Construct.Data.Repo.FocusData.HasFocus;
+            return _session.LeadGroupActive;
         }
 
         internal void ResetCache()
