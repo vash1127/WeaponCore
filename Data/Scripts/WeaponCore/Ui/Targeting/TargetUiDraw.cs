@@ -211,83 +211,36 @@ namespace WeaponCore
 
             if (!ComputeLead(target, targetSphere.Center, out maxLeadLength, out fullAveragePos))
                 return;
-            var expandedSphere = maxLeadLength > targetSphere.Radius ? new BoundingSphereD(targetSphere.Center, maxLeadLength) : targetSphere;
             
-            if (!s.Camera.IsInFrustum(ref expandedSphere))
-                return;
-
-            var obb = new MyOrientedBoundingBoxD(target.PositionComp.LocalAABB, target.PositionComp.WorldMatrixRef);
-            var lineScale = (float)(0.1 * s.ScaleFov);
-            var scaledAspect = lineScale * _session.AspectRatio;
-
             var lineStart = targetSphere.Center;
-            var startScreenPos = s.Camera.WorldToScreen(ref lineStart);
-
             var lineNormDir = Vector3D.Normalize(fullAveragePos - lineStart);
+            var ray = new RayD(lineStart, lineNormDir);
+
+            var rayDist = s.CameraFrustrum.Intersects(ray);
+            if (!s.Camera.IsInFrustum(ref targetSphere) || rayDist == null)
+                return;
             
             var lineEnd = lineStart + (lineNormDir * maxLeadLength);
             var endScreenPos = s.Camera.WorldToScreen(ref lineEnd);
 
             var worldLine = new LineD(lineEnd, lineStart, maxLeadLength);
 
+            var obb = new MyOrientedBoundingBoxD(target.PositionComp.LocalAABB, target.PositionComp.WorldMatrixRef);
             var lineLength = obb.Intersects(ref worldLine) ?? 0;
-            if (lineLength < 1)
-            {
-                Log.Line($"line too short :{lineLength}");
+            if (lineLength < 0.2f)
                 return;
-            }
-            var culledLineStart = lineEnd - (lineNormDir * lineLength);
-            var culledStartScreenPos = s.Camera.WorldToScreen(ref culledLineStart);
-            var culledStartDotPos = new Vector2D(MathHelper.Clamp(culledStartScreenPos.X, -0.98, 0.98), MathHelper.Clamp(culledStartScreenPos.Y, -0.98, 0.98));
-            culledStartDotPos.X *= scaledAspect;
-            culledStartDotPos.Y *= lineScale;
 
-            var lineStartScreenPos = Vector3D.Transform(new Vector3D(culledStartDotPos.X, culledStartDotPos.Y, -0.1), s.CameraMatrix);
+            var lineScale = (float)(0.1 * s.ScaleFov);
 
-            /*
-            var startDotPos = new Vector2D(MathHelper.Clamp(startScreenPos.X, -0.98, 0.98), MathHelper.Clamp(startScreenPos.Y, -0.98, 0.98));
-            startDotPos.X *= scaledAspect;
-            startDotPos.Y *= lineScale;
-            var lineStartScreenPos = Vector3D.Transform(new Vector3D(startDotPos.X, startDotPos.Y, -0.1), s.CameraMatrix);
-            */
-            var endDotPos = new Vector2D(MathHelper.Clamp(endScreenPos.X, -0.98, 0.98), MathHelper.Clamp(endScreenPos.Y, -0.98, 0.98));
-            endDotPos.X *= scaledAspect;
-            endDotPos.Y *= lineScale;
-            var lineEndScreenPos = Vector3D.Transform(new Vector3D(endDotPos.X, endDotPos.Y, -0.1), s.CameraMatrix);
+            var startScreenPos = s.Camera.WorldToScreen(ref lineStart);
+            var scaledAspect = lineScale * _session.AspectRatio;
 
-            var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
 
-            var lineColor = new Vector4(0.5f, 0.5f, 1, 1);
-            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
-            //MyTransparentGeometry.AddBillboardOriented(_targetCircle, Color.White, lineEndScreenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, lineScale * 0.025f, BlendTypeEnum.PostPP);
 
             var scale = s.Settings.ClientConfig.HudScale;
             var fontScale = scale * s.ScaleFov;
-
-            /*
-            var time = s.Tick % 20; // forward and backward total time
-            var increase = time < 10;
-            var directionalTimeStep = increase ? time : 19 - time;
-            var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
-            var colorStep = s.Tick % 120;
-            var amplify = colorStep <= 60;
-            var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
-            var cMod1 = MathHelper.Clamp(amplify ? (colorStep * modifyStep) : 2 - (+(colorStep * modifyStep)), 0.1f, 1f);
-            var left = (Vector3)s.CameraMatrix.Left;
-            var up = (Vector3)s.CameraMatrix.Up;
-            var screenScale = 0.1 * s.ScaleFov;
-            var size = (float)((0.0025f * scale) * s.ScaleFov);
-            var invScaler = MathHelper.Clamp(1 / s.ScaleFov, 0, 20);
-            var invScaleLimit = 4.2;
-            var fontYOffset = (float)((-0.05f * scale) * invScaler);
-
-            if (invScaler >= invScaleLimit)
-            {
-                fontScale *= (invScaler / invScaleLimit);
-                size *= (float)(invScaler / invScaleLimit);
-                invScaler = MathHelper.Clamp(20f / invScaler, 1, 20);
-            }
-            */
+            Vector3D fursthestScreenPos = Vector3D.Zero;
+            double furthestDist = 0;
             for (int i = 0; i < _leadInfos.Count; i++)
             {
                 var info = _leadInfos[i];
@@ -295,32 +248,16 @@ namespace WeaponCore
                 if (obb.Contains(ref info.Position))
                     continue;
 
-                var test = Vector3D.Distance(info.Position, lineStart);
-
                 var screenPos = s.Camera.WorldToScreen(ref info.Position);
-                if (MyUtils.IsZero(test - maxLeadLength)) Log.Line($"maxLen:{maxLeadLength} - distFromStart:{test}");
 
                 var lockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref screenPos);
+                var distSqr = Vector3D.DistanceSquared(lockedScreenPos, startScreenPos);
+                if (distSqr > furthestDist) {
+                    furthestDist = distSqr;
+                    fursthestScreenPos = lockedScreenPos;
+                }
                 var textColor = new Vector4(1, 1, 1, 1);
 
-                /*
-                var iconColor = new Vector4(1, 1, 1, 1);
-                Vector3D drawPos = screenPos;
-                if (Vector3D.Transform(info.Position, s.Camera.ViewMatrix).Z > 0)
-                {
-                    drawPos.X *= -1;
-                    drawPos.Y = -1;
-                }
-                var dotpos = new Vector2D(MathHelper.Clamp(drawPos.X, -0.98, 0.98), MathHelper.Clamp(drawPos.Y, -0.98, 0.98));
-                dotpos.X *= (float)(screenScale * _session.AspectRatio);
-                dotpos.Y *= (float)screenScale;
-                drawPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
-
-                MyQuadD quad;
-                MyUtils.GetBillboardQuadOriented(out quad, ref drawPos, size, size, ref left, ref up);
-                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, drawPos, iconColor, BlendTypeEnum.PostPP);
-                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, iconColor, BlendTypeEnum.PostPP);
-                */
                 string textLine1 = (i + 1).ToString();
                 var fontSize = (float)Math.Round(8 * fontScale, 2);
                 var fontHeight = 0.75f;
@@ -330,6 +267,26 @@ namespace WeaponCore
                 var elementId = 1103 + (220 + i);
                 s.HudUi.AddText(text: textLine1, x: (float)lockedScreenPos.X, y: (float)lockedScreenPos.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
+
+            var endDotPos = new Vector2D(fursthestScreenPos.X, fursthestScreenPos.Y);
+            endDotPos.X *= scaledAspect;
+            endDotPos.Y *= lineScale;
+
+            var lineEndScreenPos = Vector3D.Transform(new Vector3D(endDotPos.X, endDotPos.Y, -0.1), s.CameraMatrix);
+
+            var culledLineStart = lineEnd - (lineNormDir * lineLength);
+            var culledStartScreenPos = s.Camera.WorldToScreen(ref culledLineStart);
+            
+            var culledStartDotPos = new Vector2D(culledStartScreenPos.X, culledStartScreenPos.Y);
+            culledStartDotPos.X *= scaledAspect;
+            culledStartDotPos.Y *= lineScale;
+
+            var lineStartScreenPos = Vector3D.Transform(new Vector3D(culledStartDotPos.X, culledStartDotPos.Y, -0.1), s.CameraMatrix);
+
+            var lineColor = new Vector4(0.5f, 0.5f, 1, 1);
+            var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
+
+            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
             _leadInfos.Clear();
         }
 
