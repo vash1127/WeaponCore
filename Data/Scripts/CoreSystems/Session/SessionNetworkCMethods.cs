@@ -311,16 +311,15 @@ namespace CoreSystems
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             Ai ai;
-            if (myGrid != null && GridAIs.TryGetValue(myGrid, out ai))
-            {
+            if (myGrid != null && GridAIs.TryGetValue(myGrid, out ai)) {
 
                 long playerId;
-                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                {
-                    FakeTarget dummyTarget;
-                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
-                    {
-                        dummyTarget.Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
+                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId)) {
+
+                    FakeTargets dummyTargets;
+                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTargets)) {
+                        dummyTargets.ManualTarget.Sync(targetPacket, ai);
+                        dummyTargets.PaintedTarget.Sync(targetPacket, ai);
                     }
                     else
                         return Error(data, Msg("Player dummy target not found"));

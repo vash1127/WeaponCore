@@ -7,6 +7,7 @@ using ParallelTasks;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -114,18 +115,12 @@ namespace CoreSystems
 
             if (!PlayersLoaded && KeenFuckery())
                 PlayersLoaded = true;
-
-            if (WaterMod && !WaterApiLoaded && !Settings.ClientWaiting && WApi.Waters != null)
-            {
-                WaterApiLoaded = true;
-                WApiReceiveData();
-            }
         }
 
         internal void AddLosCheck(LosDebug debug)
         {
-            if (!WeaponLosDebugActive.Add(debug.Part))
-                return;
+            //if (!WeaponLosDebugActive.Add(debug.Part))
+                //return;
             
             LosDebugList.Add(debug);
         }
@@ -533,66 +528,20 @@ namespace CoreSystems
             }
         }
 
-        private void ParticleJokes()
-        {
-            var chance = MyUtils.GetRandomInt(0, 4);
-            if (chance == 2)
-            {
-                var messageIndex = MyUtils.GetRandomInt(0, JokeMessages.Length);
-                MyAPIGateway.Utilities.ShowNotification(JokeMessages[messageIndex], 10000, "Red");
-            }
-        }
-
-        internal readonly string[] JokeMessages =
-        {
-            "FakeStar in the house, there can be only one!",
-            "Fake DarkStar is here, he loves to answer your shield questions!",
-            "FakeStar has now joined to solve all of your shield problems"
-        };
-        internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
-        {
-            foreach (var cube in grid.GetFatBlocks())
-            {
-                if (cube is MyShipController)
-                {
-                    var ob = (MyObjectBuilder_ShipController)cube.GetObjectBuilderCubeBlock();
-                    var reinit = false;
-                    for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
-                    {
-                        var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
-                        if (toolbarItem != null)
-                        {
-                            var defId = (MyDefinitionId)toolbarItem.defId;
-                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || PartPlatforms.ContainsKey(defId))
-                            {
-                                var index = ob.Toolbar.Slots[i].Index;
-                                var item = ob.Toolbar.Slots[i].Item;
-                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot { Index = index, Item = item };
-                                reinit = true;
-                            }
-                        }
-                    }
-
-                    if (reinit)
-                        cube.Init(ob, grid);
-                }
-            }
-        }
-
 
         internal bool KeenFuckery()
         {
             try
             {
-
-
                 if (HandlesInput)
                 {
                     if (Session?.Player == null) return false;
                     MultiplayerId = MyAPIGateway.Multiplayer.MyId;
 
                     if (BlackListedPlayers.Contains(MultiplayerId))
+                    {
                         SuppressWc = true;
+                    }
 
                     PlayerId = Session.Player.IdentityId;
 
@@ -607,10 +556,10 @@ namespace CoreSystems
                     if (IsClient)
                         SendUpdateRequest(-1, PacketType.RequestMouseStates);
                 }
-                
+
                 return true;
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientInputState != null}", null, true); }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientInputState != null}"); }
 
             return false;
         }
@@ -684,6 +633,53 @@ namespace CoreSystems
             CounterKeenLogMessage(false);
         }
 
+        private void PracticalJokes()
+        {
+            var chance = MyUtils.GetRandomInt(0, 4);
+            if (chance == 2)
+            {
+                var messageIndex = MyUtils.GetRandomInt(0, JokeMessages.Length);
+                MyAPIGateway.Utilities.ShowNotification(JokeMessages[messageIndex], 10000, "Red");
+            }
+        }
+
+        internal readonly string[] JokeMessages =
+        {
+            "FakeStar in the house, there can be only one!",
+            "Fake DarkStar is here, he loves to answer your shield questions!",
+            "FakeStar has now joined to solve all of your shield problems"
+        };
+
+        internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
+        {
+            foreach (var cube in grid.GetFatBlocks())
+            {
+                if (cube is MyShipController)
+                {
+                    var ob = (MyObjectBuilder_ShipController)cube.GetObjectBuilderCubeBlock();
+                    var reinit = false;
+                    for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
+                    {
+                        var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
+                        if (toolbarItem != null)
+                        {
+                            var defId = (MyDefinitionId)toolbarItem.defId;
+                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || PartPlatforms.ContainsKey(defId))
+                            {
+                                var index = ob.Toolbar.Slots[i].Index;
+                                var item = ob.Toolbar.Slots[i].Item;
+                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot { Index = index, Item = item };
+                                reinit = true;
+                            }
+                        }
+                    }
+
+                    if (reinit)
+                        cube.Init(ob, grid);
+                }
+            }
+        }
+
         private static void CounterKeenLogMessage(bool console = true)
         {
             var message = "\n***\n    [CoreSystems] Ignore log messages from keen stating 'Mod CoreSystems is accessing physics from parallel threads'\n     CS is using a thread safe parallel.for, not a parallel task\n***";
@@ -743,6 +739,48 @@ namespace CoreSystems
             }
 
             return false;
+        }
+
+        internal bool GridHasPower(MyCubeGrid grid, GridMap map = null)
+        {
+            bool state = false;
+            if (map != null || GridDistributors.TryGetValue(grid, out map))
+            {
+                var slim = map.FakeController.SlimBlock as IMySlimBlock;
+                var cube = slim?.FatBlock as MyCubeBlock;
+
+                if (cube != null && cube.CubeGrid == grid)
+                {
+                    var dist = map.FakeController.GridResourceDistributor;
+                    state = dist?.ResourceState != MyResourceStateEnum.NoPower;
+                }
+
+                map.PowerCheckTick = Tick;
+                map.Powered = state;
+            }
+            return state;
+        }
+
+        internal void UpdateGridPowerState()
+        {
+            foreach (var pair in DirtyPowerGrids)
+                GridHasPower(pair.Key, pair.Value);
+
+            DirtyPowerGrids.Clear();
+        }
+
+        internal void CheckGridPowerState(MyCubeGrid grid, GridMap map)
+        {
+            if ((!map.Powered && Tick - map.PowerCheckTick > 600 || map.Powered && Tick - map.PowerCheckTick > 1800))
+                DirtyPowerGrids.TryAdd(grid, map);
+        }
+
+        internal void MatchPlayersToGrids()
+        {
+            foreach (var playerInfo in Players)
+            {
+                //var controlCube = playerInfo.Value.Controller?. as MyCubeBlock;
+            }
         }
 
         internal void NewThreat(Weapon w)

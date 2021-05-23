@@ -145,32 +145,130 @@ namespace CoreSystems.Support
             internal int Max;
         }
 
+        public class FakeTargets
+        {
+            public FakeTarget ManualTarget = new FakeTarget(FakeTarget.FakeType.Manual);
+            public FakeTarget PaintedTarget = new FakeTarget(FakeTarget.FakeType.Painted);
+        }
+
         public class FakeTarget
         {
-            public Vector3D Position;
-            public Vector3 LinearVelocity;
-            public Vector3 Acceleration;
+
+            public FakeTarget(FakeType type)
+            {
+                Type = type;
+            }
+
+            public enum FakeType
+            {
+                Manual,
+                Painted,
+            }
+
+            public readonly FakeWorldTargetInfo FakeInfo = new FakeWorldTargetInfo();
+            public readonly FakeType Type;
+            public Vector3D LocalPosition;
             public long EntityId;
             public uint LastUpdateTick;
+            public uint LastInfoTick;
+            public int MissCount;
+            public bool Dirty;
 
-            internal void Update(Vector3D hitPos, Ai ai, MyEntity ent = null, long entId = 0)
+            internal void Update(Vector3D hitPos, uint tick, MyEntity ent = null, long entId = 0)
             {
-                Position = hitPos;
-                if (ai.Session.HandlesInput && ent != null) {
-                    EntityId = ent.EntityId;
-                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
-                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
-                }
-                else if (entId != 0 && MyEntities.TryGetEntityById(entId, out ent))
+                if ((ent != null || entId != 0 && MyEntities.TryGetEntityById(entId, out ent)) && ent.Physics != null)
                 {
-                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
-                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
-                    EntityId = entId;
+                    var referenceWorldMatrix = ent.PositionComp.WorldMatrixRef;
+                    Vector3D referenceWorldPosition = referenceWorldMatrix.Translation;
+                    Vector3D worldDirection = hitPos - referenceWorldPosition;
+
+                    EntityId = ent.EntityId;
+                    LocalPosition = Vector3D.TransformNormal(worldDirection, MatrixD.Transpose(referenceWorldMatrix));
+                }
+                else
+                {
+                    if (Type == FakeType.Manual)
+                        FakeInfo.WorldPosition = hitPos;
+
+                    EntityId = 0;
+                    LocalPosition = Vector3D.Zero;
+                    FakeInfo.LinearVelocity = Vector3.Zero;
+                    FakeInfo.Acceleration = Vector3.Zero;
                 }
 
+                Dirty = false;
+                LastInfoTick = 0;
+                MissCount = 0;
+                LastUpdateTick = tick;
+            }
+
+            internal void Sync(FakeTargetPacket packet, Ai ai)
+            {
+                if (packet.TargetId == 0)
+                {
+
+                    EntityId = 0;
+                    LocalPosition = Vector3D.Zero;
+                    FakeInfo.WorldPosition = packet.Pos;
+                    FakeInfo.LinearVelocity = Vector3.Zero;
+                    FakeInfo.Acceleration = Vector3.Zero;
+                }
+                else
+                {
+                    EntityId = packet.TargetId;
+                    LocalPosition = packet.Pos;
+                }
+
+                LastInfoTick = 0;
+                MissCount = 0;
                 LastUpdateTick = ai.Session.Tick;
             }
+
+            internal FakeWorldTargetInfo GetFakeTargetInfo(Ai ai)
+            {
+                MyEntity ent;
+                if (EntityId != 0 && (MyEntities.TryGetEntityById(EntityId, out ent) && ent.Physics != null))
+                {
+                    if (ai.Session.Tick != LastInfoTick)
+                    {
+                        LastInfoTick = ai.Session.Tick;
+                        if (Type != FakeType.Painted || ai.Targets.ContainsKey(ent))
+                        {
+                            FakeInfo.WorldPosition = Vector3D.Transform(LocalPosition, ent.PositionComp.WorldMatrixRef);
+                            FakeInfo.LinearVelocity = ent.Physics.LinearVelocity;
+                            FakeInfo.Acceleration = ent.Physics.LinearAcceleration;
+                        }
+                        else if (Type == FakeType.Painted)
+                            Dirty = true;
+                    }
+                }
+                else if (Type == FakeType.Painted)
+                    Dirty = true;
+
+                return FakeInfo;
+            }
+
+            internal void ClearMark(uint tick)
+            {
+                EntityId = 0;
+                MissCount = 0;
+                LastInfoTick = 0;
+                LastUpdateTick = tick;
+                LocalPosition = Vector3D.Zero;
+                FakeInfo.WorldPosition = Vector3D.Zero;
+                FakeInfo.LinearVelocity = Vector3.Zero;
+                FakeInfo.Acceleration = Vector3.Zero;
+                Dirty = true;
+            }
+
+            public class FakeWorldTargetInfo
+            {
+                public Vector3D WorldPosition;
+                public Vector3 LinearVelocity;
+                public Vector3 Acceleration;
+            }
         }
+
 
         public class AiDetectionInfo
         {
@@ -178,12 +276,48 @@ namespace CoreSystems.Support
             internal double PriorityRangeSqr;
             internal bool OtherInRange;
             internal double OtherRangeSqr;
+            internal bool DroneInRange;
+            internal double DroneRangeSqr;
             internal bool SomethingInRange;
+            internal bool RamProximity;
+            internal int DroneCount;
 
             internal bool ValidSignalExists(Weapon w)
             {
                 var signalInRange = !w.Comp.DetectOtherSignals ? PriorityRangeSqr <= w.MaxTargetDistanceSqr : (OtherRangeSqr <= w.MaxTargetDistanceSqr || PriorityRangeSqr <= w.MaxTargetDistanceSqr);
-                return signalInRange || w.Comp.Ai.Construct.Data.Repo.FocusData.HasFocus || w.Comp.Ai.LiveProjectile.Count > 0;
+                return signalInRange || w.Comp.Ai.Construct.Data.Repo.FocusData.HasFocus || w.Comp.Ai.LiveProjectile.Count > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Values.Set.Overrides.Projectiles; 
+            }
+
+            internal void DroneAdd(Ai ai, TargetInfo info)
+            {
+                var rootConstruct = ai.Construct.RootAi.Construct;
+                DroneCount++;
+
+                if (DroneCount > rootConstruct.DroneCount)
+                {
+                    rootConstruct.DroneCount = DroneCount;
+                    rootConstruct.LastDroneTick = ai.Session.Tick + 1;
+                }
+
+                if (info.DistSqr < 9000000)
+                    rootConstruct.DroneAlert = true;
+            }
+
+            internal void Clean(Ai ai)
+            {
+                PriorityRangeSqr = double.MaxValue;
+                PriorityInRange = false;
+                OtherRangeSqr = double.MaxValue;
+                OtherInRange = false;
+                DroneInRange = false;
+                DroneRangeSqr = double.MaxValue;
+                SomethingInRange = false;
+                RamProximity = false;
+                DroneCount = 0;
+
+                var rootConstruct = ai.Construct.RootAi.Construct;
+                if (rootConstruct.DroneCount != 0 && ai.Session.Tick - rootConstruct.LastDroneTick > 200)
+                    rootConstruct.DroneCleanup();
             }
 
             internal bool ValidSignalExists(SupportSys a)
@@ -203,15 +337,6 @@ namespace CoreSystems.Support
                 var signalInRange = true;
                 return signalInRange;
             }
-
-            internal void Clean()
-            {
-                PriorityRangeSqr = double.MaxValue;
-                PriorityInRange = false;
-                OtherRangeSqr = double.MaxValue;
-                OtherInRange = false;
-                SomethingInRange = false;
-            }
         }
 
 
@@ -224,13 +349,15 @@ namespace CoreSystems.Support
             internal readonly bool Armed;
             internal readonly bool IsGrid;
             internal readonly bool LargeGrid;
+            internal readonly bool SuspectedDrone;
 
-            public DetectInfo(Session session, MyEntity parent, MyDetectedEntityInfo entInfo, int partCount, int fatCount)
+            public DetectInfo(Session session, MyEntity parent, MyDetectedEntityInfo entInfo, int partCount, int fatCount, bool suspectedDrone, bool loneWarhead)
             {
                 Parent = parent;
                 EntInfo = entInfo;
                 PartCount = partCount;
                 FatCount = fatCount;
+                SuspectedDrone = suspectedDrone;
                 var armed = false;
                 var isGrid = false;
                 var largeGrid = false;
@@ -249,7 +376,7 @@ namespace CoreSystems.Support
                             armed = true;
                     }
                 }
-                else if (parent is MyMeteor || parent is IMyCharacter) armed = true;
+                else if (parent is MyMeteor || parent is IMyCharacter || loneWarhead) armed = true;
 
                 Armed = armed;
                 IsGrid = isGrid;
@@ -261,6 +388,12 @@ namespace CoreSystems.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
+                var xDroneThreat = (x.Approaching && x.DistSqr < 9000000 || x.DistSqr < 1000000) && x.Drone;
+                var yDroneThreat = (y.Approaching && y.DistSqr < 9000000 || y.DistSqr < 1000000) && y.Drone;
+                var droneCompare = xDroneThreat.CompareTo(yDroneThreat);
+
+                if (droneCompare != 0) return -droneCompare;
+
                 var gridCompare = (x.Target is MyCubeGrid).CompareTo(y.Target is MyCubeGrid);
                 if (gridCompare != 0) return -gridCompare;
                 var xCollision = x.Approaching && x.DistSqr < 90000 && x.VelLenSqr > 100;
@@ -280,7 +413,7 @@ namespace CoreSystems.Support
 
         internal class TargetInfo
         {
-            internal MyDetectedEntityInfo EntInfo;
+            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal Vector3D TargetHeading;
             internal Vector3D TargetPos;
             internal Vector3D Velocity;
@@ -291,13 +424,15 @@ namespace CoreSystems.Support
             internal bool LargeGrid;
             internal bool Approaching;
             internal bool IsStatic;
+            internal bool Drone;
             internal int PartCount;
             internal int FatCount;
             internal float OffenseRating;
             internal MyEntity Target;
+            internal MyCubeGrid MyGrid;
             internal Ai MyAi;
             internal Ai TargetAi;
-            internal void Init(ref DetectInfo detectInfo, Ai myAi, Ai targetAi)
+            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, Ai myAi, Ai targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
@@ -306,6 +441,7 @@ namespace CoreSystems.Support
                 IsStatic = Target.Physics.IsStatic;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
+                MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;
                 Velocity = Target.Physics.LinearVelocity;
@@ -315,7 +451,7 @@ namespace CoreSystems.Support
                 TargetRadius = targetSphere.Radius;
                 var myCenter = myAi.GridVolume.Center;
 
-                if (!MyUtils.IsZero(Velocity, 1E-02F))
+                if (!MyUtils.IsZero(Velocity, 1E-01F))
                 {
                     var targetMag = myCenter - TargetPos;
                     Approaching = MathFuncs.IsDotProductWithinTolerance(ref Velocity, ref targetMag, myAi.Session.ApproachDegrees);
@@ -335,17 +471,23 @@ namespace CoreSystems.Support
                 else if (detectInfo.Armed) OffenseRating = 0.0001f;
                 else if (Approaching && VelLenSqr >= 1225) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
-                var myRadius = myAi.TopEntity.PositionComp.LocalVolume.Radius;
+                var myRadius = myAi.GridEntity.PositionComp.LocalVolume.Radius;
                 var sphereDistance = MyUtils.GetSmallestDistanceToSphere(ref myCenter, ref targetSphere);
                 if (sphereDistance <= myRadius)
                     sphereDistance = 0;
                 else sphereDistance -= myRadius;
                 DistSqr = sphereDistance * sphereDistance;
+
+                Drone = (VelLenSqr > 100 || Approaching && DistSqr < 90000) && detectInfo.SuspectedDrone;
+
+                if (Drone && OffenseRating < 10)
+                    OffenseRating = 10;
             }
 
             internal void Clean()
             {
                 Target = null;
+                MyGrid = null;
                 MyAi = null;
                 TargetAi = null;
             }

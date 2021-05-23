@@ -22,7 +22,6 @@ namespace CoreSystems.Support
                     if (Type == CompType.Weapon) 
                         Platform.ResetParts();
                     Status = Start.Started;
-                    Log.Line("started");
                     break;
             }
         }

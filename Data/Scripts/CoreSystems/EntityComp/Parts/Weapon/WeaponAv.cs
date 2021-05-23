@@ -130,7 +130,7 @@ namespace CoreSystems.Platform
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            if (Comp?.Data.Repo == null || Comp.CoreEntity == null || Comp.CoreEntity.MarkedForClose || Comp.Ai == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (Comp?.Data.Repo == null || Comp.Cube == null || Comp.Cube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
             try
             {
                 var session = Comp.Session;
@@ -145,6 +145,7 @@ namespace CoreSystems.Platform
                     AnimationDelayTick = Comp.Session.Tick;
 
                 var set = false;
+                uint startDelay = 0;
 
                 switch (state)
                 {
@@ -169,7 +170,10 @@ namespace CoreSystems.Platform
 
                                     animation.StartTick = session.Tick + animation.MotionDelay;
                                     if (state == EventTriggers.StopFiring)
-                                        animation.StartTick += (AnimationDelayTick - session.Tick);
+                                    {
+                                        startDelay = AnimationDelayTick - session.Tick;
+                                        animation.StartTick += startDelay;
+                                    }
 
                                     Comp.Session.AnimationsToProcess.Add(animation);
                                     animation.Running = true;
@@ -209,7 +213,10 @@ namespace CoreSystems.Platform
                                     animation.StartTick = session.Tick + animation.MotionDelay;
 
                                     if (LastEvent == EventTriggers.StopTracking || LastEvent == EventTriggers.Tracking)
-                                        animation.StartTick += (AnimationDelayTick - session.Tick);
+                                    {
+                                        startDelay = (AnimationDelayTick - session.Tick);
+                                        animation.StartTick += startDelay;
+                                    }
 
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
@@ -237,7 +244,11 @@ namespace CoreSystems.Platform
                                     animation.CanPlay = true;
 
                                     animation.StartTick = session.Tick + animation.MotionDelay + (AnimationDelayTick - session.Tick);
-                                    if (state == EventTriggers.TurnOff) animation.StartTick += OffDelay;
+                                    if (state == EventTriggers.TurnOff)
+                                    {
+                                        startDelay = OffDelay;
+                                        animation.StartTick += startDelay;
+                                    }
 
                                     session.ThreadedAnimations.Enqueue(animation);
                                 }
@@ -293,7 +304,12 @@ namespace CoreSystems.Platform
                     LastEventCanDelay = state == EventTriggers.Reloading || state == EventTriggers.StopFiring || state == EventTriggers.TurnOff || state == EventTriggers.TurnOn;
 
                     if (System.PartAnimationLengths.TryGetValue(state, out animationLength))
-                        AnimationDelayTick += animationLength;
+                    {
+                        var delay = session.Tick + animationLength + startDelay;
+                        if (delay > AnimationDelayTick)
+                            AnimationDelayTick = delay;
+                    }
+
                 }
             }
             catch (Exception e)
@@ -301,7 +317,6 @@ namespace CoreSystems.Platform
                 Log.Line($"Exception in Event Triggered: {e}");
             }
         }
-
         public void StartPreFiringSound()
         {
             if (PreFiringEmitter == null)

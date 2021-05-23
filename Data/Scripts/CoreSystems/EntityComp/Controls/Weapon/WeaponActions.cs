@@ -1,7 +1,9 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.ModAPI;
+using VRageMath;
 using static CoreSystems.Support.CoreComponent.TriggerActions;
 
 namespace CoreSystems.Control
@@ -287,7 +289,82 @@ namespace CoreSystems.Control
             blk.CustomData = value.ToString();
             blk.RefreshCustomInfo();
         }
+        internal static void TerminalActionToggleRepelMode(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent; ;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                return;
 
+            var newBool = !comp.Data.Repo.Values.Set.Overrides.Repel;
+            var newValue = newBool ? 1 : 0;
+
+            Weapon.WeaponComponent.RequestSetValue(comp, "Repel", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionCameraChannelIncrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent; ;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Values.Set.Overrides.CameraChannel);
+            var nextValue = MathHelper.Clamp(value + 1, 0, 24);
+
+            Weapon.WeaponComponent.RequestSetValue(comp, "CameraChannel", nextValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionCameraChannelDecrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent; ;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Values.Set.Overrides.CameraChannel);
+            var nextValue = MathHelper.Clamp(value - 1, 0, 24);
+
+            Weapon.WeaponComponent.RequestSetValue(comp, "CameraChannel", nextValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionLeadGroupIncrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent; ;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Values.Set.Overrides.LeadGroup);
+            var nextValue = MathHelper.Clamp(value + 1, 0, 5);
+
+            Weapon.WeaponComponent.RequestSetValue(comp, "LeadGroup", nextValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionLeadGroupDecrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent; ;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready)
+                return;
+
+            var value = Convert.ToInt32(comp.Data.Repo.Values.Set.Overrides.LeadGroup);
+            var nextValue = MathHelper.Clamp(value - 1, 0, 5);
+
+            Weapon.WeaponComponent.RequestSetValue(comp, "LeadGroup", nextValue, comp.Session.PlayerId);
+        }
+        internal static void TerminalActionCameraIncrease(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
+        }
+
+        internal static void TerminalActionCameraDecrease(IMyTerminalBlock blk)
+        {
+            long valueLong;
+            long.TryParse(blk.CustomData, out valueLong);
+            var value = valueLong + 1 <= 7 ? valueLong + 1 : 1;
+            blk.CustomData = value.ToString();
+            blk.RefreshCustomInfo();
+        }
         #endregion
 
         #region Writters
@@ -440,6 +517,41 @@ namespace CoreSystems.Control
             sb.Append(comp.Data.Repo.Values.Set.Overrides.SubSystem);
         }
 
+        internal static void DecoyWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            long value;
+            if (long.TryParse(blk.CustomData, out value))
+            {
+                sb.Append(((WeaponDefinition.TargetingDef.BlockTypes)value).ToString());
+            }
+        }
+
+        internal static void CameraWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            long value;
+            if (long.TryParse(blk.CustomData, out value))
+            {
+                var group = $"Camera Channel {value}";
+                sb.Append(group);
+            }
+        }
+
+        internal static void WeaponCameraChannelWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.CameraChannel);
+        }
+
+        internal static void LeadGroupWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+
+            sb.Append(comp.Data.Repo.Values.Set.Overrides.LeadGroup);
+        }
+
         internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
@@ -448,13 +560,14 @@ namespace CoreSystems.Control
             sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
         }
 
-        internal static void DecoyWriter(IMyTerminalBlock blk, StringBuilder sb)
+        internal static void RepelWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            long value;
-            if (long.TryParse(blk.CustomData, out value))
-            {
-                sb.Append(((WeaponDefinition.TargetingDef.BlockTypes)value).ToString());
-            }
+            var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (comp.Data.Repo.Values.Set.Overrides.Repel)
+                sb.Append("On");
+            else
+                sb.Append("Off");
         }
         #endregion
     }

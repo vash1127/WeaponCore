@@ -14,8 +14,23 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
-            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed || _session.UiInput.CameraBlockView;
             return enableActivator;
+        }
+
+        internal bool ActivateDroneNotice()
+        {
+            return _session.TrackingAi.Construct.DroneAlert;
+        }
+
+        internal bool ActivateMarks()
+        {
+            return _session.ActiveMarks.Count > 0;
+        }
+
+        internal bool ActivateLeads()
+        {
+            return _session.LeadGroupActive;
         }
 
         internal void ResetCache()
@@ -51,7 +66,14 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var cockPit = s.ActiveCockPit;
             Vector3D end;
 
-            if (!s.UiInput.FirstPersonView)
+            if (s.UiInput.CameraBlockView)
+            {
+                var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
+                AimPosition = offetPosition;
+                AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
+                end = offetPosition + (AimDirection * ai.MaxTargetingRange);
+            }
+            else if (!s.UiInput.FirstPersonView)
             {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
@@ -81,7 +103,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
             MyEntity closestEnt = null;
             _session.Physics.CastRay(AimPosition, end, _hitInfo);
-
+            var markTargetPos = MyAPIGateway.Input.IsNewRightMouseReleased();
+            var fakeTarget = !markTargetPos ? ai.Session.PlayerDummyTargets[ai.Session.PlayerId].ManualTarget : ai.Session.PlayerDummyTargets[ai.Session.PlayerId].PaintedTarget;
             for (int i = 0; i < _hitInfo.Count; i++)
             {
 
@@ -109,7 +132,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 }
 
                 foundTarget = true;
-                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hit.Position, ai, closestEnt);
+                fakeTarget.Update(hit.Position, s.Tick, closestEnt);
                 break;
             }
 
@@ -117,13 +140,13 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
-                if (rayOnlyHitSelf) ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
+                if (rayOnlyHitSelf && !markTargetPos) fakeTarget.Update(end, s.Tick);
             }
             else ReticleAgeOnSelf = 0;
 
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect))
+            if (!foundTarget && !markTargetPos && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect))
             {
                 foundTarget = true;
                 if (manualSelect)
@@ -131,7 +154,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     s.SetTarget(closestEnt, ai, _masterTargets);
                     return true;
                 }
-                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hitPos, ai, closestEnt);
+                fakeTarget.Update(hitPos, s.Tick, closestEnt);
             }
 
             if (!manualSelect)
@@ -139,8 +162,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
 
-                if (!foundTarget)
-                    ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
+                if (!foundTarget && !markTargetPos)
+                    fakeTarget.Update(end, s.Tick);
             }
 
             return foundTarget || foundOther;
@@ -231,13 +254,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 if (hit == null) continue;
                 var ray = new RayD(origin, dir);
                 var dist = ray.Intersects(info.PositionComp.WorldVolume);
-                if (dist.HasValue)
+                if (dist < closestDist)
                 {
-                    if (dist.Value < closestDist)
-                    {
-                        closestDist = dist.Value;
-                        closestEnt = hit;
-                    }
+                    closestDist = dist.Value;
+                    closestEnt = hit;
                 }
             }
 
@@ -251,14 +271,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     {
                         var ray = new RayD(origin, dir);
                         var dist = ray.Intersects(otherEnt.PositionComp.WorldVolume);
-                        if (dist.HasValue)
+                        if (dist < closestDist)
                         {
-                            if (dist.Value < closestDist)
-                            {
-                                closestDist = dist.Value;
-                                closestEnt = otherEnt;
-                                foundOther = true;
-                            }
+                            closestDist = dist.Value;
+                            closestEnt = otherEnt;
+                            foundOther = true;
                         }
                     }
                 }

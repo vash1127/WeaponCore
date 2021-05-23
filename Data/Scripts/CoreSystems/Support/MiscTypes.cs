@@ -22,6 +22,7 @@ namespace CoreSystems.Support
         internal bool ParentIsPart;
         internal bool IsTargetStorage;
         internal bool ClientDirty;
+        internal bool IsDrone;
         internal bool CoreIsCube;
         internal Part Part;
         internal MyEntity CoreEntity;
@@ -104,34 +105,40 @@ namespace CoreSystems.Support
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
             {
                 TargetEntity = targetEntity;
-                
+
                 if (tData.EntityId == 0)
                     w.Target.Reset(w.System.Session.Tick, States.ServerReset);
-                else  {
+                else
+                {
                     StateChange(true, tData.EntityId == -2 ? States.Fake : States.Acquired);
-                    
-                    if (w.Target.IsProjectile) {
+
+                    if (w.Target.IsProjectile)
+                    {
 
                         Ai.TargetType targetType;
                         Ai.AcquireProjectile(w, out targetType);
 
-                        if (targetType == Ai.TargetType.None) {
+                        if (targetType == Ai.TargetType.None)
+                        {
                             if (w.NewTarget.CurrentState != States.NoTargetsSeen)
                                 w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle);
+
+                            if (w.Target.CurrentState != States.NoTargetsSeen)
+                            {
+                                w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.Values.State.TrackingReticle && w.Comp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Painter);
+                            }
                         }
                     }
                 }
                 w.TargetData.WeaponRandom.AcquireCurrentCounter = w.TargetData.WeaponRandom.AcquireTmpCounter;
                 w.TargetData.WeaponRandom.AcquireRandom = new Random(w.TargetData.WeaponRandom.CurrentSeed);
                 ClientDirty = false;
-
-                //Log.Line($"UpdateTarget: id:{tData.EntityId}({TargetId}) - entity:{Entity != null}({targetEntity != null}) - state:{CurrentState}({PreviousState}) - hasTarget:{tData.EntityId != 0}({HasTarget})");
             }
         }
 
-        internal void TransferTo(Target target, uint expireTick)
+        internal void TransferTo(Target target, uint expireTick, bool drone = false)
         {
+            target.IsDrone = drone;
             target.TargetEntity = TargetEntity;
             target.Projectile = Projectile;
             target.IsProjectile = target.Projectile != null;
@@ -187,6 +194,7 @@ namespace CoreSystems.Support
             IsFakeTarget = false;
             IsAligned = false;
             Projectile = null;
+            IsDrone = false;
             TargetPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;

@@ -5,7 +5,7 @@ using VRageMath;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    internal partial class Hud
+    partial class Hud
     {
         internal void DrawText()
         {
@@ -71,19 +71,19 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                 textAdd.Position.Z = _viewPortSize.Z;
                 var requestPos = textAdd.Position;
                 requestPos.Z = _viewPortSize.Z;
-                var widthScaler = textAdd.Font == FontType.Shadow ? 1.5f : 1f;
+                var widthScaler = textAdd.Font == FontType.Shadow ? ShadowSizeScaler : 1f;
 
                 var textPos = Vector3D.Transform(requestPos, _cameraWorldMatrix);
                 switch (textAdd.Justify)
                 {
                     case Justify.Center:
-                        textPos += _cameraWorldMatrix.Left * ((textAdd.MessageWidth * 0.5f) * widthScaler);
+                        textPos += _cameraWorldMatrix.Left * (((textAdd.MessageWidth * ShadowWidthScaler) * 0.5f) * widthScaler);
                         break;
                     case Justify.Right:
-                        textPos -= _cameraWorldMatrix.Left * (textAdd.MessageWidth * widthScaler);
+                        textPos -= _cameraWorldMatrix.Left * ((textAdd.MessageWidth * ShadowWidthScaler) * widthScaler);
                         break;
                     case Justify.Left:
-                        textPos -= _cameraWorldMatrix.Right * (textAdd.MessageWidth * widthScaler);
+                        textPos -= _cameraWorldMatrix.Right * ((textAdd.MessageWidth * ShadowWidthScaler) * widthScaler);
                         break;
                     case Justify.None:
                         textPos -= _cameraWorldMatrix.Left * ((textAdd.FontSize * 0.5f) * widthScaler);
@@ -91,7 +91,6 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                 }
 
                 var height = textAdd.FontSize * textAdd.HeightScale;
-                //var width = (textAdd.FontSize * widthScaler) * _session.AspectRatioInv;
                 var remove = textAdd.Ttl-- < 0;
 
                 for (int i = 0; i < textAdd.Data.Count; i++)
@@ -107,7 +106,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                         MyQuadD quad;
                         MyUtils.GetBillboardQuadOriented(out quad, ref textPos, width, height, ref left, ref up);
 
-                        if (textAdd.Color != Color.Transparent)
+                        if (textAdd.Color != Vector4.Zero)
                         {
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P1, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);
                             MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textData.P0, textData.P2, textData.P3, textData.Material, 0, textPos, textAdd.Color, textData.Blend);

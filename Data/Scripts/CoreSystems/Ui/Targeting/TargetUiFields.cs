@@ -13,8 +13,6 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         internal Vector3D TargetOffset;
         internal Vector3D AimPosition;
         internal Vector3D AimDirection;
-        internal Vector3D AimUp = MatrixD.Identity.Up;
-        internal MatrixD AimMatrix;
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
         internal bool DrawReticle;
@@ -31,10 +29,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         private const string InactiveShield = "InactiveShield";
 
 
-        private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
-        private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
-        private readonly MyStringId _focusSecondary = MyStringId.GetOrCompute("DS_TargetFocusSecondary");
-        private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
+        private readonly MyStringId _reticle = MyStringId.GetOrCompute("TargetReticle");
+        private readonly MyStringId _targetCircle = MyStringId.GetOrCompute("DS_ActiveTarget");
+        private readonly MyStringId _laserLine = MyStringId.GetOrCompute("LeadingLine");
+
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly Dictionary<MyEntity, Ai.TargetInfo> _toPruneMasterDict = new Dictionary<MyEntity, Ai.TargetInfo>(64);
@@ -45,8 +43,9 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         private Vector2 _pointerPosition = new Vector2(0, 0.0f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;
+        private readonly HudInfo _alertHudInfo = new HudInfo(MyStringId.GetOrCompute("WC_HUD_DroneAlert"), new Vector2(0.55f, 0.66f), 0.33f);
 
-        internal readonly int[] ExpChargeReductions = { 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20 };
+        internal readonly int[] ExpChargeReductions = { 1, 2, 3, 5, 8, 10, 12, 14, 16, 18, 20 };
 
         private readonly Dictionary<string, HudInfo> _primaryMinimalHuds = new Dictionary<string, HudInfo>
         {
@@ -91,7 +90,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             _session = session;
             var cm = session.HudUi.CharacterMap;
             Dictionary<char, Hud.Hud.TextureMap> monoText;
-            if (cm.TryGetValue(Hud.Hud.FontType.Mono, out monoText))
+            if (cm.TryGetValue(Hud.Hud.FontType.Shadow, out monoText))
             {
                 FocusTextureMap = monoText[FocusChar];
             }

@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CoreSystems;
+using CoreSystems.Settings;
 using CoreSystems.Support;
 using Sandbox.ModAPI;
-using static CoreSystems.Settings.CoreSettings.ServerSettings;
 
-namespace CoreSystems.Settings
+namespace WeaponCore.Data.Scripts.CoreSystems.Support
 {
     internal class VersionControl
     {
         public CoreSettings Core;
-        private readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> _tmpAmmoModiferMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
+        private readonly Dictionary<WeaponDefinition.AmmoDef, CoreSettings.ServerSettings.AmmoModifer> _tmpAmmoModiferMap = new Dictionary<WeaponDefinition.AmmoDef, CoreSettings.ServerSettings.AmmoModifer>();
         public bool VersionChange;
         public VersionControl(CoreSettings core)
         {
@@ -169,13 +170,13 @@ namespace CoreSystems.Settings
             {
                 Core.Enforcement.ShipSizes = new[]
                 {
-                    new ShipSize {Name = "Scout", BlockCount = 0, LargeGrid = false},
-                    new ShipSize {Name = "Fighter", BlockCount = 2000, LargeGrid = false},
-                    new ShipSize {Name = "Frigate", BlockCount = 0, LargeGrid = true},
-                    new ShipSize {Name = "Destroyer", BlockCount = 3000, LargeGrid = true},
-                    new ShipSize {Name = "Cruiser", BlockCount = 6000, LargeGrid = true},
-                    new ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true},
-                    new ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Scout", BlockCount = 0, LargeGrid = false},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Fighter", BlockCount = 2000, LargeGrid = false},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Frigate", BlockCount = 0, LargeGrid = true},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Destroyer", BlockCount = 3000, LargeGrid = true},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Cruiser", BlockCount = 6000, LargeGrid = true},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true},
+                    new CoreSettings.ServerSettings.ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true},
                 };
             }
 
@@ -183,8 +184,8 @@ namespace CoreSystems.Settings
             {
                 Core.Enforcement.BlockModifers = new[]
                 {
-                    new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
-                    new BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
+                    new CoreSettings.ServerSettings.BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
+                    new CoreSettings.ServerSettings.BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
                 };
             }
 
@@ -192,8 +193,8 @@ namespace CoreSystems.Settings
             {
                 Core.Enforcement.AmmoModifers = new[]
                 {
-                    new AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
-                    new AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
+                    new CoreSettings.ServerSettings.AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
+                    new CoreSettings.ServerSettings.AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
                 };
             }
             if (write)

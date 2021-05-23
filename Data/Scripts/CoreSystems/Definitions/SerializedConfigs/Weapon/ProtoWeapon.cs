@@ -21,6 +21,11 @@ namespace CoreSystems
             //Values.PartState.Control = ProtoWeaponState.ControlMode.None;
             //Values.PartState.PlayerId = -1;
             Values.State.TrackingReticle = false;
+            Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
+
+            if (Values.State.Control == ProtoWeaponState.ControlMode.Ui)
+                Values.State.Control = ProtoWeaponState.ControlMode.None;
+
             if (Values.State.TerminalAction == TriggerActions.TriggerOnce)
                 Values.State.TerminalAction = TriggerActions.TriggerOff;
             for (int i = 0; i < Ammos.Length; i++)
@@ -413,6 +418,10 @@ namespace CoreSystems
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
         [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
         [ProtoMember(15), DefaultValue(true)] public bool ArmorShowArea;
+        [ProtoMember(16)] public bool Repel;
+        [ProtoMember(17)] public long CameraChannel;
+        [ProtoMember(18)] public bool Debug;
+        [ProtoMember(19)] public long LeadGroup;
 
         public void Sync(ProtoWeaponOverrides syncFrom)
         {
@@ -431,6 +440,10 @@ namespace CoreSystems
             ArmorShowArea = syncFrom.ArmorShowArea;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
+            Repel = syncFrom.Repel;
+            CameraChannel = syncFrom.CameraChannel;
+            Debug = syncFrom.Debug;
+            LeadGroup = syncFrom.LeadGroup;
         }
     }
 }

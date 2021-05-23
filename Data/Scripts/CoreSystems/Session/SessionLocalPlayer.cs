@@ -9,6 +9,7 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using static CoreSystems.Support.Ai;
 using static CoreSystems.Support.WeaponDefinition.TargetingDef;
@@ -22,22 +23,32 @@ namespace CoreSystems
         {
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
-           
+
             var cockPit = ControlledEntity as MyCockpit;
             if (cockPit != null && cockPit.EnableShipControl)
                 ActiveCockPit = cockPit;
             else ActiveCockPit = null;
-            
+
             long oldBlockId;
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
+                var camera = Session.CameraController?.Entity as MyCameraBlock;
+                Log.Line($"{camera == null} - {camera != null && !GroupedCamera(camera)}");
+                if (camera == null || !GroupedCamera(camera))
+                    ActiveCameraBlock = null;
+
                 InGridAiBlock = true;
                 TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
                 if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, true);
-                if (HandlesInput && oldBlockId != ActiveControlBlock.EntityId)
+                if (oldBlockId != ActiveControlBlock.EntityId)
+                {
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
+                    TargetLeadUpdate();
+                }
+                else if (LeadGroupsDirty || !MyUtils.IsEqual(LastOptimalDps, TrackingAi.Construct.OptimalDps))
+                    TargetLeadUpdate();
             }
             else
             {
@@ -46,20 +57,63 @@ namespace CoreSystems
                     TrackingAi.Construct.Focus.ClientIsFocused(TrackingAi);
 
                     MyCubeBlock oldBlock;
-                    if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
+                    if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true))
+                    {
 
                         if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, false);
-                        if (HandlesInput)
-                            SendActiveControlUpdate(TrackingAi, oldBlock, false);
+
+                        SendActiveControlUpdate(TrackingAi, oldBlock, false);
+                        foreach (var list in LeadGroups) list.Clear();
+                        LeadGroupActive = false;
                     }
                 }
 
                 TrackingAi = null;
                 ActiveCockPit = null;
                 ActiveControlBlock = null;
+                ActiveCameraBlock = null;
             }
             return InGridAiBlock;
         }
+
+        private void TargetLeadUpdate()
+        {
+            LeadGroupActive = false;
+            LeadGroupsDirty = false;
+
+            LastOptimalDps = TrackingAi.Construct.OptimalDps;
+
+            foreach (var list in LeadGroups)
+                list.Clear();
+
+            foreach (var ai in TrackingAi.Construct.RefreshedAis)
+            {
+                foreach (var comp in ai.WeaponComps)
+                {
+                    foreach (var w in comp.Platform.Weapons)
+                    {
+                        if (!w.System.Values.HardPoint.Ai.TurretAttached && w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup > 0)
+                        {
+                            LeadGroups[w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup].Add(w);
+                            LeadGroupActive = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool GroupedCamera(MyCameraBlock camera)
+        {
+            long cameraGroupId;
+            if (CameraChannelMappings.TryGetValue(camera, out cameraGroupId) && cameraGroupId > 0)
+            {
+                ActiveCameraBlock = camera;
+                return true;
+            }
+            ActiveCameraBlock = null;
+            return false;
+        }
+
 
         internal void EntityControlUpdate()
         {
@@ -163,30 +217,43 @@ namespace CoreSystems
         private BoundingSphereD _nearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);
         private readonly List<MyEntity> _gridsNearCamera = new List<MyEntity>();
         private readonly List<MyCubeBlock> _uninitializedBlocks = new List<MyCubeBlock>();
+        private readonly List<Weapon.WeaponComponent> _debugBlocks = new List<Weapon.WeaponComponent>();
         private void DrawDisabledGuns()
         {
-            if (Tick600 || Tick60 && QuickDisableGunsCheck) {
+            if (Tick600 || Tick60 && QuickDisableGunsCheck)
+            {
 
                 QuickDisableGunsCheck = false;
                 _nearbyGridsTestSphere.Center = CameraPos;
                 _gridsNearCamera.Clear();
                 _uninitializedBlocks.Clear();
+                _debugBlocks.Clear();
 
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref _nearbyGridsTestSphere, _gridsNearCamera);
                 for (int i = _gridsNearCamera.Count - 1; i >= 0; i--)
                 {
                     var grid = _gridsNearCamera[i] as MyCubeGrid;
-                    if (grid?.Physics != null && !grid.MarkedForClose && !grid.IsPreview && !grid.Physics.IsPhantom) {
-                        
-                        var fatBlocks = grid.GetFatBlocks();
-                        for (int j = 0; j < fatBlocks.Count; j++) {
-                            
-                            var block = fatBlocks[j];
-                            if (block.IsFunctional && PartPlatforms.ContainsKey(block.BlockDefinition.Id)) {
+                    if (grid?.Physics != null && !grid.MarkedForClose && !grid.IsPreview && !grid.Physics.IsPhantom)
+                    {
 
-                                Ai ai;
-                                if (!GridAIs.TryGetValue(block.CubeGrid, out ai) || !ai.CompBase.ContainsKey(block)) 
+                        var fatBlocks = grid.GetFatBlocks();
+                        for (int j = 0; j < fatBlocks.Count; j++)
+                        {
+
+                            var block = fatBlocks[j];
+                            if (block.IsFunctional && PartPlatforms.ContainsKey(block.BlockDefinition.Id))
+                            {
+
+                                Ai gridAi;
+                                CoreComponent comp;
+                                if (!GridAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.CompBase.TryGetValue(block, out comp))
                                     _uninitializedBlocks.Add(block);
+                                else {
+
+                                    var wComp = comp as Weapon.WeaponComponent;
+                                    if (wComp != null && wComp.Data.Repo.Values.Set.Overrides.Debug)
+                                        _debugBlocks.Add(wComp);
+                                }
                             }
                         }
                     }
@@ -194,16 +261,41 @@ namespace CoreSystems
                 }
             }
 
-            for (int i = 0; i < _uninitializedBlocks.Count; i++) {
-                
+            for (int i = 0; i < _uninitializedBlocks.Count; i++)
+            {
+
                 var badBlock = _uninitializedBlocks[i];
-                if (badBlock.InScene) {
+                if (badBlock.InScene)
+                {
 
                     var lookSphere = new BoundingSphereD(badBlock.PositionComp.WorldAABB.Center, 30f);
-                    if (Camera.IsInFrustum(ref lookSphere)) {
+                    if (Camera.IsInFrustum(ref lookSphere))
+                    {
                         MyOrientedBoundingBoxD blockBox;
                         SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
                         DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
+                    }
+                }
+            }
+
+            for (int i = 0; i < _debugBlocks.Count; i++)
+            {
+
+                var comp = _debugBlocks[i];
+                if (comp.Cube.InScene)
+                {
+
+                    var lookSphere = new BoundingSphereD(comp.Cube.PositionComp.WorldAABB.Center, 100f);
+
+                    if (Camera.IsInFrustum(ref lookSphere))
+                    {
+
+                        foreach (var w in comp.Platform.Weapons)
+                        {
+
+                            if (!w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart)
+                                w.SmartLosDebug();
+                        }
                     }
                 }
             }

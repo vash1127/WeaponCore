@@ -245,8 +245,9 @@ namespace CoreSystems.Platform
 
         internal bool ServerReload()
         {
-            if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+            if (AnimationDelayTick > Comp.Session.Tick && LastEventCanDelay) 
                 return false;
+
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
 
@@ -290,10 +291,18 @@ namespace CoreSystems.Platform
                 ChargeReload();
             
             if (!ActiveAmmoDef.AmmoDef.Const.MustCharge || ActiveAmmoDef.AmmoDef.Const.IsHybrid) {
-                if (System.ReloadTime > 0) {
+                var delayTime = System.Session.Tick - LastShootTick + System.Values.HardPoint.Loading.DelayAfterBurst;
+                var burstDelay = ShowBurstDelayAsReload && delayTime > 0 && ShotsFired == 0;
+                if (System.ReloadTime > 0 || burstDelay) {
                     CancelableReloadAction += Reloaded;
                     ReloadSubscribed = true;
-                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, true, (uint)System.ReloadTime);
+
+                    var reloadTime = (uint)(burstDelay ? System.ReloadTime + delayTime : System.ReloadTime);
+
+                    if (burstDelay)
+                        ReloadEndTick = Comp.Session.Tick + reloadTime;
+
+                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, true, reloadTime);
                 }
                 else Reloaded();
             }

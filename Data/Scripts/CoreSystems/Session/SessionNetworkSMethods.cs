@@ -114,7 +114,7 @@ namespace CoreSystems
 
             return true;
         }
-        private bool ServerFakeTargetUpdate(PacketObj data)
+        private bool ServerAimTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var targetPacket = (FakeTargetPacket)packet;
@@ -122,15 +122,48 @@ namespace CoreSystems
 
             if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
 
+
             Ai ai;
             long playerId;
             if (GridAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
                 uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
-                    mIds[(int) packet.PType] = packet.MId;
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)
+                {
+                    mIds[(int)packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
+                    PlayerDummyTargets[playerId].ManualTarget.Sync(targetPacket, ai);
+                    PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
+
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ServerFakeTargetUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            }
+            else
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            return true;
+        }
+
+        private bool ServerMarkedTargetUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var targetPacket = (FakeTargetPacket)packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+            if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
+
+
+            Ai ai;
+            long playerId;
+            if (GridAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            {
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)
+                {
+                    mIds[(int)packet.PType] = packet.MId;
+
+                    PlayerDummyTargets[playerId].PaintedTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;

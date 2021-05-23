@@ -1,6 +1,7 @@
 ﻿using ProtoBuf;
 using VRage.Input;
 using VRageMath;
+using WeaponCore.Data.Scripts.CoreSystems.Support;
 
 namespace CoreSystems.Settings
 {
@@ -55,9 +56,10 @@ namespace CoreSystems.Settings
             [ProtoMember(5)] public float AreaDamageModifer = 1;
             [ProtoMember(6)] public bool ServerOptimizations = true;
             [ProtoMember(7)] public bool ServerSleepSupport = false;
-            [ProtoMember(8)] public BlockModifer[] BlockModifers =
+            [ProtoMember(8)]
+            public BlockModifer[] BlockModifers =
             {
-                new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f}, 
+                new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
                 new BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
             };
             [ProtoMember(9)]

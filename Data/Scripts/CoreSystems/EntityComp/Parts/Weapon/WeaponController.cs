@@ -341,6 +341,13 @@ namespace CoreSystems.Platform
             var matrix = SpinPart.Entity.PositionComp.LocalMatrixRef * BarrelRotationPerShot[BarrelRate];
             SpinPart.Entity.PositionComp.SetLocalMatrix(ref matrix);
 
+            if (Comp.TypeSpecific == CompTypeSpecific.VanillaFixed)
+            {
+                var testSphere = Comp.Cube.PositionComp.WorldVolume;
+                if (Vector3D.DistanceSquared(System.Session.CameraPos, testSphere.Center) < 62500 && System.Session.Camera.IsInFrustum(ref testSphere))
+                    MuzzlePart.Entity.Render.AddRenderObjects();
+            }
+
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
             { 
                 RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);

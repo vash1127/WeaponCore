@@ -121,8 +121,7 @@ namespace CoreSystems.Support
         internal bool CheckProjectiles;
         internal bool FadeOut;
         internal bool Concealed;
-        internal bool RamProtection = true;
-        internal bool RamProximity;
+        internal bool RamProtection = true; 
         internal bool AccelChecked;
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
@@ -146,6 +145,7 @@ namespace CoreSystems.Support
         internal int SleepingComps;
         internal int AwakeComps;
         internal int SourceCount;
+        internal int BlockCount;
         internal int PartCount;
         internal int Version;
         internal int MyProjectiles;

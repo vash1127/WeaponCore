@@ -196,30 +196,30 @@ namespace CoreSystems.Support
                 var comp = ((Weapon.WeaponComponent)this);
                 var status = GetSystemStatus();
 
-                stringBuilder.Append(status + 
-                    "\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0") +
-                    "\nShotsPerSec: " + comp.ShotsPerSec.ToString("0.000") +
-                    "\n" +
-                    "\nRealDps: " + comp.EffectiveDps.ToString("0.0") +
-                    "\nPeakDps: " + comp.PeakDps.ToString("0.0") +
-                    "\nBaseDps: " + comp.BaseDps.ToString("0.0") +
-                    "\nAreaDps: " + comp.AreaDps.ToString("0.0") +
-                    "\nExplode: " + comp.DetDps.ToString("0.0") +
-                    "\nCurrent: " + comp.CurrentDps.ToString("0.0") +" ("+ (comp.CurrentDps / comp.PeakDps).ToString("P") + ")");
+                stringBuilder.Append(status) 
+                    .Append($"\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0"))
+                    .Append("\nShotsPerSec: " + comp.ShotsPerSec.ToString("0.000"))
+                    .Append("\n")
+                    .Append("\nRealDps: " + comp.EffectiveDps.ToString("0.0"))
+                    .Append("\nPeakDps: " + comp.PeakDps.ToString("0.0"))
+                    .Append("\nBaseDps: " + comp.BaseDps.ToString("0.0"))
+                    .Append("\nAreaDps: " + comp.AreaDps.ToString("0.0"))
+                    .Append("\nExplode: " + comp.DetDps.ToString("0.0"))
+                    .Append("\nCurrent: " + comp.CurrentDps.ToString("0.0") +" ("+ (comp.CurrentDps / comp.PeakDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
-                    stringBuilder.Append("\n__________________________________" +
-                    "\nHeat Generated / s: " + HeatPerSecond.ToString("0.0") + " W" +
-                    "\nHeat Dissipated / s: " + HeatSinkRate.ToString("0.0") + " W" +
-                    "\nCurrent Heat: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat / MaxHeat).ToString("P")+")");
+                    stringBuilder.Append("\n__________________________________" )
+                        .Append($"\nHeat Generated: {HeatPerSecond:0.0} W ({(HeatPerSecond / MaxHeat) :P}/s)")
+                        .Append($"\nHeat Dissipated: {HeatSinkRate:0.0} W ({(HeatSinkRate / MaxHeat):P}/s)")
+                        .Append($"\nCurrent Heat: {CurrentHeat:0.0} J ({(CurrentHeat / MaxHeat):P})");
 
                 if (HeatPerSecond > 0 && comp.HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");
 
                 if (comp.HasEnergyWeapon)
                 {
-                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MWs");
-                    stringBuilder.Append("\nRequired Power: " + Platform.Structure.ApproximatePeakPowerCombined.ToString("0.00") + " MWs");
+                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MW");
+                    stringBuilder.Append("\nRequired Power: " + Platform.Structure.ApproximatePeakPowerCombined.ToString("0.00") + " MJ");
                 }
                 
                 stringBuilder.Append("\n\n==== Weapons ====");
@@ -241,7 +241,7 @@ namespace CoreSystems.Support
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
-                    stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Loading + endReturn);
+                    stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Loading + "\nLoS: " + !w.PauseShoot + endReturn);
 
                     string otherAmmo = null;
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
@@ -260,7 +260,7 @@ namespace CoreSystems.Support
                         stringBuilder.Append(otherAmmo);
                 }
 
-                if (Debug)
+                if (Debug || comp.Data.Repo.Values.Set.Overrides.Debug)
                 {
                     foreach (var weapon in Platform.Weapons)
                     {

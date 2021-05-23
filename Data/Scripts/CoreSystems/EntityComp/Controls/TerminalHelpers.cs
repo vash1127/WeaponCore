@@ -16,11 +16,11 @@ namespace CoreSystems.Control
         {
             AddWeaponOnOff<T>(session, -2, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", BlockUi.GetGuidance, BlockUi.RequestSetGuidance, UiGuidance);
 
-            AddSliderDamage<T>(session, -3, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", BlockUi.GetDps, BlockUi.RequestSetDps, UiStrengthSlider);
+            AddSliderDamage<T>(session, -3, "Weapon Damage", "Change Damage Per Shot", "Change the damage per shot", BlockUi.GetDps, BlockUi.RequestSetDps, UiStrengthSlider);
 
-            AddSliderRof<T>(session, -4, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", BlockUi.GetRof, BlockUi.RequestSetRof, UiRofSlider);
+            AddSliderRof<T>(session, -4, "Weapon ROF", "Change Rate of Fire", "Change rate of fire", BlockUi.GetRof, BlockUi.RequestSetRof, UiRofSlider);
 
-            AddCheckbox<T>(session, -5, "Overload", "Overload Damage", "Overload Damage", BlockUi.GetOverload, BlockUi.RequestSetOverload, true, UiOverLoad);
+            AddCheckbox<T>(session, -5, "Overload", "Overload Damage", "Overload damage", BlockUi.GetOverload, BlockUi.RequestSetOverload, true, UiOverLoad);
 
         }
 
@@ -28,43 +28,59 @@ namespace CoreSystems.Control
         {
             Separator<T>(session, -7, "WC_sep2", HasTracking);
 
-            AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Range", BlockUi.GetRange, BlockUi.RequestSetRange, BlockUi.ShowRange, BlockUi.GetMinRange, BlockUi.GetMaxRange, true);
+            AddSliderRange<T>(session, -8, " Weapon Range", "Aiming Radius", "Change the min/max targeting range", BlockUi.GetRange, BlockUi.RequestSetRange, BlockUi.ShowRange, BlockUi.GetMinRange, BlockUi.GetMaxRange, true, false);
 
-            AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Target Neutrals", BlockUi.GetNeutrals, BlockUi.RequestSetNeutrals, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Fire on targets that are neutral", BlockUi.GetNeutrals, BlockUi.RequestSetNeutrals, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Target Unowned", BlockUi.GetUnowned, BlockUi.RequestSetUnowned, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Fire on targets with no owner", BlockUi.GetUnowned, BlockUi.RequestSetUnowned, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -10, "Biologicals", "Target Biologicals", "Target Biologicals", BlockUi.GetBiologicals, BlockUi.RequestSetBiologicals, true, TrackBiologicals);
+            AddOnOffSwitchNoAction<T>(session, -10, "Biologicals", "Target Biologicals", "Fire on players and biological NPCs", BlockUi.GetBiologicals, BlockUi.RequestSetBiologicals, true, TrackBiologicals);
 
-            AddOnOffSwitchNoAction<T>(session, -11, "Projectiles", "Target Projectiles", "Target Projectiles", BlockUi.GetProjectiles, BlockUi.RequestSetProjectiles, true,TrackProjectiles);
+            AddOnOffSwitchNoAction<T>(session, -11, "Projectiles", "Target Projectiles", "Fire on incoming projectiles", BlockUi.GetProjectiles, BlockUi.RequestSetProjectiles, true, TrackProjectiles);
 
             AddOnOffSwitchNoAction<T>(session, -12, "Meteors", "Target Meteors", "Target Meteors", BlockUi.GetMeteors, BlockUi.RequestSetMeteors, true, TrackMeteors);
 
             AddOnOffSwitchNoAction<T>(session, -12, "Grids", "Target Grids", "Target Grids", BlockUi.GetGrids, BlockUi.RequestSetGrids, true, TrackGrids);
 
-            AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Target FocusFire", BlockUi.GetFocusFire,  BlockUi.RequestSetFocusFire, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Focus all fire on the specified target", BlockUi.GetFocusFire, BlockUi.RequestSetFocusFire, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target SubSystems", BlockUi.GetSubSystems, BlockUi.RequestSetSubSystems, true, HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target specific SubSystems of a target", BlockUi.GetSubSystems, BlockUi.RequestSetSubSystems, true, HasTracking);
 
-            Separator<T>(session, -15, "WC_sep3", HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -15, "Repel", "Repel Mode", "Aggressively focus and repel small threats", BlockUi.GetRepel, BlockUi.RequestSetRepel, true, HasTracking);
 
-            AddComboboxNoAction<T>(session, -16, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", BlockUi.GetSubSystem, BlockUi.RequestSubSystem, BlockUi.ListSubSystems, HasTracking);
+            Separator<T>(session, -16, "WC_sep3", HasTracking);
 
-            AddComboboxNoAction<T>(session, -17, "TrackingMode", "Tracking Mode", "Tracking Mode", BlockUi.GetMovementMode, BlockUi.RequestMovementMode, BlockUi.ListMovementModes, HasTracking);
-            
-            AddComboboxNoAction<T>(session, -18, "ControlModes", "Control Mode", "Control Mode", BlockUi.GetControlMode, BlockUi.RequestControlMode, BlockUi.ListControlModes, TurretOrGuidedAmmo);
+            AddComboboxNoAction<T>(session, -17, "PickSubSystem", "Pick SubSystem", "Select the target subsystem to focus fire on", BlockUi.GetSubSystem, BlockUi.RequestSubSystem, BlockUi.ListSubSystems, HasTracking);
 
-            Separator<T>(session, -19, "WC_sep4", HasTracking);
+            AddComboboxNoAction<T>(session, -18, "TrackingMode", "Tracking Mode", "Movement fire control requirements", BlockUi.GetMovementMode, BlockUi.RequestMovementMode, BlockUi.ListMovementModes, HasTracking);
+
+            AddComboboxNoAction<T>(session, -19, "ControlModes", "Control Mode", "Select the aim control mode for the weapon", BlockUi.GetControlMode, BlockUi.RequestControlMode, BlockUi.ListControlModes, TurretOrGuidedAmmo);
+
+            AddWeaponCameraSliderRange<T>(session, -20, "Camera Channel", "Weapon Camera Channel", "Assign this weapon to a camera channel", BlockUi.GetWeaponCamera, BlockUi.RequestSetBlockCamera, HasTracking, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
+
+            AddLeadGroupSliderRange<T>(session, -21, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", BlockUi.GetLeadGroup, BlockUi.RequestSetLeadGroup, NoTurret, BlockUi.GetMinLeadGroup, BlockUi.GetMaxLeadGroup, true);
+
+            Separator<T>(session, -22, "WC_sep4", HasTracking);
         }
+
         internal static void AddDecoyControls<T>(Session session) where T : IMyTerminalBlock
         {
             Separator<T>(session, -7, "WC_decoySep1", Istrue);
-            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", BlockUi.GetDecoySubSystem, BlockUi.RequestDecoySubSystem, BlockUi.ListDecoySubSystems, Istrue);
+            AddComboboxNoAction<T>(session, -8, "PickSubSystem", "Pick SubSystem", "Pick what subsystem this decoy will imitate", BlockUi.GetDecoySubSystem, BlockUi.RequestDecoySubSystem, BlockUi.ListDecoySubSystems, Istrue);
+        }
+
+        internal static void AddCameraControls<T>(Session session) where T : IMyTerminalBlock
+        {
+            Separator<T>(session, -7, "WC_cameraSep1", Istrue);
+            AddBlockCameraSliderRange<T>(session, -8, "WC_PickCameraChannel", "Camera Channel", "Assign the camera weapon channel to this camera", BlockUi.GetBlockCamera, BlockUi.RequestBlockCamera, BlockUi.ShowCamera, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
         }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
-            AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", BlockUi.GetShoot, BlockUi.RequestSetShoot, true, WeaponIsReady);
+            AddOnOffSwitchNoAction<T>(session, -25, "Debug", "Debug", "Debug On/Off", BlockUi.GetDebug, BlockUi.RequestDebug, true, IsReady);
+            Separator<T>(session, -26, "WC_sep4", HasTracking);
+            AddOnOffSwitchNoAction<T>(session, -27, "Shoot", "Shoot", "Shoot On/Off", BlockUi.GetShoot, BlockUi.RequestSetShoot, true, IsReady);
+
         }
 
         internal static void CreateGenericArmor<T>(Session session) where T : IMyTerminalBlock
@@ -164,6 +180,13 @@ namespace CoreSystems.Control
             return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.HasTracking;
         }
 
+        internal static bool IsReady(IMyTerminalBlock block)
+        {
+
+            var comp = block?.Components?.Get<CoreComponent>();
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready;
+        }
+
         internal static bool HasSupport(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
@@ -222,7 +245,102 @@ namespace CoreSystems.Control
             return !block.Components.TryGet(out comp) || comp.HasTurret;
         }
 
+        internal static void SliderBlockCameraWriterRange(IMyTerminalBlock block, StringBuilder builder)
+        {
+            long value = -1;
+            string message;
+            if (string.IsNullOrEmpty(block.CustomData) || long.TryParse(block.CustomData, out value))
+            {
+                var group = value >= 0 ? value : 0;
+                message = value == 0 ? "Disabled" : group.ToString();
+            }
+            else message = "Invalid CustomData";
+
+            builder.Append(message);
+        }
+
+        internal static void SliderWeaponCameraWriterRange(IMyTerminalBlock block, StringBuilder builder)
+        {
+
+            var value = Convert.ToInt64(BlockUi.GetWeaponCamera(block));
+            var message = value > 0 ? value.ToString() : "Disabled";
+
+            builder.Append(message);
+        }
+
+        internal static void SliderLeadGroupWriterRange(IMyTerminalBlock block, StringBuilder builder)
+        {
+
+            var value = Convert.ToInt64(BlockUi.GetLeadGroup(block));
+            var message = value > 0 ? value.ToString() : "Disabled";
+
+            builder.Append(message);
+        }
+
         #region terminal control methods
+        internal static IMyTerminalControlSlider AddBlockCameraSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Enabled = Istrue;
+            c.Visible = visibleGetter;
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Writer = SliderBlockCameraWriterRange;
+
+            if (minGetter != null)
+                c.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            session.CustomControls.Add(c);
+
+            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
+            return c;
+        }
+
+
+        internal static IMyTerminalControlSlider AddWeaponCameraSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Enabled = Istrue;
+            c.Visible = visibleGetter;
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Writer = SliderWeaponCameraWriterRange;
+
+            if (minGetter != null)
+                c.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            session.CustomControls.Add(c);
+
+            return c;
+        }
+
+        internal static IMyTerminalControlSlider AddLeadGroupSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Enabled = Istrue;
+            c.Visible = visibleGetter;
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Writer = SliderLeadGroupWriterRange;
+
+            if (minGetter != null)
+                c.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            session.CustomControls.Add(c);
+            return c;
+        }
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(Session session, int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, bool> visibleGetter) where T : IMyTerminalBlock
         {
@@ -256,7 +374,7 @@ namespace CoreSystems.Control
             return c;
         }
 
-        internal static IMyTerminalControlSlider AddSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
+        internal static IMyTerminalControlSlider AddSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false, bool addAction = true) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
 
@@ -274,7 +392,7 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             session.CustomControls.Add(c);
 
-            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
+            if (addAction) CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
             return c;
         }
 

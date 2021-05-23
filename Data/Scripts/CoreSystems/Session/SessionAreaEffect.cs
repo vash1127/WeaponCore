@@ -465,6 +465,10 @@ namespace CoreSystems
 
         private static void ForceDisable(IMyTerminalBlock myTerminalBlock)
         {
+            var cube = (MyCubeBlock)myTerminalBlock;
+            if (cube == null || myTerminalBlock?.SlimBlock == null || myTerminalBlock.SlimBlock.IsDestroyed || cube.MarkedForClose || cube.Closed || cube.CubeGrid.MarkedForClose || !cube.IsFunctional || !cube.InScene) // keen is failing to check for null when they null out functional block types
+                return;
+
             ((IMyFunctionalBlock)myTerminalBlock).Enabled = false;
         }
 

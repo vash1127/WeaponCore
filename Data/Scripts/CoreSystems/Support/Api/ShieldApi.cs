@@ -183,5 +183,6 @@ namespace CoreSystems.Support
         public void AddAttacker(long attacker) => _addAtacker?.Invoke(attacker);
         public bool IsBlockProtected(IMySlimBlock block) => _isBlockProtected?.Invoke(block) ?? false;
         public MyTuple<bool, Vector3I> GetFacesFast(MyEntity entity) => _getFacesFast?.Invoke(entity) ?? new MyTuple<bool, Vector3I>();
+
     }
 }

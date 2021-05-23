@@ -42,7 +42,7 @@ namespace CoreSystems
         private long _lastFakeTargetUpdateErrorId = long.MinValue;
         private bool Error(PacketObj data, params NetResult[] messages)
         {
-            var fakeTargetUpdateError = data.Packet.PType == PacketType.FakeTargetUpdate;
+            var fakeTargetUpdateError = data.Packet.PType == PacketType.AimTargetUpdate;
             
             if (fakeTargetUpdateError) {
                 if (data.Packet.EntityId == _lastFakeTargetUpdateErrorId)
@@ -995,42 +995,82 @@ namespace CoreSystems
             else Log.Line("SendActiveTerminal should never be called on Dedicated");
         }
 
-        internal void SendFakeTargetUpdate(Ai ai, Ai.FakeTarget fake)
+        internal void SendAimTargetUpdate(Ai ai, Ai.FakeTarget fake)
         {
             if (IsClient)
             {
                 uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))  {
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
                     PacketsToServer.Add(new FakeTargetPacket
                     {
-                        MId = ++mIds[(int)PacketType.FakeTargetUpdate],
-                        EntityId = ai.TopEntity.EntityId,
+                        MId = ++mIds[(int)PacketType.AimTargetUpdate],
+                        EntityId = ai.GridEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.FakeTargetUpdate,
-                        Pos = fake.Position,
+                        PType = PacketType.AimTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
                         TargetId = fake.EntityId,
                     });
                 }
-                else Log.Line("SendFakeTargetUpdate no player MIds found");
+                else Log.Line($"SendFakeTargetUpdate no player MIds found");
             }
             else if (HandlesInput)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
-                    Entity = ai.TopEntity,
+                    Entity = ai.GridEntity,
                     Packet = new FakeTargetPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.FakeTargetUpdate],
-                        EntityId = ai.TopEntity.EntityId,
+                        MId = ++ai.MIds[(int)PacketType.AimTargetUpdate],
+                        EntityId = ai.GridEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.FakeTargetUpdate,
-                        Pos = fake.Position,
+                        PType = PacketType.AimTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
                         TargetId = fake.EntityId,
                     }
                 });
             }
-            else Log.Line("SendFakeTargetUpdate should never be called on Dedicated");
+            else Log.Line($"SendAimTargetUpdate should never be called on Dedicated");
         }
+
+        internal void SendPaintedTargetUpdate(Ai ai, Ai.FakeTarget fake)
+        {
+            if (IsClient)
+            {
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new FakeTargetPacket
+                    {
+                        MId = ++mIds[(int)PacketType.PaintedTargetUpdate],
+                        EntityId = ai.GridEntity.EntityId,
+                        SenderId = ai.Session.MultiplayerId,
+                        PType = PacketType.PaintedTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
+                        TargetId = fake.EntityId,
+                    });
+                }
+                else Log.Line($"SendFakeTargetUpdate no player MIds found");
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.GridEntity,
+                    Packet = new FakeTargetPacket
+                    {
+                        MId = ++ai.MIds[(int)PacketType.PaintedTargetUpdate],
+                        EntityId = ai.GridEntity.EntityId,
+                        SenderId = ai.Session.MultiplayerId,
+                        PType = PacketType.PaintedTargetUpdate,
+                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
+                        TargetId = fake.EntityId,
+                    }
+                });
+            }
+            else Log.Line($"SendPaintedTargetUpdate should never be called on Dedicated");
+        }
+
 
         internal void SendPlayerControlRequest(CoreComponent comp, long playerId, ProtoWeaponState.ControlMode mode)
         {

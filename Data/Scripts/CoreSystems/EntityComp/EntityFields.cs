@@ -79,7 +79,9 @@ namespace CoreSystems.Support
         internal bool ResettingSubparts;
         internal bool UiEnabled;
         internal bool HasDelayToFire;
-
+        internal bool ManualMode;
+        internal bool PainterMode;
+        internal bool FakeMode;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

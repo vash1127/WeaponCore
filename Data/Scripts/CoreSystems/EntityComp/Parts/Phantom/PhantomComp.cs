@@ -98,7 +98,7 @@ namespace CoreSystems.Platform
                 var o = comp.Data.Repo.Values.Set.Overrides;
                 var enabled = v > 0;
                 var clearTargets = false;
-
+                var resetState = false;
                 switch (setting)
                 {
                     case "MaxSize":
@@ -117,6 +117,7 @@ namespace CoreSystems.Platform
                     case "ControlModes":
                         o.Control = (ProtoPhantomOverrides.ControlModes)v;
                         clearTargets = true;
+                        resetState = true;
                         break;
                     case "FocusSubSystem":
                         o.FocusSubSystem = enabled;
@@ -152,15 +153,25 @@ namespace CoreSystems.Platform
                         o.Neutrals = enabled;
                         clearTargets = true;
                         break;
+                    case "Repel":
+                        o.Repel = enabled;
+                        clearTargets = true;
+                        break;
+                    case "CameraChannel":
+                        o.CameraChannel = v;
+                        break;
+                    case "LeadGroup":
+                        o.LeadGroup = v;
+                        break;
                 }
 
-                ResetCompState(comp, playerId, clearTargets);
+                ResetCompState(comp, playerId, clearTargets, resetState);
 
                 if (comp.Session.MpActive)
                     comp.Session.SendComp(comp);
             }
 
-            internal static void ResetCompState(PhantomComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
+            internal static void ResetCompState(PhantomComponent comp, long playerId, bool resetTarget, bool resetState, Dictionary<string, int> settings = null)
             {
                 var o = comp.Data.Repo.Values.Set.Overrides;
                 var userControl = o.Control != ProtoPhantomOverrides.ControlModes.Auto;
@@ -172,12 +183,17 @@ namespace CoreSystems.Platform
                     if (settings != null) settings["ControlModes"] = (int)o.Control;
                     comp.Data.Repo.Values.State.TerminalActionSetter(comp, TriggerActions.TriggerOff);
                 }
+                else if (resetState)
+                {
+                    comp.Data.Repo.Values.State.Control = ProtoPhantomState.ControlMode.None;
+                }
+                /*
                 else
                 {
                     comp.Data.Repo.Values.State.PlayerId = -1;
                     comp.Data.Repo.Values.State.Control = ProtoPhantomState.ControlMode.None;
                 }
-
+                */
                 if (resetTarget)
                     ClearParts(comp);
             }

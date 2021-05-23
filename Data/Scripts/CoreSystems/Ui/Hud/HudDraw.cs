@@ -5,7 +5,7 @@ using VRageMath;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    internal partial class Hud
+    partial class Hud
     {
         internal void DrawTextures()
         {
@@ -21,7 +21,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
                 if (ticksSinceUpdate >= MinUpdateTicks)
                 {
-                    _weapontoDraw = SortDisplayedWeapons(WeaponsToDisplay);
+
+                    if (TexturesToAdd > 0)
+                        _weapontoDraw = SortDisplayedWeapons(WeaponsToDisplay);
+
                     _lastHudUpdateTick = _session.Tick;
                 }
                 else if (ticksSinceUpdate + 1 >= MinUpdateTicks)
@@ -32,6 +35,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
             AddTextAndTextures();
             DrawHudOnce();
+
 
             WeaponsToDisplay.Clear();
             _textAddList.Clear();
@@ -47,11 +51,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             if (_lastHudUpdateTick == _session.Tick)
             {
 
-                var largestName = (_currentLargestName * _textWidth) + _reloadWidth + _stackPadding;
+                var largestName = (_currentLargestName * (_textWidth)) + _stackPadding;
 
                 _bgWidth = largestName > _symbolWidth ? largestName : _symbolWidth;
                 _bgBorderHeight = _bgWidth * BgBorderRatio;
-                _bgCenterHeight = _weapontoDraw.Count > 3 ? (_weapontoDraw.Count - 2) * _infoPaneloffset : _infoPaneloffset * 2;
+                _bgCenterHeight = _weapontoDraw.Count * _infoPaneloffset;
             }
 
             var bgStartPosX = currWeaponDisplayPos.X - _bgWidth - _padding;
@@ -80,8 +84,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
                     MyQuadD quad;
                     MyUtils.GetBillboardQuadOriented(out quad, ref textureToDraw.Position, textureToDraw.Width, textureToDraw.Height, ref textureToDraw.Left, ref textureToDraw.Up);
-
-                    if (textureToDraw.Color != Color.Transparent)
+                    if (textureToDraw.Color != Vector4.Zero)
                     {
                         MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P1, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
                         MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P2, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
@@ -112,7 +115,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
                 var textAdd = _textAddList[i];
 
-                var height = textAdd.FontSize;
+                var height = textAdd.FontSize * ShadowHeightScaler;
                 var width = textAdd.FontSize * _session.AspectRatioInv;
                 textAdd.Position.Z = _viewPortSize.Z;
                 var textPos = Vector3D.Transform(textAdd.Position, _cameraWorldMatrix);
@@ -144,7 +147,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
                     _drawList.Add(tdd);
 
-                    textPos -= _cameraWorldMatrix.Left * height;
+                    textPos -= (_cameraWorldMatrix.Left * (width * 0.6f) * ShadowSizeScaler);
                 }
 
                 _textDrawPool.Enqueue(textAdd);
@@ -169,16 +172,16 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             if (!_textureDrawPool.TryDequeue(out backgroundTexture))
                 backgroundTexture = new TextureDrawData();
 
-            backgroundTexture.Material = _infoBackground[1].Material;
-            backgroundTexture.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
+            backgroundTexture.Material = InfoBackground[1].Material;
+            backgroundTexture.Color = _bgColor;
             backgroundTexture.Position.X = bgStartPosX;
             backgroundTexture.Position.Y = bgStartPosY;
             backgroundTexture.Width = _bgWidth;
             backgroundTexture.Height = _bgCenterHeight;
-            backgroundTexture.P0 = _infoBackground[1].P0;
-            backgroundTexture.P1 = _infoBackground[1].P1;
-            backgroundTexture.P2 = _infoBackground[1].P2;
-            backgroundTexture.P3 = _infoBackground[1].P3;
+            backgroundTexture.P0 = InfoBackground[1].P0;
+            backgroundTexture.P1 = InfoBackground[1].P1;
+            backgroundTexture.P2 = InfoBackground[1].P2;
+            backgroundTexture.P3 = InfoBackground[1].P3;
             backgroundTexture.UvDraw = true;
 
             _textureAddList.Add(backgroundTexture);
@@ -186,16 +189,16 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             if (!_textureDrawPool.TryDequeue(out backgroundTexture))
                 backgroundTexture = new TextureDrawData();
 
-            backgroundTexture.Material = _infoBackground[0].Material;
-            backgroundTexture.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
+            backgroundTexture.Material = InfoBackground[0].Material;
+            backgroundTexture.Color = _bgColor;
             backgroundTexture.Position.X = bgStartPosX;
             backgroundTexture.Position.Y = bgStartPosY + _bgBorderHeight + _bgCenterHeight;
             backgroundTexture.Width = _bgWidth;
             backgroundTexture.Height = _bgBorderHeight;
-            backgroundTexture.P0 = _infoBackground[0].P0;
-            backgroundTexture.P1 = _infoBackground[0].P1;
-            backgroundTexture.P2 = _infoBackground[0].P2;
-            backgroundTexture.P3 = _infoBackground[0].P3;
+            backgroundTexture.P0 = InfoBackground[0].P0;
+            backgroundTexture.P1 = InfoBackground[0].P1;
+            backgroundTexture.P2 = InfoBackground[0].P2;
+            backgroundTexture.P3 = InfoBackground[0].P3;
             backgroundTexture.UvDraw = true;
 
             _textureAddList.Add(backgroundTexture);
@@ -203,16 +206,16 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             if (!_textureDrawPool.TryDequeue(out backgroundTexture))
                 backgroundTexture = new TextureDrawData();
 
-            backgroundTexture.Material = _infoBackground[2].Material;
-            backgroundTexture.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
+            backgroundTexture.Material = InfoBackground[2].Material;
+            backgroundTexture.Color = _bgColor;
             backgroundTexture.Position.X = bgStartPosX;
             backgroundTexture.Position.Y = bgStartPosY - (_bgBorderHeight + _bgCenterHeight);
             backgroundTexture.Width = _bgWidth;
             backgroundTexture.Height = _bgBorderHeight;
-            backgroundTexture.P0 = _infoBackground[2].P0;
-            backgroundTexture.P1 = _infoBackground[2].P1;
-            backgroundTexture.P2 = _infoBackground[2].P2;
-            backgroundTexture.P3 = _infoBackground[2].P3;
+            backgroundTexture.P0 = InfoBackground[2].P0;
+            backgroundTexture.P1 = InfoBackground[2].P1;
+            backgroundTexture.P2 = InfoBackground[2].P2;
+            backgroundTexture.P3 = InfoBackground[2].P3;
             backgroundTexture.UvDraw = true;
 
             _textureAddList.Add(backgroundTexture);
@@ -230,15 +233,14 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var showReloadIcon = weapon.Loading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30 ||
-                    (weapon.ShowBurstDelayAsReload && !weapon.Loading && weapon.Comp.Session.Tick - weapon.LastShootTick > 30 && weapon.ShootTick >= weapon.LastShootTick + weapon.System.Values.HardPoint.Loading.DelayAfterBurst && weapon.ShootTick > weapon.Comp.Session.Tick);
-
+                var showReloadIcon = (weapon.Loading || _session.Tick - weapon.LastLoadedTick < 60);
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();
 
                 textInfo.Text = name;
-                textInfo.Color = Color.White * _session.UiOpacity;
+                var color = new Vector4(1, 1, 1, 1);
+                textInfo.Color = color;
                 textInfo.Position.X = textOffset;
                 textInfo.Position.Y = currWeaponDisplayPos.Y;
                 textInfo.FontSize = _textSize;
@@ -253,12 +255,12 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                         textInfo = new TextDrawRequest();
 
                     textInfo.Text = $"(x{stackedInfo.WeaponStack})";
-                    textInfo.Color = Color.LightSteelBlue * _session.UiOpacity;
-                    textInfo.Position.X = textOffset + (name.Length * _textSize) - (_padding * .5f);
+                    textInfo.Color = new Vector4(0.5f, 0.5f, 1, 1);
+                    textInfo.Position.X = textOffset + (name.Length * ((_textSize * _session.AspectRatioInv) * 0.6f) * ShadowSizeScaler);
 
-                    textInfo.Position.Y = currWeaponDisplayPos.Y - (_sTextSize * .5f);
+                    textInfo.Position.Y = currWeaponDisplayPos.Y;
                     textInfo.FontSize = _sTextSize;
-                    textInfo.Font = FontType.Mono;
+                    textInfo.Font = FontType.Shadow;
                     _textAddList.Add(textInfo);
                 }
 
@@ -268,7 +270,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                 if (showReloadIcon)
                     ShowReloadIcon(weapon, stackedInfo, ref currWeaponDisplayPos, textOffset, reset);
 
-                currWeaponDisplayPos.Y -= _infoPaneloffset + (_padding * .5f);
+                currWeaponDisplayPos.Y -= _infoPaneloffset + (_padding * .6f);
 
                 if (reset)
                     _weaponStackedInfoPool.Enqueue(stackedInfo);
@@ -280,20 +282,23 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         {
             int heatBarIndex;
             if (weapon.PartState.Overheated)
-                heatBarIndex = _heatBarTexture.Length - 1;
+            {
+                var index = _session.SCount < 30 ? 1 : 2;
+                heatBarIndex = HeatBarTexture.Length - 2;
+            }
             else
-                heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
+                heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, HeatBarTexture.Length - 1);
 
-            stackedInfo.CachedHeatTexture.Material = _heatBarTexture[heatBarIndex].Material;
-            stackedInfo.CachedHeatTexture.Color = Color.Transparent;
+            stackedInfo.CachedHeatTexture.Material = HeatBarTexture[heatBarIndex].Material;
+            stackedInfo.CachedHeatTexture.Color = Vector4.Zero;
             stackedInfo.CachedHeatTexture.Position.X = currWeaponDisplayPos.X - _heatOffsetX;
-            stackedInfo.CachedHeatTexture.Position.Y = currWeaponDisplayPos.Y - _heatOffsetY - _paddingHeat;
+            stackedInfo.CachedHeatTexture.Position.Y = currWeaponDisplayPos.Y - _heatOffsetY;
             stackedInfo.CachedHeatTexture.Width = _heatWidth;
             stackedInfo.CachedHeatTexture.Height = _heatHeight;
-            stackedInfo.CachedHeatTexture.P0 = _heatBarTexture[heatBarIndex].P0;
-            stackedInfo.CachedHeatTexture.P1 = _heatBarTexture[heatBarIndex].P1;
-            stackedInfo.CachedHeatTexture.P2 = _heatBarTexture[heatBarIndex].P2;
-            stackedInfo.CachedHeatTexture.P3 = _heatBarTexture[heatBarIndex].P3;
+            stackedInfo.CachedHeatTexture.P0 = HeatBarTexture[heatBarIndex].P0;
+            stackedInfo.CachedHeatTexture.P1 = HeatBarTexture[heatBarIndex].P1;
+            stackedInfo.CachedHeatTexture.P2 = HeatBarTexture[heatBarIndex].P2;
+            stackedInfo.CachedHeatTexture.P3 = HeatBarTexture[heatBarIndex].P3;
 
             if (reset)
                 stackedInfo.CachedHeatTexture.Persistant = false;
@@ -304,8 +309,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         private void ShowReloadIcon(Weapon weapon, StackedWeaponInfo stackedInfo, ref Vector2D currWeaponDisplayPos, double textOffset, bool reset)
         {
             var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
-            var texture = mustCharge ? _chargingTexture : _reloadingTexture;
-
+            var texture = mustCharge ? ChargingTexture : ReloadingTexture;
             if (texture.Length > 0)
             {
 
@@ -313,7 +317,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                     stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.ProtoWeaponAmmo.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
 
                 stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
-                stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
+                stackedInfo.CachedReloadTexture.Color = _bgColor;
                 stackedInfo.CachedReloadTexture.Position.X = (textOffset - _paddingReload) - _reloadOffset;
                 stackedInfo.CachedReloadTexture.Position.Y = currWeaponDisplayPos.Y;
                 stackedInfo.CachedReloadTexture.Width = _reloadWidth;

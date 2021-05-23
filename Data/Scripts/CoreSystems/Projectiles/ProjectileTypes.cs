@@ -37,7 +37,7 @@ namespace CoreSystems.Support
         internal Vector3D Direction;
         internal Hit Hit;
         internal WeaponRandomGenerator WeaponRng;
-        internal FakeTarget DummyTarget;
+        internal FakeTargets DummyTargets;
         internal List<Action<long, int, ulong, long, Vector3D, bool>> Monitors;
         internal int TriggerGrowthSteps;
         internal int PartId;

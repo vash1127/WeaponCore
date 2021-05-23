@@ -135,6 +135,7 @@ namespace CoreSystems.Platform
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
         internal uint StopBarrelAvTick;
+        internal uint ReloadEndTick;
         internal int ProposedAmmoId = -1;
         internal int FireCounter;
         internal int RateOfFire;
@@ -203,10 +204,7 @@ namespace CoreSystems.Platform
             {
                 var reloading = ActiveAmmoDef.AmmoDef.Const.Reloadable && ClientMakeUpShots == 0 && (Loading || ProtoWeaponAmmo.CurrentAmmo == 0);
                 var canShoot = !PartState.Overheated && !reloading && !System.DesignatorWeapon && (!LastEventCanDelay || AnimationDelayTick <= System.Session.Tick || ClientMakeUpShots > 0);
-                var validShootStates = PartState.Action == CoreComponent.TriggerActions.TriggerOn || AiShooting && PartState.Action == CoreComponent.TriggerActions.TriggerOff;
-                var delayedFire = System.DelayCeaseFire && !Target.IsAligned && System.Session.Tick - CeaseFireDelayTick <= System.CeaseFireDelay;
-                var shoot = (validShootStates || FinishBurst || delayedFire);
-                var shotReady = canShoot && (shoot || LockOnFireState);
+                var shotReady = canShoot;
 
                 /*
                 var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);

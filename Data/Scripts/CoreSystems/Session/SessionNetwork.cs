@@ -80,7 +80,7 @@ namespace CoreSystems
                 var invalidType = false;
                 switch (packetObj.Packet.PType) {
 
-                    case PacketType.FakeTargetUpdate: 
+                    case PacketType.AimTargetUpdate: 
                     {
                             ClientFakeTargetUpdate(packetObj);
                             break;
@@ -274,8 +274,13 @@ namespace CoreSystems
                     ServerActiveControlUpdate(packetObj);
                     break;
                 }
-                case PacketType.FakeTargetUpdate: {
-                    ServerFakeTargetUpdate(packetObj);
+                case PacketType.AimTargetUpdate: {
+                    ServerAimTargetUpdate(packetObj);
+                    break;
+                }
+                case PacketType.PaintedTargetUpdate:
+                {
+                    ServerMarkedTargetUpdate(packetObj);
                     break;
                 }
                 case PacketType.AmmoCycleRequest: {

@@ -1,4 +1,5 @@
 ﻿using CoreSystems.Support;
+using Sandbox.Game.Entities;
 
 namespace CoreSystems
 {
@@ -104,9 +105,8 @@ namespace CoreSystems
                 var cubeid = item.Key;
                 var blockInfo = item.Value;
                 var functBlock = blockInfo.FunctBlock;
-
-                if (functBlock == null || functBlock.MarkedForClose)
-                {
+                var cube = (MyCubeBlock)blockInfo.FunctBlock;
+                if (functBlock?.SlimBlock == null || functBlock.SlimBlock.IsDestroyed || cube == null || cube.MarkedForClose || cube.Closed || cube.CubeGrid.MarkedForClose || !cube.IsFunctional || !cube.InScene) { // keen is failing to check for null when they null out functional block types
                     _effectPurge.Enqueue(cubeid);
                     continue;
                 }
@@ -279,6 +279,8 @@ namespace CoreSystems
             Placer = null;
             TargetGps = null;
             SApi.Unload();
+            if (WaterApiLoaded)
+                WApi.Unload();
             SApi = null;
             Api = null;
             ApiServer = null;

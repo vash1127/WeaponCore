@@ -17,7 +17,7 @@ namespace CoreSystems.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.Data.Repo.Values.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer = w.Comp.Data.Repo.Values.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -27,19 +27,16 @@ namespace CoreSystems.Projectiles
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
-                p.Info.ClientSent = t == Kind.Client || firingPlayer && w.System.Session.IsServer; 
+                p.Info.ClientSent = t == Kind.Client || firingPlayer && w.System.Session.IsServer;
                 p.Info.AmmoDef = a;
                 p.Info.Overrides = w.Comp.Data.Repo.Values.Set.Overrides;
                 p.Info.Target.TargetEntity = t != Kind.Client ? w.Target.TargetEntity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Values.State.TrackingReticle;
-                p.Info.Target.CoreEntity = w.Comp.CoreEntity;
                 p.Info.Target.CoreCube = w.Comp.Cube;
-                p.Info.Target.CoreParent = w.Comp.TopEntity;
-                p.Info.Target.CoreIsCube = w.Comp.Cube != null;
 
-                p.Info.DummyTarget = w.Comp.Data.Repo.Values.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Values.State.PlayerId] : null;
+                p.Info.DummyTargets = w.Comp.FakeMode ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Values.State.PlayerId] : null;
 
                 p.Info.PartId = w.PartId;
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;
@@ -71,7 +68,7 @@ namespace CoreSystems.Projectiles
                 p.Info.ShotFade = shotFade;
                 p.PredictedTargetPos = w.Target.TargetPos;
                 p.DeadSphere.Center = w.MyPivotPos;
-                p.DeadSphere.Radius = w.Comp.Ai.DeadSphereRadius;
+                p.DeadSphere.Radius = w.Comp.Ai.GridEntity.GridSizeHalf + 0.1;
 
                 if (a.Const.FeelsGravity && w.System.Session.Tick - w.GravityTick > 60)
                 {
@@ -115,12 +112,16 @@ namespace CoreSystems.Projectiles
                 p.Start();
 
                 p.Info.Monitors = w.Monitors;
-                if (p.Info.Monitors?.Count > 0) {
+                if (p.Info.Monitors?.Count > 0)
+                {
                     Session.MonitoredProjectiles[p.Info.Id] = p;
                     for (int j = 0; j < p.Info.Monitors.Count; j++)
-                        p.Info.Monitors[j].Invoke(w.Comp.CoreEntity.EntityId, w.PartId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
+                        p.Info.Monitors[j].Invoke(w.Comp.Cube.EntityId, w.PartId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
-
+                /*
+                if (p.Info.ClientSent)
+                    Log.Line($"client sent GeProjectiles: {p.Info.Id} - {p.Info.Target.Entity != null} - {p.Info.MaxTrajectory} - {p.Info.Origin} - {p.Info.Direction} - {p.Velocity}");
+                */
             }
             NewProjectiles.Clear();
         }
@@ -138,7 +139,7 @@ namespace CoreSystems.Projectiles
                 spawned += count;
             }
             ShrapnelToSpawn.Clear();
-            
+
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
 
@@ -168,10 +169,10 @@ namespace CoreSystems.Projectiles
                     var addProjectile = p.Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                     if (!addProjectile && targetAi.PointDefense)
                     {
-                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.TopEntity.PositionComp.WorldMatrixRef.Translation) < 0)
+                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.GridEntity.PositionComp.WorldMatrixRef.Translation) < 0)
                         {
 
-                            var targetSphere = targetAi.TopEntity.PositionComp.WorldVolume;
+                            var targetSphere = targetAi.GridEntity.PositionComp.WorldVolume;
                             targetSphere.Radius *= 3;
                             var testRay = new RayD(p.Info.Origin, p.Info.Direction);
                             var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;

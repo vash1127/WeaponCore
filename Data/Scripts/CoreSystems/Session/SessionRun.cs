@@ -206,7 +206,16 @@ namespace CoreSystems
 
                 if (GridTask.IsComplete)
                     CheckDirtyGridInfos();
-                
+
+                if (!DirtyPowerGrids.IsEmpty)
+                    UpdateGridPowerState();
+
+                if (WaterApiLoaded && (Tick3600 || WaterMap.IsEmpty))
+                    UpdateWaters();
+
+                if (HandlesInput && Tick60)
+                    UpdatePlayerPainters();
+
                 if (DebugLos && Tick1800) {
                     var averageMisses = RayMissAmounts > 0 ? RayMissAmounts / Rays : 0; 
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
@@ -247,7 +256,7 @@ namespace CoreSystems
                     if (HudUi.TexturesToAdd > 0 || HudUi.KeepBackground) 
                         HudUi.DrawTextures();
 
-                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.CameraBlockView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
                         TargetUi.DrawTargetUi();
 
                     if (HudUi.AgingTextures)
@@ -271,13 +280,19 @@ namespace CoreSystems
                 UiInput.UpdateInputState();
                 if (MpActive)  {
 
-                    if (UiInput.InputChanged && ActiveControlBlock != null) 
+                    if (UiInput.InputChanged && ActiveControlBlock != null)
+                    {
                         SendMouseUpdate(TrackingAi, ActiveControlBlock);
-                    
+                    }
+
                     if (TrackingAi != null && TargetUi.DrawReticle)  {
-                        var dummyTarget = PlayerDummyTargets[PlayerId];
-                        if (dummyTarget.LastUpdateTick == Tick)
-                            SendFakeTargetUpdate(TrackingAi, dummyTarget);
+                        var dummyTargets = PlayerDummyTargets[PlayerId];
+
+                        if (dummyTargets.ManualTarget.LastUpdateTick == Tick)
+                            SendAimTargetUpdate(TrackingAi, dummyTargets.ManualTarget);
+
+                        if (dummyTargets.PaintedTarget.LastUpdateTick == Tick)
+                            SendPaintedTargetUpdate(TrackingAi, dummyTargets.PaintedTarget);
                     }
 
                     if (PacketsToServer.Count > 0)
@@ -314,13 +329,6 @@ namespace CoreSystems
                 if (SuppressWc)
                     return;
 
-                if (WaterMod)
-                {
-                    WaterHash = MyStringHash.GetOrCompute("Water");
-                    WApi.Register("CoreSystems");
-                    WApi.RecievedData += WApiReceiveData;
-                }
-
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
@@ -353,12 +361,6 @@ namespace CoreSystems
 
                 if (!ITask.IsComplete)
                     ITask.Wait();
-
-                if (WaterMod)
-                {
-                    WApi.Unregister();
-                    WApi.RecievedData -= WApiReceiveData;
-                }
 
                 if (IsServer || DedicatedServer)
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ProccessServerPacket);

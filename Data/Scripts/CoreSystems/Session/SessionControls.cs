@@ -18,7 +18,12 @@ namespace CoreSystems
         {
             CreateCustomDecoyActions<T>(session);
             TerminalHelpers.AddDecoyControls<T>(session);
+        }
 
+        public static void CreateCameraTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomCameraActions<T>(session);
+            TerminalHelpers.AddCameraControls<T>(session);
         }
 
         public static void EarlyInitControls(Session session)
@@ -80,7 +85,6 @@ namespace CoreSystems
                 {
                     return;
                 }
-
                 AlterActions<T>(session);
                 AlterControls<T>(session);
 
@@ -95,13 +99,11 @@ namespace CoreSystems
                 else if (typeof(T) == typeof(IMyConveyorSorter))
                 {
                     CreateDefaultActions<T>(session);
-                    TerminalHelpers.CreateGenericArmor<T>(session);
-                    CreateCustomActions<T>.CreateArmorShowArea(session);
                 }
 
                 TerminalHelpers.AddTurretOrTrackingControls<T>(session);
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}", null, true); }
+            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
 
         internal static void CreateDefaultActions<T>(Session session) where T : IMyTerminalBlock
@@ -118,6 +120,10 @@ namespace CoreSystems
             CreateCustomActions<T>.CreateDecoy(session);
         }
 
+        internal static void CreateCustomCameraActions<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateCamera(session);
+        }
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateCycleAmmo(session);
@@ -136,6 +142,9 @@ namespace CoreSystems
             CreateCustomActions<T>.CreateGrids(session);
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
+            CreateCustomActions<T>.CreateRepelMode(session);
+            CreateCustomActions<T>.CreateWeaponCameraChannels(session);
+            CreateCustomActions<T>.CreateLeadGroups(session);
         }
 
         internal static void CreateCustomActionSetArmorEnhancer<T>(Session session) where T: IMyTerminalBlock
@@ -168,7 +177,7 @@ namespace CoreSystems
                         {
                             controls.RemoveAt(i);
                         }
-                        else if (control.Id.Equals("WC_Range"))
+                        else if (control.Id.Equals("Weapon Range"))
                         {
                             wcRangeControl = control;
                             controls.RemoveAt(i);

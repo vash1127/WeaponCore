@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CoreSystems;
+using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
 using VRage;
@@ -20,9 +21,15 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
+            if (ActivateMarks()) DrawActiveMarks();
+            if (ActivateDroneNotice()) DrawDroneNotice();
             if (ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
             {
+
+                if (ActivateLeads())
+                    DrawActiveLeads();
+
                 DrawTarget();
             }
         }
@@ -34,8 +41,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
-
-            if (s.UiInput.FirstPersonView)
+            if (s.UiInput.CameraBlockView)
+            {
+                _pointerPosition.Y = 0f;
+            }
+            else if (s.UiInput.FirstPersonView)
             {
                 if (!MyUtils.IsZero(_pointerPosition.Y))
                 {
@@ -72,8 +82,217 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             _delay = 0;
             _lastDrawTick = s.Tick;
 
-            MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(_reticle, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
             DrawReticle = true;
+        }
+
+        private void DrawDroneNotice()
+        {
+            var s = _session;
+            Vector3D offset;
+            Vector2 localOffset;
+
+            float scale;
+            float screenScale;
+            float fontScale;
+            MyStringId textureName;
+
+            var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
+            var color = new Vector4(1, 1, 1, hudOpacity);
+
+            _alertHudInfo.GetTextureInfo(s, out textureName, out scale, out screenScale, out fontScale, out offset, out localOffset);
+
+            MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
+            string textLine1;
+            string textLine2;
+            Vector2 textOffset1;
+            Vector2 textOffset2;
+            Vector4 text1Color;
+            Vector4 text2Color;
+            if (s.Tick20 && DroneText(localOffset, scale, out textLine1, out textLine2, out textOffset1, out textOffset2, out text1Color, out text2Color))
+            {
+                var fontSize = (float)Math.Round(24 * fontScale, 2);
+                var fontHeight = 0.75f;
+                var fontAge = 18;
+                var fontJustify = Hud.Hud.Justify.None;
+                var fontType = Hud.Hud.FontType.Shadow;
+                var elementId = 123456;
+
+                s.HudUi.AddText(text: textLine1, x: textOffset1.X, y: textOffset1.Y, elementId: elementId, ttl: fontAge, color: text1Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+                s.HudUi.AddText(text: textLine2, x: textOffset2.X, y: textOffset2.Y, elementId: elementId + 1, ttl: fontAge, color: text2Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+            }
+        }
+
+        private void DrawActiveMarks()
+        {
+            var s = _session;
+
+            var time = s.Tick % 20; // forward and backward total time
+            var increase = time < 10;
+            var directionalTimeStep = increase ? time : 19 - time;
+            var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
+            var colorStep = s.Tick % 120;
+            var amplify = colorStep <= 60;
+            var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
+            var cMod1 = MathHelper.Clamp(amplify ? (colorStep * modifyStep) : 2 - (+(colorStep * modifyStep)), 0.1f, 1f);
+            var left = (Vector3)s.CameraMatrix.Left;
+            var up = (Vector3)s.CameraMatrix.Up;
+            var scale = s.Settings.ClientConfig.HudScale;
+            var screenScale = 0.1 * s.ScaleFov;
+            var size = (float)((0.0025f * scale) * s.ScaleFov);
+            var invScaler = MathHelper.Clamp(1 / s.ScaleFov, 0, 20);
+            var fontScale = scale * s.ScaleFov;
+            var invScaleLimit = 4.2;
+
+            if (invScaler >= invScaleLimit)
+            {
+                fontScale *= (invScaler / invScaleLimit);
+                size *= (float)(invScaler / invScaleLimit);
+                invScaler = MathHelper.Clamp(20f / invScaler, 1, 20);
+            }
+
+            var fontYOffset = (float)((-0.05f * scale) * invScaler);
+
+            for (int i = 0; i < s.ActiveMarks.Count; i++)
+            {
+                var mark = s.ActiveMarks[i];
+                var player = mark.Item1;
+                var repColor = mark.Item2;
+                var fakeTarget = mark.Item3;
+
+                var textColor = new Vector4(repColor.X, repColor.Y, repColor.Z, cMod1 * repColor.W);
+
+                var targetCenter = fakeTarget.GetFakeTargetInfo(s.TrackingAi).WorldPosition;
+                var viewSphere = new BoundingSphereD(targetCenter, 100f);
+                if (!s.Camera.IsInFrustum(ref viewSphere))
+                    continue;
+
+                var screenPos = s.Camera.WorldToScreen(ref targetCenter);
+
+                Vector3D drawPos = screenPos;
+                if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
+                {
+                    drawPos.X *= -1;
+                    drawPos.Y = -1;
+                }
+
+                var dotpos = new Vector2D(MathHelper.Clamp(drawPos.X, -0.98, 0.98), MathHelper.Clamp(drawPos.Y, -0.98, 0.98));
+                dotpos.X *= (float)(screenScale * _session.AspectRatio);
+                dotpos.Y *= (float)screenScale;
+                drawPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
+
+
+                MyQuadD quad;
+                MyUtils.GetBillboardQuadOriented(out quad, ref drawPos, size, size, ref left, ref up);
+                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, drawPos, repColor, BlendTypeEnum.PostPP);
+                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, drawPos, repColor, BlendTypeEnum.PostPP);
+
+                string textLine1 = player.DisplayName;
+                var fontSize = (float)Math.Round(10 * fontScale, 2);
+                var fontHeight = 0.75f;
+                var fontAge = -1;
+                var fontJustify = Hud.Hud.Justify.Center;
+                var fontType = Hud.Hud.FontType.Shadow;
+                var elementId = 3102 + (100 + i);
+                s.HudUi.AddText(text: textLine1, x: (float)screenPos.X, y: (float)screenPos.Y + fontYOffset, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+            }
+        }
+        private readonly List<LeadInfo> _leadInfos = new List<LeadInfo>();
+
+        private void DrawActiveLeads()
+        {
+            var s = _session;
+            var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
+
+            MyEntity target;
+            if (!MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
+                return;
+
+            var targetSphere = target.PositionComp.WorldVolume;
+
+            float maxLeadLength;
+            Vector3D fullAveragePos;
+
+            if (!ComputeLead(target, targetSphere.Center, out maxLeadLength, out fullAveragePos))
+                return;
+
+            var lineStart = targetSphere.Center;
+            var lineNormDir = Vector3D.Normalize(fullAveragePos - lineStart);
+            var ray = new RayD(lineStart, lineNormDir);
+
+            var rayDist = s.CameraFrustrum.Intersects(ray);
+            if (!s.Camera.IsInFrustum(ref targetSphere) || rayDist == null)
+                return;
+
+            var lineEnd = lineStart + (lineNormDir * maxLeadLength);
+            var endScreenPos = s.Camera.WorldToScreen(ref lineEnd);
+
+            var worldLine = new LineD(lineEnd, lineStart, maxLeadLength);
+
+            var obb = new MyOrientedBoundingBoxD(target.PositionComp.LocalAABB, target.PositionComp.WorldMatrixRef);
+            var lineLength = obb.Intersects(ref worldLine) ?? 0;
+            if (lineLength < 0.2f)
+                return;
+
+            var lineScale = (float)(0.1 * s.ScaleFov);
+
+            var startScreenPos = s.Camera.WorldToScreen(ref lineStart);
+            var scaledAspect = lineScale * _session.AspectRatio;
+
+            var scale = s.Settings.ClientConfig.HudScale;
+            var fontScale = scale * s.ScaleFov;
+            Vector3D fursthestScreenPos = Vector3D.Zero;
+            double furthestDist = 0;
+            for (int i = 0; i < _leadInfos.Count; i++)
+            {
+                var info = _leadInfos[i];
+
+                if (obb.Contains(ref info.Position))
+                    continue;
+
+                var screenPos = s.Camera.WorldToScreen(ref info.Position);
+                var lockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref screenPos);
+
+                var distSqr = Vector3D.DistanceSquared(lockedScreenPos, startScreenPos);
+                if (distSqr > furthestDist)
+                {
+                    furthestDist = distSqr;
+                    fursthestScreenPos = lockedScreenPos;
+                }
+
+                var textColor = !info.WillHit ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0.025f, 0.025f, 1);
+
+                string textLine1 = (i + 1).ToString();
+                var size = !info.WillHit ? 8 : 11;
+                var fontSize = (float)Math.Round(size * fontScale, 2);
+                var fontHeight = 0.75f;
+                var fontAge = -1;
+                var fontJustify = Hud.Hud.Justify.Center;
+                var fontType = Hud.Hud.FontType.Shadow;
+                var elementId = 1103 + (220 + i);
+                s.HudUi.AddText(text: textLine1, x: (float)lockedScreenPos.X, y: (float)lockedScreenPos.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
+            }
+
+            var endDotPos = new Vector2D(fursthestScreenPos.X, fursthestScreenPos.Y);
+            endDotPos.X *= scaledAspect;
+            endDotPos.Y *= lineScale;
+
+            var lineEndScreenPos = Vector3D.Transform(new Vector3D(endDotPos.X, endDotPos.Y, -0.1), s.CameraMatrix);
+
+            var culledLineStart = lineEnd - (lineNormDir * lineLength);
+            var culledStartScreenPos = s.Camera.WorldToScreen(ref culledLineStart);
+
+            var culledStartDotPos = new Vector2D(culledStartScreenPos.X, culledStartScreenPos.Y);
+            culledStartDotPos.X *= scaledAspect;
+            culledStartDotPos.Y *= lineScale;
+
+            var lineStartScreenPos = Vector3D.Transform(new Vector3D(culledStartDotPos.X, culledStartDotPos.Y, -0.1), s.CameraMatrix);
+
+            var lineColor = new Vector4(0.5f, 0.5f, 1, 1);
+            var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
+
+            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
+            _leadInfos.Clear();
         }
 
         private void DrawTarget()
@@ -81,7 +300,6 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
             var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
-
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -91,7 +309,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var targetState = s.TrackingAi.TargetState[i];
                 var isActive = i == focus.ActiveId;
                 var primary = i == 0;
-                var shielded = targetState.ShieldHealth >= 0;
+                var shielded = detailedHud && targetState.ShieldHealth >= 0;
 
                 Dictionary<string, HudInfo> collection;
                 if (detailedHud)
@@ -140,17 +358,17 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
-                    var quickUpdate = _session.UiInput.FirstPersonView && _session.HudUi.NeedsUpdate && _session.ControlledEntity is IMyGunBaseUser;
+                    var quickUpdate = _session.HudUi.NeedsUpdate && (_session.UiInput.FirstPersonView && _session.ControlledEntity is IMyGunBaseUser || _session.UiInput.CameraBlockView);
                     if (s.Tick20 || quickUpdate)
                     {
                         for (int j = 0; j < 11; j++)
                         {
                             string text;
                             Vector2 textOffset;
-                            if (TextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
+                            if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                             {
                                 var textColor = Color.White;
-                                var fontSize = (float)Math.Round(21 * fontScale, 1);
+                                var fontSize = (float)Math.Round(21 * fontScale, 2);
                                 var fontHeight = 0.75f;
                                 var fontAge = !quickUpdate ? 18 : 0;
                                 var fontJustify = Hud.Hud.Justify.None;
@@ -182,13 +400,13 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     dotpos.X *= (float)(screenScale * _session.AspectRatio);
                     dotpos.Y *= (float)screenScale;
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
-                    MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
+                    MyTransparentGeometry.AddBillboardOriented(_targetCircle, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
 
                 }
             }
         }
 
-        private bool TextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
+        private bool TargetTextStatus(int slot, TargetStatus targetState, float scale, Vector2 localOffset, bool shielded, bool details, out string textStr, out Vector2 textOffset)
         {
             var showAll = details && shielded;
             var minimal = !details;
@@ -228,7 +446,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     textOffset.Y += yStart;
                     break;
                 case 2:
-                    textStr = $"THREAT: {targetState.ThreatLvl}";
+                    var threatLvl = targetState.ThreatLvl > 0 ? targetState.ThreatLvl : 0;
+                    textStr = $"THREAT: {threatLvl}";
                     textOffset.X -= xOdd * aspectScale;
                     if (minimal)
                         textOffset.Y += yStart;
@@ -241,8 +460,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                         textStr = "INTERCEPT";
                     else if (targetState.Engagement == 1)
                         textStr = "RETREATING";
-                    else
+                    else if (targetState.Speed < 1)
                         textStr = "STATIONARY";
+                    else
+                        textStr = "PARALLEL";
+
                     textOffset.X += xEven * aspectScale;
                     textOffset.Y += yStart - (yStep * 1);
                     break;
@@ -298,6 +520,28 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             }
             return true;
         }
+
+        private bool DroneText(Vector2 localOffset, float scale, out string text1, out string text2, out Vector2 offset1, out Vector2 offset2, out Vector4 color1, out Vector4 color2)
+        {
+            var aspectScale = (2.37037f / _session.AspectRatio);
+            var xCenter = 0.22f * scale;
+            var yStart = 0.885f * scale;
+            var yStep = 0.12f * scale;
+
+            offset1 = localOffset;
+            offset1.X -= xCenter * aspectScale;
+            offset1.Y += yStart;
+            offset2.X = offset1.X;
+            offset2.Y = offset1.Y - yStep;
+
+            text1 = $"Incoming drones detected!";
+            text2 = $"              Threats: {_session.TrackingAi.Construct.RootAi.Construct.DroneCount}";
+
+            color1 = new Vector4(1, 1, 1, 1);
+            color2 = _session.Count < 60 ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0, 0, 1);
+            return true;
+        }
+
 
         private void InitTargetOffset()
         {
@@ -370,6 +614,60 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             return text;
         }
 
+        private bool ComputeLead(MyEntity target, Vector3D targetPos, out float maxLeadLength, out Vector3D fullAveragePos)
+        {
+            _leadInfos.Clear();
+            maxLeadLength = 0;
+            fullAveragePos = Vector3D.Zero;
+            for (var gId = 0; gId < _session.LeadGroups.Length; gId++)
+            {
+
+                var group = _session.LeadGroups[gId];
+                var leadAvg = Vector3D.Zero;
+                var somethingWillHit = false;
+                var addLead = 0;
+
+                for (var i = 0; i < group.Count; i++)
+                {
+
+                    var w = group[i];
+                    Vector3D predictedPos;
+                    bool canHit;
+                    bool willHit;
+                    Weapon.LeadTarget(w, target, out predictedPos, out canHit, out willHit);
+
+                    if (canHit)
+                    {
+
+                        ++addLead;
+                        leadAvg += predictedPos;
+                        if (!somethingWillHit && willHit)
+                        {
+                            somethingWillHit = true;
+                        }
+                    }
+
+                    if (i == group.Count - 1 && !MyUtils.IsZero(leadAvg))
+                    {
+
+                        leadAvg /= addLead;
+                        var leadLength = Vector3.Distance(leadAvg, targetPos);
+                        if (leadLength > maxLeadLength)
+                            maxLeadLength = leadLength;
+
+                        fullAveragePos += leadAvg;
+
+                        _leadInfos.Add(new LeadInfo { Group = gId, Position = leadAvg, Length = leadLength, WillHit = somethingWillHit });
+                    }
+                }
+            }
+
+            if (_leadInfos.Count > 0)
+                fullAveragePos /= _leadInfos.Count;
+
+            return _leadInfos.Count != 0;
+        }
+
         internal bool GetTargetState(Session s)
         {
             var ai = s.TrackingAi;
@@ -399,12 +697,6 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
-
-                    if (targetAi != null)
-                    {
-
-
-                    }
                 }
 
                 var state = ai.TargetState[i];

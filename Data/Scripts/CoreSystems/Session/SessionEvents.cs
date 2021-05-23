@@ -11,6 +11,7 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using static CoreSystems.Support.Ai;
+using IMyControllableEntity = VRage.Game.ModAPI.Interfaces.IMyControllableEntity;
 
 namespace CoreSystems
 {
@@ -21,6 +22,11 @@ namespace CoreSystems
             try
             {
                 if (!Inited) lock (InitObj) Init();
+
+                var planet = entity as MyPlanet;
+                if (planet != null)
+                    PlanetMap.TryAdd(planet.EntityId, planet);
+
                 var grid = entity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
                 if (!PbApiInited && entity is IMyProgrammableBlock) PbActivate = true;
@@ -33,6 +39,7 @@ namespace CoreSystems
                 var controllableGun = entity as IMyUserControllableGun;
                 var rifle = entity as IMyAutomaticRifleGun;
                 var decoy = cube as IMyDecoy;
+                var camera = cube as MyCameraBlock;
 
                 if (sorter != null || turret != null || controllableGun != null || rifle != null)
                 {
@@ -79,6 +86,16 @@ namespace CoreSystems
                             }
 
                             cube.AddedToScene += DecoyAddedToScene;
+                        }
+                        else if (camera != null)
+                        {
+                            if (!CameraDetected)
+                            {
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateCameraTerminalUi<IMyCameraBlock>(this));
+                                CameraDetected = true;
+                            }
+
+                            cube.AddedToScene += CameraAddedToScene;
                         }
                     }
 
@@ -138,6 +155,44 @@ namespace CoreSystems
                     addColletion.ApplyAdditions();
                     DecoyMap[entity] = newType;
                 }
+            }
+        }
+
+        private void CameraAddedToScene(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged += CameraCustomDataChanged;
+            term.AppendingCustomInfo += CameraAppendingCustomInfo;
+            myEntity.OnMarkForClose += CameraOnMarkForClose;
+            CameraCustomDataChanged(term);
+        }
+
+        private void CameraAppendingCustomInfo(IMyTerminalBlock term, StringBuilder stringBuilder)
+        {
+            if (term.CustomData.Length == 1)
+                CameraCustomDataChanged(term);
+        }
+
+        private void CameraOnMarkForClose(MyEntity myEntity)
+        {
+            var term = (IMyTerminalBlock)myEntity;
+            term.CustomDataChanged -= CameraCustomDataChanged;
+            term.AppendingCustomInfo -= CameraAppendingCustomInfo;
+            myEntity.OnMarkForClose -= CameraOnMarkForClose;
+        }
+
+        private void CameraCustomDataChanged(IMyTerminalBlock term)
+        {
+            var entity = (MyEntity)term;
+            var cube = (MyCubeBlock)entity;
+            long value = -1;
+            if (long.TryParse(term.CustomData, out value))
+            {
+                CameraGroupMappings[cube] = value;
+            }
+            else
+            {
+                CameraGroupMappings[cube] = 0;
             }
         }
 
@@ -324,6 +379,8 @@ namespace CoreSystems
                     PlayerMouseStates.Remove(playerId);
                     PlayerDummyTargets.Remove(playerId);
                     PlayerMIds.Remove(removedPlayer.SteamUserId);
+                    if (PlayerControllerMonitor.Remove(removedPlayer))
+                        removedPlayer.Controller.ControlledEntityChanged -= OnPlayerController;
 
                     if (IsServer && MpActive)
                         SendPlayerConnectionUpdate(l, false);
@@ -332,9 +389,8 @@ namespace CoreSystems
                         ConnectedAuthors.Remove(playerId);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}", null, true); }
+            catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }
         }
-
 
         private bool FindPlayer(IMyPlayer player, long id)
         {
@@ -343,41 +399,75 @@ namespace CoreSystems
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
                 PlayerMouseStates[id] = new InputStateData();
-                PlayerDummyTargets[id] = new FakeTarget();
+                PlayerDummyTargets[id] = new FakeTargets();
                 PlayerEntityIdInRange[player.SteamUserId] = new HashSet<long>();
                 PlayerMIds[player.SteamUserId] = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
+                var controller = player.Controller;
+                if (controller != null && PlayerControllerMonitor.Add(player))
+                {
+                    controller.ControlledEntityChanged += OnPlayerController;
+                    OnPlayerController(null, controller.ControlledEntity);
+                }
+
                 PlayerEventId++;
-                if (AuthorIds.Contains(player.SteamUserId)) 
+                if (AuthorIds.Contains(player.SteamUserId))
                     ConnectedAuthors.Add(id, player.SteamUserId);
 
-                if (IsServer && MpActive)  {
+                if (IsServer && MpActive)
+                {
                     SendPlayerConnectionUpdate(id, true);
                     SendServerStartup(player.SteamUserId);
                 }
                 else if (MpActive && MultiplayerId != player.SteamUserId && JokePlayerList.Contains(player.SteamUserId))
-                    ParticleJokes();
+                    PracticalJokes();
             }
             return false;
         }
 
-        private void WApiReceiveData()
+        private void OnPlayerController(IMyControllableEntity arg1, IMyControllableEntity arg2)
         {
-            if (WApi.Registered) {
-                WaterMap.Clear();
-                MaxWaterHeightSqr.Clear();
-                for (int i = 0; i < WApi.Waters.Count; i++) {
-                    
-                    var water = WApi.Waters[i];
-                    if (water.planet != null) {
+            try
+            {
+                var ent1 = arg1 as MyEntity;
+                var ent2 = arg2 as MyEntity;
+                HashSet<long> players;
 
-                        WaterMap[water.planet] = water;
-                        var maxWaterHeight = water.radius;
-                        var maxWaterHeightSqr = maxWaterHeight * maxWaterHeight;
-                        MaxWaterHeightSqr[water.planet] = maxWaterHeightSqr;
+                if (ent1 != null)
+                {
+                    var cube = ent1 as MyCubeBlock;
+                    if (cube != null && PlayerGrids.TryGetValue(cube.CubeGrid, out players) && arg2 != null)
+                    {
+                        players.Remove(arg2.ControllerInfo.ControllingIdentityId);
+
+                        if (players.Count == 0)
+                        {
+                            PlayerGridPool.Return(players);
+                        }
                     }
                 }
+                if (ent2 != null)
+                {
+                    var cube = ent2 as MyCubeBlock;
+
+                    if (cube != null)
+                    {
+                        if (PlayerGrids.TryGetValue(cube.CubeGrid, out players))
+                        {
+                            players.Add(arg2.ControllerInfo.ControllingIdentityId);
+                        }
+                        else
+                        {
+                            players = PlayerGridPool.Get();
+                            players.Add(arg2.ControllerInfo.ControllingIdentityId);
+                            PlayerGrids[cube.CubeGrid] = players;
+                        }
+
+                    }
+
+                }
             }
+            catch (Exception ex) { Log.Line($"Exception in OnPlayerController: {ex}"); }
         }
     }
 }

@@ -47,39 +47,45 @@ namespace CoreSystems.Support
             NearByEntitiesTmp = _possibleTargets.Count;
 
             foreach (var grid in PrevSubGrids)
-                RemSubGrids.Add((MyCubeGrid) grid);
+                RemSubGrids.Add((MyCubeGrid)grid);
+
             PrevSubGrids.Clear();
-            for (int i = 0; i < NearByEntitiesTmp; i++) {
+            for (int i = 0; i < NearByEntitiesTmp; i++)
+            {
 
                 var ent = _possibleTargets[i];
-                using (ent.Pin()) {
+                using (ent.Pin())
+                {
 
                     if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
-
                     var grid = ent as MyCubeGrid;
-                    if (grid != null && IsGrid && GridEntity.IsSameConstructAs(grid)) {
-                        PrevSubGrids.Add(grid);
-                        continue;
+
+                    GridMap gridMap = null;
+                    if (grid != null)
+                    {
+                        if (GridEntity.IsSameConstructAs(grid))
+                        {
+                            PrevSubGrids.Add(grid);
+                            continue;
+                        }
+                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
+                            continue;
                     }
 
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                     if (!CreateEntInfo(ent, AiOwner, out entInfo))
-                    {
                         continue;
-                    }
 
-                    switch (entInfo.Relationship) {
+                    switch (entInfo.Relationship)
+                    {
                         case MyRelationsBetweenPlayerAndBlock.Owner:
                         case MyRelationsBetweenPlayerAndBlock.FactionShare:
                         case MyRelationsBetweenPlayerAndBlock.Friends:
                             continue;
                     }
 
-                    if (grid != null) {
-
-                        GridMap gridMap;
-                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
-                            continue;
+                    if (gridMap != null)
+                    {
 
                         var allFat = gridMap.MyCubeBocks;
                         var fatCount = allFat.Count;
@@ -87,14 +93,22 @@ namespace CoreSystems.Support
                         if (fatCount <= 0)
                             continue;
 
+                        if (Session.Tick - gridMap.PowerCheckTick > 600)
+                            Session.CheckGridPowerState(grid, gridMap);
+
                         var loneWarhead = false;
-                        if (fatCount <= 20)  { // possible debris
+                        var hostileDrone = false;
+                        if (fatCount <= 20)
+                        { // possible debris
 
                             var valid = false;
-                            for (int j = 0; j < fatCount; j++) {
+                            for (int j = 0; j < fatCount; j++)
+                            {
                                 var fat = allFat[j];
                                 var warhead = fat is IMyWarhead;
-                                if (warhead || fat is IMyTerminalBlock && fat.IsWorking) {
+                                if (warhead || fat is IMyTerminalBlock && fat.IsWorking)
+                                {
+                                    hostileDrone = warhead || gridMap.SuspectedDrone;
                                     loneWarhead = warhead && fatCount == 1;
                                     valid = true;
                                     break;
@@ -102,21 +116,21 @@ namespace CoreSystems.Support
                             }
                             if (!valid) continue;
                         }
-
                         int partCount;
                         Ai targetAi;
-                        if (Session.GridAIs.TryGetValue(grid, out targetAi)) {
+                        if (Session.GridAIs.TryGetValue(grid, out targetAi))
+                        {
                             targetAi.TargetAisTmp.Add(this);
                             TargetAisTmp.Add(targetAi);
                             partCount = targetAi.Construct.BlockCount;
                         }
-                        else 
+                        else
                             partCount = gridMap.MostBlocks;
 
-                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead ? fatCount : 2));// bump warhead to 2 fatblocks so its not ignored by targeting
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead ? fatCount : 2, hostileDrone, loneWarhead));// bump warhead to 2 fatblocks so its not ignored by targeting
                         ValidGrids.Add(ent);
                     }
-                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
+                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0, false, false));
                 }
             }
             FinalizeTargetDb();
@@ -238,9 +252,9 @@ namespace CoreSystems.Support
 
         private bool GridTouchingWater()
         {
-            Water water;
-            if (Session.WaterMap.TryGetValue(MyPlanet, out water)) {
-                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.radius + water.waveHeight);
+            WaterData water;
+            if (Session.WaterMap.TryGetValue(MyPlanet.EntityId, out water)) {
+                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.Radius + water.WaveHeight);
                 return new MyOrientedBoundingBoxD(TopEntity.PositionComp.LocalAABB, TopEntity.PositionComp.WorldMatrixRef).Intersects(ref WaterVolume);
             }
             return false;

@@ -4,7 +4,7 @@ using VRageMath;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    internal partial class Hud
+    partial class Hud
     {
         private TextureMap GenerateMap(MyStringId material, float uvOffsetX, float uvOffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY)
         {
@@ -20,8 +20,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             };
         }
 
-        private readonly Dictionary<char, float> _shadowCharWidthMap = new Dictionary<char, float> {[' '] = 0.375f, ['.'] = 0.4f };
-        private readonly Dictionary<char, float> _monoCharWidthMap = new Dictionary<char, float> { [' '] = 0.5f, ['.'] = 0.5f};
+        private readonly Dictionary<char, float> _shadowCharWidthMap = new Dictionary<char, float> { [' '] = 0.375f, ['.'] = 0.4f };
+        private readonly Dictionary<char, float> _monoCharWidthMap = new Dictionary<char, float> { [' '] = 0.5f, ['.'] = 0.5f };
 
         private void LoadTextMaps(string language, out Dictionary<FontType, Dictionary<char, TextureMap>> characterMap)
         {
@@ -132,7 +132,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                             ['~'] = GenerateMap(_monoEnglishFontAtlas1, 780, 88, 30, 42, 1024, 1024),
                         },
 
-                        [FontType.Shadow] = new Dictionary<char, TextureMap>
+                        [FontType.Shadow] = new Dictionary<char, TextureMap>()
                         {
                             [' '] = GenerateMap(_shadowEnglishFontAtlas1, 0, 0, 15, 45, 1024, 1024),
                             ['!'] = GenerateMap(_shadowEnglishFontAtlas1, 15, 0, 24, 45, 1024, 1024),

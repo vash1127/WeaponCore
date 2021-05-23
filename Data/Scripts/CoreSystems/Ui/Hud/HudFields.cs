@@ -9,27 +9,30 @@ using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 {
-    internal partial class Hud
+    partial class Hud
     {
         private const float MetersInPixel = 0.0002645833f;
         private const float PaddingConst = 10 * MetersInPixel;
-        private const float WeaponHudFontSize = 4f;
+        private const float WeaponHudFontSize = 8f;
         private const float WeaponHudFontHeight = WeaponHudFontSize * MetersInPixel;
         private const float ReloadHeightConst = 4f * MetersInPixel;
         private const float ReloadWidthConst = ReloadHeightConst;
-        private const float ReloadHeightOffsetConst = ReloadHeightConst;
         private const float HeatWidthConst = 35 * MetersInPixel;
-        private const float HeatWidthOffset = HeatWidthConst + (PaddingConst * 1.8f);
+        private const float HeatWidthOffset = HeatWidthConst + (PaddingConst * 3f);
         private const float HeatHeightConst = HeatWidthConst * 0.0625f;
         private const float InfoPanelOffset = WeaponHudFontHeight + (HeatHeightConst * 2f);
-        private const float DefaultFov = 1.22f;
         private const float BgBorderRatio = .166f;
         private const float MonoWidthScaler = 0.75f;
         private const float ShadowWidthScaler = 0.7f;
-        private const int InitialPoolCapacity = 512;
-        private const uint MinUpdateTicks = 120;
+        private const float ShadowHeightScaler = 0.65f;
+        private const float ShadowSizeScaler = 1.5f;
+        private const int WeaponLimit = 50;
+        private const int StackThreshold = 10;
 
-        private readonly MyConcurrentPool<AgingTextRequest> _agingTextRequestPool = new MyConcurrentPool<AgingTextRequest>(64, data => data.Clean() );
+        private const int InitialPoolCapacity = 512;
+        private const uint MinUpdateTicks = 60;
+
+        private readonly MyConcurrentPool<AgingTextRequest> _agingTextRequestPool = new MyConcurrentPool<AgingTextRequest>(64, data => data.Clean());
         private readonly MyConcurrentPool<TextData> _textDataPool = new MyConcurrentPool<TextData>(128);
         private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
         private readonly ConcurrentQueue<TextDrawRequest> _textDrawPool = new ConcurrentQueue<TextDrawRequest>();
@@ -53,16 +56,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         private Vector3D _viewPortSize;
         private uint _lastHudUpdateTick;
 
+        private Vector4 _bgColor = new Vector4(1, 1, 1, 0);
 
-        private readonly TextureMap[] _reloadingTexture = new TextureMap[6];
-        private readonly TextureMap[] _outofAmmoTexture = new TextureMap[2];
-        private readonly TextureMap[] _chargingTexture = new TextureMap[10];
-        private readonly TextureMap[] _infoBackground = new TextureMap[3];
-        private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
-        private readonly Color _bgColor = new Color(40, 54, 62, 1);
-        private readonly FontType _hudFont = FontType.Mono;
+        private readonly FontType _hudFont = FontType.Shadow;
         private int _currentLargestName;
-        private float _paddingHeat;
         private float _paddingReload;
         private float _padding;
         private float _reloadHeight;
@@ -90,6 +87,12 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
         internal readonly Dictionary<FontType, Dictionary<char, TextureMap>> CharacterMap;
         internal readonly List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
+        internal readonly TextureMap[] PaintedTexture = new TextureMap[10];
+        internal readonly TextureMap[] ReloadingTexture = new TextureMap[6];
+        internal readonly TextureMap[] OutofAmmoTexture = new TextureMap[2];
+        internal readonly TextureMap[] ChargingTexture = new TextureMap[10];
+        internal readonly TextureMap[] InfoBackground = new TextureMap[3];
+        internal readonly TextureMap[] HeatBarTexture = new TextureMap[12];
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
@@ -117,12 +120,12 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
             LoadTextMaps("EN", out CharacterMap); // possible translations in future
 
-            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 0, 128, 768, 128, 768, 384, ref _infoBackground);
-            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref _heatBarTexture);
-            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 0, 0, 64, 64, 64, 64, 512, ref _reloadingTexture);
-            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 0, 64, 64, 64, 64, 512, ref _outofAmmoTexture);
-            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 0, 0, 64, 64, 64, 64, 640, ref _chargingTexture);
-            
+            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 0, 128, 768, 128, 768, 384, ref InfoBackground);
+            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref HeatBarTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 0, 0, 64, 64, 64, 64, 512, ref ReloadingTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 0, 64, 64, 64, 64, 512, ref OutofAmmoTexture);
+            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 0, 0, 64, 64, 64, 64, 640, ref ChargingTexture);
+            BuildMap(MyStringId.GetOrCompute("BlockTargetAtlas"), 0, 0, 0, 256, 256, 256, 256, 2560, ref PaintedTexture); // InitOffset X,Y offset X,Y uv X,Y textureSize X,Y
 
             for (int i = 0; i < InitialPoolCapacity; i++)
             {
@@ -135,7 +138,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             }
         }
 
-        internal void BuildMap(MyStringId material,float initOffsetX, float initOffsetY, float offsetX, float OffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY, ref TextureMap[] textureArr)
+        internal void BuildMap(MyStringId material, float initOffsetX, float initOffsetY, float offsetX, float OffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY, ref TextureMap[] textureArr)
         {
             for (int i = 0; i < textureArr.Length; i++)
             {
@@ -159,7 +162,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         {
             internal readonly CachingList<TextData> Data = new CachingList<TextData>(32);
             internal string Text;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position;
             internal FontType Font;
             internal long ElementId;
@@ -206,7 +209,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         internal struct TextDrawRequest
         {
             internal string Text;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position;
             internal float FontSize;
             internal FontType Font;
@@ -215,7 +218,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         internal class TextureDrawData
         {
             internal MyStringId Material;
-            internal Color Color;
+            internal Vector4 Color;
             internal Vector3D Position = new Vector3D();
             internal Vector3 Up;
             internal Vector3 Left;
@@ -229,4 +232,5 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             internal bool UvDraw;
             internal BlendTypeEnum Blend = BlendTypeEnum.PostPP;
         }
-    }}
+    }
+}

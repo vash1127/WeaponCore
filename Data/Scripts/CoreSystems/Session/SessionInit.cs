@@ -79,6 +79,13 @@ namespace CoreSystems
                 ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
             }
 
+            if (WaterMod && !WaterApiLoaded)
+            {
+                WaterApiLoaded = true;
+                WApi.Load();
+                WaterHash = MyStringHash.GetOrCompute("Water");
+            }
+
             if (!CompsToStart.IsEmpty)
                 StartComps();
 

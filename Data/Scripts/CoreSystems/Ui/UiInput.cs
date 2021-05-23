@@ -38,6 +38,8 @@ namespace CoreSystems
         internal bool UiKeyWasPressed;
         internal bool PlayerCamera;
         internal bool FirstPersonView;
+        internal bool CameraBlockView;
+        internal long CameraChannelId;
         internal bool Debug = true;
         internal bool MouseShootWasOn;
         internal bool MouseShootOn;
@@ -92,14 +94,13 @@ namespace CoreSystems
 
                 _session.PlayerMouseStates[_session.PlayerId] = ClientInputState;
 
-                if (_session.MpActive)
-                {
+                if (_session.MpActive)  {
                     var shootButtonActive = ClientInputState.MouseButtonLeft || ClientInputState.MouseButtonRight;
 
                     MouseShootWasOn = MouseShootOn;
-                    if ((_session.ManualShot || s.Tick - _lastInputUpdate >= 29) && shootButtonActive && !MouseShootOn)
+                    if ((_session.ManualShot  || s.Tick - _lastInputUpdate >= 29) && shootButtonActive && !MouseShootOn)
                     {
-                        _lastInputUpdate = s.Tick;
+                        _lastInputUpdate = s.Tick; 
                         MouseShootOn = true;
                     }
                     else if (MouseShootOn && !shootButtonActive)
@@ -133,6 +134,12 @@ namespace CoreSystems
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
+               
+                CameraBlockView = !PlayerCamera && !FirstPersonView && s.ActiveCameraBlock != null && s.ActiveCameraBlock.IsActive && s.ActiveCameraBlock.IsWorking;
+
+                if (CameraBlockView && s.ActiveCameraBlock != null)
+                    CameraChannelId = s.CameraChannelMappings[s.ActiveCameraBlock];
+                else CameraChannelId = 0;
 
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
@@ -146,6 +153,7 @@ namespace CoreSystems
             {
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
                 ControlKeyPressed = MyAPIGateway.Input.IsKeyPress(ControlKey);
+                CameraChannelId = 0;
 
                 if (CtrlPressed && ControlKeyPressed && GetAimRay(s, out AimRay) && Debug)
                 {
@@ -196,11 +204,13 @@ namespace CoreSystems
                         {
                             if (MyAPIGateway.Input.IsKeyPress(MyKeys.Add))
                             {
+                                _session.HudUi.NeedsUpdate = true;
                                 _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale + 0.01f, 0.1f, 10f);
                                 _session.Settings.VersionControl.UpdateClientCfgFile();
                             }
                             else if (MyAPIGateway.Input.IsKeyPress(MyKeys.Subtract))
                             {
+                                _session.HudUi.NeedsUpdate = true;
                                 _session.Settings.ClientConfig.HudScale = MathHelper.Clamp(_session.Settings.ClientConfig.HudScale - 0.01f, 0.1f, 10f);
                                 _session.Settings.VersionControl.UpdateClientCfgFile();
                             }
@@ -226,7 +236,7 @@ namespace CoreSystems
 
             if (_session.MpActive && !s.InGridAiBlock)
             {
-                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight || ClientInputState.MouseButtonMenu || ClientInputState.MouseButtonRight)
+                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight ||  ClientInputState.MouseButtonMenu || ClientInputState.MouseButtonRight)
                 {
                     ClientInputState.InMenu = false;
                     ClientInputState.MouseButtonLeft = false;
@@ -314,5 +324,4 @@ namespace CoreSystems
             }
             catch (Exception ex) { Log.Line($"Exception in BlackList1: {ex}"); }
         }
-    }
-}
+    }}

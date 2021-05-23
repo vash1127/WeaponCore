@@ -139,7 +139,10 @@ namespace CoreSystems.Support
             internal Ai RootAi;
             internal Ai LargestAi;
             internal bool NewInventoryDetected;
-            
+            internal int DroneCount;
+            internal uint LastDroneTick;
+            internal bool DroneAlert;
+
             internal enum RefreshCaller
             {
                 Init,
@@ -208,6 +211,11 @@ namespace CoreSystems.Support
                 LargestAi = null;
             }
 
+            internal void DroneCleanup()
+            {
+                DroneAlert = false;
+                DroneCount = 0;
+            }
 
             internal void UpdateConstruct(UpdateType type, bool sync = true)
             {
@@ -402,9 +410,12 @@ namespace CoreSystems.Support
         {
             var session = ai.Session;
             var fd = ai.Construct.Data.Repo.FocusData;
-
-            fd.Target[fd.ActiveId] = target.EntityId;
-            ai.TargetResetTick = session.Tick + 1;
+            var oldTargetId = fd.Target[fd.ActiveId];
+            if (oldTargetId != target.EntityId)
+            {
+                fd.Target[fd.ActiveId] = target.EntityId;
+                ai.TargetResetTick = session.Tick + 1;
+            }
             ServerIsFocused(ai);
 
             ai.Construct.UpdateConstruct(Ai.Constructs.UpdateType.Focus, ChangeDetected(ai));

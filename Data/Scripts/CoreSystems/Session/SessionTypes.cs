@@ -329,6 +329,7 @@ namespace CoreSystems
                     //{"FocusTargets", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                     //{"MaxSize", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.MaxSize.ToString() ?? string.Empty },
                    //{"MinSize", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.MinSize.ToString() ?? string.Empty },
+                   //{"CameraGroup", () => GetComp()?.BaseData.ProtoRepoBase.Values.Set.Overrides.CameraGroup.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -887,5 +888,22 @@ namespace CoreSystems
             public double RestrictionBoxInflation = 0;
             public bool CheckForAnyPart = false;
         }
+    }
+    public class WaterData
+    {
+        public WaterData(MyPlanet planet)
+        {
+            Planet = planet;
+            WaterId = planet.EntityId;
+        }
+
+        public MyPlanet Planet;
+        public Vector3D Center;
+        public long WaterId;
+        public float Radius;
+        public float MinRadius;
+        public float MaxRadius;
+        public float WaveHeight;
+        public float WaveSpeed;
     }
 }
