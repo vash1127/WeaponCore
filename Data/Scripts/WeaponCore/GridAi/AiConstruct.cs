@@ -87,12 +87,13 @@ namespace WeaponCore.Support
                     FatBlockAdded(cube);
                 }
             }
+
         }
 
         public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
         {
             if (!SubGridsRegistered.Contains(grid)) {
-                Log.Line($"sub Grid Already UnRegistered: [Main]:{grid == MyGrid}");
+                Log.Line($"sub Grid Already UnRegistered: [Main]:{grid == MyGrid} - clean:{clean}");
             }
 
             if (!clean) SubGrids.Remove(grid);
@@ -135,14 +136,18 @@ namespace WeaponCore.Support
             internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
+            internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
             internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
-            internal float OptimalDps;
-            internal int BlockCount;
             internal GridAi RootAi;
             internal GridAi LargestAi;
+            internal float OptimalDps;
+            internal int BlockCount;
+            internal int DroneCount;
+            internal uint LastDroneTick;
             internal bool NewInventoryDetected;
-            
+            internal bool DroneAlert;
+
             internal enum RefreshCaller
             {
                 Init,
@@ -211,6 +216,11 @@ namespace WeaponCore.Support
                 LargestAi = null;
             }
 
+            internal void DroneCleanup()
+            {
+                DroneAlert = false;
+                DroneCount = 0;
+            }
 
             internal void UpdateConstruct(UpdateType type, bool sync = true)
             {
@@ -366,6 +376,7 @@ namespace WeaponCore.Support
                 LargestAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
+                PreviousTargets.Clear();
             }
         }
     }
@@ -405,8 +416,13 @@ namespace WeaponCore.Support
             var session = ai.Session;
             var fd = ai.Construct.Data.Repo.FocusData;
 
-            fd.Target[fd.ActiveId] = target.EntityId;
-            ai.TargetResetTick = session.Tick + 1;
+            var oldTargetId = fd.Target[fd.ActiveId];
+            if (oldTargetId != target.EntityId)
+            {
+                fd.Target[fd.ActiveId] = target.EntityId;
+                ai.TargetResetTick = session.Tick + 1;
+            }
+
             ServerIsFocused(ai);
 
             ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));

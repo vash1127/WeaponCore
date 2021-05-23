@@ -23,6 +23,12 @@ namespace WeaponCore
         public void ResetToFreshLoadState()
         {
             Base.State.TrackingReticle = false;
+
+            Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
+
+            if (Base.State.Control == CompStateValues.ControlMode.Ui)
+                Base.State.Control = CompStateValues.ControlMode.None;
+
             if (Base.State.TerminalAction == ShootActions.ShootOnce) 
                 Base.State.TerminalAction = ShootActions.ShootOff;
             for (int i = 0; i < Ammos.Length; i++)
@@ -418,6 +424,11 @@ namespace WeaponCore
         [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
         [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
+        [ProtoMember(15)] public bool Repel;
+        [ProtoMember(16)] public long CameraChannel;
+        [ProtoMember(17)] public bool Debug;
+        [ProtoMember(18)] public long LeadGroup;
+
 
         public GroupOverrides() { }
 
@@ -437,6 +448,10 @@ namespace WeaponCore
             Grids = syncFrom.Grids;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
+            Repel = syncFrom.Repel;
+            CameraChannel = syncFrom.CameraChannel;
+            Debug = syncFrom.Debug;
+            LeadGroup = syncFrom.LeadGroup;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Jakaria;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -11,6 +10,8 @@ using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Api;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.HitEntity.Type;
@@ -47,10 +48,10 @@ namespace WeaponCore.Projectiles
                 var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
                 var myGrid = p.Info.Target.FiringCube.CubeGrid;
-                
-                Water water = null;
+
+                WaterData water = null;
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
-                    Session.WaterMap.TryGetValue(p.Info.MyPlanet, out water);
+                    Session.WaterMap.TryGetValue(p.Info.MyPlanet.EntityId, out water);
 
                 for (int i = 0; i < collectionCount; i++) {
 
@@ -117,7 +118,9 @@ namespace WeaponCore.Projectiles
                     if (checkShield && !p.Info.ShieldBypassed && !p.Info.EwarActive || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
                         shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
-                            if (p.Info.IsShrapnel && p.Info.Age < 1 || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
+
+                            var shrapnelSpawn = p.Info.IsShrapnel && p.Info.Age < 1;
+                            if (Vector3D.Transform(!shrapnelSpawn ? p.Info.Origin : p.Info.Target.FiringCube.PositionComp.WorldMatrixRef.Translation, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
 
                                 p.EntitiesNear = true;
                                 var dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(p.Beam.From, p.Beam.Direction));
@@ -185,9 +188,8 @@ namespace WeaponCore.Projectiles
                             if (voxel == p.Info.MyPlanet && p.Info.VoxelCache.MissSphere.Contains(p.Beam.To) == ContainmentType.Disjoint) {
 
                                 if (p.LinePlanetCheck) {
-
                                     if (water != null && !p.Info.AmmoDef.IgnoreWater) {
-                                        var waterSphere = new BoundingSphereD(p.Info.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
+                                        var waterSphere = new BoundingSphereD(p.Info.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius);
                                         var estiamtedSurfaceDistance = ray.Intersects(waterSphere);
 
                                         if (estiamtedSurfaceDistance.HasValue && estiamtedSurfaceDistance.Value <= p.Beam.Length) {
@@ -196,7 +198,6 @@ namespace WeaponCore.Projectiles
                                             voxelState = VoxelIntersectBranch.PseudoHit2;
                                         }
                                     }
-
                                     if (voxelState != VoxelIntersectBranch.PseudoHit2) {
 
                                         var surfacePos = p.Info.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);

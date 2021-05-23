@@ -3,28 +3,40 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
-using Sandbox.Game;
+using System.Collections.Generic;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using WeaponCore.Platform;
+using VRage.Game.ModAPI;
+using VRage.Utils;
+using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi.Constructs;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+
 namespace WeaponCore
 {
     public class GridMap
     {
+        public readonly MyShipController FakeController = new MyShipController();
         public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
+        public uint PowerCheckTick;
+        public bool SuspectedDrone;
+        public bool Powered;
+
         internal void Clean()
         {
             Targeting = null;
+            FakeController.SlimBlock = null;
             MyCubeBocks.ClearImmediate();
+            MostBlocks = 0;
+            PowerCheckTick = 0;
+            SuspectedDrone = false;
+            Powered = false;
         }
     }
 
@@ -77,14 +89,14 @@ namespace WeaponCore
                             continue;
                         }
 
-                        ai.TargetingInfo.Clean();
 
                         if (ai.MyPlanetTmp != null)
                             ai.MyPlanetInfo();
 
                         foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add((MyCubeGrid) sub);
                         if (ai.SubGridsChanged) ai.SubGridChanges(false, true);
-
+                        
+                        ai.TargetingInfo.Clean(ai);
                         ai.CleanSortedTargets();
                         ai.Targets.Clear();
 
@@ -110,8 +122,11 @@ namespace WeaponCore
 
                             var checkFocus = ai.Construct.Data.Repo.FocusData.HasFocus && targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[0] || targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[1];
 
-                            if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
-                                ai.RamProximity = true;
+                            if (targetInfo.Drone) 
+                                ai.TargetingInfo.DroneAdd(ai, targetInfo);
+
+                            if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid) 
+                                ai.TargetingInfo.RamProximity = true;
 
                             if (targetInfo.DistSqr < ai.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
                             {
@@ -125,6 +140,12 @@ namespace WeaponCore
                                 {
                                     ai.TargetingInfo.OtherInRange = true;
                                     ai.TargetingInfo.OtherRangeSqr = targetInfo.DistSqr;
+                                }
+
+                                if (targetInfo.Drone && targetInfo.DistSqr < ai.TargetingInfo.DroneRangeSqr)
+                                {
+                                    ai.TargetingInfo.DroneInRange = true;
+                                    ai.TargetingInfo.DroneRangeSqr = targetInfo.DistSqr;
                                 }
                             }
                         }
@@ -194,6 +215,129 @@ namespace WeaponCore
             }
         }
 
+        private void UpdateWaters()
+        {
+            foreach (var planet in PlanetMap.Values)
+            {
+                WaterData data;
+                if (WaterApi.HasWater(planet.EntityId))
+                {
+                    if (!WaterMap.TryGetValue(planet.EntityId, out data))
+                    {
+                        data = new WaterData(planet);
+                        WaterMap[planet.EntityId] = data;
+                    }
+
+                    var radiusInfo = WaterApi.GetRadiusData(data.WaterId);
+                    data.Center = radiusInfo.Item1;
+                    data.Radius = radiusInfo.Item2;
+                    data.MinRadius = radiusInfo.Item3;
+                    data.MaxRadius = radiusInfo.Item3;
+                    var waveInfo = WaterApi.GetWaveData(data.WaterId);
+                    data.WaveHeight = waveInfo.Item1;
+                    data.WaveSpeed = waveInfo.Item2;
+                }
+                else WaterMap.TryRemove(planet.EntityId, out data);
+            }
+        }
+
+        private void UpdatePlayerPainters()
+        {
+            ActiveMarks.Clear();
+            foreach (var pair in PlayerDummyTargets) {
+
+                IMyPlayer player;
+                if (Players.TryGetValue(pair.Key, out player)) {
+
+                    var painted = pair.Value.PaintedTarget;
+                    MyEntity target;
+                    if (!painted.Dirty && painted.EntityId != 0 && Tick - painted.LastInfoTick < 300 && !MyUtils.IsZero(painted.LocalPosition) && MyEntities.TryGetEntityById(painted.EntityId, out target)) {
+
+                        var grid = target as MyCubeGrid;
+                        if (player.IdentityId == PlayerId && grid != null) {
+
+                            var v3 = grid.LocalToGridInteger(painted.LocalPosition);
+                            MyCube cube;
+                            
+                            if (!grid.TryGetCube(v3, out cube)) {
+
+                                var startPos = grid.GridIntegerToWorld(v3);
+                                var endPos = startPos + (TargetUi.AimDirection * grid.PositionComp.LocalVolume.Radius);
+
+                                if (grid.RayCastBlocks(startPos, endPos) == null) {
+                                    if (++painted.MissCount > 2)
+                                        painted.ClearMark(Tick);
+                                }
+                            }
+                        }
+
+                        var rep = MyIDModule.GetRelationPlayerPlayer(PlayerId, player.IdentityId);
+                        var self = rep == MyRelationsBetweenPlayers.Self;
+                        var friend = rep == MyRelationsBetweenPlayers.Allies;
+                        var neut = rep == MyRelationsBetweenPlayers.Neutral;
+                        var color = neut ? new Vector4(1, 1, 1, 1) : self ? new Vector4(0.025f, 1f, 0.25f, 2) : friend ? new Vector4(0.025f, 0.025f, 1, 2) : new Vector4(1, 0.025f, 0.025f, 2);
+                        ActiveMarks.Add(new MyTuple<IMyPlayer, Vector4, GridAi.FakeTarget>(player, color, painted));
+                    }
+                }
+            }
+        }
+
+
+        private bool GetClosestLocalPos(MyCubeGrid grid, Vector3I center, double areaRadius, out Vector3D newWorldPos)
+        {
+            if (areaRadius < 3 && grid.GridSizeEnum == MyCubeSize.Large) areaRadius = 3;
+
+            List<Vector3I> tmpSphereOfV3S;
+            areaRadius = Math.Ceiling(areaRadius);
+            if (grid.GridSizeEnum == MyCubeSize.Large && LargeBlockSphereDb.TryGetValue(areaRadius, out tmpSphereOfV3S) || SmallBlockSphereDb.TryGetValue(areaRadius, out tmpSphereOfV3S))
+            {
+                var gMinX = grid.Min.X;
+                var gMinY = grid.Min.Y;
+                var gMinZ = grid.Min.Z;
+                var gMaxX = grid.Max.X;
+                var gMaxY = grid.Max.Y;
+                var gMaxZ = grid.Max.Z;
+
+                for (int i = 0; i < tmpSphereOfV3S.Count; i++)
+                {
+                    var v3ICheck = center + tmpSphereOfV3S[i];
+                    var contained = gMinX <= v3ICheck.X && v3ICheck.X <= gMaxX && (gMinY <= v3ICheck.Y && v3ICheck.Y <= gMaxY) && (gMinZ <= v3ICheck.Z && v3ICheck.Z <= gMaxZ);
+                    if (!contained) continue;
+
+                    MyCube cube;
+                    if (grid.TryGetCube(v3ICheck, out cube))
+                    {
+                        IMySlimBlock slim = cube.CubeBlock;
+                        if (slim.Position == v3ICheck)
+                        {
+                            newWorldPos = grid.GridIntegerToWorld(slim.Position);
+                            return true;
+                        }
+                    }
+                }
+            }
+            newWorldPos = Vector3D.Zero;
+            return false;
+        }
+        /*
+        IEnumerable<Vector3I> NearLine(Vector3I start, LineD line)
+        {
+            MinHeap blocks;
+            HashSet<Vector3I> seen = new HashSet<Vector3I> {start};
+            blocks.Add(dist(line, start), start);
+            while (!blocks.Empty)
+            {
+                var next = blocks.RemoveMin();
+                yield return next;
+                foreach (var neighbor in Neighbors(next))
+                {
+                    if (seen.add(neighbor))
+                        blocks.Add(dist(line, neighbor), neighbor);
+                }
+            }
+        }
+        */
+
         private void UpdateGrids()
         {
             DeferedUpBlockTypeCleanUp();
@@ -219,16 +363,30 @@ namespace WeaponCore
                     var allFat = gridMap.MyCubeBocks;
                     var terminals = 0;
                     var tStatus = gridMap.Targeting == null || gridMap.Targeting.AllowScanning;
+                    var thrusters = 0;
+                    var gyros = 0;
+                    var powerProducers = 0;
+                    var warHead = 0;
+                    var working = 0;
                     for (int j = 0; j < allFat.Count; j++) {
                         var fat = allFat[j];
                         if (!(fat is IMyTerminalBlock)) continue;
                         terminals++;
                         using (fat.Pin()) {
 
-
                             if (fat.MarkedForClose) continue;
+                            if (fat.IsWorking && ++ working == 1) {
+
+                                var oldCube = (gridMap.FakeController.SlimBlock as IMySlimBlock)?.FatBlock as MyCubeBlock;
+                                if (oldCube == null || oldCube.MarkedForClose || oldCube.CubeGrid != grid) {
+                                    gridMap.FakeController.SlimBlock = fat.SlimBlock;
+                                    GridDistributors[grid] = gridMap;
+                                }
+                            }
+
                             var cockpit = fat as MyCockpit;
                             var decoy = fat as IMyDecoy;
+                            var bomb = fat as IMyWarhead;
 
                             if (decoy != null) {
                                 WeaponDefinition.TargetingDef.BlockTypes type;
@@ -243,29 +401,54 @@ namespace WeaponCore
                             }
 
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
-                            else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
-                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                            else if (fat is IMyPowerProducer)
                             {
+                                newTypeMap[Power].Add(fat);
+                                powerProducers++;
+                            }
+                            else if (fat is IMyGunBaseUser || bomb != null || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
+                            {
+                                if (bomb != null)
+                                    warHead++;
+
                                 if (!tStatus && fat is IMyGunBaseUser && !WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
                                     tStatus = gridMap.Targeting.AllowScanning = true;
 
                                 newTypeMap[Offense].Add(fat);
                             }
                             else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
-                            else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
-                            else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
+                            else if (fat is MyThrust)
+                            {
+                                newTypeMap[Thrust].Add(fat);
+                                thrusters++;
+                            }
+                            else if (fat is MyGyro)
+                            {
+                                newTypeMap[Steering].Add(fat);
+                                gyros++;
+                            }
+
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
                         }
                     }
 
                     foreach (var type in newTypeMap)
                         type.Value.ApplyAdditions();
-                    
-                    gridMap.MyCubeBocks.ApplyAdditions();
 
+                    GridMap oldMap;
+                    if (terminals == 0 && !gridMap.Trash && GridDistributors.TryRemove(grid, out oldMap))
+                        oldMap.FakeController.SlimBlock = null;
+
+                    gridMap.MyCubeBocks.ApplyAdditions();
+                    gridMap.SuspectedDrone = warHead > 0 || powerProducers > 0 && thrusters > 0 && gyros > 0;
                     gridMap.Trash = terminals == 0;
+                    gridMap.Powered = working > 0;
+                    gridMap.PowerCheckTick = Tick;
+
                     var gridBlocks = grid.BlocksCount;
+                    
                     if (gridBlocks > gridMap.MostBlocks) gridMap.MostBlocks = gridBlocks;
+
                     ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap)) {
                         GridToBlockTypeMap[grid] = newTypeMap;

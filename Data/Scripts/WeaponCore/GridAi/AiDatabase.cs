@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using Jakaria;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -54,18 +53,21 @@ namespace WeaponCore.Support
                 using (ent.Pin()) {
 
                     if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
-
                     var grid = ent as MyCubeGrid;
-                    if (grid != null && MyGrid.IsSameConstructAs(grid)) {
-                        PrevSubGrids.Add(grid);
-                        continue;
+
+                    GridMap gridMap = null;
+                    if (grid != null) {
+                        if (MyGrid.IsSameConstructAs(grid)) {
+                            PrevSubGrids.Add(grid);
+                            continue;
+                        }
+                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
+                            continue;
                     }
 
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                     if (!CreateEntInfo(ent, AiOwner, out entInfo))
-                    {
                         continue;
-                    }
 
                     switch (entInfo.Relationship) {
                         case MyRelationsBetweenPlayerAndBlock.Owner:
@@ -74,11 +76,7 @@ namespace WeaponCore.Support
                             continue;
                     }
 
-                    if (grid != null) {
-
-                        GridMap gridMap;
-                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
-                            continue;
+                    if (gridMap != null) {
 
                         var allFat = gridMap.MyCubeBocks;
                         var fatCount = allFat.Count;
@@ -86,7 +84,11 @@ namespace WeaponCore.Support
                         if (fatCount <= 0)
                             continue;
 
+                        if (Session.Tick - gridMap.PowerCheckTick > 600)
+                            Session.CheckGridPowerState(grid, gridMap);
+
                         var loneWarhead = false;
+                        var hostileDrone = false;
                         if (fatCount <= 20)  { // possible debris
 
                             var valid = false;
@@ -94,6 +96,7 @@ namespace WeaponCore.Support
                                 var fat = allFat[j];
                                 var warhead = fat is IMyWarhead;
                                 if (warhead || fat is IMyTerminalBlock && fat.IsWorking) {
+                                    hostileDrone = warhead || gridMap.SuspectedDrone;
                                     loneWarhead = warhead && fatCount == 1;
                                     valid = true;
                                     break;
@@ -111,10 +114,10 @@ namespace WeaponCore.Support
                         else 
                             partCount = gridMap.MostBlocks; 
 
-                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead? fatCount : 2));// bump warhead to 2 fatblocks so its not ignored by targeting
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, !loneWarhead? fatCount : 2, hostileDrone, loneWarhead));// bump warhead to 2 fatblocks so its not ignored by targeting
                         ValidGrids.Add(ent);
                     }
-                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
+                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0, false, false));
                 }
             }
             FinalizeTargetDb();
@@ -236,9 +239,9 @@ namespace WeaponCore.Support
 
         private bool GridTouchingWater()
         {
-            Water water;
-            if (Session.WaterMap.TryGetValue(MyPlanet, out water)) {
-                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.radius + water.waveHeight);
+            WaterData water;
+            if (Session.WaterMap.TryGetValue(MyPlanet.EntityId, out water)) {
+                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius + water.WaveHeight);
                 return new MyOrientedBoundingBoxD(MyGrid.PositionComp.LocalAABB, MyGrid.PositionComp.WorldMatrixRef).Intersects(ref WaterVolume);
             }
             return false;

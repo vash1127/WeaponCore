@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Jakaria;
 using Sandbox.Engine.Physics;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Cube;
@@ -12,6 +11,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
@@ -28,11 +28,11 @@ namespace WeaponCore.Support
     {
         internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
-            //w.HitOther = false;
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
+            FakeTarget.FakeWorldTargetInfo fakeInfo = null;
 
-            if (!w.Comp.Data.Repo.Base.State.TrackingReticle)
+            if (w.Comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Auto)
             {
                 w.AimCone.ConeDir = w.MyPivotFwd;
                 w.AimCone.ConeTip = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
@@ -54,11 +54,10 @@ namespace WeaponCore.Support
                     AcquireTopMostEntity(w, out targetType, false, targetGrid);
                 }
             }
-            else
+            else if (w.ValidFakeTargetInfo(w.Comp.Data.Repo.Base.State.PlayerId, out fakeInfo))
             {
                 Vector3D predictedPos;
-                FakeTarget dummyTarget;
-                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
+                if (Weapon.CanShootTarget(w, ref fakeInfo.WorldPosition, fakeInfo.LinearVelocity, fakeInfo.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
@@ -71,11 +70,119 @@ namespace WeaponCore.Support
                     w.Acquire.Monitoring = false;
 
                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);
+                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, fakeInfo == null);
              
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
             }
             else w.WakeTargets();
+        }
+
+        internal static bool SwitchToDrone(Weapon w)
+        {
+            w.AimCone.ConeDir = w.MyPivotFwd;
+            w.AimCone.ConeTip = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
+
+            var comp = w.Comp;
+            var overRides = comp.Data.Repo.Base.Set.Overrides;
+            var attackNeutrals = overRides.Neutrals;
+            var attackNoOwner = overRides.Unowned;
+            var session = w.Comp.Session;
+            var ai = comp.Ai;
+            session.TargetRequests++;
+
+            var barrelPos = w.BarrelOrigin;
+            var weaponPos = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
+            var target = w.NewTarget;
+            var s = w.System;
+            var accelPrediction = (int)s.Values.HardPoint.AimLeadingPrediction > 1;
+            var minRadius = overRides.MinSize * 0.5f;
+            var maxRadius = overRides.MaxSize * 0.5f;
+            var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
+            var maxTargetRadius = maxRadius < s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+
+            var moveMode = overRides.MoveMode;
+            var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
+            var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
+            var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
+            BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
+            WaterData water = null;
+            if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet.EntityId, out water))
+                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius);
+            var numOfTargets = ai.SortedTargets.Count;
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, ai.TargetingInfo.DroneCount, w.TargetData.WeaponRandom, Acquire);
+
+            for (int i = 0; i < numOfTargets; i++)
+            {
+                var info = ai.SortedTargets[deck[i]];
+
+                if (!info.Drone)
+                    break;
+
+                if (info?.Target == null || info.Target.MarkedForClose || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
+
+                if (movingMode && info.VelLenSqr < 1 || !fireOnStation && info.IsStatic || stationOnly && !info.IsStatic)
+                    continue;
+
+                var character = info.Target as IMyCharacter;
+                var targetRadius = character != null ? info.TargetRadius * 5 : info.TargetRadius;
+                if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius && maxTargetRadius < 8192) continue;
+
+                var targetCenter = info.Target.PositionComp.WorldAABB.Center;
+                var targetDistSqr = Vector3D.DistanceSquared(targetCenter, weaponPos);
+                if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
+                if (water != null) {
+                    if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius).Contains(new BoundingSphereD(targetCenter, targetRadius)) == ContainmentType.Contains)
+                        continue;
+                }
+                session.TargetChecks++;
+                Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+                Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
+
+                if (info.IsGrid)
+                {
+
+                    if (!s.TrackGrids || !overRides.Grids || info.FatCount < 2) continue;
+                    session.CanShoot++;
+                    Vector3D newCenter;
+                    if (!w.AiEnabled)
+                    {
+
+                        var validEstimate = true;
+                        newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
+                        var targetSphere = info.Target.PositionComp.WorldVolume;
+                        targetSphere.Center = newCenter;
+                        if (!validEstimate || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
+                    }
+                    else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
+
+                    if (w.Comp.Ai.FriendlyShieldNear)
+                    {
+                        var targetDir = newCenter - weaponPos;
+                        if (w.HitFriendlyShield(weaponPos, newCenter, targetDir))
+                            continue;
+                    }
+
+                    var targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
+                    var predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
+
+                    if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, true)) continue;
+                    target.TransferTo(w.Target, w.Comp.Session.Tick, true);
+
+                    var validTarget = w.Target.Entity != null;
+
+                    if (validTarget) {
+
+                        ai.Session.NewThreat(w);
+
+                        if (ai.Session.MpActive)
+                            w.Target.PushTargetToClient(w);
+                    }
+
+                    return validTarget;
+                }
+            }
+
+            return false;
         }
 
         internal static bool ReacquireTarget(Projectile p)
@@ -99,11 +206,10 @@ namespace WeaponCore.Support
             var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
             var acquired = false;
-            Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
-            if (s.Session.WaterApiLoaded && !p.Info.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
-                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
-
+            WaterData water = null;
+            if (s.Session.WaterApiLoaded && !p.Info.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet.EntityId, out water))
+                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius);
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
             int offset = 0;
@@ -153,9 +259,8 @@ namespace WeaponCore.Support
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 if (targetRadius < minTargetRadius || targetRadius > maxTargetRadius && maxTargetRadius < 8192) continue;
-
                 if (water != null) {
-                    if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius).Contains(new BoundingSphereD(targetPos, targetRadius)) == ContainmentType.Contains)
+                    if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius).Contains(new BoundingSphereD(targetPos, targetRadius)) == ContainmentType.Contains)
                         continue;
                 }
 
@@ -212,10 +317,10 @@ namespace WeaponCore.Support
             var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
             var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
-            Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
-            if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
-                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
+            WaterData water = null;
+            if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet.EntityId, out water))
+                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius);
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -273,10 +378,9 @@ namespace WeaponCore.Support
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
 
                     if (water != null) {
-                        if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius).Contains(new BoundingSphereD(targetCenter, targetRadius)) == ContainmentType.Contains)
+                        if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.MinRadius).Contains(new BoundingSphereD(targetCenter, targetRadius)) == ContainmentType.Contains)
                             continue;
                     }
-
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
@@ -309,8 +413,8 @@ namespace WeaponCore.Support
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
 
-                        if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
-                            ai.Session.NewThreatLogging(w);
+                        if (targetType == TargetType.Other && w.Target.Entity != null)
+                            ai.Session.NewThreat(w);
                         
                         return;
                     }
@@ -344,8 +448,8 @@ namespace WeaponCore.Support
                             targetType = TargetType.Other;
                             target.TransferTo(w.Target, w.Comp.Session.Tick);
 
-                            if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
-                                ai.Session.NewThreatLogging(w);
+                            if (targetType == TargetType.Other && w.Target.Entity != null)
+                                ai.Session.NewThreat(w);
 
                             return;
                         }

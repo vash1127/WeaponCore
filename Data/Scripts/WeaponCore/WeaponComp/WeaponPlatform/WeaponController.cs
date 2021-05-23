@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
@@ -382,7 +383,14 @@ namespace WeaponCore.Platform
         internal bool SpinBarrel(bool spinDown = false)
         {
             var matrix = MuzzlePart.Entity.PositionComp.LocalMatrixRef * BarrelRotationPerShot[BarrelRate];
+
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
+
+            if (Comp.BaseType == BlockType.Fixed) {
+                var testSphere = Comp.MyCube.PositionComp.WorldVolume;
+                if (Vector3D.DistanceSquared(System.Session.CameraPos, testSphere.Center) < 62500 && System.Session.Camera.IsInFrustum(ref testSphere)) 
+                    MuzzlePart.Entity.Render.AddRenderObjects();
+            }
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
             { 

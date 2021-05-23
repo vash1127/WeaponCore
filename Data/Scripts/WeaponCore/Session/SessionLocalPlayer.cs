@@ -8,7 +8,9 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
@@ -32,12 +34,21 @@ namespace WeaponCore
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
+                var camera = Session.CameraController?.Entity as MyCameraBlock;
+                if (camera == null || !GroupedCamera(camera))
+                    ActiveCameraBlock = null;
+
                 InGridAiBlock = true;
                 TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
                 if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, true);
-                if (HandlesInput && oldBlockId != ActiveControlBlock.EntityId)
+                if (oldBlockId != ActiveControlBlock.EntityId)
+                {
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
+                    TargetLeadUpdate();
+                }
+                else if (LeadGroupsDirty || !MyUtils.IsEqual(LastOptimalDps, TrackingAi.Construct.OptimalDps))
+                    TargetLeadUpdate();
             }
             else
             {
@@ -49,17 +60,55 @@ namespace WeaponCore
                     if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
 
                         if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, false);
-                        if (HandlesInput)
-                            SendActiveControlUpdate(TrackingAi, oldBlock, false);
+
+                        SendActiveControlUpdate(TrackingAi, oldBlock, false);
+                        foreach (var list in LeadGroups) list.Clear();
+                        LeadGroupActive = false;
                     }
                 }
 
                 TrackingAi = null;
                 ActiveCockPit = null;
                 ActiveControlBlock = null;
+                ActiveCameraBlock = null;
             }
             return InGridAiBlock;
         }
+
+        private void TargetLeadUpdate()
+        {
+            LeadGroupActive = false;
+            LeadGroupsDirty = false;
+
+            LastOptimalDps = TrackingAi.Construct.OptimalDps;
+
+            foreach (var list in LeadGroups)
+                list.Clear();
+            
+            foreach (var ai in TrackingAi.Construct.RefreshedAis) {
+                foreach (var comp in ai.Weapons) {
+                    foreach (var w in comp.Platform.Weapons) {
+                        if (!w.System.Values.HardPoint.Ai.TurretAttached && w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup > 0)
+                        {
+                            LeadGroups[w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup].Add(w);
+                            LeadGroupActive = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool GroupedCamera(MyCameraBlock camera)
+        {
+            long cameraGroupId;
+            if (CameraChannelMappings.TryGetValue(camera, out cameraGroupId) && cameraGroupId > 0) {
+                ActiveCameraBlock = camera;
+                return true;
+            }
+            ActiveCameraBlock = null;
+            return false;
+        }
+
 
         internal void EntityControlUpdate()
         {
@@ -156,6 +205,8 @@ namespace WeaponCore
         private BoundingSphereD _nearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);
         private readonly List<MyEntity> _gridsNearCamera = new List<MyEntity>();
         private readonly List<MyCubeBlock> _uninitializedBlocks = new List<MyCubeBlock>();
+        private readonly List<WeaponComponent> _debugBlocks = new List<WeaponComponent>();
+
         private void DrawDisabledGuns()
         {
             if (Tick600 || Tick60 && QuickDisableGunsCheck) {
@@ -164,6 +215,7 @@ namespace WeaponCore
                 _nearbyGridsTestSphere.Center = CameraPos;
                 _gridsNearCamera.Clear();
                 _uninitializedBlocks.Clear();
+                _debugBlocks.Clear();
 
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref _nearbyGridsTestSphere, _gridsNearCamera);
                 for (int i = _gridsNearCamera.Count - 1; i >= 0; i--)
@@ -178,8 +230,11 @@ namespace WeaponCore
                             if (block.IsFunctional && WeaponPlatforms.ContainsKey(block.BlockDefinition.Id)) {
 
                                 GridAi gridAi;
-                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.WeaponBase.ContainsKey(block)) 
+                                WeaponComponent comp;
+                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.WeaponBase.TryGetValue(block, out comp)) 
                                     _uninitializedBlocks.Add(block);
+                                else if (comp != null && comp.Data.Repo.Base.Set.Overrides.Debug)
+                                    _debugBlocks.Add(comp); 
                             }
                         }
                     }
@@ -197,6 +252,24 @@ namespace WeaponCore
                         MyOrientedBoundingBoxD blockBox;
                         SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
                         DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
+                    }
+                }
+            }
+
+            for (int i = 0; i < _debugBlocks.Count; i++) {
+
+                var comp = _debugBlocks[i];
+                if (comp.MyCube.InScene) {
+
+                    var lookSphere = new BoundingSphereD(comp.MyCube.PositionComp.WorldAABB.Center, 100f);
+
+                    if (Camera.IsInFrustum(ref lookSphere)) {
+
+                        foreach (var w in comp.Platform.Weapons) {
+
+                            if (!w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart)
+                                w.SmartLosDebug();
+                        }
                     }
                 }
             }
@@ -277,7 +350,7 @@ namespace WeaponCore
             if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight) && InGridAiBlock)
                 TrackingAi.Construct.Focus.RequestReleaseActive(TrackingAi);
 
-            if (UiInput.ActionKeyReleased && TrackingAi.Construct.Data.Repo.FocusData.HasFocus && InGridAiBlock)
+            if (UiInput.ControlKeyReleased && TrackingAi.Construct.Data.Repo.FocusData.HasFocus && InGridAiBlock)
                 TrackingAi.Construct.Focus.RequestAddLock(TrackingAi);
 
             if (InGridAiBlock)

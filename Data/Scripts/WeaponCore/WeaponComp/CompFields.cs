@@ -89,6 +89,9 @@ namespace WeaponCore.Support
         internal bool HasGuidedAmmo;
         internal bool HasDelayToFire;
         internal bool UnexpectedMag;
+        internal bool ManualMode;
+        internal bool PainterMode;
+        internal bool FakeMode;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

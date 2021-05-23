@@ -1,131 +1,206 @@
-﻿using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Entity;
-using VRage.Utils;
+using VRageMath;
 
-namespace Jakaria
+namespace WeaponCore.Data.Scripts.WeaponCore.Support.Api
 {
-    public class WaterModAPI
+    //Only Include this file in your project
+
+    public class WaterApi
     {
+        public static string ModName = MyAPIGateway.Utilities.GamePaths.ModScopeName.Split('_')[1];
         public const ushort ModHandlerID = 50271;
-        public const int ModAPIVersion = 8;
-
-        /// <summary>
-        /// List of all water objects in the world, null if not registered
-        /// </summary>
-        public List<Water> Waters { get; private set; }
-
-        /// <summary>
-        /// Invokes when the API recieves data from the Water Mod
-        /// </summary>
-        public event Action RecievedData;
-
-        /// <summary>
-        /// Invokes when a water is added to the Waters list
-        /// </summary>
-        public event Action WaterCreatedEvent;
-
-        /// <summary>
-        /// Invokes when a water is removed from the Waters list
-        /// </summary>
-        public event Action WaterRemovedEvent;
-
-        /// <summary>
-        /// Invokes when the water API becomes registered and ready to work
-        /// </summary>
-        public event Action OnRegisteredEvent;
-
-        /// <summary>
-        /// True if the API is registered/alive
-        /// </summary>
+        public const int ModAPIVersion = 13;
         public bool Registered { get; private set; } = false;
 
-        /// <summary>
-        /// Used to tell in chat what mod is out of date
-        /// </summary>
-        private string ModName = "UnknownMod";
+        private static Dictionary<string, Delegate> ModAPIMethods;
 
-        //Water API Guide
-        //Drag WaterModAPI.cs and Water.cs into your mod
-        //Create a new WaterModAPI object in your mod's script, "WaterModAPI api = new WaterModAPI();"
-        //Register the api at the start of your session with api.Register()
-        //Unregister the api at the end of your session with api.Unregister()
-        //Run api.UpdateRadius() inside of an update method
+        private static Func<int, string, bool> _VerifyVersion;
+
+        private static Func<Vector3D, long?, bool> _IsUnderwater;
+        private static Func<LineD, long?, int> _LineIntersectsWater;
+        private static Action<List<LineD>, ICollection<int>, long?> _LineIntersectsWaterList;
+        private static Func<Vector3D, long?> _GetClosestWater;
+        private static Func<BoundingSphereD, long?, int> _SphereIntersectsWater;
+        private static Action<List<BoundingSphereD>, ICollection<int>, long?> _SphereIntersectsWaterList;
+        private static Func<Vector3D, long?, Vector3D> _GetClosestSurfacePoint;
+        private static Action<List<Vector3D>, ICollection<Vector3D>, long?> _GetClosestSurfacePointList;
+        private static Func<Vector3D, long?, float?> _GetDepth;
+        private static Action _ForceSync;
+        private static Action<string> _RunCommand;
+        private static Func<Vector3D, long?, Vector3D> _GetUpDirection;
+        private static Func<long, bool> _HasWater;
+        private static Func<Vector3D, MyCubeSize, long?, float> _GetBuoyancyMultiplier;
+        private static Func<long, int> _GetCrushDepth;
+        private static Func<long, MyTuple<Vector3D, float, float, float>> _GetPhysicalData;
+        private static Func<long, MyTuple<float, float, float, int>> _GetWaveData;
+        private static Func<long, MyTuple<Vector3D, bool, bool>> _GetRenderData;
+
+        private static Action<Vector3D, float, bool> _CreateSplash;
+        private static Action<Vector3D, float> _CreateBubble;
 
         /// <summary>
-        /// Register with a mod name so version control can recognize what mod may be out of date
+        /// Returns true if the version is compatibile with the API Backend, this is automatically called
         /// </summary>
-        public void Register(string modName)
+        public static bool VerifyVersion(int Version, string ModName) => _VerifyVersion?.Invoke(Version, ModName) ?? false;
+
+        /// <summary>
+        /// Returns true if the provided planet entity ID has water
+        /// </summary>
+        public static bool HasWater(long ID) => _HasWater?.Invoke(ID) ?? false;
+
+        /// <summary>
+        /// Returns true if the position is underwater
+        /// </summary>
+        public static bool IsUnderwater(Vector3D Position, long? ID = null) => _IsUnderwater?.Invoke(Position, ID) ?? false;
+
+        /// <summary>
+        /// Overwater = 0, ExitsWater = 1, EntersWater = 2, Underwater = 3
+        /// </summary>
+        public static int LineIntersectsWater(LineD Line, long? ID = null) => _LineIntersectsWater?.Invoke(Line, ID) ?? 0;
+
+        /// <summary>
+        /// Overwater = 0, ExitsWater = 1, EntersWater = 2, Underwater = 3
+        /// </summary>
+        public static void LineIntersectsWater(List<LineD> Lines, ICollection<int> Intersections, long? ID = null) => _LineIntersectsWaterList?.Invoke(Lines, Intersections, ID);
+
+        /// <summary>
+        /// Gets the closest water to the provided water
+        /// </summary>
+        public static long? GetClosestWater(Vector3D Position) => _GetClosestWater?.Invoke(Position) ?? null;
+
+        /// <summary>
+        /// Overwater = 0, ExitsWater = 1, EntersWater = 2, Underwater = 3
+        /// </summary>
+        public static int SphereIntersectsWater(BoundingSphereD Sphere, long? ID = null) => _SphereIntersectsWater?.Invoke(Sphere, ID) ?? 0;
+
+        /// <summary>
+        /// Overwater = 0, ExitsWater = 1, EntersWater = 2, Underwater = 3
+        /// </summary>
+        public static void SphereIntersectsWater(List<BoundingSphereD> Spheres, ICollection<int> Intersections, long? ID = null) => _SphereIntersectsWaterList?.Invoke(Spheres, Intersections, ID);
+
+
+        /// <summary>
+        /// Returns the closest position on the water surface
+        /// </summary>
+        public static Vector3D GetClosestSurfacePoint(Vector3D Position, long? ID = null) => _GetClosestSurfacePoint?.Invoke(Position, ID) ?? Position;
+
+        /// <summary>
+        /// Returns the closest position on the water surface
+        /// </summary>
+        public static void GetClosestSurfacePoint(List<Vector3D> Positions, ICollection<Vector3D> Points, long? ID = null) => _GetClosestSurfacePointList?.Invoke(Positions, Points, ID);
+
+
+        /// <summary>
+        /// Returns the depth the position is underwater
+        /// </summary>
+        public static float? GetDepth(Vector3D Position, long? ID = null) => _GetDepth?.Invoke(Position, ID) ?? null;
+
+        /// <summary>
+        /// Creates a splash at the provided position
+        /// </summary>
+        public static void CreateSplash(Vector3D Position, float Radius, bool Audible) => _CreateSplash?.Invoke(Position, Radius, Audible);
+
+        /// <summary>
+        /// Creates a bubble at the provided position
+        /// </summary>
+        public static void CreateBubble(Vector3D Position, float Radius) => _CreateBubble?.Invoke(Position, Radius);
+
+        /// <summary>
+        /// Forces the server to sync with the client
+        /// </summary>
+        public static void ForceSync() => _ForceSync?.Invoke();
+
+        /// <summary>
+        /// Simulates a command being run by the client, EX: /wcreate, client must have permissions to run the command
+        /// </summary>
+        public static void RunCommand(string MessageText) => _RunCommand?.Invoke(MessageText);
+
+        /// <summary>
+        /// Gets the up direction at the position
+        /// </summary>
+        public static Vector3D GetUpDirection(Vector3D Position, long? ID = null) => _GetUpDirection?.Invoke(Position, ID) ?? Vector3D.Up;
+
+        /// <summary>
+        /// Gets the buoyancy multiplier to help calculate buoyancy of a grid, used in the final calculation of grid buoyancy.
+        /// </summary>
+        public static float GetBuoyancyMultiplier(Vector3D Position, MyCubeSize GridSize, long? ID = null) => _GetBuoyancyMultiplier?.Invoke(Position, GridSize, ID) ?? 0;
+
+        /// <summary>
+        /// Gets crush depth
+        /// </summary>
+        public static int GetCrushDepth(long ID) => _GetCrushDepth?.Invoke(ID) ?? 500;
+
+        /// <summary>
+        /// Gets radius, minimum radius, and maximum radius- in that order.
+        /// </summary>
+        public static MyTuple<Vector3D, float, float, float> GetRadiusData(long ID) => (MyTuple<Vector3D, float, float, float>)(_GetPhysicalData?.Invoke(ID) ?? null);
+
+        /// <summary>
+        /// Gets wave height, wave speed, and seed- in that order.
+        /// </summary>
+        public static MyTuple<float, float, float, int> GetWaveData(long ID) => (MyTuple<float, float, float, int>)(_GetWaveData?.Invoke(ID) ?? null);
+
+        /// <summary>
+        /// Gets fog color, transparency toggle, and lighting toggle- in that order.
+        /// </summary>
+        public static MyTuple<Vector3D, bool, bool> GetRenderData(long ID) => (MyTuple<Vector3D, bool, bool>)(_GetRenderData?.Invoke(ID) ?? null);
+
+        /// <summary>
+        /// Gets crush depth
+        /// </summary>
+
+        public void Load()
         {
-            ModName = modName;
             MyAPIGateway.Utilities.RegisterMessageHandler(ModHandlerID, ModHandler);
         }
 
-        /// <summary>
-        /// Unregister to prevent odd behavior after reloading your save/game
-        /// </summary>
-        public void Unregister()
+        public void Unload()
         {
             MyAPIGateway.Utilities.UnregisterMessageHandler(ModHandlerID, ModHandler);
         }
 
-        /// <summary>
-        /// Do not use, for interfacing with Water Mod
-        /// </summary>
-        private void ModHandler(object data)
+        private void ModHandler(object obj)
         {
-            if (data == null)
+            if (obj == null)
+            {
                 return;
-
-            if (data is byte[])
-            {
-                Waters = MyAPIGateway.Utilities.SerializeFromBinary<List<Water>>((byte[])data);
-
-                if (Waters == null)
-                    Waters = new List<Water>();
-                else foreach (var water in Waters)
-                    {
-                        MyEntity entity = MyEntities.GetEntityById(water.planetID);
-
-                        if (entity != null)
-                            water.planet = MyEntities.GetEntityById(water.planetID) as MyPlanet;
-                    }
-
-                int count = Waters.Count;
-                RecievedData?.Invoke();
-
-                if (count > Waters.Count)
-                    WaterCreatedEvent?.Invoke();
-                if (count < Waters.Count)
-                    WaterRemovedEvent?.Invoke();
             }
 
-            if (!Registered)
+            if (obj is Dictionary<string, Delegate>)
             {
-                Registered = true;
-                OnRegisteredEvent?.Invoke();
+                ModAPIMethods = (Dictionary<string, Delegate>)obj;
+                _VerifyVersion = (Func<int, string, bool>)ModAPIMethods["VerifyVersion"];
             }
 
-            if (data is int && (int)data != ModAPIVersion)
-            {
-                MyLog.Default.WriteLine("Water API V" + ModAPIVersion + " for " + ModName + " is outdated, expected V" + (int)data);
-                MyAPIGateway.Utilities.ShowMessage(ModName, "Water API V" + ModAPIVersion + " is outdated, expected V" + (int)data);
-            }
-        }
+            Registered = VerifyVersion(ModAPIVersion, ModName);
 
-        /// <summary>
-        /// Recalculates the CurrentRadius for all waters
-        /// </summary>
-        public void UpdateRadius()
-        {
-            foreach (var water in Waters)
+            if (Registered)
             {
-                water.waveTimer++;
-                water.currentRadius = (float)Math.Max(water.radius + (Math.Sin((water.waveTimer) * water.waveSpeed) * water.waveHeight), 0);
+                _IsUnderwater = (Func<Vector3D, long?, bool>)ModAPIMethods["IsUnderwater"];
+                _GetClosestWater = (Func<Vector3D, long?>)ModAPIMethods["GetClosestWater"];
+                _SphereIntersectsWater = (Func<BoundingSphereD, long?, int>)ModAPIMethods["SphereIntersectsWater"];
+                _SphereIntersectsWaterList = (Action<List<BoundingSphereD>, ICollection<int>, long?>)ModAPIMethods["SphereIntersectsWaterList"];
+                _GetClosestSurfacePoint = (Func<Vector3D, long?, Vector3D>)ModAPIMethods["GetClosestSurfacePoint"];
+                _GetClosestSurfacePointList = (Action<List<Vector3D>, ICollection<Vector3D>, long?>)ModAPIMethods["GetClosestSurfacePointList"];
+                _LineIntersectsWater = (Func<LineD, long?, int>)ModAPIMethods["LineIntersectsWater"];
+                _LineIntersectsWaterList = (Action<List<LineD>, ICollection<int>, long?>)ModAPIMethods["LineIntersectsWaterList"];
+                _GetDepth = (Func<Vector3D, long?, float?>)ModAPIMethods["GetDepth"];
+                _CreateSplash = (Action<Vector3D, float, bool>)ModAPIMethods["CreateSplash"];
+                _CreateBubble = (Action<Vector3D, float>)ModAPIMethods["CreateBubble"];
+                _ForceSync = (Action)ModAPIMethods["ForceSync"];
+                _RunCommand = (Action<string>)ModAPIMethods["RunCommand"];
+                _GetUpDirection = (Func<Vector3D, long?, Vector3D>)ModAPIMethods["GetUpDirection"];
+                _HasWater = (Func<long, bool>)ModAPIMethods["HasWater"];
+                _GetBuoyancyMultiplier = (Func<Vector3D, MyCubeSize, long?, float>)ModAPIMethods["GetBuoyancyMultiplier"];
+                _GetCrushDepth = (Func<long, int>)ModAPIMethods["GetCrushDepth"];
+                _GetPhysicalData = (Func<long, MyTuple<Vector3D, float, float, float>>)ModAPIMethods["GetPhysicalData"];
+                _GetWaveData = (Func<long, MyTuple<float, float, float, int>>)ModAPIMethods["GetWaveData"];
+                _GetRenderData = (Func<long, MyTuple<Vector3D, bool, bool>>)ModAPIMethods["GetRenderData"];
             }
         }
     }

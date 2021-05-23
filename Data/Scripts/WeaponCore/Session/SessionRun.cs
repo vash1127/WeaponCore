@@ -8,6 +8,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -68,7 +69,7 @@ namespace WeaponCore
                     TerminalMon.Monitor();
 
                 MyCubeBlock cube;
-                if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                if (Tick60 && UiInput.ControlKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
                     ProblemRep.GenerateReport(cube);
 
                 if (!IsClient && !InventoryUpdate && WeaponToPullAmmo.Count > 0 && ITask.IsComplete)
@@ -181,7 +182,6 @@ namespace WeaponCore
 
                     DsUtil.Complete("network1", true);
                 }
-
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -200,6 +200,15 @@ namespace WeaponCore
                 if (GridTask.IsComplete)
                     CheckDirtyGridInfos();
                 
+                if (!DirtyPowerGrids.IsEmpty)
+                    UpdateGridPowerState();
+
+                if (WaterApiLoaded && (Tick3600 || WaterMap.IsEmpty))
+                    UpdateWaters();
+
+                if (HandlesInput && Tick60)
+                    UpdatePlayerPainters();
+
                 if (DebugLos && Tick1800) {
                     var averageMisses = RayMissAmounts > 0 ? RayMissAmounts / Rays : 0; 
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
@@ -212,7 +221,6 @@ namespace WeaponCore
         {
             try
             {
-
                 if (SuppressWc || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 
                 if (DebugLos)
@@ -239,7 +247,7 @@ namespace WeaponCore
                     if (HudUi.TexturesToAdd > 0 || HudUi.KeepBackground) 
                         HudUi.DrawTextures();
 
-                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.CameraBlockView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
                         TargetUi.DrawTargetUi();
 
                     if (HudUi.AgingTextures)
@@ -269,9 +277,13 @@ namespace WeaponCore
                     }
 
                     if (TrackingAi != null && TargetUi.DrawReticle)  {
-                        var dummyTarget = PlayerDummyTargets[PlayerId];
-                        if (dummyTarget.LastUpdateTick == Tick)
-                            SendFakeTargetUpdate(TrackingAi, dummyTarget);
+                        var dummyTargets = PlayerDummyTargets[PlayerId];
+
+                        if (dummyTargets.ManualTarget.LastUpdateTick == Tick)
+                            SendAimTargetUpdate(TrackingAi, dummyTargets.ManualTarget);
+
+                        if (dummyTargets.PaintedTarget.LastUpdateTick == Tick)
+                            SendPaintedTargetUpdate(TrackingAi, dummyTargets.PaintedTarget);
                     }
 
                     if (PacketsToServer.Count > 0)
@@ -308,13 +320,6 @@ namespace WeaponCore
                 if (SuppressWc)
                     return;
 
-                if (WaterMod)
-                {
-                    WaterHash = MyStringHash.GetOrCompute("Water");
-                    WApi.Register("WeaponCore");
-                    WApi.RecievedData += WApiReceiveData;
-                }
-
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
@@ -348,12 +353,6 @@ namespace WeaponCore
 
                 if (!ITask.IsComplete)
                     ITask.Wait();
-
-                if (WaterMod)
-                {
-                    WApi.Unregister();
-                    WApi.RecievedData -= WApiReceiveData;
-                }
 
                 if (IsServer || DedicatedServer)
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ProccessServerPacket);

@@ -63,7 +63,7 @@ namespace WeaponCore.Support
 
             weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
             weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
-            HeatSinkRate += weapon.HsRate;
+            HeatSinkRate += weapon.HsRate*3f;
 
             if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
 

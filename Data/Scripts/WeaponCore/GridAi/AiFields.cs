@@ -46,7 +46,6 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
-        internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
@@ -116,7 +115,6 @@ namespace WeaponCore.Support
         internal bool FadeOut;
         internal bool Concealed;
         internal bool RamProtection = true;
-        internal bool RamProximity;
         internal bool AccelChecked;
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;

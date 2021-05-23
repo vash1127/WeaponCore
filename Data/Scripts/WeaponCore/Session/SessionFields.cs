@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Jakaria;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -18,6 +17,7 @@ using VRage.Utils;
 using VRage.Voxels;
 using VRageMath;
 using WeaponCore.Api;
+using WeaponCore.Data.Scripts.WeaponCore.Support.Api;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -40,7 +40,7 @@ namespace WeaponCore
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 4;
-        internal const int ClientCfgVersion = 2;
+        internal const int ClientCfgVersion = 5;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
@@ -50,12 +50,13 @@ namespace WeaponCore
         internal volatile bool FixedGunDetected;
         internal volatile bool SorterDetected;
         internal volatile bool DecoyDetected;
+        internal volatile bool CameraDetected;
         internal volatile bool BaseControlsActions;
         internal volatile bool EarlyInitOver;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
         internal readonly TargetCompare TargetCompare = new TargetCompare();
-        internal readonly WaterModAPI WApi = new WaterModAPI();
+        internal readonly WaterApi WApi = new WaterApi();
 
         internal static readonly HashSet<ulong> AuthorIds = new HashSet<ulong> { 76561197969691953, 76561198061737246, 76561198116813162 };
         internal readonly MyStringHash ShieldBypassDamageType = MyStringHash.GetOrCompute("bypass");
@@ -79,6 +80,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<EwarValues> EwarDataPool = new MyConcurrentPool<EwarValues>(64);
+        internal readonly MyConcurrentPool<HashSet<long>> PlayerGridPool = new MyConcurrentPool<HashSet<long>>(16);
 
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
@@ -99,6 +101,12 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, MyConcurrentList<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes> DecoyMap = new ConcurrentDictionary<MyEntity, WeaponDefinition.TargetingDef.BlockTypes>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, long> CameraChannelMappings = new ConcurrentDictionary<MyCubeBlock, long>();
+        internal readonly ConcurrentDictionary<long, WaterData> WaterMap = new ConcurrentDictionary<long, WaterData>();
+        internal readonly ConcurrentDictionary<long, MyPlanet> PlanetMap = new ConcurrentDictionary<long, MyPlanet>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> GridDistributors = new ConcurrentDictionary<MyCubeGrid, GridMap>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> DirtyPowerGrids = new ConcurrentDictionary<MyCubeGrid, GridMap>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, HashSet<long>> PlayerGrids = new ConcurrentDictionary<MyCubeGrid, HashSet<long>>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -126,7 +134,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<MyStringHash, WeaponAreaRestriction> WeaponAreaRestrictions = new Dictionary<MyStringHash, WeaponAreaRestriction>(MyStringHash.Comparer);
         internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>() {[-1] = new InputStateData()};
-        internal readonly Dictionary<long, FakeTarget> PlayerDummyTargets = new Dictionary<long, FakeTarget>() { [-1] = new FakeTarget() };
+        internal readonly Dictionary<long, FakeTargets> PlayerDummyTargets = new Dictionary<long, FakeTargets> { [-1] = new FakeTargets() };
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<ulong, AvInfoCache> AvShotCache = new Dictionary<ulong, AvInfoCache>();
@@ -140,10 +148,9 @@ namespace WeaponCore
         internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
-        internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
-        internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
+
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -158,6 +165,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<Weapon> WeaponLosDebugActive = new HashSet<Weapon>();
         internal readonly HashSet<Type> ControlTypeActivated = new HashSet<Type>();
+        internal readonly HashSet<IMyPlayer> PlayerControllerMonitor = new HashSet<IMyPlayer>();
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
@@ -180,8 +188,9 @@ namespace WeaponCore
         internal readonly HashSet<GridAi> GridsToUpdateInventories = new HashSet<GridAi>();
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
         internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
+        internal readonly List<MyTuple<IMyPlayer, Vector4, FakeTarget>> ActiveMarks = new List<MyTuple<IMyPlayer, Vector4, FakeTarget>>();
+        internal readonly List<Weapon>[] LeadGroups = new List<Weapon>[4];
         internal readonly int[] AuthorSettings = new int[6];
-
         ///
         ///
         ///
@@ -228,6 +237,7 @@ namespace WeaponCore
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
         internal MyCubeBlock ActiveControlBlock;
+        internal MyCameraBlock ActiveCameraBlock;
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
@@ -289,6 +299,7 @@ namespace WeaponCore
         internal ulong MultiplayerId;
         internal ulong MuzzleIdCounter;
         internal long PlayerId;
+
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
@@ -302,6 +313,7 @@ namespace WeaponCore
         internal float UiOpacity;
         internal float UIHudOpacity;
         internal float CurrentFovWithZoom;
+        internal float LastOptimalDps;
         internal bool PurgedAll;
         internal bool InMenu;
         internal bool GunnerBlackList;
@@ -345,13 +357,20 @@ namespace WeaponCore
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
         internal bool DebugLos = false;
-        internal bool DebugTargetAcquire = true;
         internal bool QuickDisableGunsCheck;
         internal bool EwarNetDataDirty;
+        internal bool CanChangeHud;
+        internal bool LeadGroupActive;
+        internal bool LeadGroupsDirty;
 
         internal readonly HashSet<ulong> BlackListedPlayers = new HashSet<ulong>()
         {
              // Muzzled SteamId goes here
+        };
+
+        internal readonly HashSet<ulong> JokePlayerList = new HashSet<ulong>()
+        {
+            76561198025274552,
         };
 
         [Flags]
@@ -446,6 +465,8 @@ namespace WeaponCore
             for (int i = 0; i < AuthorSettings.Length; i++)
                 AuthorSettings[i] = -1;
 
+            for (int i = 0; i < LeadGroups.Length; i++)
+                LeadGroups[i] = new List<Weapon>();
         }
     }
 }

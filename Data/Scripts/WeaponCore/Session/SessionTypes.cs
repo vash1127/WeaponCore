@@ -323,6 +323,8 @@ namespace WeaponCore
                     {"FocusTargets", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                     {"MaxSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
                     {"MinSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
+                    {"CameraChannel", () => GetComp()?.Data.Repo.Base.Set.Overrides.CameraChannel.ToString() ?? string.Empty },
+                    {"LeadChannel", () => GetComp()?.Data.Repo.Base.Set.Overrides.LeadGroup.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -820,6 +822,8 @@ namespace WeaponCore
         {
             None,
             Keyboard,
+            Action,
+            Info,
             Mouse,
         }
 
@@ -879,5 +883,24 @@ namespace WeaponCore
             public double RestrictionBoxInflation = 0;
             public bool CheckForAnyWeapon = false;
         }
+
+
+    }
+    public class WaterData
+    {
+        public WaterData(MyPlanet planet)
+        {
+            Planet = planet;
+            WaterId = planet.EntityId;
+        }
+
+        public MyPlanet Planet;
+        public Vector3D Center;
+        public long WaterId;
+        public float Radius;
+        public float MinRadius;
+        public float MaxRadius;
+        public float WaveHeight;
+        public float WaveSpeed;
     }
 }

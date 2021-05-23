@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Jakaria;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
@@ -80,6 +79,13 @@ namespace WeaponCore
             {
                 ShieldApiLoaded = true;
                 ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
+            }
+
+            if (WaterMod && !WaterApiLoaded)
+            {
+                WaterApiLoaded = true;
+                WApi.Load();
+                WaterHash = MyStringHash.GetOrCompute("Water");
             }
 
             if (!CompsToStart.IsEmpty)

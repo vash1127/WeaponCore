@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Input;
@@ -16,8 +14,23 @@ namespace WeaponCore
             if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
-            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed || _session.UiInput.CameraBlockView;
             return enableActivator;
+        }
+
+        internal bool ActivateDroneNotice()
+        {
+            return _session.TrackingAi.Construct.DroneAlert;
+        }
+
+        internal bool ActivateMarks()
+        {
+            return _session.ActiveMarks.Count > 0;
+        }
+
+        internal bool ActivateLeads()
+        {
+            return _session.LeadGroupActive && _session.TrackingAi.Construct.Data.Repo.FocusData.HasFocus;
         }
 
         internal void ResetCache()
@@ -53,7 +66,14 @@ namespace WeaponCore
             var cockPit = s.ActiveCockPit;
             Vector3D end;
 
-            if (!s.UiInput.FirstPersonView) {
+            if (s.UiInput.CameraBlockView)
+            {
+                var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
+                AimPosition = offetPosition;
+                AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
+                end = offetPosition + (AimDirection * ai.MaxTargetingRange);
+            }
+            else if (!s.UiInput.FirstPersonView) {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
@@ -79,7 +99,8 @@ namespace WeaponCore
 
             MyEntity closestEnt = null;
             _session.Physics.CastRay(AimPosition, end, _hitInfo);
-
+            var markTargetPos = MyAPIGateway.Input.IsNewRightMouseReleased();
+            var fakeTarget = !markTargetPos ? ai.Session.PlayerDummyTargets[ai.Session.PlayerId].ManualTarget : ai.Session.PlayerDummyTargets[ai.Session.PlayerId].PaintedTarget;
             for (int i = 0; i < _hitInfo.Count; i++) {
 
                 var hit = _hitInfo[i];
@@ -104,34 +125,34 @@ namespace WeaponCore
                 }
 
                 foundTarget = true;
-                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hit.Position, ai, closestEnt);
+                fakeTarget.Update(hit.Position, s.Tick, closestEnt);
                 break;
             }
 
             if (rayHitSelf) {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
-                if (rayOnlyHitSelf) ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
+                if (rayOnlyHitSelf && !markTargetPos) fakeTarget.Update(end, s.Tick);
             }
             else ReticleAgeOnSelf = 0;
 
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
+            if (!foundTarget && !markTargetPos && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
                 foundTarget = true;
                 if (manualSelect) {
                     s.SetTarget(closestEnt, ai, _masterTargets);
                     return true;
                 }
-                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hitPos, ai, closestEnt);
+                fakeTarget.Update(hitPos, s.Tick, closestEnt);
             }
 
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
                
-                if (!foundTarget) 
-                    ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
+                if (!foundTarget && !markTargetPos)
+                    fakeTarget.Update(end, s.Tick);
             }
 
             return foundTarget || foundOther;
@@ -146,7 +167,7 @@ namespace WeaponCore
             if (!_cachedTargetPos) InitTargetOffset();
             var updateTick = s.Tick - _cacheIdleTicks > 300 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
             
-            if (updateTick && !UpdateCache(s.Tick) || s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
+            if (updateTick && !UpdateCache(s.Tick) || s.UiInput.ShiftPressed || s.UiInput.ControlKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed) return;
             
             var canMoveForward = _currentIdx + 1 <= _endIdx;
             var canMoveBackward = _currentIdx - 1 >= 0;
@@ -220,13 +241,10 @@ namespace WeaponCore
                 if (hit == null) continue;
                 var ray = new RayD(origin, dir);
                 var dist = ray.Intersects(info.PositionComp.WorldVolume);
-                if (dist.HasValue)
+                if (dist < closestDist)
                 {
-                    if (dist.Value < closestDist)
-                    {
-                        closestDist = dist.Value;
-                        closestEnt = hit;
-                    }
+                    closestDist = dist.Value;
+                    closestEnt = hit;
                 }
             }
 
@@ -240,14 +258,11 @@ namespace WeaponCore
                     {
                         var ray = new RayD(origin, dir);
                         var dist = ray.Intersects(otherEnt.PositionComp.WorldVolume);
-                        if (dist.HasValue)
+                        if (dist < closestDist)
                         {
-                            if (dist.Value < closestDist)
-                            {
-                                closestDist = dist.Value;
-                                closestEnt = otherEnt;
-                                foundOther = true;
-                            }
+                            closestDist = dist.Value;
+                            closestEnt = otherEnt;
+                            foundOther = true;
                         }
                     }
                 }

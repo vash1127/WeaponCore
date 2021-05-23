@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using Sandbox.Game.EntityComponents;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -13,6 +14,7 @@ using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Settings;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -112,18 +114,12 @@ namespace WeaponCore
 
             if (!PlayersLoaded && KeenFuckery())
                 PlayersLoaded = true;
-
-            if (WaterMod && !WaterApiLoaded && !Settings.ClientWaiting && WApi.Waters != null)
-            {
-                WaterApiLoaded = true;
-                WApiReceiveData();
-            }
         }
 
         internal void AddLosCheck(LosDebug debug)
         {
-            if (!WeaponLosDebugActive.Add(debug.Weapon))
-                return;
+            //if (!WeaponLosDebugActive.Add(debug.Weapon))
+                //return;
             
             LosDebugList.Add(debug);
         }
@@ -328,7 +324,7 @@ namespace WeaponCore
             {
                 var w = HomingWeapons[i];
                 var comp = w.Comp;
-                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.IsWorking) {
+                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.MyCube.IsFunctional) {
                     HomingWeapons.RemoveAtFast(i);
                     continue;
                 }
@@ -362,10 +358,27 @@ namespace WeaponCore
 
         private void UpdateControlKeys()
         {
-            if (ControlRequest == ControlQuery.Keyboard) {
+            if (ControlRequest == ControlQuery.Info)
+            {
 
                 MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
-                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter) {
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter)
+                {
+
+                    var firstKey = _pressedKeys[0];
+                    Settings.ClientConfig.InfoKey = firstKey.ToString();
+                    UiInput.InfoKey = firstKey;
+                    ControlRequest = ControlQuery.None;
+                    Settings.VersionControl.UpdateClientCfgFile();
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Info Key", 10000);
+                }
+            }
+            else if (ControlRequest == ControlQuery.Action)
+            {
+
+                MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter)
+                {
 
                     var firstKey = _pressedKeys[0];
                     Settings.ClientConfig.ActionKey = firstKey.ToString();
@@ -373,6 +386,19 @@ namespace WeaponCore
                     ControlRequest = ControlQuery.None;
                     Settings.VersionControl.UpdateClientCfgFile();
                     MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Action Key", 10000);
+                }
+            }
+            else if (ControlRequest == ControlQuery.Keyboard) {
+
+                MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter) {
+
+                    var firstKey = _pressedKeys[0];
+                    Settings.ClientConfig.ControlKey = firstKey.ToString();
+                    UiInput.ControlKey = firstKey;
+                    ControlRequest = ControlQuery.None;
+                    Settings.VersionControl.UpdateClientCfgFile();
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Control Key", 10000);
                 }
             }
             else if (ControlRequest == ControlQuery.Mouse) {
@@ -410,12 +436,22 @@ namespace WeaponCore
                     case "/wc remap keyboard":
                         ControlRequest = ControlQuery.Keyboard;
                         somethingUpdated = true;
-                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Control key", 10000);
                         break;
                     case "/wc remap mouse":
                         ControlRequest = ControlQuery.Mouse;
                         somethingUpdated = true;
                         MyAPIGateway.Utilities.ShowNotification($"Press the mouse button you want to use to open and close the WeaponCore Menu", 10000);
+                        break;
+                    case "/wc remap action":
+                        ControlRequest = ControlQuery.Action;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
+                        break;
+                    case "/wc remap info":
+                        ControlRequest = ControlQuery.Info;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Info key", 10000);
                         break;
                 }
 
@@ -450,12 +486,28 @@ namespace WeaponCore
                                 Settings.VersionControl.UpdateClientCfgFile();
                                 FovChanged();
                                 break;
+                            case "changehud":
+                                CanChangeHud = !CanChangeHud;
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Modify Hud set to: {CanChangeHud}", 10000);
+                                break;
+                            case "setdefaults":
+                                Settings.ClientConfig = new CoreSettings.ClientSettings();
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Client configuration has been set to defaults", 10000);
+                                Settings.VersionControl.UpdateClientCfgFile();
+                                break;
                         }
                     }
                 }
 
                 if (!somethingUpdated)
-                    MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n '/wc remap keyboard'  -- Remaps action key (default R)\n '/wc remap mouse'  -- Remaps menu mouse key (default middle button)\n '/wc shipsizes'  -- Toggles the displaying of ship size icons\n '/wc drawlimit 1000'  -- Limits total number of projectiles on screen (default unlimited)\n", 10000);
+                {
+                    if (message.Length <= 3)
+                        MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n'/wc remap -- Remap keys'\n'/wc drawlimit 1000' -- Limits total number of projectiles on screen (default unlimited)\n'/wc changehud' to enable moving/resizing of WC Hud\n'/wc setdefaults' -- Resets shield client configs to default values\n", 10000);
+                    else if (message.StartsWith("/wc remap"))
+                        MyAPIGateway.Utilities.ShowNotification("'/wc remap keyboard' -- Remaps control key (default R)\n'/wc remap mouse' -- Remaps menu mouse key (default middle button)\n'/wc remap action' -- Remaps action key (default numpad0)\n'/wc remap info' -- Remaps info key (default decimal key, aka numpad period key)\n", 10000, "White");
+                }
                 sendToOthers = false;
             }
         }
@@ -598,6 +650,23 @@ namespace WeaponCore
             CounterKeenLogMessage(false);
         }
 
+        private void PracticalJokes()
+        {
+            var chance = MyUtils.GetRandomInt(0, 4);
+            if (chance == 2)
+            {
+                var messageIndex = MyUtils.GetRandomInt(0, JokeMessages.Length);
+                MyAPIGateway.Utilities.ShowNotification(JokeMessages[messageIndex], 10000, "Red");
+            }
+        }
+
+        internal readonly string[] JokeMessages =
+        {
+            "FakeStar in the house, there can be only one!",
+            "Fake DarkStar is here, he loves to answer your shield questions!",
+            "FakeStar has now joined to solve all of your shield problems"
+        };
+
         private static void CounterKeenLogMessage(bool console = true)
         {
             var message = "\n***\n    [WeaponCore] Ignore log messages from keen stating 'Mod WeaponCore is accessing physics from parallel threads'\n     WC is using a thread safe parallel.for, not a parallel task\n***";
@@ -659,13 +728,53 @@ namespace WeaponCore
             return false;
         }
 
-        internal void NewThreatLogging(Weapon w)
+        internal bool GridHasPower(MyCubeGrid grid, GridMap map = null)
+        {
+            bool state = false;
+            if (map != null || GridDistributors.TryGetValue(grid, out map)) {
+                var slim = map.FakeController.SlimBlock as IMySlimBlock;
+                var cube = slim?.FatBlock as MyCubeBlock;
+
+                if (cube != null && cube.CubeGrid == grid) {
+                    var dist = map.FakeController.GridResourceDistributor;
+                    state = dist?.ResourceState != MyResourceStateEnum.NoPower; 
+                }
+
+                map.PowerCheckTick = Tick;
+                map.Powered = state;
+            }
+            return state;
+        }
+
+        internal void UpdateGridPowerState()
+        {
+            foreach (var pair in DirtyPowerGrids)
+                GridHasPower(pair.Key, pair.Value);
+
+            DirtyPowerGrids.Clear();
+        }
+
+        internal void CheckGridPowerState(MyCubeGrid grid, GridMap map)
+        {
+            if ((!map.Powered && Tick - map.PowerCheckTick > 600 || map.Powered && Tick - map.PowerCheckTick > 1800))
+                DirtyPowerGrids.TryAdd(grid, map);
+        }
+
+        internal void MatchPlayersToGrids()
+        {
+            foreach (var playerInfo in Players)
+            {
+                //var controlCube = playerInfo.Value.Controller?. as MyCubeBlock;
+            }
+        }
+        
+        internal void NewThreat(Weapon w)
         {
             try
             {
                 var topmost = w.Target.Entity.GetTopMostParent();
                 GridAi.TargetInfo info;
-                if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
+                if (topmost != null && w.Comp.Ai.Construct.RootAi.Construct.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
                 {
                     IMyPlayer weaponOwner;
                     Players.TryGetValue(w.Comp.MyCube.OwnerId, out weaponOwner);

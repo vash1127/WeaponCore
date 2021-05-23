@@ -19,7 +19,12 @@ namespace WeaponCore
         {
             CreateCustomDecoyActions<T>(session);
             TerminalHelpers.AddDecoyControls<T>(session);
+        }
 
+        public static void CreateCameraTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomCameraActions<T>(session);
+            TerminalHelpers.AddCameraControls<T>(session);
         }
 
         public static void EarlyInitControls(Session session)
@@ -116,6 +121,10 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateDecoy(session);
         }
 
+        internal static void CreateCustomCameraActions<T>(Session session) where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateCamera(session);
+        }
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateCycleAmmo(session);
@@ -134,6 +143,9 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateGrids(session);
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
+            CreateCustomActions<T>.CreateRepelMode(session);
+            CreateCustomActions<T>.CreateWeaponCameraChannels(session);
+            CreateCustomActions<T>.CreateLeadGroups(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
@@ -161,7 +173,7 @@ namespace WeaponCore
                         {
                             controls.RemoveAt(i);
                         }
-                        else if (control.Id.Equals("WC_Range"))
+                        else if (control.Id.Equals("Weapon Range"))
                         {
                             wcRangeControl = control;
                             controls.RemoveAt(i);
@@ -379,6 +391,7 @@ namespace WeaponCore
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
                         if (!w.Comp.Session.IsClient) w.Target.Reset(comp.Session.Tick, Target.States.AnimationOff);
+
                         w.ScheduleWeaponHome(true);
                     }
 

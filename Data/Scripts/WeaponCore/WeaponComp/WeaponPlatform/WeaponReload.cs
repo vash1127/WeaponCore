@@ -246,8 +246,9 @@ namespace WeaponCore.Platform
 
         internal bool ServerReload()
         {
-            if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+            if (AnimationDelayTick > Comp.Session.Tick && LastEventCanDelay)
                 return false;
+
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
 
@@ -261,7 +262,6 @@ namespace WeaponCore.Platform
 
             ++Reload.StartId;
             ++ClientStartId;
-
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
@@ -290,10 +290,19 @@ namespace WeaponCore.Platform
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-                if (System.ReloadTime > 0) {
+
+                var delayTime = System.Session.Tick - LastShootTick + System.Values.HardPoint.Loading.DelayAfterBurst;
+                var burstDelay = ShowBurstDelayAsReload && delayTime > 0 && ShotsFired == 0;
+
+                if (System.ReloadTime > 0 || burstDelay) {
                     CancelableReloadAction += Reloaded;
                     ReloadSubscribed = true;
-                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+                    var reloadTime = (uint)(burstDelay ? System.ReloadTime + delayTime : System.ReloadTime);
+                    
+                    if (burstDelay) 
+                        ReloadEndTick = Comp.Session.Tick + reloadTime;
+                    
+                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, reloadTime);
                 }
                 else Reloaded();
             }

@@ -946,15 +946,11 @@ namespace WeaponCore
                         {
                             if (currentEmissive.CycleParts)
                             {
-                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor,
-                                    currentEmissive.CurrentIntensity);
+                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
                                 if (!currentEmissive.LeavePreviousOn)
                                 {
-                                    var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts
-                                        .Length - 1;
-                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
-                                        Color.Transparent,
-                                        0);
+                                    var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts.Length - 1;
+                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev], Color.Transparent, 0);
                                 }
                             }
                             else
