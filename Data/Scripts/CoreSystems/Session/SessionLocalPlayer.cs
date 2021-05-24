@@ -104,7 +104,7 @@ namespace CoreSystems
         private bool GroupedCamera(MyCameraBlock camera)
         {
             long cameraGroupId;
-            if (CameraChannelMappings.TryGetValue(camera, out cameraGroupId) && cameraGroupId > 0)
+            if (CameraChannelMappings.TryGetValue(camera, out cameraGroupId))
             {
                 ActiveCameraBlock = camera;
                 return true;

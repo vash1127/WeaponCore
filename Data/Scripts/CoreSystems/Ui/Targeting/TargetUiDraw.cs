@@ -44,6 +44,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             if (s.UiInput.CameraBlockView)
             {
                 _pointerPosition.Y = 0f;
+                InitPointerOffset(0.05);
             }
             else if (s.UiInput.FirstPersonView)
             {
@@ -263,8 +264,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var textColor = !info.WillHit ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0.025f, 0.025f, 1);
 
                 string textLine1 = (i + 1).ToString();
-                var size = !info.WillHit ? 8 : 11;
-                var fontSize = (float)Math.Round(size * fontScale, 2);
+                var fontFocusSize = !info.WillHit ? 8 : 11;
+                var fontSize = (float)Math.Round(fontFocusSize * fontScale, 2);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Hud.Justify.Center;
@@ -292,6 +293,29 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
 
             MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
+
+            var avgScreenPos = s.Camera.WorldToScreen(ref fullAveragePos);
+            var avgLockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref avgScreenPos);
+
+            var dotpos = new Vector2D(avgLockedScreenPos.X, avgLockedScreenPos.Y);
+            dotpos.X *= scaledAspect;
+            dotpos.Y *= lineScale;
+            avgLockedScreenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
+
+            var size = (float)((0.00125f * scale) * s.ScaleFov);
+            var left = (Vector3)s.CameraMatrix.Left;
+            var up = (Vector3)s.CameraMatrix.Up;
+            var repColor = new Vector4(1, 1, 1, 1);
+            var time = s.Tick % 20; // forward and backward total time
+            var increase = time < 10;
+            var directionalTimeStep = increase ? time : 19 - time;
+            var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
+
+            MyQuadD quad;
+            MyUtils.GetBillboardQuadOriented(out quad, ref avgLockedScreenPos, size, size, ref left, ref up);
+            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, avgLockedScreenPos, repColor, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, avgLockedScreenPos, repColor, BlendTypeEnum.PostPP);
+
             _leadInfos.Clear();
         }
 

@@ -160,7 +160,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             if (!manualSelect)
             {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
-                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
+                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : _session.UiInput.CameraBlockView ? Color.Transparent : Color.White;
 
                 if (!foundTarget && !markTargetPos)
                     fakeTarget.Update(end, s.Tick);

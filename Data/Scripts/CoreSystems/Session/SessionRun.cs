@@ -153,7 +153,7 @@ namespace CoreSystems
 
                 if (!DedicatedServer && !InMenu) {
                     UpdateLocalAiAndCockpit();
-                    if (UiInput.PlayerCamera && ActiveCockPit != null || ActiveControlBlock is MyRemoteControl && !UiInput.PlayerCamera) 
+                    if (UiInput.PlayerCamera && ActiveCockPit != null || ActiveControlBlock is MyRemoteControl && !UiInput.PlayerCamera || UiInput.CameraBlockView) 
                         TargetSelection();
                 }
 
