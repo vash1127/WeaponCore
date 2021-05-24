@@ -43,6 +43,7 @@ namespace WeaponCore
             if (s.UiInput.CameraBlockView)
             {
                 _pointerPosition.Y = 0f;
+                InitPointerOffset(0.05);
             }
             else if (s.UiInput.FirstPersonView)
             {
@@ -259,9 +260,9 @@ namespace WeaponCore
 
                 var textColor = !info.WillHit ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0.025f, 0.025f, 1);
 
-                string textLine1 = (i + 1).ToString();
-                var size = !info.WillHit ? 8 : 11;
-                var fontSize = (float)Math.Round(size * fontScale, 2);
+                string textLine1 = info.Group.ToString();
+                var fontFocusSize = !info.WillHit ? 8 : 11;
+                var fontSize = (float)Math.Round(fontFocusSize * fontScale, 2);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;
