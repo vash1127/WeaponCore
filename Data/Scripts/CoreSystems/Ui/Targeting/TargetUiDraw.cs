@@ -117,7 +117,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var fontAge = 18;
                 var fontJustify = Hud.Hud.Justify.None;
                 var fontType = Hud.Hud.FontType.Shadow;
-                var elementId = 123456;
+                var elementId = 1;
 
                 s.HudUi.AddText(text: textLine1, x: textOffset1.X, y: textOffset1.Y, elementId: elementId, ttl: fontAge, color: text1Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
                 s.HudUi.AddText(text: textLine2, x: textOffset2.X, y: textOffset2.Y, elementId: elementId + 1, ttl: fontAge, color: text2Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
@@ -153,7 +153,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             }
 
             var fontYOffset = (float)((-0.05f * scale) * invScaler);
-
+            var element = 0;
             for (int i = 0; i < s.ActiveMarks.Count; i++)
             {
                 var mark = s.ActiveMarks[i];
@@ -194,7 +194,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var fontAge = -1;
                 var fontJustify = Hud.Hud.Justify.Center;
                 var fontType = Hud.Hud.FontType.Shadow;
-                var elementId = 3102 + (100 + i);
+                var elementId = 1000 + element++;
                 s.HudUi.AddText(text: textLine1, x: (float)screenPos.X, y: (float)screenPos.Y + fontYOffset, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
         }
@@ -244,6 +244,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var fontScale = scale * s.ScaleFov;
             Vector3D fursthestScreenPos = Vector3D.Zero;
             double furthestDist = 0;
+            var element = 0;
+
             for (int i = 0; i < _leadInfos.Count; i++)
             {
                 var info = _leadInfos[i];
@@ -270,7 +272,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 var fontAge = -1;
                 var fontJustify = Hud.Hud.Justify.Center;
                 var fontType = Hud.Hud.FontType.Shadow;
-                var elementId = 1103 + (220 + i);
+                var elementId = 2000 + element++;
                 s.HudUi.AddText(text: textLine1, x: (float)lockedScreenPos.X, y: (float)lockedScreenPos.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
 
@@ -324,6 +326,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
             var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
+            var element = 0;
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -382,25 +385,20 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
-                    var quickUpdate = _session.HudUi.NeedsUpdate && (_session.UiInput.FirstPersonView && _session.ControlledEntity is IMyGunBaseUser || _session.UiInput.CameraBlockView);
-                    if (s.Tick20 || quickUpdate)
+                    for (int j = 0; j < 11; j++)
                     {
-                        for (int j = 0; j < 11; j++)
+                        string text;
+                        Vector2 textOffset;
+                        if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                         {
-                            string text;
-                            Vector2 textOffset;
-                            if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
-                            {
-                                var textColor = Color.White;
-                                var fontSize = (float)Math.Round(21 * fontScale, 2);
-                                var fontHeight = 0.75f;
-                                var fontAge = !quickUpdate ? 18 : 0;
-                                var fontJustify = Hud.Hud.Justify.None;
-                                var fontType = Hud.Hud.FontType.Shadow;
-                                var elementId = MathFuncs.UniqueId(i, j);
-
-                                s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
-                            }
+                            var textColor = Color.White;
+                            var fontSize = (float)Math.Round(21 * fontScale, 2);
+                            var fontHeight = 0.75f;
+                            var fontAge = -1;
+                            var fontJustify = Hud.Hud.Justify.None;
+                            var fontType = Hud.Hud.FontType.Shadow;
+                            var elementId = 3000 + element++;
+                            s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
                         }
                     }
                 }
@@ -436,10 +434,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var minimal = !details;
             var skipShield = !showAll && !minimal;
             var skip = minimal && slot != 1 && slot != 2 && slot != 10 || skipShield && slot > 5 && slot != 10;
+            textStr = string.Empty;
 
             if (skip)
             {
-                textStr = string.Empty;
                 textOffset = Vector2.Zero;
                 return false;
             }
@@ -542,6 +540,10 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     textOffset = Vector2.Zero;
                     return false;
             }
+
+            if (textStr == null)
+                textStr = string.Empty;
+
             return true;
         }
 

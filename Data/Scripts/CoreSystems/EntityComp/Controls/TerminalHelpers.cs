@@ -71,7 +71,6 @@ namespace CoreSystems.Control
 
         internal static void AddCameraControls<T>(Session session) where T : IMyTerminalBlock
         {
-            Log.Line($"test");
             Separator<T>(session, -7, "WC_cameraSep1", Istrue);
             AddBlockCameraSliderRange<T>(session, -8, "WC_PickCameraChannel", "Camera Channel", "Assign the camera weapon channel to this camera", BlockUi.GetBlockCamera, BlockUi.RequestBlockCamera, BlockUi.ShowCamera, BlockUi.GetMinCameraChannel, BlockUi.GetMaxCameraChannel, true);
         }

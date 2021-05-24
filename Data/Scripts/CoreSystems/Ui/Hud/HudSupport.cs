@@ -55,21 +55,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
 
         internal void AddText(string text, float x, float y, long elementId, int ttl, Vector4 color, Justify justify = Justify.None, FontType fontType = FontType.Shadow, float fontSize = 10f, float heightScale = 0.65f)
         {
+            if (_agingTextRequests.ContainsKey(elementId) || string.IsNullOrEmpty(text))
+                return;
             AgingTextures = true;
 
-            AgingTextRequest request;
-            if (ttl >= 0 && _agingTextRequests.TryGetValue(elementId, out request))
-            {
-                if (ttl > 0)
-                {
-                    request.RefreshTtl(ttl);
-                    return;
-                }
-                _agingTextRequests.Remove(elementId);
-                _agingTextRequestPool.Return(request);
-
-            }
-            request = _agingTextRequestPool.Get();
+            var request = _agingTextRequestPool.Get();
 
             var pos = GetScreenSpace(new Vector2(x, y));
             request.Text = text;

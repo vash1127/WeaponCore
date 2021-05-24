@@ -15,6 +15,8 @@ namespace CoreSystems
         internal bool MouseButtonPressed;
         internal bool InputChanged;
         internal bool MouseButtonLeftWasPressed;
+        internal bool MouseButtonLeftNewPressed;
+        internal bool MouseButtonLeftReleased;
         internal bool MouseButtonMenuWasPressed;
         internal bool MouseButtonRightWasPressed;
         internal bool WasInMenu;
@@ -71,6 +73,8 @@ namespace CoreSystems
             if (s.InGridAiBlock && !s.InMenu)
             {
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
+                MouseButtonLeftNewPressed = MyAPIGateway.Input.IsNewLeftMousePressed();
+                MouseButtonLeftReleased = MyAPIGateway.Input.IsNewLeftMouseReleased();
 
                 MouseButtonLeftWasPressed = ClientInputState.MouseButtonLeft;
                 MouseButtonMenuWasPressed = ClientInputState.MouseButtonMenu;

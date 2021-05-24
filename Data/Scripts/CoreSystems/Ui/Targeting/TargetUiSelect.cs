@@ -53,11 +53,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             _cachedPointerPos = true;
         }
 
-        internal bool SelectTarget(bool manualSelect = true)
+        private MyEntity _firstStageEnt;
+        internal void SelectTarget(bool manualSelect = true, bool firstStage = false)
         {
             var s = _session;
             var ai = s.TrackingAi;
-
             if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
@@ -127,8 +127,17 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     if (hitGrid == null || !_masterTargets.ContainsKey(hitGrid))
                         continue;
 
-                    s.SetTarget(hitGrid, ai, _masterTargets);
-                    return true;
+                    if (firstStage)
+                        _firstStageEnt = hitGrid;
+                    else
+                    {
+                        if (hitGrid == _firstStageEnt)
+                            s.SetTarget(hitGrid, ai, _masterTargets);
+                        
+                        _firstStageEnt = null;
+                    }
+
+                    return;
                 }
 
                 foundTarget = true;
@@ -151,8 +160,17 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 foundTarget = true;
                 if (manualSelect)
                 {
-                    s.SetTarget(closestEnt, ai, _masterTargets);
-                    return true;
+                    if (firstStage)
+                        _firstStageEnt = closestEnt;
+                    else
+                    {
+                        if (closestEnt == _firstStageEnt)
+                            s.SetTarget(closestEnt, ai, _masterTargets);
+
+                        _firstStageEnt = null;
+                    }
+
+                    return;
                 }
                 fakeTarget.Update(hitPos, s.Tick, closestEnt);
             }
@@ -160,13 +178,11 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             if (!manualSelect)
             {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
-                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : _session.UiInput.CameraBlockView ? Color.Transparent : Color.White;
+                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
 
                 if (!foundTarget && !markTargetPos)
                     fakeTarget.Update(end, s.Tick);
             }
-
-            return foundTarget || foundOther;
         }
 
         internal void SelectNext()
