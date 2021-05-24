@@ -554,6 +554,7 @@ namespace WeaponCore.Platform
             w.Comp.HasRofSlider = w.Comp.HasRofSlider || (ui.RateOfFire && !w.CanUseChargeAmmo);
             w.Comp.CanOverload = w.Comp.CanOverload || (ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
             w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
+            w.Comp.ForceTargetLead = w.Comp.ForceTargetLead || w.System.Values.HardPoint.Ai.ForceTargetLead;
             w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets;
             w.Comp.HasGuidedAmmo = w.Comp.HasGuidedAmmo || w.System.HasGuidedAmmo;
             w.Comp.HasDelayToFire = w.Comp.HasDelayToFire || w.System.DelayToFire > 0;

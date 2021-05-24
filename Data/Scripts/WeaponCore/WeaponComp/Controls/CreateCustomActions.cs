@@ -396,7 +396,7 @@ namespace WeaponCore.Control
             action0.Name = new StringBuilder($"Next Lead Group");
             action0.Action = CustomActions.TerminalActionLeadGroupIncrease;
             action0.Writer = CustomActions.LeadGroupWriter;
-            action0.Enabled = TerminalHelpers.NoTurret;
+            action0.Enabled = TerminalHelpers.TargetLead;
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -407,7 +407,7 @@ namespace WeaponCore.Control
             action1.Name = new StringBuilder($"Previous Lead Group");
             action1.Action = CustomActions.TerminalActionLeadGroupDecrease;
             action1.Writer = CustomActions.LeadGroupWriter;
-            action1.Enabled = TerminalHelpers.NoTurret;
+            action1.Enabled = TerminalHelpers.TargetLead;
             action1.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);

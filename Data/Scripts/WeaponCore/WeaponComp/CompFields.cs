@@ -74,6 +74,7 @@ namespace WeaponCore.Support
         internal bool HasRofSlider;
         internal bool CanOverload;
         internal bool HasTurret;
+        internal bool ForceTargetLead;
         internal bool HasChargeWeapon;
         internal bool WasControlled;
         internal bool UpdatedState;

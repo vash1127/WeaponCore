@@ -88,7 +88,7 @@ namespace WeaponCore
             foreach (var ai in TrackingAi.Construct.RefreshedAis) {
                 foreach (var comp in ai.Weapons) {
                     foreach (var w in comp.Platform.Weapons) {
-                        if (!w.System.Values.HardPoint.Ai.TurretAttached && w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup > 0)
+                        if ((!w.Comp.HasTurret || w.Comp.ForceTargetLead) && w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup > 0)
                         {
                             LeadGroups[w.Comp.Data.Repo.Base.Set.Overrides.LeadGroup].Add(w);
                             LeadGroupActive = true;

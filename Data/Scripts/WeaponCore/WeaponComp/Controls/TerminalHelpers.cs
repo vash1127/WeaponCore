@@ -58,7 +58,7 @@ namespace WeaponCore.Control
 
             AddWeaponCameraSliderRange<T>(session, -20, "Camera Channel", "Weapon Camera Channel", "Assign this weapon to a camera channel", WepUi.GetWeaponCamera, WepUi.RequestSetBlockCamera, HasTracking, WepUi.GetMinCameraChannel, WepUi.GetMaxCameraChannel, true);
 
-            AddLeadGroupSliderRange<T>(session, -21, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", WepUi.GetLeadGroup, WepUi.RequestSetLeadGroup, NoTurret, WepUi.GetMinLeadGroup, WepUi.GetMaxLeadGroup, true);
+            AddLeadGroupSliderRange<T>(session, -21, "Target Group", "Target Lead Group", "Assign this weapon to target lead group", WepUi.GetLeadGroup, WepUi.RequestSetLeadGroup, TargetLead, WepUi.GetMinLeadGroup, WepUi.GetMaxLeadGroup, true);
 
             Separator<T>(session, -22, "WC_sep4", HasTracking);
         }
@@ -178,6 +178,11 @@ namespace WeaponCore.Control
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && !comp.HasTurret;
+        }
+        internal static bool TargetLead(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && (!comp.HasTurret || comp.ForceTargetLead);
         }
 
         internal static bool GuidedAmmo(IMyTerminalBlock block)
