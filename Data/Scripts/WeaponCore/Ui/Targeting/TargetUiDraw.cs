@@ -289,7 +289,7 @@ namespace WeaponCore
             var lineColor = new Vector4(0.5f, 0.5f, 1, 1);
             var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
 
-            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
+            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.0025f);
             _leadInfos.Clear();
         }
 
