@@ -18,15 +18,16 @@ namespace WeaponCore
         internal void DrawTargetUi()
         {
             var s = _session;
-            
+
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
             if (ActivateMarks()) DrawActiveMarks();
             if (ActivateDroneNotice()) DrawDroneNotice();
             if (ActivateSelector()) DrawSelector();
-            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s)) {
+            if (s.CheckTarget(s.TrackingAi) && GetTargetState(s))
+            {
 
-                if (ActivateLeads()) 
+                if (ActivateLeads())
                     DrawActiveLeads();
 
                 DrawTarget();
@@ -75,7 +76,7 @@ namespace WeaponCore
                 _pointerPosition = _3RdPersonPos;
                 InitPointerOffset(0.05);
             }
-            
+
             SelectTarget(manualSelect: false);
 
             if (s.Tick - _lastDrawTick > 1 && _delay++ < 10) return;
@@ -116,7 +117,7 @@ namespace WeaponCore
                 var fontAge = 18;
                 var fontJustify = Hud.Justify.None;
                 var fontType = Hud.FontType.Shadow;
-                var elementId = 123456;
+                var elementId = 1;
 
                 s.HudUi.AddText(text: textLine1, x: textOffset1.X, y: textOffset1.Y, elementId: elementId, ttl: fontAge, color: text1Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
                 s.HudUi.AddText(text: textLine2, x: textOffset2.X, y: textOffset2.Y, elementId: elementId + 1, ttl: fontAge, color: text2Color, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
@@ -129,12 +130,12 @@ namespace WeaponCore
 
             var time = s.Tick % 20; // forward and backward total time
             var increase = time < 10;
-            var directionalTimeStep = increase ? time  : 19 - time;
+            var directionalTimeStep = increase ? time : 19 - time;
             var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
             var colorStep = s.Tick % 120;
             var amplify = colorStep <= 60;
             var modifyStep = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
-            var cMod1 = MathHelper.Clamp(amplify ? (colorStep * modifyStep) :  2 - (+ (colorStep * modifyStep)), 0.1f, 1f);
+            var cMod1 = MathHelper.Clamp(amplify ? (colorStep * modifyStep) : 2 - (+(colorStep * modifyStep)), 0.1f, 1f);
             var left = (Vector3)s.CameraMatrix.Left;
             var up = (Vector3)s.CameraMatrix.Up;
             var scale = s.Settings.ClientConfig.HudScale;
@@ -144,14 +145,15 @@ namespace WeaponCore
             var fontScale = scale * s.ScaleFov;
             var invScaleLimit = 4.2;
 
-            if (invScaler >= invScaleLimit) {
-                fontScale *=  (invScaler / invScaleLimit);
+            if (invScaler >= invScaleLimit)
+            {
+                fontScale *= (invScaler / invScaleLimit);
                 size *= (float)(invScaler / invScaleLimit);
                 invScaler = MathHelper.Clamp(20f / invScaler, 1, 20);
             }
 
             var fontYOffset = (float)((-0.05f * scale) * invScaler);
-
+            var element = 0;
             for (int i = 0; i < s.ActiveMarks.Count; i++)
             {
                 var mark = s.ActiveMarks[i];
@@ -165,7 +167,7 @@ namespace WeaponCore
                 var viewSphere = new BoundingSphereD(targetCenter, 100f);
                 if (!s.Camera.IsInFrustum(ref viewSphere))
                     continue;
-                
+
                 var screenPos = s.Camera.WorldToScreen(ref targetCenter);
 
                 Vector3D drawPos = screenPos;
@@ -192,7 +194,7 @@ namespace WeaponCore
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;
                 var fontType = Hud.FontType.Shadow;
-                var elementId = 3102 + (100 + i);
+                var elementId = 1000 + element++;
                 s.HudUi.AddText(text: textLine1, x: (float)screenPos.X, y: (float)screenPos.Y + fontYOffset, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
         }
@@ -207,14 +209,14 @@ namespace WeaponCore
             if (!MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target) && target.Physics == null)
                 return;
 
-            var targetSphere = target.PositionComp.WorldVolume; 
-            
+            var targetSphere = target.PositionComp.WorldVolume;
+
             float maxLeadLength;
             Vector3D fullAveragePos;
 
             if (!ComputeLead(target, targetSphere.Center, out maxLeadLength, out fullAveragePos))
                 return;
-            
+
             var lineStart = targetSphere.Center;
             var lineNormDir = Vector3D.Normalize(fullAveragePos - lineStart);
             var ray = new RayD(lineStart, lineNormDir);
@@ -222,7 +224,7 @@ namespace WeaponCore
             var rayDist = s.CameraFrustrum.Intersects(ray);
             if (!s.Camera.IsInFrustum(ref targetSphere) || rayDist == null)
                 return;
-            
+
             var lineEnd = lineStart + (lineNormDir * maxLeadLength);
             var endScreenPos = s.Camera.WorldToScreen(ref lineEnd);
 
@@ -242,6 +244,8 @@ namespace WeaponCore
             var fontScale = scale * s.ScaleFov;
             Vector3D fursthestScreenPos = Vector3D.Zero;
             double furthestDist = 0;
+            var element = 0;
+
             for (int i = 0; i < _leadInfos.Count; i++)
             {
                 var info = _leadInfos[i];
@@ -253,21 +257,22 @@ namespace WeaponCore
                 var lockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref screenPos);
 
                 var distSqr = Vector3D.DistanceSquared(lockedScreenPos, startScreenPos);
-                if (distSqr > furthestDist) {
+                if (distSqr > furthestDist)
+                {
                     furthestDist = distSqr;
                     fursthestScreenPos = lockedScreenPos;
                 }
 
                 var textColor = !info.WillHit ? new Vector4(1, 1, 1, 1) : new Vector4(1, 0.025f, 0.025f, 1);
 
-                string textLine1 = info.Group.ToString();
+                string textLine1 = (i + 1).ToString();
                 var fontFocusSize = !info.WillHit ? 8 : 11;
                 var fontSize = (float)Math.Round(fontFocusSize * fontScale, 2);
                 var fontHeight = 0.75f;
                 var fontAge = -1;
                 var fontJustify = Hud.Justify.Center;
                 var fontType = Hud.FontType.Shadow;
-                var elementId = 1103 + (220 + i);
+                var elementId = 2000 + element++;
                 s.HudUi.AddText(text: textLine1, x: (float)lockedScreenPos.X, y: (float)lockedScreenPos.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
             }
 
@@ -279,7 +284,7 @@ namespace WeaponCore
 
             var culledLineStart = lineEnd - (lineNormDir * lineLength);
             var culledStartScreenPos = s.Camera.WorldToScreen(ref culledLineStart);
-            
+
             var culledStartDotPos = new Vector2D(culledStartScreenPos.X, culledStartScreenPos.Y);
             culledStartDotPos.X *= scaledAspect;
             culledStartDotPos.Y *= lineScale;
@@ -289,7 +294,30 @@ namespace WeaponCore
             var lineColor = new Vector4(0.5f, 0.5f, 1, 1);
             var lineMagnitude = lineEndScreenPos - lineStartScreenPos;
 
-            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.0025f);
+            MyTransparentGeometry.AddLineBillboard(_laserLine, lineColor, lineStartScreenPos, lineMagnitude, 1f, lineScale * 0.005f);
+
+            var avgScreenPos = s.Camera.WorldToScreen(ref fullAveragePos);
+            var avgLockedScreenPos = MyUtils.GetClosestPointOnLine(ref startScreenPos, ref endScreenPos, ref avgScreenPos);
+
+            var dotpos = new Vector2D(avgLockedScreenPos.X, avgLockedScreenPos.Y);
+            dotpos.X *= scaledAspect;
+            dotpos.Y *= lineScale;
+            avgLockedScreenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
+
+            var size = (float)((0.00125f * scale) * s.ScaleFov);
+            var left = (Vector3)s.CameraMatrix.Left;
+            var up = (Vector3)s.CameraMatrix.Up;
+            var repColor = new Vector4(1, 1, 1, 1);
+            var time = s.Tick % 20; // forward and backward total time
+            var increase = time < 10;
+            var directionalTimeStep = increase ? time : 19 - time;
+            var textureMap = s.HudUi.PaintedTexture[directionalTimeStep];
+
+            MyQuadD quad;
+            MyUtils.GetBillboardQuadOriented(out quad, ref avgLockedScreenPos, size, size, ref left, ref up);
+            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P1, textureMap.P3, textureMap.Material, 0, avgLockedScreenPos, repColor, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureMap.P0, textureMap.P2, textureMap.P3, textureMap.Material, 0, avgLockedScreenPos, repColor, BlendTypeEnum.PostPP);
+
             _leadInfos.Clear();
         }
 
@@ -298,6 +326,7 @@ namespace WeaponCore
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
             var detailedHud = !_session.Settings.ClientConfig.MinimalHud;
+            var element = 0;
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
 
@@ -356,25 +385,20 @@ namespace WeaponCore
                     var hudOpacity = MathHelper.Clamp(_session.UIHudOpacity, 0.25f, 1f);
                     color = new Vector4(1, 1, 1, hudOpacity);
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, screenScale, BlendTypeEnum.PostPP);
-                    var quickUpdate = _session.HudUi.NeedsUpdate && (_session.UiInput.FirstPersonView && _session.ControlledEntity is IMyGunBaseUser || _session.UiInput.CameraBlockView);
-                    if (s.Tick20 || quickUpdate)
+                    for (int j = 0; j < 11; j++)
                     {
-                        for (int j = 0; j < 11; j++)
+                        string text;
+                        Vector2 textOffset;
+                        if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
                         {
-                            string text;
-                            Vector2 textOffset;
-                            if (TargetTextStatus(j, targetState, scale, localOffset, shielded, detailedHud, out text, out textOffset))
-                            {
-                                var textColor = Color.White;
-                                var fontSize = (float)Math.Round(21 * fontScale, 2);
-                                var fontHeight = 0.75f;
-                                var fontAge = !quickUpdate ? 18 : 0;
-                                var fontJustify = Hud.Justify.None;
-                                var fontType = Hud.FontType.Shadow;
-                                var elementId = MathFuncs.UniqueId(i, j);
-
-                                s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
-                            }
+                            var textColor = Color.White;
+                            var fontSize = (float)Math.Round(21 * fontScale, 2);
+                            var fontHeight = 0.75f;
+                            var fontAge = -1;
+                            var fontJustify = Hud.Justify.None;
+                            var fontType = Hud.FontType.Shadow;
+                            var elementId = 3000 + element++;
+                            s.HudUi.AddText(text: text, x: textOffset.X, y: textOffset.Y, elementId: elementId, ttl: fontAge, color: textColor, justify: fontJustify, fontType: fontType, fontSize: fontSize, heightScale: fontHeight);
                         }
                     }
                 }
@@ -410,9 +434,10 @@ namespace WeaponCore
             var minimal = !details;
             var skipShield = !showAll && !minimal;
             var skip = minimal && slot != 1 && slot != 2 && slot != 10 || skipShield && slot > 5 && slot != 10;
-            
-            if (skip) {
-                textStr = string.Empty;
+            textStr = string.Empty;
+
+            if (skip)
+            {
                 textOffset = Vector2.Zero;
                 return false;
             }
@@ -443,7 +468,7 @@ namespace WeaponCore
                     textOffset.Y += yStart;
                     break;
                 case 2:
-                    var threatLvl = targetState.ThreatLvl > 0 ? targetState.ThreatLvl : 0; 
+                    var threatLvl = targetState.ThreatLvl > 0 ? targetState.ThreatLvl : 0;
                     textStr = $"THREAT: {threatLvl}";
                     textOffset.X -= xOdd * aspectScale;
                     if (minimal)
@@ -515,6 +540,10 @@ namespace WeaponCore
                     textOffset = Vector2.Zero;
                     return false;
             }
+
+            if (textStr == null)
+                textStr = string.Empty;
+
             return true;
         }
 
@@ -564,11 +593,13 @@ namespace WeaponCore
             var forward = shunts.Z == -1 || shunts.Y == 2;
             var backward = shunts.Z == 1 || shunts.Y == 2;
 
-            if (forward || backward) {
+            if (forward || backward)
+            {
 
                 var both = forward && backward;
 
-                if (both) {
+                if (both)
+                {
                     text += "FR:BA:";
                 }
                 else if (forward)
@@ -577,11 +608,13 @@ namespace WeaponCore
                     text += "BA:";
             }
 
-            if (up || down) {
+            if (up || down)
+            {
 
                 var both = up && down;
 
-                if (both) {
+                if (both)
+                {
                     text += "TO:BO:";
                 }
                 else if (up)
@@ -590,11 +623,13 @@ namespace WeaponCore
                     text += "BO:";
             }
 
-            if (left || right) {
+            if (left || right)
+            {
 
                 var both = left && right;
 
-                if (both) {
+                if (both)
+                {
                     text += "LE:RI:";
                 }
                 else if (left)
@@ -610,25 +645,27 @@ namespace WeaponCore
             _leadInfos.Clear();
             maxLeadLength = 0;
             fullAveragePos = Vector3D.Zero;
-            for (var gId = 0; gId < _session.LeadGroups.Length; gId++) {
+            for (var gId = 0; gId < _session.LeadGroups.Length; gId++)
+            {
 
                 var group = _session.LeadGroups[gId];
                 var leadAvg = Vector3D.Zero;
                 var somethingWillHit = false;
                 var addLead = 0;
 
-                for (var i = 0; i < group.Count; i++) {
+                for (var i = 0; i < group.Count; i++)
+                {
 
                     var w = group[i];
-                    if(!w.Comp.MyCube.IsWorking || w.Comp.MyCube.MarkedForClose || w.Comp.MyCube.CubeGrid.MarkedForClose)
+                    if (!w.Comp.MyCube.IsWorking || w.Comp.MyCube.MarkedForClose || w.Comp.MyCube.CubeGrid.MarkedForClose)
                         continue;
-
                     Vector3D predictedPos;
                     bool canHit;
                     bool willHit;
                     Weapon.LeadTarget(w, target, out predictedPos, out canHit, out willHit);
 
-                    if (canHit) {
+                    if (canHit)
+                    {
 
                         ++addLead;
                         leadAvg += predictedPos;
@@ -638,7 +675,8 @@ namespace WeaponCore
                         }
                     }
 
-                    if (i == group.Count - 1 && !MyUtils.IsZero(leadAvg)) {
+                    if (i == group.Count - 1 && !MyUtils.IsZero(leadAvg))
+                    {
 
                         leadAvg /= addLead;
                         var leadLength = Vector3.Distance(leadAvg, targetPos);
@@ -651,10 +689,10 @@ namespace WeaponCore
                     }
                 }
             }
-            
+
             if (_leadInfos.Count > 0)
                 fullAveragePos /= _leadInfos.Count;
-            
+
             return _leadInfos.Count != 0;
         }
 
@@ -679,7 +717,8 @@ namespace WeaponCore
                 var partCount = 1;
                 var largeGrid = false;
                 GridAi targetAi = null;
-                if (grid != null)  {
+                if (grid != null)
+                {
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
                     GridMap gridMap;
                     if (s.GridToMasterAi.TryGetValue(grid, out targetAi))
@@ -734,7 +773,7 @@ namespace WeaponCore
                     state.ShieldFaces = faceInfo.Item1 ? faceInfo.Item2 : Vector3I.Zero;
                     state.ShieldHeat = shieldInfo.Item6 / 10;
                     state.ShieldMod = modValue;
-                    state.ShieldHealth = (float) Math.Round(shieldInfo.Item5);
+                    state.ShieldHealth = (float)Math.Round(shieldInfo.Item5);
                 }
                 else
                 {
@@ -786,9 +825,11 @@ namespace WeaponCore
             if (targetAi.Construct.Data.Repo.FocusData.HasFocus)
             {
                 var fd = targetAi.Construct.Data.Repo.FocusData;
-                foreach (var tId in fd.Target) {
-                    foreach (var sub in ai.SubGrids) {
-                        if (sub.EntityId == tId) 
+                foreach (var tId in fd.Target)
+                {
+                    foreach (var sub in ai.SubGrids)
+                    {
+                        if (sub.EntityId == tId)
                             return TargetStatus.Awareness.FOCUSFIRE;
                     }
                 }

@@ -355,9 +355,9 @@ namespace WeaponCore
 
             if (InGridAiBlock)
             {
-                if ((TargetUi.DrawReticle || UiInput.FirstPersonView) && MyAPIGateway.Input.IsNewLeftMouseReleased())
-                    TargetUi.SelectTarget();
-                else
+                if (UiInput.MouseButtonLeftNewPressed || UiInput.MouseButtonLeftReleased && (TargetUi.DrawReticle || UiInput.FirstPersonView))
+                    TargetUi.SelectTarget(true, UiInput.MouseButtonLeftNewPressed);
+                else if (!UiInput.CameraBlockView)
                 {
                     if (UiInput.CurrentWheel != UiInput.PreviousWheel)
                         TargetUi.SelectNext();

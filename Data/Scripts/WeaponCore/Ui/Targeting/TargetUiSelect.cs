@@ -53,11 +53,11 @@ namespace WeaponCore
             _cachedPointerPos = true;
         }
 
-        internal bool SelectTarget(bool manualSelect = true)
+        private MyEntity _firstStageEnt;
+        internal void SelectTarget(bool manualSelect = true, bool firstStage = false)
         {
             var s = _session;
             var ai = s.TrackingAi;
-
             if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
@@ -73,19 +73,23 @@ namespace WeaponCore
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
                 end = offetPosition + (AimDirection * ai.MaxTargetingRange);
             }
-            else if (!s.UiInput.FirstPersonView) {
+            else if (!s.UiInput.FirstPersonView)
+            {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
                 end = offetPosition + (AimDirection * ai.MaxTargetingRange);
             }
-            else {
-                if (!_session.UiInput.AltPressed) {
+            else
+            {
+                if (!_session.UiInput.AltPressed)
+                {
                     AimDirection = cockPit.PositionComp.WorldMatrixRef.Forward;
                     AimPosition = cockPit.PositionComp.WorldAABB.Center;
                     end = AimPosition + (AimDirection * s.TrackingAi.MaxTargetingRange);
                 }
-                else {
+                else
+                {
                     var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                     AimPosition = offetPosition;
                     AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
@@ -101,14 +105,16 @@ namespace WeaponCore
             _session.Physics.CastRay(AimPosition, end, _hitInfo);
             var markTargetPos = MyAPIGateway.Input.IsNewRightMouseReleased();
             var fakeTarget = !markTargetPos ? ai.Session.PlayerDummyTargets[ai.Session.PlayerId].ManualTarget : ai.Session.PlayerDummyTargets[ai.Session.PlayerId].PaintedTarget;
-            for (int i = 0; i < _hitInfo.Count; i++) {
+            for (int i = 0; i < _hitInfo.Count; i++)
+            {
 
                 var hit = _hitInfo[i];
                 closestEnt = hit.HitEntity.GetTopMostParent() as MyEntity;
 
                 var hitGrid = closestEnt as MyCubeGrid;
 
-                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid)) {
+                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid))
+                {
                     rayHitSelf = true;
                     rayOnlyHitSelf = true;
                     continue;
@@ -116,12 +122,22 @@ namespace WeaponCore
 
                 if (rayOnlyHitSelf) rayOnlyHitSelf = false;
 
-                if (manualSelect) {
+                if (manualSelect)
+                {
                     if (hitGrid == null || !_masterTargets.ContainsKey(hitGrid))
                         continue;
 
-                    s.SetTarget(hitGrid, ai, _masterTargets);
-                    return true;
+                    if (firstStage)
+                        _firstStageEnt = hitGrid;
+                    else
+                    {
+                        if (hitGrid == _firstStageEnt)
+                            s.SetTarget(hitGrid, ai, _masterTargets);
+
+                        _firstStageEnt = null;
+                    }
+
+                    return;
                 }
 
                 foundTarget = true;
@@ -129,7 +145,8 @@ namespace WeaponCore
                 break;
             }
 
-            if (rayHitSelf) {
+            if (rayHitSelf)
+            {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
                 if (rayOnlyHitSelf && !markTargetPos) fakeTarget.Update(end, s.Tick);
@@ -138,24 +155,34 @@ namespace WeaponCore
 
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && !markTargetPos && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
+            if (!foundTarget && !markTargetPos && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect))
+            {
                 foundTarget = true;
-                if (manualSelect) {
-                    s.SetTarget(closestEnt, ai, _masterTargets);
-                    return true;
+                if (manualSelect)
+                {
+                    if (firstStage)
+                        _firstStageEnt = closestEnt;
+                    else
+                    {
+                        if (closestEnt == _firstStageEnt)
+                            s.SetTarget(closestEnt, ai, _masterTargets);
+
+                        _firstStageEnt = null;
+                    }
+
+                    return;
                 }
                 fakeTarget.Update(hitPos, s.Tick, closestEnt);
             }
 
-            if (!manualSelect) {
+            if (!manualSelect)
+            {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
-                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : _session.UiInput.CameraBlockView ? Color.Transparent : Color.White;
+                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
 
                 if (!foundTarget && !markTargetPos)
                     fakeTarget.Update(end, s.Tick);
             }
-
-            return foundTarget || foundOther;
         }
 
         internal void SelectNext()
