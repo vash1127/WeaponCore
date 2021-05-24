@@ -205,7 +205,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
 
             MyEntity target;
-            if (!MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
+            if (!MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target) && target.Physics == null)
                 return;
 
             var targetSphere = target.PositionComp.WorldVolume;
@@ -631,6 +631,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 {
 
                     var w = group[i];
+                    if (!w.Comp.Cube.IsWorking || w.Comp.Cube.MarkedForClose || w.Comp.Cube.CubeGrid.MarkedForClose)
+                        continue;
                     Vector3D predictedPos;
                     bool canHit;
                     bool willHit;

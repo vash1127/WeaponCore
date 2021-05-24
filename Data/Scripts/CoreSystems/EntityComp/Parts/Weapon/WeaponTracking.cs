@@ -108,9 +108,9 @@ namespace CoreSystems.Platform
 
         internal static void LeadTarget(Weapon weapon, MyEntity target, out Vector3D targetPos, out bool couldHit, out bool willHit)
         {
-            var vel = target.Physics?.LinearVelocity ?? Vector3.Zero;
-            var accel = target.Physics?.LinearAcceleration ?? Vector3.Zero;
-            var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
+            var vel = target.Physics.LinearVelocity;
+            var accel = target.Physics.LinearAcceleration;
+            var trackingWeapon = weapon.TurretMode || weapon.Comp.TrackingWeapon == null ? weapon : weapon.Comp.TrackingWeapon;
 
             var box = target.PositionComp.LocalAABB;
             var obb = new MyOrientedBoundingBoxD(box, target.PositionComp.WorldMatrixRef);
