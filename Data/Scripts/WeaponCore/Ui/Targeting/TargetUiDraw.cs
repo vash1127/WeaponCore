@@ -619,7 +619,7 @@ namespace WeaponCore
                 for (var i = 0; i < group.Count; i++) {
 
                     var w = group[i];
-                    if (!w.Comp.MyCube.IsWorking || w.Comp.Ai != _session.TrackingAi)
+                    if(!w.Comp.MyCube.IsWorking || w.Comp.MyCube.MarkedForClose || w.Comp.MyCube.CubeGrid.MarkedForClose)
                         continue;
 
                     Vector3D predictedPos;
