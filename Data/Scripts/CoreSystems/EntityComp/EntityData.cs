@@ -27,7 +27,6 @@ namespace CoreSystems
         public void Save()
         {
             if (BaseComp.CoreEntity.Storage == null) return;
-
             if (ProtoRepoBase != null)
             {
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(ProtoRepoBase);

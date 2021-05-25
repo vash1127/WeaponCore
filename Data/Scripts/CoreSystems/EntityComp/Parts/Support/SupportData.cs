@@ -15,7 +15,6 @@ namespace CoreSystems.Platform
             {
                 Init(comp);
                 Comp = comp;
-                Repo = (ProtoSupportRepo)ProtoRepoBase;
             }
 
             internal void Load()
@@ -80,6 +79,7 @@ namespace CoreSystems.Platform
 
                     Repo.Values.Set.Range = -1;
                 }
+                ProtoRepoBase = Repo;
             }
 
             internal void Change(DataState state)
