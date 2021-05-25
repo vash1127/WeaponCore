@@ -9,6 +9,7 @@ using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -156,7 +157,7 @@ namespace CoreSystems
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
             Log.LineShortDate($"(CPU-T) --- <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PS>{psTime.Median:0.0000}/{psTime.Min:0.0000}/{psTime.Max:0.0000} <PI>{piTIme.Median:0.0000}/{piTIme.Min:0.0000}/{piTIme.Max:0.0000} <PD>{pdTime.Median:0.0000}/{pdTime.Min:0.0000}/{pdTime.Max:0.0000} <PA>{paTime.Median:0.0000}/{paTime.Min:0.0000}/{paTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}>", "perf");
-            Log.LineShortDate($"(STATS) -------- AIs:[{GridAIs.Count}] - WcBlocks:[{IdToCompMap.Count}] - AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
+            Log.LineShortDate($"(STATS) -------- AIs:[{EntityAIs.Count}] - WcBlocks:[{IdToCompMap.Count}] - AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
             TargetRequests = 0;
             TargetChecks = 0;
             BlockChecks = 0;
@@ -272,7 +273,7 @@ namespace CoreSystems
                             isAdmin = true;
                         else {
 
-                            foreach (var gridAi in GridAIs.Values) {
+                            foreach (var gridAi in EntityAIs.Values) {
 
                                 if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.CompBase.Count > 0 && (gridAi.WeaponComps.Count >0 || gridAi.UpgradeComps.Count > 0 || gridAi.SupportComps.Count > 0)) {
                                     
@@ -812,6 +813,16 @@ namespace CoreSystems
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
         }
 
+        private void InitDelayedHandWeapons()
+        {
+            IMyAutomaticRifleGun weapon;
+            while (DelayedHandWeaponsSpawn.TryDequeue(out weapon))
+            {
+                MyDefinitionId? def = weapon.PhysicalItemId;
+                InitComp((MyEntity)weapon, ref def);
+            }
+        }
+
         public enum CubeTypes
         {
             All,
@@ -914,13 +925,13 @@ namespace CoreSystems
             Ai ai;
             if (newAi == null)
             {
-                if (!GridToMasterAi.ContainsKey(myGrid))
+                if (!EntityToMasterAi.ContainsKey(myGrid))
                 {
                     restrictedSphere = new BoundingSphereD();
                     restrictedBox = new MyOrientedBoundingBoxD();
                     return false;
                 }
-                ai = GridToMasterAi[myGrid];
+                ai = EntityToMasterAi[myGrid];
             } else
             {
                 ai = newAi;
@@ -939,7 +950,7 @@ namespace CoreSystems
             myGrid.Hierarchy.QuerySphere(ref querySphere, _tmpNearByBlocks);
 
             foreach (var grid in ai.SubGrids) {
-                if (grid == myGrid || !GridAIs.ContainsKey(grid))
+                if (grid == myGrid || !EntityAIs.ContainsKey(grid))
                     continue;
                 grid.Hierarchy.QuerySphere(ref querySphere, _tmpNearByBlocks);
             }

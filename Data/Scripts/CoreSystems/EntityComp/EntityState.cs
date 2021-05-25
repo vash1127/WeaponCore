@@ -10,7 +10,7 @@ namespace CoreSystems.Support
     {
         internal void HealthCheck()
         {
-            if (Platform.State != CorePlatform.PlatformState.Ready || CoreEntity.MarkedForClose)
+            if (Platform.State != CorePlatform.PlatformState.Ready || TopEntity.MarkedForClose)
                 return;
 
             switch (Status)
@@ -33,7 +33,7 @@ namespace CoreSystems.Support
             if (!IsWorking)
                 Ai.PowerDistributor?.MarkForUpdate();
 
-            else if (FunctionalBlock.Enabled) {
+            else if (IsBlock && FunctionalBlock.Enabled) {
                 FunctionalBlock.Enabled = false;
                 FunctionalBlock.Enabled = true;
             }

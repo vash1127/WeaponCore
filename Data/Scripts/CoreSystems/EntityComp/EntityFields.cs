@@ -44,6 +44,7 @@ namespace CoreSystems.Support
         internal Ai Ai;
         internal CorePlatform Platform;
         internal MyEntity TopEntity;
+        internal MyEntity InventoryEntity;
         internal uint IsWorkingChangedTick;
         internal uint NextLazyUpdateStart;
         internal int PartTracking;
@@ -186,7 +187,8 @@ namespace CoreSystems.Support
             }
 
             LazyUpdate = Type == CompType.Support || Type == CompType.Upgrade;
-            CoreInventory = (MyInventory)CoreEntity.GetInventoryBase();
+            InventoryEntity = TypeSpecific != CompTypeSpecific.Rifle ? CoreEntity : topEntity;
+            CoreInventory = (MyInventory)InventoryEntity.GetInventoryBase();
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);

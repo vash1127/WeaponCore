@@ -3,6 +3,7 @@ using CoreSystems.Platform;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Game.ModAPI;
 using static CoreSystems.CompData;
@@ -56,15 +57,24 @@ namespace CoreSystems.Support
 
         private void InventoryInit()
         {
-            using (CoreEntity.Pin())
+            using (InventoryEntity.Pin())
             {
-                if (InventoryInited || !CoreEntity.HasInventory || CoreEntity.MarkedForClose || (Platform.State != CorePlatform.PlatformState.Inited && Platform.State != CorePlatform.PlatformState.Incomplete) || CoreInventory == null)
+                if (InventoryInited || !InventoryEntity.HasInventory || InventoryEntity.MarkedForClose || (Platform.State != CorePlatform.PlatformState.Inited && Platform.State != CorePlatform.PlatformState.Incomplete) || CoreInventory == null)
                 {
-                    Platform.PlatformCrash(this, false, true, $"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!CoreEntity.HasInventory} - Marked:{CoreEntity.MarkedForClose} - PlatformNotReady:{Platform.State != CorePlatform.PlatformState.Ready}({Platform.State}) - nullInventory:{CoreInventory == null}");
+                    Platform.PlatformCrash(this, false, true, $"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!InventoryEntity.HasInventory} - Marked:{InventoryEntity.MarkedForClose} - PlatformNotReady:{Platform.State != CorePlatform.PlatformState.Ready}({Platform.State}) - nullInventory:{CoreInventory == null}");
                     return;
                 }
 
-                if (CoreEntity is IMyConveyorSorter || CoreInventory.Constraint == null) CoreInventory.Constraint = new MyInventoryConstraint("ammo");
+                if (TypeSpecific != CompTypeSpecific.Rifle)
+                {
+                    InventoryInited = true;
+                    return;
+                }
+
+                if (InventoryEntity is IMyConveyorSorter || CoreInventory.Constraint == null)
+                {
+                    CoreInventory.Constraint = new MyInventoryConstraint("ammo");
+                }
 
                 CoreInventory.Constraint.m_useDefaultIcon = false;
                 CoreInventory.Refresh();

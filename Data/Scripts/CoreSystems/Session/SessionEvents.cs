@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using CoreSystems.Platform;
 using CoreSystems.Support;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage.Collections;
@@ -40,14 +42,16 @@ namespace CoreSystems
                 var rifle = entity as IMyAutomaticRifleGun;
                 var decoy = cube as IMyDecoy;
                 var camera = cube as MyCameraBlock;
-
                 if (sorter != null || turret != null || controllableGun != null || rifle != null)
                 {
                     lock (InitObj)
                     {
+                        if (rifle != null) {
+                            DelayedHandWeaponsSpawn.Enqueue(rifle);
+                            return;
+                        }
                         var cubeType = cube != null && (ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) || PartPlatforms.ContainsKey(cube.BlockDefinition.Id));
-                        var rifleType = !cubeType && rifle != null && PartPlatforms.ContainsKey(rifle.DefinitionId);
-                        var validType = cubeType || rifleType;
+                        var validType = cubeType;
                         if (!validType) return;
 
 
@@ -79,7 +83,7 @@ namespace CoreSystems
 
                     }
 
-                    var def = cube?.BlockDefinition.Id ?? rifle?.DefinitionId ?? entity.DefinitionId;
+                    var def = cube?.BlockDefinition.Id ?? entity.DefinitionId;
                     InitComp(entity, ref def);
                 }
                 else if (decoy != null)
@@ -307,7 +311,7 @@ namespace CoreSystems
             {
                 InMenu = true;
                 Ai ai;
-                if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
+                if (ActiveControlBlock != null && EntityToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
                     //Send updates?
                 }
             }
@@ -321,7 +325,7 @@ namespace CoreSystems
                 InMenu = false;
                 HudUi.NeedsUpdate = true;
                 Ai ai;
-                if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
+                if (ActiveControlBlock != null && EntityToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
                     //Send updates?
                 }
             }
@@ -332,7 +336,7 @@ namespace CoreSystems
         {
             var topMost = lastEnt.GetTopMostParent();
             Ai ai;
-            if (topMost != null && GridAIs.TryGetValue(topMost, out ai)) {
+            if (topMost != null && EntityAIs.TryGetValue(topMost, out ai)) {
 
                 CoreComponent comp;
                 if (ai.CompBase.TryGetValue(lastEnt, out comp)) {
@@ -346,7 +350,7 @@ namespace CoreSystems
         {
             var topMost = entity.GetTopMostParent();
             Ai ai;
-            if (topMost != null && GridAIs.TryGetValue(topMost, out ai))
+            if (topMost != null && EntityAIs.TryGetValue(topMost, out ai))
             {
                 if (HandlesInput && ai.AiOwner == 0)
                 {

@@ -158,7 +158,7 @@ namespace CoreSystems
 
             var cube = (MyCubeBlock)block;
             Ai ai;
-            if (GridAIs.TryGetValue(cube.CubeGrid, out ai))
+            if (EntityAIs.TryGetValue(cube.CubeGrid, out ai))
             {
                 ai.LastTerminal = block;
                 CoreComponent comp;

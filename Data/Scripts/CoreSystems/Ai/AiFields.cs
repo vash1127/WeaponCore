@@ -20,7 +20,7 @@ namespace CoreSystems.Support
 {
     public partial class Ai
     {
-        internal volatile bool GridInit;
+        internal volatile bool AiInit;
         internal volatile bool SubGridsChanged;
         internal volatile bool PowerDirty = true;
         internal volatile uint AiSpawnTick;
@@ -98,7 +98,7 @@ namespace CoreSystems.Support
         internal Vector3D ClosestPlanetCenter;
         internal Vector3D NaturalGravity;
         internal BoundingSphereD NearByEntitySphere;
-        internal BoundingSphereD GridVolume;
+        internal BoundingSphereD TopEntityVolume;
         internal BoundingSphereD ScanVolume;
         internal BoundingSphereD WaterVolume;
         internal BoundingBox BlockChangeArea = BoundingBox.CreateInvalid();

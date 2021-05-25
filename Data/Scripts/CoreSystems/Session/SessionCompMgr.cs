@@ -28,7 +28,7 @@ namespace CoreSystems
             var grid = cube?.CubeGrid;
 
             Ai ai;
-            if (grid == null || !GridAIs.TryGetValue(grid, out ai))
+            if (grid == null || !EntityAIs.TryGetValue(grid, out ai))
                 return false;
 
             MyOrientedBoundingBoxD b;
@@ -74,7 +74,7 @@ namespace CoreSystems
                         CompsToStart.Remove(comp);
                         continue;
                     }
-                    if (!GridToInfoMap.ContainsKey(comp.TopEntity))
+                    if (comp.IsBlock && !GridToInfoMap.ContainsKey(comp.TopEntity))
                         continue;
 
                     if (ShieldApiLoaded)
@@ -137,7 +137,7 @@ namespace CoreSystems
                     continue;
                 }
 
-                if (!GridToInfoMap.ContainsKey(reAdd.Comp.TopEntity))
+                if (reAdd.Comp.IsBlock && !GridToInfoMap.ContainsKey(reAdd.Comp.TopEntity))
                     continue;
 
                 if (reAdd.Comp.Ai != null && reAdd.Comp.Entity != null) 

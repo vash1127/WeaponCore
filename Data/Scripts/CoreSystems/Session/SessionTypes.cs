@@ -112,7 +112,7 @@ namespace CoreSystems
                     return;
                 }
                 
-                if (!Session.GridAIs.TryGetValue(topMost, out ai) || !ai.CompBase.ContainsKey(targetEntity))
+                if (!Session.EntityAIs.TryGetValue(topMost, out ai) || !ai.CompBase.ContainsKey(targetEntity))
                     Log.Line("Failed to generate user report, either grid does not have Weaponcore or this block this wc block is not initialized.");
                 
                 Log.Line("Generate User Weapon Report");
@@ -278,7 +278,7 @@ namespace CoreSystems
                 var sessionFields = new Dictionary<string, Func<string>>
                 {
                     {"HasGridMap", () => (GetComp() != null && Session.GridToInfoMap.ContainsKey(GetComp().TopEntity)).ToString()},
-                    {"HasGridAi", () => (GetComp() != null && Session.GridAIs.ContainsKey(GetComp().TopEntity)).ToString()},
+                    {"HasGridAi", () => (GetComp() != null && Session.EntityAIs.ContainsKey(GetComp().TopEntity)).ToString()},
                 };
 
                 return sessionFields;
@@ -487,7 +487,7 @@ namespace CoreSystems
             internal Ai GetAi()
             {
                 Ai ai;
-                if (Session.GridAIs.TryGetValue(TargetTopEntity, out ai))
+                if (Session.EntityAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     return ai;
                 }
@@ -498,7 +498,7 @@ namespace CoreSystems
             internal CoreComponent GetComp()
             {
                 Ai ai;
-                if (Session.GridAIs.TryGetValue(TargetTopEntity, out ai))
+                if (Session.EntityAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
                     if (ai.CompBase.TryGetValue(TargetEntity, out comp))
@@ -513,7 +513,7 @@ namespace CoreSystems
             internal CorePlatform GetPlatform()
             {
                 Ai ai;
-                if (Session.GridAIs.TryGetValue(TargetTopEntity, out ai))
+                if (Session.EntityAIs.TryGetValue(TargetTopEntity, out ai))
                 {
                     CoreComponent comp;
                     if (ai.CompBase.TryGetValue(TargetEntity, out comp))

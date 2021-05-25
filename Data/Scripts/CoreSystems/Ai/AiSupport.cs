@@ -33,7 +33,7 @@ namespace CoreSystems.Support
                     else
                     {
                         if (!WeaponIdx.TryGetValue(wComp, out idx)) {
-                            Log.Line($"CompRemoveFailed: <{wComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{WeaponIdx.Count}]({CompBase.Count}) - {WeaponComps.Contains(wComp)}[{WeaponComps.Count}] - {Session.GridAIs[wComp.TopEntity].CompBase.ContainsKey(wComp.CoreEntity)} - {Session.GridAIs[wComp.TopEntity].CompBase.Count} ");
+                            Log.Line($"CompRemoveFailed: <{wComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{WeaponIdx.Count}]({CompBase.Count}) - {WeaponComps.Contains(wComp)}[{WeaponComps.Count}] - {Session.EntityAIs[wComp.TopEntity].CompBase.ContainsKey(wComp.CoreEntity)} - {Session.EntityAIs[wComp.TopEntity].CompBase.Count} ");
                             return;
                         }
 
@@ -62,7 +62,7 @@ namespace CoreSystems.Support
                     {
                         if (!UpgradeIdx.TryGetValue(uComp, out idx))
                         {
-                            Log.Line($"CompRemoveFailed: <{uComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{UpgradeIdx.Count}]({CompBase.Count}) - {UpgradeComps.Contains(uComp)}[{WeaponComps.Count}] - {Session.GridAIs[uComp.TopEntity].CompBase.ContainsKey(uComp.CoreEntity)} - {Session.GridAIs[uComp.TopEntity].CompBase.Count} ");
+                            Log.Line($"CompRemoveFailed: <{uComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{UpgradeIdx.Count}]({CompBase.Count}) - {UpgradeComps.Contains(uComp)}[{WeaponComps.Count}] - {Session.EntityAIs[uComp.TopEntity].CompBase.ContainsKey(uComp.CoreEntity)} - {Session.EntityAIs[uComp.TopEntity].CompBase.Count} ");
                             return;
                         }
 
@@ -91,7 +91,7 @@ namespace CoreSystems.Support
                     {
                         if (!SupportIdx.TryGetValue(sComp, out idx))
                         {
-                            Log.Line($"CompRemoveFailed: <{sComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{SupportIdx.Count}]({CompBase.Count}) - {SupportComps.Contains(sComp)}[{SupportComps.Count}] - {Session.GridAIs[sComp.TopEntity].CompBase.ContainsKey(sComp.CoreEntity)} - {Session.GridAIs[sComp.TopEntity].CompBase.Count} ");
+                            Log.Line($"CompRemoveFailed: <{sComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{SupportIdx.Count}]({CompBase.Count}) - {SupportComps.Contains(sComp)}[{SupportComps.Count}] - {Session.EntityAIs[sComp.TopEntity].CompBase.ContainsKey(sComp.CoreEntity)} - {Session.EntityAIs[sComp.TopEntity].CompBase.Count} ");
                             return;
                         }
 
@@ -119,7 +119,7 @@ namespace CoreSystems.Support
                     {
                         if (!PhantomIdx.TryGetValue(pComp, out idx))
                         {
-                            Log.Line($"CompRemoveFailed: <{pComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{PhantomIdx.Count}]({CompBase.Count}) - {PhantomComps.Contains(pComp)}[{PhantomComps.Count}] - {Session.GridAIs[pComp.TopEntity].CompBase.ContainsKey(pComp.CoreEntity)} - {Session.GridAIs[pComp.TopEntity].CompBase.Count} ");
+                            Log.Line($"CompRemoveFailed: <{pComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{PhantomIdx.Count}]({CompBase.Count}) - {PhantomComps.Contains(pComp)}[{PhantomComps.Count}] - {Session.EntityAIs[pComp.TopEntity].CompBase.ContainsKey(pComp.CoreEntity)} - {Session.EntityAIs[pComp.TopEntity].CompBase.Count} ");
                             return;
                         }
 
@@ -414,7 +414,7 @@ namespace CoreSystems.Support
             SuppressMouseShoot = false;
             UpdatePowerSources = false;
             DbReady = false;
-            GridInit = false;
+            AiInit = false;
             TouchingWater = false;
             BlockMonitoring = false;
 

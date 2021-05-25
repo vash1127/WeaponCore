@@ -86,7 +86,7 @@ namespace CoreSystems
                     using (db.Ai.DbLock.AcquireExclusiveUsing())
                     {
                         var ai = db.Ai;
-                        if (ai.GridEntity.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version)
+                        if (ai.TopEntity.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version)
                         {
                             ai.ScanInProgress = false;
                             continue;
@@ -115,10 +115,10 @@ namespace CoreSystems
                             Ai targetAi = null;
 
                             if (grid != null)
-                                GridAIs.TryGetValue(grid, out targetAi);
+                                EntityAIs.TryGetValue(grid, out targetAi);
 
                             var targetInfo = TargetInfoPool.Get();
-                            targetInfo.Init(ref detectInfo, ai.GridEntity, ai, targetAi);
+                            targetInfo.Init(ref detectInfo, ai, targetAi);
 
                             ai.SortedTargets.Add(targetInfo);
                             ai.Targets[ent] = targetInfo;
@@ -176,7 +176,7 @@ namespace CoreSystems
                         ai.MyStaticInfo();
 
                         ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
-                        ai.BlockCount = ai.GridEntity.BlocksCount;
+                        ai.BlockCount = ai.IsGrid ? ai.GridEntity.BlocksCount : 0;
                         ai.NearByEntities = ai.NearByEntitiesTmp;
 
                         if (!ai.DetectionInfo.PriorityInRange && ai.LiveProjectile.Count > 0)

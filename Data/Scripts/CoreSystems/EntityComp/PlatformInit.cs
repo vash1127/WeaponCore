@@ -71,11 +71,11 @@ namespace CoreSystems.Platform
 
             //Get or init Ai
             var newAi = false;
-            if (!Comp.Session.GridAIs.TryGetValue(Comp.TopEntity, out Comp.Ai)) {
+            if (!Comp.Session.EntityAIs.TryGetValue(Comp.TopEntity, out Comp.Ai)) {
                 newAi = true;
                 Comp.Ai = Comp.Session.GridAiPool.Get();
                 Comp.Ai.Init(Comp.TopEntity, Comp.Session);
-                Comp.Session.GridAIs.TryAdd(Comp.TopEntity, Comp.Ai);
+                Comp.Session.EntityAIs.TryAdd(Comp.TopEntity, Comp.Ai);
             }
 
             var blockDef = Comp.SubTypeId; 
@@ -87,7 +87,7 @@ namespace CoreSystems.Platform
 
             if (newAi) {
 
-                Comp.SubGridInit();
+                if (Comp.IsBlock) Comp.SubGridInit();
                 if (Comp.Ai.MarkedForClose)
                     Log.Line($"PlatFormInit and AI MarkedForClose: CubeMarked:{Comp.CoreEntity.MarkedForClose}");
             }
@@ -458,7 +458,7 @@ namespace CoreSystems.Platform
                     //cant check for emissives so may be null ref
                 }
 
-                if (weapon.Comp.FunctionalBlock.Enabled)
+                if (Comp.IsBlock && weapon.Comp.FunctionalBlock.Enabled)
                     if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
                     else
@@ -621,7 +621,7 @@ namespace CoreSystems.Platform
                         //cant check for emissives so may be null ref
                     }
 
-                    if (weapon.Comp.IsWorking)
+                    if (Comp.IsBlock && weapon.Comp.IsWorking)
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
                         else

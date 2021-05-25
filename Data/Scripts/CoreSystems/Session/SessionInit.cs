@@ -427,7 +427,6 @@ namespace CoreSystems
                 {
                     var w = new WeaponStructure(this, subTypeMap, parts, modPath);
                     PartPlatforms[defId] = w;
-
                     switch (w.StructureType)
                     {
                         case CoreStructure.StructureTypes.Weapon:

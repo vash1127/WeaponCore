@@ -196,7 +196,7 @@ namespace CoreSystems
             ChargingParts.Clear();
             Hits.Clear();
             HomingWeapons.Clear();
-            GridToMasterAi.Clear();
+            EntityToMasterAi.Clear();
             Players.Clear();
             IdToCompMap.Clear();
             AllArmorBaseDefinitions.Clear();
@@ -262,7 +262,7 @@ namespace CoreSystems
             Projectiles.VirtInfoPool.Clean();
 
             DbsToUpdate.Clear();
-            GridAIs.Clear();
+            EntityAIs.Clear();
 
             DsUtil = null;
             DsUtil2 = null;

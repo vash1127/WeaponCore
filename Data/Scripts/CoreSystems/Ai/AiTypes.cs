@@ -429,10 +429,9 @@ namespace CoreSystems.Support
             internal int FatCount;
             internal float OffenseRating;
             internal MyEntity Target;
-            internal MyCubeGrid MyGrid;
             internal Ai MyAi;
             internal Ai TargetAi;
-            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, Ai myAi, Ai targetAi)
+            internal void Init(ref DetectInfo detectInfo, Ai myAi, Ai targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
@@ -441,7 +440,6 @@ namespace CoreSystems.Support
                 IsStatic = Target.Physics.IsStatic;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
-                MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;
                 Velocity = Target.Physics.LinearVelocity;
@@ -449,7 +447,7 @@ namespace CoreSystems.Support
                 var targetSphere = Target.PositionComp.WorldVolume;
                 TargetPos = targetSphere.Center;
                 TargetRadius = targetSphere.Radius;
-                var myCenter = myAi.GridVolume.Center;
+                var myCenter = myAi.TopEntityVolume.Center;
 
                 if (!MyUtils.IsZero(Velocity, 1E-01F))
                 {
@@ -471,7 +469,7 @@ namespace CoreSystems.Support
                 else if (detectInfo.Armed) OffenseRating = 0.0001f;
                 else if (Approaching && VelLenSqr >= 1225) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
-                var myRadius = myAi.GridEntity.PositionComp.LocalVolume.Radius;
+                var myRadius = myAi.TopEntity.PositionComp.LocalVolume.Radius;
                 var sphereDistance = MyUtils.GetSmallestDistanceToSphere(ref myCenter, ref targetSphere);
                 if (sphereDistance <= myRadius)
                     sphereDistance = 0;
@@ -487,7 +485,6 @@ namespace CoreSystems.Support
             internal void Clean()
             {
                 Target = null;
-                MyGrid = null;
                 MyAi = null;
                 TargetAi = null;
             }

@@ -15,7 +15,7 @@ namespace CoreSystems
     {
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
-            foreach (var ai in GridAIs.Values)
+            foreach (var ai in EntityAIs.Values)
             {
                 ///
                 /// GridAi update section
@@ -24,7 +24,7 @@ namespace CoreSystems
                 ai.ProInMinCacheRange = 0;
                 ai.AccelChecked = false;
 
-                if (ai.MarkedForClose || !ai.GridInit || ai.TopEntity == null || ai.Construct.RootAi == null || ai.TopEntity.MarkedForClose)
+                if (ai.MarkedForClose || !ai.AiInit || ai.TopEntity == null || ai.Construct.RootAi == null || ai.TopEntity.MarkedForClose)
                     continue;
 
                 ai.Concealed = ((uint)ai.TopEntity.Flags & 4) > 0;
@@ -45,9 +45,9 @@ namespace CoreSystems
                 if (ai.IsGrid && (ai.UpdatePowerSources || !ai.HadPower && ai.GridEntity.IsPowered || ai.HasPower && !ai.GridEntity.IsPowered || Tick10))
                     ai.UpdateGridPower();
 
-                if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
+                if (ai.IsGrid && !ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
-                
+
                 if (Tick60 && ai.IsGrid && ai.BlockChangeArea != BoundingBox.Invalid)
                 {
                     ai.BlockChangeArea.Min *= ai.GridEntity.GridSize;
@@ -147,8 +147,9 @@ namespace CoreSystems
                 for (int i = 0; i < ai.WeaponComps.Count; i++) {
 
                     var wComp = ai.WeaponComps[i];
+
                     if (wComp.Status != Started)
-                        wComp.HealthCheck();
+                        wComp.WeaponHealthCheck();
 
                     if (ai.DbUpdated || !wComp.UpdatedState) {
 
@@ -193,7 +194,6 @@ namespace CoreSystems
 
                         var w = wComp.Platform.Weapons[j];
                         var comp = w.Comp;
-
                         if (w.PartReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)
@@ -331,9 +331,10 @@ namespace CoreSystems
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var weaponPrimed = canShoot && (shoot || w.LockOnFireState);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
-
+                        //if (!comp.IsBlock) Log.Line($"{canShoot} - {shoot} - {manualShot} - {comp.InputState.MouseButtonLeft} - {w.PartState.Action} - {reloading}");
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
+                            Log.Line($"woot");
                             if (w.ShootOnce && IsServer && (shotReady || w.PartState.Action != TriggerOnce))
                                 w.ShootOnce = false;
 

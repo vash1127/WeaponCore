@@ -52,6 +52,9 @@ namespace CoreSystems
                 if (SuppressWc)
                     return;
 
+                if (!DelayedHandWeaponsSpawn.IsEmpty)
+                    InitDelayedHandWeapons();
+
                 if (DeformProtection.Count > 0 && Tick - LastDeform > 0)
                     DeformProtection.Clear();
                 
@@ -332,6 +335,7 @@ namespace CoreSystems
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
+
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Gui.GuiControlRemoved += MenuClosed;
 
@@ -378,6 +382,7 @@ namespace CoreSystems
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
 
                 MyEntities.OnEntityCreate -= OnEntityCreate;
+
                 MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
                 MyAPIGateway.Gui.GuiControlRemoved -= MenuClosed;
 

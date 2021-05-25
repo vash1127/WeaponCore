@@ -68,11 +68,11 @@ namespace CoreSystems.Support
                         }
                         Ai.CompChange(false, this);
                     }
-                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.GridAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai}");
+                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.EntityAIs.TryGetValue(TopEntity, out testAi)} - sameAi:{testAi == Ai}");
 
                     if (Ai.CompBase.Count == 0) {
                         Ai ai;
-                        Session.GridAIs.TryRemove(Ai.TopEntity, out ai);
+                        Session.EntityAIs.TryRemove(Ai.TopEntity, out ai);
                     }
 
                     Ai = null;

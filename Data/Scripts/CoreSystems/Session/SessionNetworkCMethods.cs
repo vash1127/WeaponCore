@@ -56,7 +56,7 @@ namespace CoreSystems
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             Ai ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+            if (EntityToMasterAi.TryGetValue(myGrid, out ai)) {
                 var rootConstruct = ai.Construct.RootAi.Construct;
 
                 if (rootConstruct.Data.Repo.FocusData.Revision < cgPacket.Data.FocusData.Revision) {
@@ -69,7 +69,7 @@ namespace CoreSystems
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{EntityToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -82,7 +82,7 @@ namespace CoreSystems
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             Ai ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+            if (EntityToMasterAi.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
@@ -95,7 +95,7 @@ namespace CoreSystems
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{EntityToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -108,7 +108,7 @@ namespace CoreSystems
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             Ai ai;
-            if (GridAIs.TryGetValue(myGrid, out ai)) {
+            if (EntityAIs.TryGetValue(myGrid, out ai)) {
 
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
@@ -120,7 +120,7 @@ namespace CoreSystems
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{EntityToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -311,7 +311,7 @@ namespace CoreSystems
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             Ai ai;
-            if (myGrid != null && GridAIs.TryGetValue(myGrid, out ai)) {
+            if (myGrid != null && EntityAIs.TryGetValue(myGrid, out ai)) {
 
                 long playerId;
                 if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId)) {
@@ -346,7 +346,7 @@ namespace CoreSystems
 
             Ai ai;
             long playerId;
-            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (EntityToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
 
                 PlayerMouseStates[playerId] = mousePacket.Data;

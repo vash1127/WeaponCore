@@ -59,7 +59,7 @@ namespace CoreSystems.Support
             foreach (var grid in SubGrids) {
                 
                 if (Construct.RootAi != null)
-                    Session.GridToMasterAi[grid] = Construct.RootAi;
+                    Session.EntityToMasterAi[grid] = Construct.RootAi;
                 else Log.Line("Construct.RootAi is null");
             }
         }
@@ -107,8 +107,8 @@ namespace CoreSystems.Support
             }
 
             Ai removeAi;
-            if (!Session.GridAIs.ContainsKey(grid))
-                Session.GridToMasterAi.TryRemove(grid, out removeAi);
+            if (!Session.EntityAIs.ContainsKey(grid))
+                Session.EntityToMasterAi.TryRemove(grid, out removeAi);
         }
 
         public void CleanSubGrids()
@@ -171,7 +171,7 @@ namespace CoreSystems.Support
                     foreach (var grid in ai.SubGrids) {
 
                         Ai thisAi;
-                        if (ai.Session.GridAIs.TryGetValue(grid, out thisAi)) {
+                        if (ai.Session.EntityAIs.TryGetValue(grid, out thisAi)) {
                             
                             if (leadingAi == null)
                                 leadingAi = thisAi;
@@ -196,7 +196,7 @@ namespace CoreSystems.Support
                     RootAi = leadingAi;
                     LargestAi = largestAi;
                     if (RootAi == null) {
-                        Log.Line($"[rootAi is null in Update] - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridAIs.ContainsKey(ai.TopEntity)} -  myGridMarked:{ai.TopEntity.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiSpawnTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
+                        Log.Line($"[rootAi is null in Update] - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.EntityAIs.ContainsKey(ai.TopEntity)} -  myGridMarked:{ai.TopEntity.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiSpawnTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
                         RootAi = ai;
                     }
                     
@@ -204,6 +204,13 @@ namespace CoreSystems.Support
                         LargestAi = ai;
                     
                     UpdatePartCounters(ai);
+                    return;
+                }
+                if (!ai.IsGrid)
+                {
+                    RootAi = ai;
+                    LargestAi = ai;
+                    ai.Session.EntityToMasterAi[RootAi.TopEntity] = RootAi;
                     return;
                 }
                 Log.Line($"ConstructRefresh Failed main Ai no GridMap: {caller} - Marked: {ai.TopEntity.MarkedForClose}");
@@ -240,14 +247,16 @@ namespace CoreSystems.Support
 
             internal void UpdateConstructsPlayers(MyEntity entity, long playerId, bool updateAdd)
             {
-                foreach (var sub in RootAi.SubGrids)
-                {
-                    Ai ai;
-                    if (RootAi.Session.GridAIs.TryGetValue(sub, out ai))
-                    {
-                        UpdateActiveControlDictionary(ai, entity, playerId, updateAdd);
+                if (RootAi.IsGrid) {
+                    foreach (var sub in RootAi.SubGrids) {
+
+                        Ai ai;
+                        if (RootAi.Session.EntityAIs.TryGetValue(sub, out ai))
+                            UpdateActiveControlDictionary(ai, entity, playerId, updateAdd);
                     }
                 }
+                else
+                    UpdateActiveControlDictionary(RootAi, entity, playerId, updateAdd);
             }
 
             public static void UpdateActiveControlDictionary(Ai ai, MyEntity entity, long playerId, bool updateAdd)
@@ -255,6 +264,7 @@ namespace CoreSystems.Support
                 if (updateAdd) //update/add
                 {
                     ai.Data.Repo.ControllingPlayers[playerId] = entity.EntityId;
+                    Log.Line($"add player");
                     ai.AiSleep = false;
                 }
                 else //remove
@@ -281,7 +291,7 @@ namespace CoreSystems.Support
                             continue;
 
                         Ai subAi;
-                        if (cAi.Session.GridAIs.TryGetValue(sub, out subAi))
+                        if (cAi.Session.EntityAIs.TryGetValue(sub, out subAi))
                             cAi.Construct.RefreshedAis.Add(subAi);
                     }
                 }
@@ -319,7 +329,7 @@ namespace CoreSystems.Support
                         continue;
 
                     Ai ai;
-                    if (RootAi.Session.GridAIs.TryGetValue(sub, out ai))
+                    if (RootAi.Session.EntityAIs.TryGetValue(sub, out ai))
                     {
                         ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo, true);
                     }
@@ -334,7 +344,7 @@ namespace CoreSystems.Support
                         continue;
 
                     Ai ai;
-                    if (RootAi.Session.GridAIs.TryGetValue(sub, out ai))
+                    if (RootAi.Session.EntityAIs.TryGetValue(sub, out ai))
                         ai.Construct.Data.Repo.FocusData.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
                 }
             }

@@ -260,7 +260,7 @@ namespace CoreSystems.Api
             Ai ai;
             Ai.TargetInfo info = null;
 
-            if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
+            if (shooterGrid != null && topTarget != null && _session.EntityToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
                 relation = info.EntInfo.Relationship;
                 type = info.EntInfo.Type;
                 var maxDist = ai.MaxTargetingRange + shooterGrid.PositionComp.WorldAABB.Extents.Max();
@@ -303,7 +303,7 @@ namespace CoreSystems.Api
             var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
 
             Ai ai;
-            if (shooterGrid != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai))
+            if (shooterGrid != null && _session.EntityToMasterAi.TryGetValue(shooterGrid, out ai))
             {
                 var maxDist = ai.MaxTargetingRangeSqr + target.PositionComp.WorldAABB.Extents.Max();
                 if (Vector3D.DistanceSquared(target.PositionComp.WorldMatrixRef.Translation, shooterGrid.PositionComp.WorldMatrixRef.Translation) > (maxDist * maxDist))
@@ -491,7 +491,7 @@ namespace CoreSystems.Api
             var grid = victim.GetTopMostParent() as MyCubeGrid;
             Ai ai;
             MyTuple<bool, int, int> tuple;
-            if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
+            if (grid != null && _session.EntityAIs.TryGetValue(grid, out ai))
             {
                 var count = ai.LiveProjectile.Count;
                 tuple = count > 0 ? new MyTuple<bool, int, int>(true, count, (int) (_session.Tick - ai.LiveProjectileTick)) : new MyTuple<bool, int, int>(false, 0, -1);
@@ -504,7 +504,7 @@ namespace CoreSystems.Api
         {
             var grid = shooter.GetTopMostParent() as MyCubeGrid;
             Ai ai;
-            if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
+            if (grid != null && _session.EntityAIs.TryGetValue(grid, out ai))
             {
                 for (int i = 0; i < ai.SortedTargets.Count; i++)
                 {
@@ -521,7 +521,7 @@ namespace CoreSystems.Api
             if (shootingGrid != null)
             {
                 Ai ai;
-                if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
+                if (_session.EntityToMasterAi.TryGetValue(shootingGrid, out ai))
                     return MyEntities.GetEntityById(ai.Construct.Data.Repo.FocusData.Target[priority]);
             }
             return null;
@@ -534,7 +534,7 @@ namespace CoreSystems.Api
             if (shootingGrid != null)
             {
                 Ai ai;
-                if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
+                if (_session.EntityToMasterAi.TryGetValue(shootingGrid, out ai))
                 {
                     if (!ai.Session.IsServer)
                         return false;
@@ -782,7 +782,7 @@ namespace CoreSystems.Api
         {
             var grid = entity?.GetTopMostParent() as MyCubeGrid;
 
-            return grid != null && _session.GridAIs.ContainsKey(grid);
+            return grid != null && _session.EntityAIs.ContainsKey(grid);
         }
 
         private static bool HasCoreWeapon(Sandbox.ModAPI.IMyTerminalBlock weaponBlock)
@@ -803,7 +803,7 @@ namespace CoreSystems.Api
             {
                 var grid = entity.GetTopMostParent() as MyCubeGrid;
                 Ai ai;
-                if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
+                if (grid != null && _session.EntityAIs.TryGetValue(grid, out ai))
                     return ai.OptimalDps;
             }
             return 0f;
@@ -889,7 +889,7 @@ namespace CoreSystems.Api
         {
             var grid = entity.GetTopMostParent() as MyCubeGrid;
             Ai ai;
-            if (grid != null && _session.GridToMasterAi.TryGetValue(grid, out ai))
+            if (grid != null && _session.EntityToMasterAi.TryGetValue(grid, out ai))
                 return ai.EffectiveDps;
 
             return 0;
@@ -951,7 +951,7 @@ namespace CoreSystems.Api
         {
             var grid = entity?.GetTopMostParent() as MyCubeGrid;
             Ai ai;
-            if (grid != null && _session.GridAIs.TryGetValue(grid, out ai))
+            if (grid != null && _session.EntityAIs.TryGetValue(grid, out ai))
             {
                 return new MyTuple<bool, bool>(ai.DetectionInfo.PriorityInRange, ai.DetectionInfo.OtherInRange);
             }

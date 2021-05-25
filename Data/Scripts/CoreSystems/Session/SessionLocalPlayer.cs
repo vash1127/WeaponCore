@@ -5,6 +5,7 @@ using CoreSystems.Support;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -23,27 +24,27 @@ namespace CoreSystems
         {
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
-
+            PlayerHandWeapon =  Session.Player?.Character?.EquippedTool as IMyAutomaticRifleGun;
+            var playerHandWeapon = PlayerHandWeapon as MyEntity;
             var cockPit = ControlledEntity as MyCockpit;
             if (cockPit != null && cockPit.EnableShipControl)
                 ActiveCockPit = cockPit;
             else ActiveCockPit = null;
 
-            long oldBlockId;
-            var activeBlock = ActiveCockPit ?? ActiveControlBlock;
-            if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
+
+            long oldControlId;
+            var controlledEntity = ActiveCockPit ?? ActiveControlBlock ?? playerHandWeapon;
+            if (controlledEntity != null && EntityToMasterAi.TryGetValue(ActiveControlBlock != null ? controlledEntity.GetTopMostParent() : controlledEntity, out TrackingAi))
             {
                 var camera = Session.CameraController?.Entity as MyCameraBlock;
                 if (camera == null || !GroupedCamera(camera))
                     ActiveCameraBlock = null;
-
                 InGridAiBlock = true;
-                TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
+                TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldControlId);
 
-                if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, true);
-                if (oldBlockId != ActiveControlBlock.EntityId)
+                if (oldControlId != controlledEntity.EntityId)
                 {
-                    SendActiveControlUpdate(TrackingAi, activeBlock, true);
+                    SendActiveControlUpdate(TrackingAi, controlledEntity, true);
                     TargetLeadUpdate();
                 }
                 else if (LeadGroupsDirty || !MyUtils.IsEqual(LastOptimalDps, TrackingAi.Construct.OptimalDps))
@@ -56,10 +57,10 @@ namespace CoreSystems
                     TrackingAi.Construct.Focus.ClientIsFocused(TrackingAi);
 
                     MyCubeBlock oldBlock;
-                    if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true))
+                    if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldControlId) && MyEntities.TryGetEntityById(oldControlId, out oldBlock, true))
                     {
 
-                        if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, false);
+                        if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(controlledEntity, PlayerId, false);
 
                         SendActiveControlUpdate(TrackingAi, oldBlock, false);
                         foreach (var list in LeadGroups) list.Clear();
@@ -133,7 +134,7 @@ namespace CoreSystems
                 {
                     var topEntity = ControlledEntity.GetTopMostParent();
                     Ai ai;
-                    if (topEntity != null && GridAIs.TryGetValue(topEntity, out ai))
+                    if (topEntity != null && EntityAIs.TryGetValue(topEntity, out ai))
                     {
                         CoreComponent comp;
                         if (ai.CompBase.TryGetValue(ControlledEntity, out comp) && comp.Type == CoreComponent.CompType.Weapon)
@@ -171,7 +172,7 @@ namespace CoreSystems
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         Ai ai;
-                        if (oldCube != null && GridAIs.TryGetValue(oldCube.CubeGrid, out ai))
+                        if (oldCube != null && EntityAIs.TryGetValue(oldCube.CubeGrid, out ai))
                         {
                             CoreComponent comp;
                             if (ai.CompBase.TryGetValue(oldCube, out comp) && comp.Type == CoreComponent.CompType.Weapon)
@@ -245,7 +246,7 @@ namespace CoreSystems
 
                                 Ai gridAi;
                                 CoreComponent comp;
-                                if (!GridAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.CompBase.TryGetValue(block, out comp))
+                                if (!EntityAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.CompBase.TryGetValue(block, out comp))
                                     _uninitializedBlocks.Add(block);
                                 else {
 
@@ -308,7 +309,7 @@ namespace CoreSystems
                 var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
                 var grid = hit.HitEntity as MyCubeGrid;
                 Ai ai;
-                if (grid != null && GridToMasterAi.TryGetValue(grid, out ai))
+                if (grid != null && EntityToMasterAi.TryGetValue(grid, out ai))
                 {
                     if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
                     {
@@ -458,7 +459,7 @@ namespace CoreSystems
             Ai ai;
             TargetArmed = false;
             var grid = entity as MyCubeGrid;
-            if (grid != null && GridToMasterAi.TryGetValue(grid, out ai))
+            if (grid != null && EntityToMasterAi.TryGetValue(grid, out ai))
             {
                 TargetArmed = true;
             }

@@ -481,15 +481,15 @@ namespace CoreSystems.Platform
             switch (i)
             {
                 case 0:
-                    return destPos + (info.Direction * Comp.Ai.GridVolume.Radius);
+                    return destPos + (info.Direction * Comp.Ai.TopEntityVolume.Radius);
                 case 1:
-                    return destPos + ((info.Direction + up * offset) * Comp.Ai.GridVolume.Radius);
+                    return destPos + ((info.Direction + up * offset) * Comp.Ai.TopEntityVolume.Radius);
                 case 2:
-                    return destPos + ((info.Direction - up * offset) * Comp.Ai.GridVolume.Radius);
+                    return destPos + ((info.Direction - up * offset) * Comp.Ai.TopEntityVolume.Radius);
                 case 3:
-                    return destPos + ((info.Direction + right * offset) * Comp.Ai.GridVolume.Radius);
+                    return destPos + ((info.Direction + right * offset) * Comp.Ai.TopEntityVolume.Radius);
                 case 4:
-                    return destPos + ((info.Direction - right * offset) * Comp.Ai.GridVolume.Radius);
+                    return destPos + ((info.Direction - right * offset) * Comp.Ai.TopEntityVolume.Radius);
             }
 
             return Vector3D.Zero;

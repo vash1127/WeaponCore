@@ -112,9 +112,10 @@ namespace CoreSystems
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
         internal readonly ConcurrentQueue<Type> ControlQueue = new ConcurrentQueue<Type>();
+        internal readonly ConcurrentQueue<IMyAutomaticRifleGun> DelayedHandWeaponsSpawn = new ConcurrentQueue<IMyAutomaticRifleGun>();
 
-        internal readonly ConcurrentDictionary<MyEntity, Ai> GridToMasterAi = new ConcurrentDictionary<MyEntity, Ai>();
-        internal readonly ConcurrentDictionary<MyEntity, Ai> GridAIs = new ConcurrentDictionary<MyEntity, Ai>();
+        internal readonly ConcurrentDictionary<MyEntity, Ai> EntityToMasterAi = new ConcurrentDictionary<MyEntity, Ai>();
+        internal readonly ConcurrentDictionary<MyEntity, Ai> EntityAIs = new ConcurrentDictionary<MyEntity, Ai>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<long, IMyCharacter> Admins = new ConcurrentDictionary<long, IMyCharacter>();
         internal readonly ConcurrentDictionary<IMyCharacter, IMyPlayer> AdminMap = new ConcurrentDictionary<IMyCharacter, IMyPlayer>();
@@ -264,6 +265,7 @@ namespace CoreSystems
         internal MyCockpit ActiveCockPit;
         internal MyCubeBlock ActiveControlBlock;
         internal MyCameraBlock ActiveCameraBlock;
+        internal IMyAutomaticRifleGun PlayerHandWeapon;
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;

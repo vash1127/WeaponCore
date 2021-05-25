@@ -389,7 +389,7 @@ namespace CoreSystems
                                 else  {
                                     Ai rootAi;
                                     var grid = packetInfo.Entity.GetTopMostParent() as MyCubeGrid;
-                                    if (grid != null && GridToMasterAi.TryGetValue(grid, out rootAi) && PlayerEntityIdInRange[p.SteamUserId].Contains(rootAi.TopEntity.EntityId))
+                                    if (grid != null && EntityToMasterAi.TryGetValue(grid, out rootAi) && PlayerEntityIdInRange[p.SteamUserId].Contains(rootAi.TopEntity.EntityId))
                                         sendPacket = true;
                                 }
                             }

@@ -11,7 +11,8 @@ namespace CoreSystems.Support
     {
         public override void OnAddedToContainer()
         {
-            try {
+            try
+            {
                 base.OnAddedToContainer();
                 TopEntity = CoreEntity.GetTopMostParent();
                 if (Container.Entity.InScene) {
@@ -89,7 +90,7 @@ namespace CoreSystems.Support
 
                     Entity.NeedsWorldMatrix = true;
 
-                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
+                    if (!Ai.AiInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                     else OnAddedToSceneTasks(true);
 
                     Platform.State = CorePlatform.PlatformState.Ready;
@@ -105,11 +106,11 @@ namespace CoreSystems.Support
                 if (!CoreEntity.MarkedForClose && Entity != null)  {
 
                     Ai ai;
-                    if (!Session.GridAIs.TryGetValue(TopEntity, out ai)) {
+                    if (!Session.EntityAIs.TryGetValue(TopEntity, out ai)) {
 
                         var newAi = Session.GridAiPool.Get();
                         newAi.Init(TopEntity, Session);
-                        Session.GridAIs[TopEntity] = newAi;
+                        Session.EntityAIs[TopEntity] = newAi;
                         Ai = newAi;
                     }
                     else {
@@ -136,7 +137,7 @@ namespace CoreSystems.Support
                         Constructs.UpdatePartCounters(Ai);
                         // end ReInit
 
-                        if (!Ai.GridInit || !Ai.Session.GridToInfoMap.ContainsKey(Ai.TopEntity)) 
+                        if (IsBlock && !Ai.AiInit || IsBlock && !Ai.Session.GridToInfoMap.ContainsKey(Ai.TopEntity)) 
                             Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                         else 
                             OnAddedToSceneTasks(false);
@@ -146,7 +147,7 @@ namespace CoreSystems.Support
                     }
                 }
                 else {
-                    Log.Line($"BaseComp ReInit() failed stage1! - marked:{CoreEntity.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridAIs.ContainsKey(TopEntity)}");
+                    Log.Line($"BaseComp ReInit() failed stage1! - marked:{CoreEntity.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.EntityAIs.ContainsKey(TopEntity)}");
                 }
             }
         }
@@ -156,22 +157,27 @@ namespace CoreSystems.Support
             try {
 
                 if (Ai.MarkedForClose)
-                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{SubtypeName} - grid:{TopEntity.DebugName} - CubeMarked:{CoreEntity.MarkedForClose} - GridMarked:{TopEntity.MarkedForClose} - GridMatch:{TopEntity == Ai.TopEntity} - AiContainsMe:{Ai.CompBase.ContainsKey(CoreEntity)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(TopEntity)}[{Ai.Session.GridAIs.ContainsKey(TopEntity)}]");
+                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{SubtypeName} - grid:{TopEntity.DebugName} - CubeMarked:{CoreEntity.MarkedForClose} - GridMarked:{TopEntity.MarkedForClose} - GridMatch:{TopEntity == Ai.TopEntity} - AiContainsMe:{Ai.CompBase.ContainsKey(CoreEntity)} - MyGridInAi:{Ai.Session.EntityToMasterAi.ContainsKey(TopEntity)}[{Ai.Session.EntityAIs.ContainsKey(TopEntity)}]");
+                
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
-                if (IsBlock && !Ai.GridInit) {
+                if (!Ai.AiInit) {
 
-                    Ai.GridInit = true;
-                    var fatList = Session.GridToInfoMap[TopEntity].MyCubeBocks;
+                    Ai.AiInit = true;
+                    if (IsBlock)
+                    {
+                        var fatList = Session.GridToInfoMap[TopEntity].MyCubeBocks;
 
-                    for (int i = 0; i < fatList.Count; i++) {
+                        for (int i = 0; i < fatList.Count; i++)
+                        {
 
-                        var cubeBlock = fatList[i];
-                        if (cubeBlock is MyBatteryBlock || cubeBlock.HasInventory)
-                            Ai.FatBlockAdded(cubeBlock);
+                            var cubeBlock = fatList[i];
+                            if (cubeBlock is MyBatteryBlock || cubeBlock.HasInventory)
+                                Ai.FatBlockAdded(cubeBlock);
+                        }
+
+                        SubGridInit();
                     }
-
-                    SubGridInit();
                 }
 
                 if (Type == CompType.Weapon)
@@ -186,12 +192,11 @@ namespace CoreSystems.Support
                 Ai.IsStatic = Ai.TopEntity.Physics?.IsStatic ?? false;
                 Ai.Construct.Refresh(Ai, Constructs.RefreshCaller.Init);
 
-                if (!FunctionalBlock.Enabled)
+                if (IsBlock && !FunctionalBlock.Enabled)
                 {
                     for (int i = 0; i < Platform.Weapons.Count; i++)
                         Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
                 }
-
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{TopEntity == null}", null, true); }

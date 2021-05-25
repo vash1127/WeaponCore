@@ -200,6 +200,12 @@ namespace CoreSystems.Platform
                     Ai.PointDefense = true;
             }
 
+            internal void WeaponHealthCheck()
+            {
+                HealthCheck();
+                if (Ai.Session.HandlesInput) 
+                    RequestShootUpdate(TriggerActions.TriggerClick, Ai.Session.PlayerId);
+            }
 
             internal static void SetRange(CoreComponent comp)
             {
@@ -260,7 +266,7 @@ namespace CoreSystems.Platform
             {
                 if (IsDisabled) return;
 
-                if (Session.HandlesInput)
+                if (IsBlock && Session.HandlesInput)
                     Session.TerminalMon.HandleInputUpdate(this);
 
                 if (Session.IsServer)

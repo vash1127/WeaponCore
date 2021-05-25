@@ -34,8 +34,8 @@ namespace CoreSystems.Support
 
             ScanInProgress = true;
 
-            GridVolume = TopEntity.PositionComp.WorldVolume;
-            ScanVolume = GridVolume;
+            TopEntityVolume = TopEntity.PositionComp.WorldVolume;
+            ScanVolume = TopEntityVolume;
             ScanVolume.Radius = MaxTargetingRange;
             Session.DbsToUpdate.Add(new DbScan {Ai = this, Version = Version});
             TargetsUpdatedTick = Session.Tick;
@@ -63,7 +63,7 @@ namespace CoreSystems.Support
                     GridMap gridMap = null;
                     if (grid != null)
                     {
-                        if (GridEntity.IsSameConstructAs(grid))
+                        if (IsGrid && GridEntity.IsSameConstructAs(grid))
                         {
                             PrevSubGrids.Add(grid);
                             continue;
@@ -118,7 +118,7 @@ namespace CoreSystems.Support
                         }
                         int partCount;
                         Ai targetAi;
-                        if (Session.GridAIs.TryGetValue(grid, out targetAi))
+                        if (Session.EntityAIs.TryGetValue(grid, out targetAi))
                         {
                             targetAi.TargetAisTmp.Add(this);
                             TargetAisTmp.Add(targetAi);
