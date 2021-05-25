@@ -110,9 +110,9 @@ namespace WeaponCore.Platform
             var obb = new MyOrientedBoundingBoxD(box, target.PositionComp.WorldMatrixRef);
 
             var validEstimate = true;
-            var ammoAccel = weapon.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec > 0 || weapon.Comp.Ai.InPlanetGravity;
+            var advancedMode = weapon.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec > 0 || weapon.Comp.Ai.InPlanetGravity && weapon.ActiveAmmoDef.AmmoDef.Const.FeelsGravity;
             if (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
-                targetPos = TrajectoryEstimation(weapon, obb.Center, vel, accel, out validEstimate, ammoAccel);
+                targetPos = TrajectoryEstimation(weapon, obb.Center, vel, accel, out validEstimate, true, advancedMode);
             else
                 targetPos = obb.Center;
 
@@ -496,7 +496,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid, bool forceAdvanced = false)
+        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid, bool overrideMode = false, bool setAdvOverride = false)
         {
             valid = true;
             var ai = weapon.Comp.Ai;
@@ -523,7 +523,7 @@ namespace WeaponCore.Platform
             var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
             var gravity = weapon.GravityPoint;
-            var basic = !forceAdvanced && weapon.System.Prediction != Prediction.Advanced;
+            var basic = weapon.System.Prediction != Prediction.Advanced && !overrideMode || overrideMode && !setAdvOverride;
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
             Vector3D deltaPosNorm;
