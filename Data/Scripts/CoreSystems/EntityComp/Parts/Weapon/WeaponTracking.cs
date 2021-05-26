@@ -45,7 +45,7 @@ namespace CoreSystems.Platform
 
             bool selfHit = false;
             weapon.LastHitInfo = null;
-            if (checkSelfHit && target != null)
+            if (checkSelfHit && target != null && weapon.Comp.Ai.IsGrid)
             {
 
                 var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
@@ -74,36 +74,6 @@ namespace CoreSystems.Platform
             }
 
             return !selfHit && (inRange && canTrack || weapon.Comp.Data.Repo.Values.State.TrackingReticle);
-        }
-
-        internal static bool CheckSelfHit(Weapon w, ref Vector3D targetPos, ref Vector3D testPos, out Vector3D predictedMuzzlePos)
-        {
-
-            var testLine = new LineD(targetPos, testPos);
-            predictedMuzzlePos = testLine.To + (-testLine.Direction * w.MuzzleDistToBarrelCenter);
-            var ai = w.Comp.Ai;
-            var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.GridEntity.PositionComp.WorldMatrixNormalizedInv) * ai.GridEntity.GridSizeR);
-
-            MyCube cube;
-            var noCubeAtPosition = !ai.GridEntity.TryGetCube(localPredictedPos, out cube);
-            if (noCubeAtPosition || cube.CubeBlock == w.Comp.Cube.SlimBlock)
-            {
-
-                var noCubeInLine = !ai.GridEntity.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
-                var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == w.Comp.Cube.Position;
-
-                if (noCubesInLineOrHitSelf)
-                {
-
-                    w.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out w.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
-
-                    if (w.LastHitInfo != null && w.LastHitInfo.HitEntity == ai.GridEntity)
-                        return true;
-                }
-            }
-            else return true;
-
-            return false;
         }
 
         internal static void LeadTarget(Weapon weapon, MyEntity target, out Vector3D targetPos, out bool couldHit, out bool willHit)
@@ -524,8 +494,8 @@ namespace CoreSystems.Platform
             var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick)
             {
-                ai.GridVel = ai.GridEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
-                ai.IsStatic = ai.GridEntity.Physics?.IsStatic ?? false;
+                ai.GridVel = ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
+                ai.IsStatic = ai.TopEntity.Physics?.IsStatic ?? false;
                 ai.VelocityUpdateTick = session.Tick;
             }
 
@@ -825,6 +795,9 @@ namespace CoreSystems.Platform
 
         public bool MuzzleHitSelf()
         {
+            if (!Comp.Ai.IsGrid)
+                return false;
+
             for (int i = 0; i < Muzzles.Length; i++)
             {
                 var m = Muzzles[i];

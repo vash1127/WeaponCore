@@ -1005,7 +1005,7 @@ namespace CoreSystems
                     PacketsToServer.Add(new FakeTargetPacket
                     {
                         MId = ++mIds[(int)PacketType.AimTargetUpdate],
-                        EntityId = ai.GridEntity.EntityId,
+                        EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.AimTargetUpdate,
                         Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
@@ -1018,11 +1018,11 @@ namespace CoreSystems
             {
                 PacketsToClient.Add(new PacketInfo
                 {
-                    Entity = ai.GridEntity,
+                    Entity = ai.TopEntity,
                     Packet = new FakeTargetPacket
                     {
                         MId = ++ai.MIds[(int)PacketType.AimTargetUpdate],
-                        EntityId = ai.GridEntity.EntityId,
+                        EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.AimTargetUpdate,
                         Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
@@ -1043,7 +1043,7 @@ namespace CoreSystems
                     PacketsToServer.Add(new FakeTargetPacket
                     {
                         MId = ++mIds[(int)PacketType.PaintedTargetUpdate],
-                        EntityId = ai.GridEntity.EntityId,
+                        EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.PaintedTargetUpdate,
                         Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
@@ -1056,11 +1056,11 @@ namespace CoreSystems
             {
                 PacketsToClient.Add(new PacketInfo
                 {
-                    Entity = ai.GridEntity,
+                    Entity = ai.TopEntity,
                     Packet = new FakeTargetPacket
                     {
                         MId = ++ai.MIds[(int)PacketType.PaintedTargetUpdate],
-                        EntityId = ai.GridEntity.EntityId,
+                        EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.PaintedTargetUpdate,
                         Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,

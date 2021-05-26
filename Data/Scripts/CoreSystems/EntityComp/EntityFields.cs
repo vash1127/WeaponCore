@@ -180,6 +180,8 @@ namespace CoreSystems.Support
                 MaxIntegrity = 1;
                 TypeSpecific = CompTypeSpecific.Rifle;
                 Type = CompType.Weapon;
+                var rifle = (IMyAutomaticRifleGun)CoreEntity;
+                TopEntity = rifle?.Owner;
             }
             else {
                 TypeSpecific = CompTypeSpecific.Phantom;

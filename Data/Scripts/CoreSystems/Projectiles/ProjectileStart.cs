@@ -68,7 +68,7 @@ namespace CoreSystems.Projectiles
                 p.Info.ShotFade = shotFade;
                 p.PredictedTargetPos = w.Target.TargetPos;
                 p.DeadSphere.Center = w.MyPivotPos;
-                p.DeadSphere.Radius = w.Comp.Ai.GridEntity.GridSizeHalf + 0.1;
+                p.DeadSphere.Radius = w.Comp.Ai.IsGrid ? w.Comp.Ai.GridEntity.GridSizeHalf + 0.1 : 0.5f;
 
                 if (a.Const.FeelsGravity && w.System.Session.Tick - w.GravityTick > 60)
                 {
@@ -169,10 +169,10 @@ namespace CoreSystems.Projectiles
                     var addProjectile = p.Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                     if (!addProjectile && targetAi.PointDefense)
                     {
-                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.GridEntity.PositionComp.WorldMatrixRef.Translation) < 0)
+                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.TopEntity.PositionComp.WorldMatrixRef.Translation) < 0)
                         {
 
-                            var targetSphere = targetAi.GridEntity.PositionComp.WorldVolume;
+                            var targetSphere = targetAi.TopEntity.PositionComp.WorldVolume;
                             targetSphere.Radius *= 3;
                             var testRay = new RayD(p.Info.Origin, p.Info.Direction);
                             var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;

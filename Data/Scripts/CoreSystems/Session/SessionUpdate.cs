@@ -17,6 +17,7 @@ namespace CoreSystems
         { //Fully Inlined due to keen's mod profiler
             foreach (var ai in EntityAIs.Values)
             {
+
                 ///
                 /// GridAi update section
                 ///
@@ -334,7 +335,6 @@ namespace CoreSystems
                         //if (!comp.IsBlock) Log.Line($"{canShoot} - {shoot} - {manualShot} - {comp.InputState.MouseButtonLeft} - {w.PartState.Action} - {reloading}");
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
-                            Log.Line($"woot");
                             if (w.ShootOnce && IsServer && (shotReady || w.PartState.Action != TriggerOnce))
                                 w.ShootOnce = false;
 

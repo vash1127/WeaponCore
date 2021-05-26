@@ -27,7 +27,6 @@ namespace CoreSystems.Support
 
                 if (Registered) 
                     RegisterEvents(false);
-
                 if (Ai != null) {
 
                     if (Type == CompType.Weapon)

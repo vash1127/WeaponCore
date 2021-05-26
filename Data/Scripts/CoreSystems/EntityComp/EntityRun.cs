@@ -14,7 +14,6 @@ namespace CoreSystems.Support
             try
             {
                 base.OnAddedToContainer();
-                TopEntity = CoreEntity.GetTopMostParent();
                 if (Container.Entity.InScene) {
 
                     if (Platform.State == CorePlatform.PlatformState.Fresh)
@@ -29,7 +28,6 @@ namespace CoreSystems.Support
             try
             {
                 base.OnAddedToScene();
-                TopEntity = CoreEntity.GetTopMostParent();
 
                 if (Platform.State == CorePlatform.PlatformState.Inited || Platform.State == CorePlatform.PlatformState.Ready)
                     ReInit();

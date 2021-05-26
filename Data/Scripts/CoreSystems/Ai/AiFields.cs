@@ -189,6 +189,7 @@ namespace CoreSystems.Support
 
         internal void Init(MyEntity topEntity, Session session)
         {
+            Log.Line($"test");
             TopEntity = topEntity;
             GridEntity = topEntity as MyCubeGrid;
             IsGrid = GridEntity != null;
