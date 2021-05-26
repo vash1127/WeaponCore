@@ -264,7 +264,6 @@ namespace CoreSystems.Support
                 if (updateAdd) //update/add
                 {
                     ai.Data.Repo.ControllingPlayers[playerId] = entity.EntityId;
-                    Log.Line($"add player");
                     ai.AiSleep = false;
                 }
                 else //remove

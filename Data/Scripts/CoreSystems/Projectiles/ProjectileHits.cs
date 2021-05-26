@@ -47,7 +47,7 @@ namespace CoreSystems.Projectiles
                 var entityCollection = p.UseEntityCache ? p.Info.Ai.NearByEntityCache : p.MyEntityList;
                 var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
-                var myGrid = p.Info.Target.CoreCube.CubeGrid;
+                var firingCube = p.Info.Target.CoreCube;
 
                 WaterData water = null;
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
@@ -59,7 +59,7 @@ namespace CoreSystems.Projectiles
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
 
                     var grid = ent as MyCubeGrid;
-                    var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
+                    var entIsSelf = grid != null && firingCube != null && (grid == firingCube.CubeGrid || firingCube.CubeGrid.IsSameConstructAs(grid));
 
                     if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
 
@@ -126,11 +126,11 @@ namespace CoreSystems.Projectiles
                     if (checkShield && !p.Info.ShieldBypassed && !p.Info.EwarActive || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))
                     {
                         shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
-                        if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
+                        if (shieldInfo != null && (firingCube == null || !firingCube.CubeGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)))
                         {
 
                             var shrapnelSpawn = p.Info.IsShrapnel && p.Info.Age < 1;
-                            if (Vector3D.Transform(!shrapnelSpawn ? p.Info.Origin : p.Info.Target.CoreCube.PositionComp.WorldMatrixRef.Translation, shieldInfo.Value.Item3.Item1).LengthSquared() > 1)
+                            if (Vector3D.Transform(!shrapnelSpawn ? p.Info.Origin : p.Info.Target.CoreEntity.PositionComp.WorldMatrixRef.Translation, shieldInfo.Value.Item3.Item1).LengthSquared() > 1)
                             {
 
                                 p.EntitiesNear = true;
@@ -347,7 +347,7 @@ namespace CoreSystems.Projectiles
                                         IHitInfo hitInfo;
                                         p.Info.System.Session.Physics.CastRay(forwardPos, p.Beam.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
                                         var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-                                        if (hitGrid == null || !myGrid.IsSameConstructAs(hitGrid))
+                                        if (hitGrid == null || firingCube == null || !firingCube.CubeGrid.IsSameConstructAs(hitGrid))
                                         {
                                             HitEntityPool.Return(hitEntity);
                                             continue;
@@ -564,7 +564,7 @@ namespace CoreSystems.Projectiles
                         var spawnPos = p.Info.AmmoDef.Const.IsBeamWeapon ? new Vector3D(firstHitEntity.Intersection.From + (p.Info.Direction * distToTarget)) : p.LastPosition;
                         //Log.Line($"client sending predicted shot:{firstHitEntity.Intersection.From == p.LastPosition} - {p.Info.Origin == p.LastPosition} - distToTarget:{distToTarget} - distTraveled:{Vector3D.Distance(firstHitEntity.Intersection.From, firstHitEntity.Intersection.To)}");
 
-                        Session.SendFixedGunHitEvent(p.Info.Target.CoreCube, p.Info.Hit.Entity, spawnPos, vel, p.Info.OriginUp, p.Info.MuzzleId, p.Info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)distToTarget);
+                        Session.SendFixedGunHitEvent(p.Info.Target.CoreEntity, p.Info.Hit.Entity, spawnPos, vel, p.Info.OriginUp, p.Info.MuzzleId, p.Info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)distToTarget);
                         p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                     }
 
@@ -662,18 +662,18 @@ namespace CoreSystems.Projectiles
                         hitBlock = hitEntity.Blocks[0];
 
                     IHitInfo hitInfo = null;
-                    if (p.Info.System.Session.HandlesInput && hitEntity.HitPos.HasValue && Vector3D.DistanceSquared(hitEntity.HitPos.Value, p.Info.System.Session.CameraPos) < 22500 && p.Info.System.Session.CameraFrustrum.Contains(hitEntity.HitPos.Value) != ContainmentType.Disjoint)
+                    if (p.Info.System.Session.HandlesInput && hitEntity.HitPos.HasValue && Vector3D.DistanceSquared(hitEntity.HitPos.Value, Session.CameraPos) < 22500 && Session.CameraFrustrum.Contains(hitEntity.HitPos.Value) != ContainmentType.Disjoint)
                     {
                         var entSphere = hitEntity.Entity.PositionComp.WorldVolume;
                         var from = hitEntity.Intersection.From + (hitEntity.Intersection.Direction * MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref hitEntity.Intersection.From, ref entSphere));
                         var to = hitEntity.HitPos.Value + (hitEntity.Intersection.Direction * 3f);
-                        p.Info.System.Session.Physics.CastRay(from, to, out hitInfo, 15);
+                        Session.Physics.CastRay(from, to, out hitInfo, 15);
                     }
                     visualHitPos = hitInfo?.HitEntity != null ? hitInfo.Position : hitEntity.HitPos;
                 }
                 else visualHitPos = hitEntity.HitPos;
 
-                p.Info.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, LastHit = visualHitPos ?? Vector3D.Zero, SurfaceHit = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick };
+                p.Info.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, LastHit = visualHitPos ?? Vector3D.Zero, SurfaceHit = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = Session.Tick };
                 if (p.EnableAv)
                 {
                     p.Info.AvShot.LastHitShield = hitEntity.EventType == Shield;
@@ -774,7 +774,7 @@ namespace CoreSystems.Projectiles
 
                                 var firstBlock = grid.GetCubeBlock(hitEnt.Vector3ICache[j]) as IMySlimBlock;
                                 MatrixD transform = grid.WorldMatrix;
-                                if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.Info.Target.CoreCube.SlimBlock)
+                                if (firstBlock != null && !firstBlock.IsDestroyed && (hitEnt.Info.Target.CoreCube == null || firstBlock != hitEnt.Info.Target.CoreCube.SlimBlock))
                                 {
 
                                     hitEnt.Blocks.Add(firstBlock);

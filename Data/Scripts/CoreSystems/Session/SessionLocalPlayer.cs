@@ -25,7 +25,6 @@ namespace CoreSystems
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
             PlayerHandWeapon =  Session.Player?.Character?.EquippedTool as IMyAutomaticRifleGun;
-            var playerHandWeapon = PlayerHandWeapon as MyEntity;
             var cockPit = ControlledEntity as MyCockpit;
             if (cockPit != null && cockPit.EnableShipControl)
                 ActiveCockPit = cockPit;
@@ -33,7 +32,7 @@ namespace CoreSystems
 
 
             long oldControlId;
-            var controlledEntity = ActiveCockPit ?? ActiveControlBlock ?? playerHandWeapon;
+            var controlledEntity = ActiveCockPit ?? ActiveControlBlock ?? PlayerHandWeapon?.Owner;
             if (controlledEntity != null && EntityToMasterAi.TryGetValue(ActiveControlBlock != null ? controlledEntity.GetTopMostParent() : controlledEntity, out TrackingAi))
             {
                 var camera = Session.CameraController?.Entity as MyCameraBlock;

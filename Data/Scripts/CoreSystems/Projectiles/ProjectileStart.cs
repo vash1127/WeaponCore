@@ -35,6 +35,7 @@ namespace CoreSystems.Projectiles
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Values.State.TrackingReticle;
                 p.Info.Target.CoreCube = w.Comp.Cube;
+                p.Info.Target.CoreEntity = w.Comp.CoreEntity;
 
                 p.Info.DummyTargets = w.Comp.FakeMode ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Values.State.PlayerId] : null;
 

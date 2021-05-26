@@ -205,8 +205,7 @@ namespace CoreSystems.Platform
         internal bool ComputeServerStorage()
         {
             var s = Comp.Session;
-
-            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.CoreEntity.HasInventory ) return false;
+            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.InventoryEntity.HasInventory ) return false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
             {

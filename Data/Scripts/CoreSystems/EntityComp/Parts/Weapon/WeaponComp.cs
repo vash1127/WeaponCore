@@ -200,12 +200,6 @@ namespace CoreSystems.Platform
                     Ai.PointDefense = true;
             }
 
-            internal void WeaponHealthCheck()
-            {
-                HealthCheck();
-                if (Ai.Session.HandlesInput) 
-                    RequestShootUpdate(TriggerActions.TriggerClick, Ai.Session.PlayerId);
-            }
 
             internal static void SetRange(CoreComponent comp)
             {

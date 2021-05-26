@@ -150,7 +150,7 @@ namespace CoreSystems
                     var wComp = ai.WeaponComps[i];
 
                     if (wComp.Status != Started)
-                        wComp.WeaponHealthCheck();
+                        wComp.HealthCheck();
 
                     if (ai.DbUpdated || !wComp.UpdatedState) {
 
@@ -164,6 +164,10 @@ namespace CoreSystems
                         continue;
 
                     if (HandlesInput) {
+
+                        if (wComp.TypeSpecific == CoreComponent.CompTypeSpecific.Rifle && wComp.Data.Repo.Values.State.Control != ControlMode.Toolbar)
+                            wComp.RequestShootUpdate(TriggerClick, PlayerId);
+
                         var wasTrack = wComp.Data.Repo.Values.State.TrackingReticle;
 
                         var isControllingPlayer = wComp.Data.Repo.Values.State.PlayerId == PlayerId;
@@ -332,7 +336,6 @@ namespace CoreSystems
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var weaponPrimed = canShoot && (shoot || w.LockOnFireState);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
-                        //if (!comp.IsBlock) Log.Line($"{canShoot} - {shoot} - {manualShot} - {comp.InputState.MouseButtonLeft} - {w.PartState.Action} - {reloading}");
                         if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.PartState.Action != TriggerOnce))

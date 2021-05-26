@@ -160,7 +160,7 @@ namespace CoreSystems
             }
             //var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
             var hitWave = info.AmmoDef.Const.RealShotsPerMin <= 120;
-            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.CoreCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, hitWave);
+            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.CoreEntity.EntityId, (float)scaledDamage, (float)detonateDamage, energy, hitWave);
             if (hit.HasValue)
             {
 
@@ -211,6 +211,7 @@ namespace CoreSystems
                 t.BaseDamagePool = 0;
                 return;
             }
+
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -222,14 +223,17 @@ namespace CoreSystems
             var radiant = areaEffect == AreaEffectType.Radiant;
             var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.AmmoDef.AreaEffect.Detonation.MinArmingTime;
             var detonateDmg = t.AmmoDef.Const.DetonationDamage;
-            var attackerId = t.Target.CoreCube.EntityId;
-            var attacker = t.Target.CoreCube;
+
+            var attackerId = t.Target.CoreEntity.EntityId;
+            var attacker = t.Target.CoreEntity;
+
             var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
             var hasAreaDmg = areaEffectDmg > 0;
             var radiantCascade = radiant && !detonateOnEnd;
             var primeDamage = !radiantCascade || !hasAreaDmg;
+
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = t.ShieldBypassed ? ShieldBypassDamageType : explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var minAoeOffset = largeGrid ? 1.25 : 0.5f;
@@ -272,7 +276,6 @@ namespace CoreSystems
             var earlyExit = false;
             IMySlimBlock rootBlock = null;
             var destroyed = 0;
-
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || earlyExit || outOfPew && !nova) break;
@@ -533,7 +536,7 @@ namespace CoreSystems
             var shieldHeal = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal;
             var sync = MpActive && IsServer;
 
-            var attackerId = info.Target.CoreCube.EntityId;
+            var attackerId = info.Target.CoreEntity.EntityId;
 
             var objHp = destObj.Integrity;
             var integrityCheck = info.AmmoDef.DamageScales.MaxIntegrity > 0;
@@ -713,7 +716,7 @@ namespace CoreSystems
                     if (dRadius < 1.5) dRadius = 1.5f;
 
                     if (canDamage)
-                        SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.CoreCube, destObj, info.AmmoDef, true);
+                        SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.CoreEntity, destObj, info.AmmoDef, true);
                 }
             }
         }

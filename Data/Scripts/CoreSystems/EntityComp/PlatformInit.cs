@@ -76,7 +76,6 @@ namespace CoreSystems.Platform
                 Comp.Ai = Comp.Session.GridAiPool.Get();
                 Comp.Ai.Init(Comp.TopEntity, Comp.Session);
                 Comp.Session.EntityAIs.TryAdd(Comp.TopEntity, Comp.Ai);
-                Log.Line($"{Comp.TopEntity.EntityId} - {Comp.TopEntity.DebugName}");
             }
 
             var blockDef = Comp.SubTypeId; 

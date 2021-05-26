@@ -156,11 +156,10 @@ namespace CoreSystems.Projectiles
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             Info.MyPlanet = Info.Ai.MyPlanet;
+            
             if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache))
-            {
-                Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.CoreCube?.MarkedForClose}, setting to default cache:");
                 Info.VoxelCache = Info.System.Session.VoxelCaches[ulong.MaxValue];
-            }
+
             if (Info.MyPlanet != null)
                 Info.VoxelCache.PlanetSphere.Center = Info.Ai.ClosestPlanetCenter;
 
@@ -660,7 +659,7 @@ namespace CoreSystems.Projectiles
 
                         if (eWarSphere.Intersects(new BoundingSphereD(netted.Position, netted.Info.AmmoDef.Const.CollisionSize)))
                         {
-                            if (netted.Info.Target.CoreCube.CubeGrid.IsSameConstructAs(Info.Target.CoreCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
+                            if (netted.Info.Ai.IsGrid && Info.Target.CoreCube != null && netted.Info.Target.CoreCube.CubeGrid.IsSameConstructAs(Info.Target.CoreCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
                             if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                             {
                                 Info.BaseEwarPool -= (float)netted.Info.AmmoDef.Const.HealthHitModifier;
