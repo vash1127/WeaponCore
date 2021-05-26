@@ -84,6 +84,9 @@ namespace CoreSystems
 
             foreach (var list in LeadGroups)
                 list.Clear();
+            
+            if (Settings.Enforcement.DisableLeads)
+                return;
 
             foreach (var ai in TrackingAi.Construct.RefreshedAis)
             {
@@ -91,7 +94,7 @@ namespace CoreSystems
                 {
                     foreach (var w in comp.Platform.Weapons)
                     {
-                        if ((!w.Comp.HasTurret || w.Comp.ForceTargetLead) && w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup > 0)
+                        if ((!w.Comp.HasTurret && !w.Comp.OverrideLeads || w.Comp.HasTurret && w.Comp.OverrideLeads) && w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup > 0)
                         {
                             LeadGroups[w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup].Add(w);
                             LeadGroupActive = true;

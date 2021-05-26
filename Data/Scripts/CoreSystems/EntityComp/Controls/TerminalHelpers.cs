@@ -208,7 +208,7 @@ namespace CoreSystems.Control
         internal static bool TargetLead(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>();
-            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && (!comp.HasTurret || comp.ForceTargetLead) && comp.Type == CoreComponent.CompType.Weapon;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && (!comp.HasTurret && !comp.OverrideLeads || comp.HasTurret && comp.OverrideLeads) && comp.Type == CoreComponent.CompType.Weapon;
         }
 
         internal static bool GuidedAmmo(IMyTerminalBlock block)
