@@ -182,7 +182,7 @@ namespace WeaponCore.Control
         internal static bool TargetLead(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && (!comp.HasTurret || comp.ForceTargetLead);
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && (!comp.HasTurret && !comp.OverrideLeads || comp.HasTurret && comp.OverrideLeads);
         }
 
         internal static bool GuidedAmmo(IMyTerminalBlock block)

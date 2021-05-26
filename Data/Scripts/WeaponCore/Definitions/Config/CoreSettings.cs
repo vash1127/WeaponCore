@@ -81,6 +81,7 @@ namespace WeaponCore.Settings
             };
             [ProtoMember(11)] public double MinHudFocusDistance;
             [ProtoMember(12)] public bool DisableAi;
+            [ProtoMember(13)] public bool DisableLeads;
         }
 
         [ProtoContract]

@@ -134,6 +134,7 @@ namespace WeaponCore.Settings
             var oldOptimize = oldSettings.ServerOptimizations;
             var oldFocusDist = oldSettings.MinHudFocusDistance;
             var oldDisableAi = oldSettings.DisableAi;
+            var oldDisableLeads = oldSettings.DisableLeads;
 
             Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
 
@@ -151,6 +152,7 @@ namespace WeaponCore.Settings
             Core.Enforcement.ServerOptimizations = oldOptimize;
             Core.Enforcement.MinHudFocusDistance = oldFocusDist;
             Core.Enforcement.DisableAi = oldDisableAi;
+            Core.Enforcement.DisableLeads = oldDisableLeads;
         }
 
         private void CorruptionCheck(bool write = false)
