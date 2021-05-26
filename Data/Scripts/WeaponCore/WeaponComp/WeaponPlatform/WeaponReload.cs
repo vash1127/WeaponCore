@@ -291,7 +291,8 @@ namespace WeaponCore.Platform
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
-                var delayTime = System.Session.Tick - LastShootTick + System.Values.HardPoint.Loading.DelayAfterBurst;
+                var timeSinceShot = LastShootTick > 0 ? System.Session.Tick - LastShootTick : 0;
+                var delayTime = timeSinceShot <= System.Values.HardPoint.Loading.DelayAfterBurst ? System.Values.HardPoint.Loading.DelayAfterBurst - timeSinceShot : 0;
                 var burstDelay = ShowBurstDelayAsReload && delayTime > 0 && ShotsFired == 0;
 
                 if (System.ReloadTime > 0 || burstDelay) {
