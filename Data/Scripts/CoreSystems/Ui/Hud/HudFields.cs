@@ -126,6 +126,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
             BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 0, 64, 64, 64, 64, 512, ref OutofAmmoTexture);
             BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 0, 0, 64, 64, 64, 64, 640, ref ChargingTexture);
             BuildMap(MyStringId.GetOrCompute("BlockTargetAtlas"), 0, 0, 0, 256, 256, 256, 256, 2560, ref PaintedTexture); // InitOffset X,Y offset X,Y uv X,Y textureSize X,Y
+            BuildMap(MyStringId.GetOrCompute("ShapeLeadIconsAtlas"), 0, 0, 0, 64, 64, 64, 64, 512, ref PaintedTexture);
+            BuildMap(MyStringId.GetOrCompute("EmoteLeadIconsAtlas"), 0, 0, 0, 64, 64, 64, 64, 512, ref PaintedTexture);
 
             for (int i = 0; i < InitialPoolCapacity; i++)
             {
