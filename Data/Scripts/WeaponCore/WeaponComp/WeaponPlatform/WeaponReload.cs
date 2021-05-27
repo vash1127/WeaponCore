@@ -300,8 +300,7 @@ namespace WeaponCore.Platform
                     ReloadSubscribed = true;
                     var reloadTime = (uint)(burstDelay ? System.ReloadTime + delayTime : System.ReloadTime);
                     
-                    if (burstDelay) 
-                        ReloadEndTick = Comp.Session.Tick + reloadTime;
+                    ReloadEndTick = Comp.Session.Tick + reloadTime;
                     
                     Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, reloadTime);
                 }

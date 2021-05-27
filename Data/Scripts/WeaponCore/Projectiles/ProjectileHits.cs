@@ -820,6 +820,8 @@ namespace WeaponCore.Projectiles
                                 break;
                             case EmpField:
                             case DotField:
+                                if (fieldType == EmpField && cube is IMyUpgradeModule && system.Session.CoreShieldBlockTypes.Contains(cube.BlockDefinition))
+                                        continue;
                                 break;
                             default: continue;
                         }
