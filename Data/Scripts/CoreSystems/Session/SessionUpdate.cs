@@ -148,7 +148,8 @@ namespace CoreSystems
                 for (int i = 0; i < ai.WeaponComps.Count; i++) {
 
                     var wComp = ai.WeaponComps[i];
-
+                    if (wComp.GoingCritical)
+                        Log.Line($"test");
                     if (wComp.Status != Started)
                         wComp.HealthCheck();
 
@@ -160,7 +161,7 @@ namespace CoreSystems
                     if (IsServer && wComp.Data.Repo.Values.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(wComp.Data.Repo.Values.State.PlayerId))
                         wComp.ResetPlayerControl();
 
-                    if (wComp.Platform.State != CorePlatform.PlatformState.Ready || wComp.IsAsleep || !wComp.IsWorking || wComp.CoreEntity.MarkedForClose || wComp.IsDisabled || wComp.LazyUpdate && !ai.DbUpdated && Tick > wComp.NextLazyUpdateStart)
+                    if (wComp.Platform.State != CorePlatform.PlatformState.Ready || wComp.IsDisabled || !wComp.GoingCritical && (wComp.IsAsleep || !wComp.IsWorking || wComp.CoreEntity.MarkedForClose || wComp.LazyUpdate && !ai.DbUpdated && Tick > wComp.NextLazyUpdateStart))
                         continue;
 
                     if (HandlesInput) {
@@ -247,7 +248,7 @@ namespace CoreSystems
                         if (w.System.PartType != HardwareType.BlockWeapon)
                             continue;
 
-                        if (w.CriticalReaction && (wComp.Data.Repo.Values.Set.Overrides.Armed || wComp.Data.Repo.Values.State.CountingDown || wComp.Data.Repo.Values.State.CriticalReaction))
+                        if (w.CriticalReaction && (wComp.Data.Repo.Values.Set.Overrides.Armed || wComp.Data.Repo.Values.State.CountingDown || wComp.Data.Repo.Values.State.CriticalReaction && !wComp.GoingCritical))
                             w.CriticalMonitor();
 
                         if (w.Target.ClientDirty)

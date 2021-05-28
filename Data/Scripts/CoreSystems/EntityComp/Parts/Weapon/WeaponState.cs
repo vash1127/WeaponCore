@@ -226,14 +226,23 @@ namespace CoreSystems.Platform
             var cState = Comp.Data.Repo.Values.State;
             var cSet = Comp.Data.Repo.Values.Set;
 
-            if (cState.CountingDown && cSet.Overrides.ArmedTimer - 1 >= 0)
+            if (cState.CriticalReaction)
+                Comp.GoingCritical = true;
+            else if (cState.CountingDown && cSet.Overrides.ArmedTimer - 1 >= 0)
             {
                 if (--cSet.Overrides.ArmedTimer == 0)
                 {
-                    Log.Line($"BOOM!");
-                    Comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOnce, Comp.Session.PlayerId);
-                    
+                    CriticalOnDestruction();
                 }
+            }
+        }
+
+        public void CriticalOnDestruction()
+        {
+            if (Comp.Data.Repo.Values.Set.Overrides.Armed && !Comp.GoingCritical)
+            {
+                Log.Line($"BOOM!");
+                Comp.GoingCritical = true;
             }
         }
     }

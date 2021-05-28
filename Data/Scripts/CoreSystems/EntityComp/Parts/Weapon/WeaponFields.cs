@@ -182,7 +182,6 @@ namespace CoreSystems.Platform
         internal bool NoMagsToLoad;
         internal bool CurrentlyDegrading;
         internal bool FixedOffset;
-
         internal bool ProjectilesNear;
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;

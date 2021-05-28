@@ -63,6 +63,8 @@ namespace CoreSystems.Support
                                 
                                 if (w.InCharger)
                                     w.ExitCharger = true;
+                                if (w.CriticalReaction)
+                                    w.CriticalOnDestruction();
                             }
                         }
                         Ai.CompChange(false, this);

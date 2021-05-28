@@ -86,6 +86,8 @@ namespace CoreSystems.Support
         internal bool ManualMode;
         internal bool PainterMode;
         internal bool FakeMode;
+        internal bool GoingCritical;
+
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -203,6 +205,7 @@ namespace CoreSystems.Support
 
             PowerGroupId = Session.PowerGroups[Platform.Structure];
             CoreEntity.OnClose += Session.CloseComps;
+            GoingCritical = false;
         }        
     }
 }
