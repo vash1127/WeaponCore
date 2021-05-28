@@ -49,6 +49,11 @@ namespace CoreSystems
                     var hitEnt = info.HitList[i];
                     var hitMax = info.ObjectsHit >= maxObjects;
                     var outOfPew = info.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
+                    if (outOfPew && p.State == Projectile.ProjectileState.Detonate && i != info.HitList.Count - 1)
+                    {
+                        outOfPew = false;
+                        info.BaseDamagePool = 0.01f;
+                    }
                     if (skip || hitMax || outOfPew)
                     {
                         if (hitMax || outOfPew || pInvalid)
@@ -199,19 +204,17 @@ namespace CoreSystems
 
         private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
-
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) {
                 hitEnt.Blocks?.Clear();
                 return;
             }
 
-            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.IsGrid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| !t.AmmoDef.Const.IsCriticalReaction && (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.IsGrid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
             {
                 t.BaseDamagePool = 0;
                 return;
             }
-
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -279,7 +282,6 @@ namespace CoreSystems
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || earlyExit || outOfPew && !nova) break;
-
                 rootBlock = hitEnt.Blocks[i];
 
                 if (!nova)
@@ -527,7 +529,6 @@ namespace CoreSystems
             var destObj = hitEnt.Entity as IMyDestroyableObject;
 
             if (destObj == null || entity == null) return;
-
             AmmoModifer ammoModifer;
             AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
             var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;

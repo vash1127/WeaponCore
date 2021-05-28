@@ -94,6 +94,7 @@ namespace CoreSystems.Control
         {
             AddOnOffSwitchNoAction<T>(session, "Show Enhanced Area", "Area Influence", "Show On/Off", BlockUi.GetShowArea, BlockUi.RequestSetShowArea, true, SupportIsReady);
         }
+
         internal static bool Istrue(IMyTerminalBlock block)
         {
             return true;
@@ -103,8 +104,9 @@ namespace CoreSystems.Control
         {
             var comp = block.Components.Get<CoreComponent>();
 
-            return comp == null || comp.Session.DedicatedServer || !comp.HasDelayToFire;
+            return comp != null && comp.Platform.State == CorePlatform.PlatformState.Ready && comp.Type == CoreComponent.CompType.Weapon;
         }
+
         internal static bool WeaponIsReady(IMyTerminalBlock block)
         {
 

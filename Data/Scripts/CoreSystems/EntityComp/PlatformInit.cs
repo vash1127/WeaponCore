@@ -663,7 +663,7 @@ namespace CoreSystems.Platform
             w.Comp.HasRofSlider = w.Comp.HasRofSlider || ui.RateOfFire;
             w.BaseComp.CanOverload = w.BaseComp.CanOverload || ui.EnableOverload ;
             w.BaseComp.HasTurret = w.BaseComp.HasTurret || w.System.Values.HardPoint.Ai.TurretAttached;
-            w.BaseComp.HasArming = w.BaseComp.HasArming || w.System.Values.HardPoint.HardWare.CriticalReaction.TerminalControls;
+            w.BaseComp.HasArming = w.BaseComp.HasArming || w.System.Values.HardPoint.HardWare.CriticalReaction.Enable && w.System.Values.HardPoint.HardWare.CriticalReaction.TerminalControls;
             w.BaseComp.IsBomb = w.System.Values.HardPoint.HardWare.CriticalReaction.Enable && !w.Comp.Platform.Structure.MultiParts;
             w.BaseComp.OverrideLeads = w.BaseComp.OverrideLeads || w.System.Values.HardPoint.Ai.OverrideLeads;
             w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets || w.System.Values.HardPoint.Ai.LockOnFocus;

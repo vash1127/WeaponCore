@@ -616,10 +616,9 @@ namespace CoreSystems.Platform
                 }
             }
 
-            internal bool ShootOnceCheck(int weaponToCheck = -1)
+            internal bool ShootOnceCheck()
             {
-                var checkAllWeapons = weaponToCheck == -1;
-                var numOfWeapons = checkAllWeapons ? Platform.Weapons.Count : 1;
+                var numOfWeapons = Platform.Weapons.Count;
                 var loadedWeapons = 0;
 
                 for (int i = 0; i < Platform.Weapons.Count; i++)
@@ -629,9 +628,10 @@ namespace CoreSystems.Platform
                     if (w.PartState.Overheated)
                         return false;
 
-                    if ((w.ProtoWeaponAmmo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
+                    if (w.ProtoWeaponAmmo.CurrentAmmo > 0 || w.System.DesignatorWeapon)
                         ++loadedWeapons;
                 }
+
                 if (numOfWeapons == loadedWeapons)
                 {
 
@@ -639,9 +639,6 @@ namespace CoreSystems.Platform
                     {
 
                         var w = Platform.Weapons[i];
-
-                        if (!checkAllWeapons && i != weaponToCheck)
-                            continue;
 
                         if (Session.IsServer)
                             w.ShootOnce = true;

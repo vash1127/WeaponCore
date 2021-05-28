@@ -582,8 +582,7 @@ namespace CoreSystems.Api
                     public struct CriticalDef
                     {
                         [ProtoMember(1)] internal bool Enable;
-                        [ProtoMember(2)] internal string ReactionAmmo;
-                        [ProtoMember(3)] internal int ReactionTime;
+                        [ProtoMember(3)] internal int DefaultArmedTimer;
                         [ProtoMember(4)] internal bool PreArmed;
                         [ProtoMember(5)] internal bool TerminalControls;
                     }

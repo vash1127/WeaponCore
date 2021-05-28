@@ -231,6 +231,8 @@ namespace CoreSystems.Platform
                 if (--cSet.Overrides.ArmedTimer == 0)
                 {
                     Log.Line($"BOOM!");
+                    Comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOnce, Comp.Session.PlayerId);
+                    
                 }
             }
         }

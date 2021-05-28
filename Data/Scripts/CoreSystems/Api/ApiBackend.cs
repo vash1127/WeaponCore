@@ -585,8 +585,7 @@ namespace CoreSystems.Api
                 }
 
                 if (foundWeapon)  {
-                    var weaponKey = allWeapons ? -1 : weaponId;
-                    comp.ShootOnceCheck(weaponKey);
+                    comp.ShootOnceCheck();
                 }
             }
         }

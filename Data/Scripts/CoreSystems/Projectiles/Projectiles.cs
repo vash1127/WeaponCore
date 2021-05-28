@@ -302,7 +302,7 @@ namespace CoreSystems.Projectiles
 
                         if (!p.UseEntityCache)
                             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.MyEntityList, p.PruneQuery);
-                        
+
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)

@@ -112,9 +112,9 @@ namespace CoreSystems
             if (!w.BaseComp.UnlimitedPower) {
 
                 if (!w.Charging)
-                    w.DrawPower(assignedPower);
+                    w.DrawPower(assignedPower, ai);
                 else if (w.NewPowerNeeds || rebalance)
-                    w.AdjustPower(assignedPower);
+                    w.AdjustPower(assignedPower, ai);
             }
 
 
@@ -134,7 +134,7 @@ namespace CoreSystems
                     w.Reloaded();
 
                 if (!complete || fullyCharged) {
-                    w.StopPowerDraw(weaponFailure || invalidStates);
+                    w.StopPowerDraw(weaponFailure || invalidStates, ai);
                     return true;
                 }
                 w.Loading = true;

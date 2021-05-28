@@ -552,10 +552,9 @@ namespace CoreSystems.Support
                 public struct CriticalDef
                 {
                     [ProtoMember(1)] internal bool Enable;
-                    [ProtoMember(2)] internal string ReactionAmmo;
-                    [ProtoMember(3)] internal int ReactionTime;
-                    [ProtoMember(4)] internal bool PreArmed;
-                    [ProtoMember(5)] internal bool TerminalControls;
+                    [ProtoMember(2)] internal int DefaultArmedTimer;
+                    [ProtoMember(3)] internal bool PreArmed;
+                    [ProtoMember(4)] internal bool TerminalControls;
                 }
             }
 

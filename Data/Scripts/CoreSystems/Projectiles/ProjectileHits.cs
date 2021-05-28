@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using CoreSystems.Support;
 using Jakaria;
 using Sandbox.Common.ObjectBuilders;
@@ -48,7 +49,7 @@ namespace CoreSystems.Projectiles
                 var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
                 var firingCube = p.Info.Target.CoreCube;
-
+                var goCritical = p.Info.AmmoDef.Const.IsCriticalReaction;
                 WaterData water = null;
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
                     Session.WaterMap.TryGetValue(p.Info.MyPlanet.EntityId, out water);
@@ -86,8 +87,10 @@ namespace CoreSystems.Projectiles
                         var transform = ent.PositionComp.WorldMatrixRef;
                         var box = ent.PositionComp.LocalAABB;
                         var obb = new MyOrientedBoundingBoxD(box, transform);
+
                         if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
                     }
+
                     var safeZone = ent as MySafeZone;
                     if (safeZone != null && safeZone.Enabled)
                     {
@@ -126,7 +129,7 @@ namespace CoreSystems.Projectiles
                     if (checkShield && !p.Info.ShieldBypassed && !p.Info.EwarActive || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))
                     {
                         shieldInfo = Session.SApi.MatchEntToShieldFastExt(ent, true);
-                        if (shieldInfo != null && (firingCube == null || !firingCube.CubeGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)))
+                        if (shieldInfo != null && (firingCube == null || !firingCube.CubeGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid) && !goCritical))
                         {
 
                             var shrapnelSpawn = p.Info.IsShrapnel && p.Info.Age < 1;
@@ -298,11 +301,11 @@ namespace CoreSystems.Projectiles
 
                         if (grid != null)
                         {
-
                             hitEntity = HitEntityPool.Get();
                             if (entIsSelf)
                             {
-                                if (!p.Info.AmmoDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2)
+
+                                if (!p.Info.AmmoDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2 && !goCritical)
                                 {
                                     MyCube cube;
                                     if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.CoreCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.CoreCube.SlimBlock))
@@ -329,7 +332,7 @@ namespace CoreSystems.Projectiles
                                             if (grid.TryGetCube(hitEntity.Vector3ICache[j], out myCube))
                                             {
 
-                                                if (((IMySlimBlock)myCube.CubeBlock).Position != p.Info.Target.CoreCube.Position)
+                                                if (goCritical || ((IMySlimBlock)myCube.CubeBlock).Position != p.Info.Target.CoreCube.Position)
                                                 {
 
                                                     hitself = true;
@@ -343,17 +346,19 @@ namespace CoreSystems.Projectiles
                                             HitEntityPool.Return(hitEntity);
                                             continue;
                                         }
-
-                                        IHitInfo hitInfo;
-                                        p.Info.System.Session.Physics.CastRay(forwardPos, p.Beam.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
-                                        var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-                                        if (hitGrid == null || firingCube == null || !firingCube.CubeGrid.IsSameConstructAs(hitGrid))
+                                        IHitInfo hitInfo = null;
+                                        if (!goCritical)
                                         {
-                                            HitEntityPool.Return(hitEntity);
-                                            continue;
+                                            p.Info.System.Session.Physics.CastRay(forwardPos, p.Beam.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
+                                            var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
+                                            if (hitGrid == null || firingCube == null || !firingCube.CubeGrid.IsSameConstructAs(hitGrid))
+                                            {
+                                                HitEntityPool.Return(hitEntity);
+                                                continue;
+                                            }
                                         }
 
-                                        hitEntity.HitPos = hitInfo.Position;
+                                        hitEntity.HitPos = hitInfo?.Position ?? p.Beam.From;
                                         hitEntity.Blocks.Add(grid.GetCubeBlock(hitEntity.Vector3ICache[0]));
                                     }
                                 }
@@ -380,7 +385,6 @@ namespace CoreSystems.Projectiles
 
                     if (hitEntity != null)
                     {
-
                         p.FinalizeIntersection = true;
                         hitEntity.Info = p.Info;
                         hitEntity.Entity = hitEntity.EventType != Shield ? ent : (MyEntity)shieldInfo.Value.Item1;
@@ -389,7 +393,6 @@ namespace CoreSystems.Projectiles
                         hitEntity.PruneSphere = p.PruneSphere;
                         hitEntity.SelfHit = entIsSelf;
                         hitEntity.DamageOverTime = p.Info.AmmoDef.Const.AreaEffect == DotField;
-
                         p.Info.HitList.Add(hitEntity);
                     }
                 }
@@ -542,7 +545,6 @@ namespace CoreSystems.Projectiles
 
                 if (p.Intersecting)
                 {
-
                     if (p.Info.AmmoDef.Const.VirtualBeams)
                     {
 
@@ -567,7 +569,6 @@ namespace CoreSystems.Projectiles
                         Session.SendFixedGunHitEvent(p.Info.Target.CoreEntity, p.Info.Hit.Entity, spawnPos, vel, p.Info.OriginUp, p.Info.MuzzleId, p.Info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)distToTarget);
                         p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                     }
-
                     p.Info.System.Session.Hits.Add(p);
                     continue;
                 }
@@ -730,7 +731,6 @@ namespace CoreSystems.Projectiles
                 }
                 else if (grid != null)
                 {
-
                     if (hitEnt.Hit)
                     {
                         dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);

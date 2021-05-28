@@ -124,6 +124,7 @@ namespace CoreSystems.Support
         public readonly bool AlwaysDraw;
         public readonly bool FixedFireAmmo;
         public readonly bool ClientPredictedAmmo;
+        public readonly bool IsCriticalReaction;
         public readonly float ChargSize;
         public readonly float RealShotsPerMin;
         public readonly float TargetLossDegree;
@@ -168,6 +169,8 @@ namespace CoreSystems.Support
             AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
+
+            IsCriticalReaction = wDef.HardPoint.HardWare.CriticalReaction.Enable;
 
             ComputeTextures(ammo, out TracerTextures, out SegmentTextures, out TrailTextures, out TracerMode, out TrailMode);
 

@@ -100,6 +100,12 @@ namespace CoreSystems.Platform
                             w.TargetData = Repo.Values.Targets[i];
                             w.TargetData.WeaponRandom = new WeaponRandomGenerator();
                             w.TargetData.WeaponInit(w);
+
+                            if (w.System.Values.HardPoint.HardWare.CriticalReaction.PreArmed)
+                                Repo.Values.Set.Overrides.Armed = true;
+
+                            if (w.System.Values.HardPoint.HardWare.CriticalReaction.DefaultArmedTimer > Repo.Values.Set.Overrides.ArmedTimer)
+                                Repo.Values.Set.Overrides.ArmedTimer = w.System.Values.HardPoint.HardWare.CriticalReaction.DefaultArmedTimer;
                         }
                     }
 

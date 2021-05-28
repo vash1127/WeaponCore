@@ -73,6 +73,9 @@ namespace CoreSystems.Support
                         Ai ai;
                         Session.EntityAIs.TryRemove(Ai.TopEntity, out ai);
                     }
+                    
+                    if (Session.TerminalMon.Comp == this)
+                        Session.TerminalMon.Clean(true);
 
                     Ai = null;
                 }
