@@ -424,9 +424,9 @@ namespace CoreSystems.Control
             session.CustomActions.Add(action);
         }
 
-        internal static void CreateOnOffActionSet(Session session, IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, bool> enabler, bool group = false)
+        internal static void CreateOnOffActionSet(Session session, IMyTerminalControlOnOffSwitch tc, string name, Func<IMyTerminalBlock, bool> enabler, bool group = false)
         {
-            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action0.Name = new StringBuilder($"{name} Toggle On/Off");
             action0.Action = b => tc.Setter(b, !tc.Getter(b));
@@ -437,7 +437,7 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
 
-            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
             action1.Name = new StringBuilder($"{name} On");
             action1.Action = b => tc.Setter(b, true);
@@ -448,7 +448,7 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
             session.CustomActions.Add(action1);
 
-            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
+            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
             action2.Name = new StringBuilder($"{name} Off");
             action2.Action = b => tc.Setter(b, true);
@@ -461,9 +461,9 @@ namespace CoreSystems.Control
 
         }
 
-        internal static void CreateOnOffActionSet(Session session, IMyTerminalControlCheckbox tc, string name, int id, Func<IMyTerminalBlock, bool> enabler, bool group = false)
+        internal static void CreateOnOffActionSet(Session session, IMyTerminalControlCheckbox tc, string name, Func<IMyTerminalBlock, bool> enabler, bool group = false)
         {
-            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action0.Name = new StringBuilder($"{name} Toggle On/Off");
             action0.Action = b => tc.Setter(b, !tc.Getter(b));
@@ -474,7 +474,7 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
 
-            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
             action1.Name = new StringBuilder($"{name} On");
             action1.Action = b => tc.Setter(b, true);
@@ -485,7 +485,7 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
             session.CustomActions.Add(action1);
 
-            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
+            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Toggle_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
             action2.Name = new StringBuilder($"{name} Off");
             action2.Action = b => tc.Setter(b, true);
@@ -498,9 +498,9 @@ namespace CoreSystems.Control
 
         }
 
-        internal static void CreateSliderActionSet(Session session, IMyTerminalControlSlider tc, string name, int id, int min, int max, float incAmt, Func<IMyTerminalBlock, bool> enabler, bool group)
+        internal static void CreateSliderActionSet(Session session, IMyTerminalControlSlider tc, string name, int min, int max, float incAmt, Func<IMyTerminalBlock, bool> enabler, bool group)
         {
-            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Increase");
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Increase");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
             action0.Name = new StringBuilder($"Increase {name}");
             action0.Action = b => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
@@ -511,7 +511,7 @@ namespace CoreSystems.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
 
-            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Decrease");
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{name}_Decrease");
             action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
             action1.Name = new StringBuilder($"Decrease {name}");
             action1.Action = b => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);

@@ -205,7 +205,6 @@ namespace CoreSystems
                                 w.Target.Reset(comp.Session.Tick, States.WeaponNotReady);
                             continue;
                         }
-
                         if (w.AvCapable && Tick20) {
                             var avWasEnabled = w.PlayTurretAv;
                             double distSqr;
@@ -241,13 +240,15 @@ namespace CoreSystems
                         var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && (w.System.ReloadTime >= 240 || w.ShowBurstDelayAsReload && Tick - w.ReloadEndTick > 0 && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240));
                         if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid))
                         {
-
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
 
                         if (w.System.PartType != HardwareType.BlockWeapon)
                             continue;
+
+                        if (w.CriticalReaction && (wComp.Data.Repo.Values.Set.Overrides.Armed || wComp.Data.Repo.Values.State.CountingDown || wComp.Data.Repo.Values.State.CriticalReaction))
+                            w.CriticalMonitor();
 
                         if (w.Target.ClientDirty)
                             w.Target.ClientUpdate(w, w.TargetData);

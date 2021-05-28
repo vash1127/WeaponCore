@@ -291,6 +291,16 @@ namespace CoreSystems
                     ServerReticleUpdate(packetObj);
                     break;
                 }
+                case PacketType.CountingDownUpdate:
+                {
+                    ServerCountingDownUpdate(packetObj);
+                    break;
+                }
+                case PacketType.CriticalReactionUpdate:
+                {
+                    ServerCriticalReactionUpdate(packetObj);
+                    break;
+                }
                 case PacketType.PlayerControlRequest:
                 {
                     ServerPlayerControlRequest(packetObj);

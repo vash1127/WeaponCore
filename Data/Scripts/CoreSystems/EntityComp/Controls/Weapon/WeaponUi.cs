@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.ModAPI;
 using VRage.Utils;
 
@@ -447,6 +448,17 @@ namespace CoreSystems
             }
         }
 
+        internal static float GetArmedTimeRemaining(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
+
+            var value = (float)Math.Round(comp.Data.Repo.Values.Set.Overrides.ArmedTimer * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS, 2);
+
+            return value;
+        }
+
+
         internal static float GetLeadGroup(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
@@ -469,6 +481,66 @@ namespace CoreSystems
             }
         }
 
+
+        internal static float GetArmedTimer(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0f;
+            return comp.Data.Repo.Values.Set.Overrides.ArmedTimer;
+        }
+
+        internal static void RequestSetArmedTimer(IMyTerminalBlock block, float newValue)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+
+            var value = Convert.ToInt32(newValue);
+            if (value != comp.Data.Repo.Values.Set.Overrides.ArmedTimer)
+            {
+                Weapon.WeaponComponent.RequestSetValue(comp, "ArmedTimer", value, comp.Session.PlayerId);
+            }
+        }
+
+        internal static bool GetArmed(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Values.Set.Overrides.Armed;
+        }
+
+        internal static void RequestSetArmed(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            Weapon.WeaponComponent.RequestSetValue(comp, "Armed", value, comp.Session.PlayerId);
+            comp.Cube.UpdateTerminal();
+        }
+
+        internal static void TriggerCriticalReaction(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            Weapon.WeaponComponent.RequestCriticalReaction(comp);
+        }
+
+        internal static void StartCountDown(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            Weapon.WeaponComponent.RequestCountDown(comp, true);
+            comp.Cube.UpdateTerminal();
+        }
+
+        internal static void StopCountDown(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            Weapon.WeaponComponent.RequestCountDown(comp, false);
+            comp.Cube.UpdateTerminal();
+        }
+
         internal static bool ShowCamera(IMyTerminalBlock block)
         {
             return true;
@@ -484,6 +556,15 @@ namespace CoreSystems
             return 24;
         }
 
+        internal static float GetMinCriticalTime(IMyTerminalBlock block)
+        {
+            return 0;
+        }
+
+        internal static float GetMaxCriticalTime(IMyTerminalBlock block)
+        {
+            return 3600;
+        }
 
         internal static float GetMinLeadGroup(IMyTerminalBlock block)
         {

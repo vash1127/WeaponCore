@@ -1253,6 +1253,58 @@ namespace CoreSystems
         }
 
 
+        internal void SendCountingDownUpdate(Weapon.WeaponComponent comp, bool countingDown)
+        {
+            if (IsClient)
+            {
+
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new BoolUpdatePacket
+                    {
+                        MId = ++mIds[(int)PacketType.CountingDownUpdate],
+                        EntityId = comp.CoreEntity.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.CountingDownUpdate,
+                        Data = countingDown
+                    });
+                }
+                else Log.Line("SendCountingDowneUpdate no player MIds found");
+            }
+            else if (IsServer)
+            {
+                comp.Data.Repo.Values.State.CountingDown = countingDown;
+                if (MpActive) SendComp(comp);
+            }
+        }
+
+        internal void SendTriggerCriticalReaction(Weapon.WeaponComponent comp)
+        {
+            if (IsClient)
+            {
+
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new BoolUpdatePacket
+                    {
+                        MId = ++mIds[(int)PacketType.CountingDownUpdate],
+                        EntityId = comp.CoreEntity.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.CountingDownUpdate,
+                        Data = true
+                    });
+                }
+                else Log.Line("SendTriggerCriticalReaction no player MIds found");
+            }
+            else if (IsServer)
+            {
+                comp.Data.Repo.Values.State.CriticalReaction = true;
+                if (MpActive) SendComp(comp);
+            }
+        }
+
         #region Misc Network Methods
         private bool AuthorDebug()
         {

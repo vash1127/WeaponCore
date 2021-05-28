@@ -43,6 +43,8 @@ namespace CoreSystems
         FocusUpdate,
         FocusLockUpdate,
         ReticleUpdate,
+        CountingDownUpdate,
+        CriticalReactionUpdate,
         ClientAiAdd,
         ClientAiRemove,
         RequestMouseStates,

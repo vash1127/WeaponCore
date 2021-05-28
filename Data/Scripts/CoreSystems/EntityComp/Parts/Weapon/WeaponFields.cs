@@ -66,6 +66,7 @@ namespace CoreSystems.Platform
         internal bool LockOnFireState;
         internal bool ReloadSubscribed;
         internal bool ScheduleAmmoChange;
+        internal bool CriticalReaction;
         internal uint LastMagSeenTick;
         internal uint GravityTick;
         internal uint ShootTick;
@@ -365,6 +366,8 @@ namespace CoreSystems.Platform
             
             AiOnlyWeapon = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.VanillaTurret || (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.VanillaTurret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
+            CriticalReaction = System.Values.HardPoint.HardWare.CriticalReaction.Enable;
+
             string ejectorMatch;
             MyEntity ejectorPart;
             if (System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Ejector, System.AltEjectorName, out ejectorPart, out ejectorMatch))
@@ -388,6 +391,8 @@ namespace CoreSystems.Platform
                 if (AvCapable && System.HardPointRotationSound)
                     comp.Platform.RotationSound.Init(System.Values.HardPoint.Audio.HardPointRotationSound, false);
             }
+
+            Log.Line($"{System.PartName}");
         }
 
         private void FuckMyLife()

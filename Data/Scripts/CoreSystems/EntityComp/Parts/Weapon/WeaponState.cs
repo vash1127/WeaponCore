@@ -221,5 +221,18 @@ namespace CoreSystems.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
+        public void CriticalMonitor()
+        {
+            var cState = Comp.Data.Repo.Values.State;
+            var cSet = Comp.Data.Repo.Values.Set;
+
+            if (cState.CountingDown && cSet.Overrides.ArmedTimer - 1 >= 0)
+            {
+                if (--cSet.Overrides.ArmedTimer == 0)
+                {
+                    Log.Line($"BOOM!");
+                }
+            }
+        }
     }
 }

@@ -253,6 +253,8 @@ namespace CoreSystems
         [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public TriggerActions TerminalAction;
+        [ProtoMember(7)] public bool CountingDown;
+        [ProtoMember(8)] public bool CriticalReaction;
 
         public bool Sync(CoreComponent comp, ProtoWeaponState sync, Caller caller)
         {
@@ -263,6 +265,8 @@ namespace CoreSystems
                 PlayerId = sync.PlayerId;
                 Control = sync.Control;
                 TerminalAction = sync.TerminalAction;
+                CountingDown = sync.CountingDown;
+                CriticalReaction = sync.CriticalReaction;
                 for (int i = 0; i < sync.Weapons.Length; i++)
                     comp.Platform.Weapons[i].PartState.Sync(sync.Weapons[i]);
                 return true;
@@ -422,6 +426,9 @@ namespace CoreSystems
         [ProtoMember(17)] public long CameraChannel;
         [ProtoMember(18)] public bool Debug;
         [ProtoMember(19)] public long LeadGroup;
+        [ProtoMember(20)] public bool Armed;
+        [ProtoMember(21)] public long ArmedTimer;
+
 
         public void Sync(ProtoWeaponOverrides syncFrom)
         {

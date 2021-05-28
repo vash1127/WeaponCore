@@ -71,6 +71,8 @@ namespace CoreSystems.Support
         internal bool HasStrengthSlider;
         internal bool CanOverload;
         internal bool HasTurret;
+        internal bool HasArming;
+        internal bool IsBomb;
         internal bool OverrideLeads;
         internal bool WasControlled;
         internal bool UpdatedState;

@@ -351,6 +351,22 @@ namespace CoreSystems.Platform
             }
 
 
+            internal static void RequestCountDown(WeaponComponent comp, bool value)
+            {
+                if (value != comp.Data.Repo.Values.State.CountingDown)
+                {
+                    comp.Session.SendCountingDownUpdate(comp, value);
+                }
+            }
+
+            internal static void RequestCriticalReaction(WeaponComponent comp)
+            {
+                if (true != comp.Data.Repo.Values.State.CriticalReaction)
+                {
+                    comp.Session.SendTriggerCriticalReaction(comp);
+                }
+            }
+
             internal static void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
             {
                 if (comp.Session.IsServer)
@@ -432,6 +448,12 @@ namespace CoreSystems.Platform
                         break;
                     case "LeadGroup":
                         o.LeadGroup = v;
+                        break;
+                    case "ArmedTimer":
+                        o.ArmedTimer = v;
+                        break;
+                    case "Armed":
+                        o.Armed = enabled;
                         break;
                 }
 

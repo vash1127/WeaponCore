@@ -576,6 +576,17 @@ namespace CoreSystems.Api
                     [ProtoMember(10)] internal HardwareType Type;
                     [ProtoMember(11)] internal int HomeAzimuth;
                     [ProtoMember(12)] internal int HomeElevation;
+                    [ProtoMember(13)] internal CriticalDef CriticalReaction;
+
+                    [ProtoContract]
+                    public struct CriticalDef
+                    {
+                        [ProtoMember(1)] internal bool Enable;
+                        [ProtoMember(2)] internal string ReactionAmmo;
+                        [ProtoMember(3)] internal int ReactionTime;
+                        [ProtoMember(4)] internal bool PreArmed;
+                        [ProtoMember(5)] internal bool TerminalControls;
+                    }
                 }
 
                 [ProtoContract]
