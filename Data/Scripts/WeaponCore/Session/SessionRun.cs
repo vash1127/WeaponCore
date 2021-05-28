@@ -308,7 +308,7 @@ namespace WeaponCore
                         ReplaceVanilla = true;
                     else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
                         ReplaceVanilla = true;
-                    else if (mod.PublishedFileId == 2123506303)
+                    else if (mod.PublishedFileId == 2123506303 || mod.PublishedFileId == 2496225055)
                     {
                         if (mod.Name != ModContext.ModId)
                             SuppressWc = true;
