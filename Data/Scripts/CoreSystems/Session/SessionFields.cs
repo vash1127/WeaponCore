@@ -80,12 +80,10 @@ namespace CoreSystems
         internal readonly MyConcurrentPool<WeaponCompPacket> PacketWeaponCompPool = new MyConcurrentPool<WeaponCompPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<UpgradeCompPacket> PacketUpgradeCompPool = new MyConcurrentPool<UpgradeCompPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<SupportCompPacket> PacketSupportCompPool = new MyConcurrentPool<SupportCompPacket>(64, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<PhantomCompPacket> PacketPhantomCompPool = new MyConcurrentPool<PhantomCompPacket>(64, packet => packet.CleanUp());
 
         internal readonly MyConcurrentPool<WeaponStatePacket> PacketWeaponStatePool = new MyConcurrentPool<WeaponStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<UpgradeStatePacket> PacketUpgradeStatePool = new MyConcurrentPool<UpgradeStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<SupportStatePacket> PacketSupportStatePool = new MyConcurrentPool<SupportStatePacket>(64, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<PhantomStatePacket> PacketPhantomStatePool = new MyConcurrentPool<PhantomStatePacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<EwarValues> EwarDataPool = new MyConcurrentPool<EwarValues>(64);
 
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
@@ -95,6 +93,7 @@ namespace CoreSystems
         internal readonly MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>> PhysicalItemListPool = new MyConcurrentPool<MyConcurrentList<MyPhysicalInventoryItem>>(256, list => list.Clear());
         internal readonly MyConcurrentPool<MyConcurrentList<BetterInventoryItem>> BetterItemsListPool = new MyConcurrentPool<MyConcurrentList<BetterInventoryItem>>(256, list => list.Clear());
         internal readonly MyConcurrentPool<HashSet<long>> PlayerGridPool = new MyConcurrentPool<HashSet<long>>(16);
+
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
@@ -137,6 +136,7 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> DirtyPowerGrids = new ConcurrentDictionary<MyCubeGrid, GridMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, HashSet<long>> PlayerGrids = new ConcurrentDictionary<MyCubeGrid, HashSet<long>>();
 
+        internal readonly Dictionary<string, Dictionary<ulong, MyEntity>> PhantomDatabase = new Dictionary<string, Dictionary<ulong, MyEntity>>();
         internal readonly Dictionary<CoreStructure, int> PowerGroups = new Dictionary<CoreStructure, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);
@@ -189,9 +189,9 @@ namespace CoreSystems
         internal readonly HashSet<MyDefinitionId> CoreSystemsFixedBlockDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsTurretBlockDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsSupportDefs = new HashSet<MyDefinitionId>();
-        internal readonly HashSet<MyDefinitionId> CoreSystemsPhantomDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsUpgradeDefs = new HashSet<MyDefinitionId>();
         internal readonly HashSet<MyDefinitionId> CoreSystemsRifleDefs = new HashSet<MyDefinitionId>();
+        internal readonly HashSet<MyDefinitionId> CoreSystemsPhantomDefs = new HashSet<MyDefinitionId>();
 
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);
@@ -233,7 +233,7 @@ namespace CoreSystems
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly Dictionary<string, List<UpgradeDefinition>> _subTypeIdUpgradeDefs = new Dictionary<string, List<UpgradeDefinition>>();
         private readonly Dictionary<string, List<SupportDefinition>> _subTypeIdSupportDefs = new Dictionary<string, List<SupportDefinition>>();
-        private readonly Dictionary<string, List<PhantomDefinition>> _subTypeIdPhantomDefs = new Dictionary<string, List<PhantomDefinition>>();
+
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
         private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
@@ -248,7 +248,6 @@ namespace CoreSystems
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
         internal List<UpgradeDefinition> UpgradeDefinitions = new List<UpgradeDefinition>();
         internal List<SupportDefinition> SupportDefinitions = new List<SupportDefinition>();
-        internal List<PhantomDefinition> PhantomDefinitions = new List<PhantomDefinition>();
 
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
@@ -326,6 +325,7 @@ namespace CoreSystems
         internal int Rays;
         internal ulong MultiplayerId;
         internal ulong MuzzleIdCounter;
+        internal ulong PhantomIdCounter;
         internal long PlayerId;
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
@@ -462,6 +462,8 @@ namespace CoreSystems
         }
 
         internal int UniquePartId => WeaponIdCounter++;
+
+        internal ulong UniquePhantomId => PhantomIdCounter++;
 
         public static T CastProhibit<T>(T ptr, object val) => (T) val;
 

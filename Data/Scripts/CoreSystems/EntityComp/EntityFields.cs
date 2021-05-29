@@ -67,7 +67,6 @@ namespace CoreSystems.Support
         internal bool IsFunctional;
         internal bool IsWorking;
         internal bool IsDisabled;
-
         internal bool HasStrengthSlider;
         internal bool CanOverload;
         internal bool HasTurret;
@@ -115,7 +114,6 @@ namespace CoreSystems.Support
 
         internal enum CompType
         {
-            Phantom,
             Weapon,
             Support,
             Upgrade
@@ -189,7 +187,7 @@ namespace CoreSystems.Support
             }
             else {
                 TypeSpecific = CompTypeSpecific.Phantom;
-                Type = CompType.Phantom;
+                Type = CompType.Weapon;
             }
 
             LazyUpdate = Type == CompType.Support || Type == CompType.Upgrade;

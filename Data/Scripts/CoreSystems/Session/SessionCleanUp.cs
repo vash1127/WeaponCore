@@ -183,6 +183,10 @@ namespace CoreSystems
             foreach(var playerGrids in PlayerEntityIdInRange)
                 playerGrids.Value.Clear();
 
+            foreach (var phantomType in PhantomDatabase.Values)
+                phantomType.Clear();
+            PhantomDatabase.Clear();
+
             PlayerEntityIdInRange.Clear();
             DirtyGridInfos.Clear();
 
@@ -246,7 +250,9 @@ namespace CoreSystems
             CoreSystemsTurretBlockDefs.Clear();
             CoreSystemsUpgradeDefs.Clear();
             CoreSystemsSupportDefs.Clear();
+            CoreSystemsRifleDefs.Clear();
             CoreSystemsPhantomDefs.Clear();
+
             VoxelCaches.Clear();
             ArmorCubes.Clear();
 

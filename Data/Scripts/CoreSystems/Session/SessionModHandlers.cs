@@ -47,9 +47,6 @@ namespace CoreSystems
             if (baseDefArray.UpgradeDefs != null)
                 AssemblePartDefinitions(baseDefArray.UpgradeDefs);
 
-            if (baseDefArray.PhantomDefs != null)
-                AssemblePartDefinitions(baseDefArray.PhantomDefs);
-
             if (baseDefArray.ArmorDefs != null)
                 AssembleArmorDefinitions(baseDefArray.ArmorDefs);
         }
@@ -141,14 +138,6 @@ namespace CoreSystems
                         weaponDef.ResourceSinkGroup = group;
                     }
                 }
-            }
-        }
-
-        public void AssemblePartDefinitions(PhantomDefinition[] partDefs)
-        {
-            foreach (var phantomDef in partDefs)
-            {
-                PhantomDefinitions.Add(phantomDef);
             }
         }
 

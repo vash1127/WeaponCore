@@ -343,9 +343,9 @@ namespace CoreSystems.Platform
             var alignedChange = wasAligned != isAligned;
             if (w.System.DesignatorWeapon && session.IsServer && alignedChange)
             {
-                for (int i = 0; i < w.Comp.Platform.Weapons.Count; i++)
+                for (int i = 0; i < w.Comp.Collection.Count; i++)
                 {
-                    var weapon = w.Comp.Platform.Weapons[i];
+                    var weapon = w.Comp.Collection[i];
                     if (isAligned && !weapon.System.DesignatorWeapon)
                         weapon.Target.Reset(session.Tick, Target.States.Designator);
                     else if (!isAligned && weapon.System.DesignatorWeapon)
@@ -850,7 +850,7 @@ namespace CoreSystems.Platform
 
             if (MinAzToleranceRadians > MaxAzToleranceRadians)
                 MinAzToleranceRadians -= 6.283185f;
-            
+
             var dummyInfo = Dummies[MiddleMuzzleIndex];
             MuzzleDistToBarrelCenter = Vector3D.Distance(dummyInfo.Info.Position, dummyInfo.Entity.PositionComp.WorldAABB.Center);
         }

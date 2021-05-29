@@ -7,7 +7,6 @@ namespace CoreSystems
     [ProtoInclude(1999, typeof(ProtoWeaponRepo))]
     [ProtoInclude(1998, typeof(ProtoUpgradeRepo))]
     [ProtoInclude(1997, typeof(ProtoSupportRepo))]
-    [ProtoInclude(1996, typeof(ProtoPhantomRepo))]
     [ProtoContract]
     public class ProtoRepo
     {

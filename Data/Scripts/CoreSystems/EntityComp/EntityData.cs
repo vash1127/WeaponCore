@@ -21,6 +21,7 @@ namespace CoreSystems
             if (BaseComp.CoreEntity.Storage == null) 
             {
                 BaseComp.CoreEntity.Storage = new MyModStorageComponent { [BaseComp.Session.CompDataGuid] = "" };
+                Log.Line($"init");
             }
         }
 
@@ -49,9 +50,6 @@ namespace CoreSystems
                     break;
                 case CoreComponent.CompType.Support:
                     ((SupportSys.SupportComponent)BaseComp).Data.Change(change);
-                    break;
-                case CoreComponent.CompType.Phantom:
-                    ((Phantom.PhantomComponent)BaseComp).Data.Change(change);
                     break;
                 case CoreComponent.CompType.Weapon:
                     ((Weapon.WeaponComponent)BaseComp).Data.Change(change);

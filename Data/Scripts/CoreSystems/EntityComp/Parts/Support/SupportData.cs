@@ -43,7 +43,7 @@ namespace CoreSystems.Platform
                     Log.Line("loading something");
                     Repo = load;
 
-                    for (int i = 0; i < Comp.Platform.Weapons.Count; i++)
+                    for (int i = 0; i < Comp.Platform.Support.Count; i++)
                     {
                         var p = Comp.Platform.Support[i];
 

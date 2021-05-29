@@ -38,7 +38,11 @@ namespace CoreSystems.Support
 
                 CoreEntity.OnMarkForClose += OnMarkForClose;
 
-                if (CoreInventory == null) Log.Line("BlockInventory is null");
+                if (CoreInventory == null)
+                {
+                    if (TypeSpecific != CompTypeSpecific.Phantom)
+                        Log.Line("BlockInventory is null");
+                }
                 else
                 {
                     CoreInventory.InventoryContentChanged += OnContentsChanged;
@@ -125,9 +129,10 @@ namespace CoreSystems.Support
                 if (Session.CoreInventoryItems[CoreInventory].TryRemove(item.ItemId, out removedItem))
                     Session.BetterInventoryItems.Return(removedItem);
             }
+            var collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
             if (Session.IsServer && amount <= 0) {
-                for (int i = 0; i < Platform.Weapons.Count; i++)
-                    Platform.Weapons[i].CheckInventorySystem = true;
+                for (int i = 0; i < collection.Count; i++)
+                    collection[i].CheckInventorySystem = true;
             }
         }
 
@@ -160,7 +165,8 @@ namespace CoreSystems.Support
                     if (Cube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{Cube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{Cube.ResourceSink.CurrentInputByType(GId)}");
 
                     if (!IsWorking && Registered) {
-                        foreach (var w in Platform.Weapons)
+                        var collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
+                        foreach (var w in collection)
                             w.StopShooting();
                     }
                     IsWorkingChangedTick = Session.Tick;
@@ -224,10 +230,10 @@ namespace CoreSystems.Support
                 
                 stringBuilder.Append("\n\n==== Weapons ====");
 
-                var weaponCnt = Platform.Weapons.Count;
-                for (int i = 0; i < weaponCnt; i++)
+                var collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
+                for (int i = 0; i < collection.Count; i++)
                 {
-                    var w = Platform.Weapons[i];
+                    var w = collection[i];
                     string shots;
                     if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid)
                     {
@@ -239,7 +245,7 @@ namespace CoreSystems.Support
 
                     var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
 
-                    var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
+                    var endReturn = i + 1 != collection.Count ? "\n" : string.Empty;
 
                     stringBuilder.Append("\nName: " + w.System.PartName + shots + burst + "\nReloading: " + w.Loading + "\nLoS: " + !w.PauseShoot + endReturn);
 
@@ -262,7 +268,7 @@ namespace CoreSystems.Support
 
                 if (Debug || comp.Data.Repo.Values.Set.Overrides.Debug)
                 {
-                    foreach (var weapon in Platform.Weapons)
+                    foreach (var weapon in collection)
                     {
                         var chargeTime = weapon.AssignedPower > 0 ? (int)((weapon.MaxCharge -weapon.ProtoWeaponAmmo.CurrentCharge) / weapon.AssignedPower * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) : 0;
                         stringBuilder.Append($"\n\nWeapon: {weapon.System.PartName} - Enabled: {IsWorking}");

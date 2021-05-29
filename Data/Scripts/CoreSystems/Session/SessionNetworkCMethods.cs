@@ -221,38 +221,6 @@ namespace CoreSystems
             return true;
         }
 
-        private bool ClientPhantomComp(PacketObj data)
-        {
-            var packet = data.Packet;
-            var compDataPacket = (PhantomCompPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>() as Phantom.PhantomComponent;
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-
-            if (!comp.Data.Repo.Values.Sync(comp, compDataPacket.Data))
-                Log.Line($"ClientPhantomComp: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compDataPacket.Data.Revision})");
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
-
-        private bool ClientPhantomState(PacketObj data)
-        {
-            var packet = data.Packet;
-            var compStatePacket = (PhantomStatePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<CoreComponent>() as Phantom.PhantomComponent;
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-
-            if (!comp.Data.Repo.Values.State.Sync(comp, compStatePacket.Data, ProtoPhantomState.Caller.Direct))
-                Log.Line($"ClientPhantomState: version fail - senderId:{packet.SenderId} - version:{comp.Data.Repo.Values.Revision}({compStatePacket.Data.Revision})");
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
-
         private bool ClientWeaponReloadUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -260,8 +228,9 @@ namespace CoreSystems
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<CoreComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-            
-            var w = comp.Platform.Weapons[weaponReloadPacket.PartId];
+
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var w = collection[weaponReloadPacket.PartId];
             w.Reload.Sync(w, weaponReloadPacket.Data, false);
 
             data.Report.PacketValid = true;
@@ -277,8 +246,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>();
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready ) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-
-            var w = comp.Platform.Weapons[targetPacket.Target.PartId];
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var w = collection[targetPacket.Target.PartId];
             targetPacket.Target.SyncTarget(w, false);
 
             data.Report.PacketValid = true;
@@ -294,8 +263,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>();
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-
-            var w = comp.Platform.Weapons[ammoPacket.PartId];
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var w = collection[ammoPacket.PartId];
             w.ProtoWeaponAmmo.Sync(w, ammoPacket.Data);
 
             data.Report.PacketValid = true;
@@ -461,7 +430,8 @@ namespace CoreSystems
             var comp = ent?.Components.Get<CoreComponent>();
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            var w = comp.Platform.Weapons[queueShot.PartId];
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var w = collection[queueShot.PartId];
             w.ShootOnce = true;
             if (PlayerId == queueShot.PlayerId)
                 w.ClientStaticShot = true;

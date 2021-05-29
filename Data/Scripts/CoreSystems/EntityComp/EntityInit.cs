@@ -85,21 +85,26 @@ namespace CoreSystems.Support
                     CoreInventory.Constraint.Icon = iconPath;
                     CoreInventory.Constraint.UpdateIcon();
                 }
-
-                for (int i = 0; i < Platform.Weapons.Count; i++) {
-                    var w = Platform.Weapons[i];
-
-                    if (w == null)
+                if (Type == CompType.Weapon)
+                {
+                    var collect = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
+                    for (int i = 0; i < collect.Count; i++)
                     {
-                        Log.Line("InventoryInit weapon null");
-                        continue;
-                    }
-                    for (int j = 0; j < w.System.AmmoTypes.Length; j++)
-                    {
-                        if (w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef != null)
-                            CoreInventory.Constraint.Add(w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+                        var w = collect[i];
+
+                        if (w == null)
+                        {
+                            Log.Line("InventoryInit weapon null");
+                            continue;
+                        }
+                        for (int j = 0; j < w.System.AmmoTypes.Length; j++)
+                        {
+                            if (w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef != null)
+                                CoreInventory.Constraint.Add(w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+                        }
                     }
                 }
+
                 CoreInventory.Refresh();
 
                 InventoryInited = true;

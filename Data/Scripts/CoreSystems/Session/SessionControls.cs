@@ -378,9 +378,10 @@ namespace CoreSystems
         {
             if (comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            for (int i = 0; i < collection.Count; i++) {
 
-                var w = comp.Platform.Weapons[i];
+                var w = collection[i];
                 if (w == null) continue;
 
                 if (!on) {

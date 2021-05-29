@@ -78,10 +78,13 @@ namespace CoreSystems.Support
                     Ai.FirstRun = true;
 
                     StorageSetup();
-                    InventoryInit();
 
-                    if (IsBlock)
-                        PowerInit();
+                    if (TypeSpecific != CompTypeSpecific.Phantom) {
+                        InventoryInit();
+
+                        if (IsBlock)
+                            PowerInit();
+                    }
 
                     //if (Type == CompType.Weapon && Platform.PartState == CorePlatform.PlatformState.Inited)
                         //Platform.ResetParts(this);

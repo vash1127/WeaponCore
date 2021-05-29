@@ -13,8 +13,10 @@ using Sandbox.ModAPI.Weapons;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.ObjectBuilders.ComponentSystem;
 using VRage.Input;
 using VRage.ModAPI;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 
@@ -811,6 +813,32 @@ namespace CoreSystems
                 }
             }
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
+        }
+
+        private void PhantomEntityActivator(string phantomType)
+        {
+            if (!Inited) lock (InitObj) Init();
+
+            var ent = new MyEntity
+            {
+                DefinitionId = new MyDefinitionId(MyObjectBuilderType.Invalid, phantomType),
+                Render = {CastShadows = false},
+                IsPreview = true,
+                Save = false,
+                SyncFlag = false,
+                NeedsWorldMatrix = false
+            };
+            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+            
+            MyEntities.Add(ent, true);
+
+            Dictionary<ulong, MyEntity> phantoms;
+            if (PhantomDatabase.TryGetValue(phantomType, out phantoms))
+                phantoms[UniquePhantomId] = ent;
+
+            InitComp(ent, ref ent.DefinitionId);
+
+            Log.Line("PhantomEntityActivator");
         }
 
         private void InitDelayedHandWeapons()

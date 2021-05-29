@@ -55,8 +55,10 @@ namespace CoreSystems.Support
                     if (Ai.CompBase.TryRemove(CoreEntity, out comp)) {
                         if (Platform.State == CorePlatform.PlatformState.Ready) {
 
-                            for (int i = 0; i < comp.Platform.Weapons.Count; i++) {
-                                var w = comp.Platform.Weapons[i];
+                            var collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
+
+                            for (int i = 0; i < collection.Count; i++) {
+                                var w = collection[i];
                                 w.StopShooting();
                                 w.WeaponCache.HitEntity.Clean();
                                 if (!Session.IsClient) w.Target.Reset(Session.Tick, Target.States.AiLost);

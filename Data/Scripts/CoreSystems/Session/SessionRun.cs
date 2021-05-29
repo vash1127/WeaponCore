@@ -7,6 +7,8 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ObjectBuilders;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -52,6 +54,10 @@ namespace CoreSystems
                 if (SuppressWc)
                     return;
 
+                if (Tick300)
+                {
+                    PhantomEntityActivator("PhantomId");
+                }
                 if (!DelayedHandWeaponsSpawn.IsEmpty)
                     InitDelayedHandWeapons();
 

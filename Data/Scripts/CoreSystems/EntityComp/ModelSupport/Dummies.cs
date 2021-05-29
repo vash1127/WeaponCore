@@ -18,7 +18,7 @@ namespace CoreSystems.Support
                 if (_entity?.Model == null) {
                     if (_part.CoreSystem.Session.LocalVersion) Log.Line("reset parts");
                     _part.BaseComp.Platform?.ResetParts();
-                    if (_entity?.Model == null)
+                    if (_entity?.Model == null && _part.BaseComp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom)
                         Log.Line("Dummy Entity/Model null");
                 }
 
@@ -26,7 +26,7 @@ namespace CoreSystems.Support
             }
             set
             {
-                if (value?.Model == null)
+                if (value?.Model == null && _part.BaseComp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom)
                     Log.Line($"DummyModel null for weapon on set: {_part.CoreSystem.PartName}");
                 _entity = value; 
 
@@ -53,7 +53,7 @@ namespace CoreSystems.Support
         }
 
         private bool _failed = true;
-        internal void Update()
+        internal void UpdateModel()
         {
             _cachedModel = _entity.Model;
             _cachedSubpart = _entity;
@@ -87,19 +87,33 @@ namespace CoreSystems.Support
             _failed = true;
         }
 
+        internal void UpdatePhantom()
+        {
+            _cachedSubpart = _entity;
+            _cachedDummyMatrix = MatrixD.Identity;
+            _failed = false;
+        }
+
+
         public DummyInfo Info
         {
             get
             {
-                if (_entity != null && _entity.Model == null && Entity.Model == null)
-                    Log.Line("DummyInfo reset and still has invalid enity/model");
+                if (_part.BaseComp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom) {
 
-                if (!(_cachedModel == _entity?.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
-                if (_entity == null || _cachedSubpart == null)
-                {
-                    Log.Line("DummyInfo invalid");
-                    return new DummyInfo();
+                    if (_entity != null && _entity.Model == null && Entity.Model == null)
+                        Log.Line("DummyInfo reset and still has invalid enity/model");
+
+                    if (!(_cachedModel == _entity?.Model && _cachedSubpartModel == _cachedSubpart?.Model)) UpdateModel();
+
+                    if (_entity == null || _cachedSubpart == null) {
+                        Log.Line("DummyInfo invalid");
+                        return new DummyInfo();
+                    }
                 }
+                else
+                    UpdatePhantom();
+
 
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var localPos = dummyMatrix.Translation;

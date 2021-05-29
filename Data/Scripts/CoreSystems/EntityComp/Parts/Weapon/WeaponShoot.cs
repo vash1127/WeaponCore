@@ -14,6 +14,18 @@ namespace CoreSystems.Platform
 {
     public partial class Weapon 
     {
+        internal void PhantomAimAndShoot()
+        {
+            ProtoWeaponAmmo.CurrentAmmo = int.MaxValue;
+            var up = MatrixD.Identity.Up;
+            MatrixD matrix;
+            var newPos = Comp.Session.PlayerPos + (Comp.Session.Camera.ViewMatrix.Forward * 500f);
+            var targetDir = Vector3D.Normalize(Comp.Session.PlayerPos - newPos);
+            MatrixD.CreateWorld(ref newPos, ref targetDir, ref up, out matrix);
+            Comp.CoreEntity.PositionComp.SetWorldMatrix(ref matrix, null, false, false, false);
+            Shoot();
+        }
+
         internal void Shoot() // Inlined due to keens mod profiler
         {
             try
@@ -83,6 +95,7 @@ namespace CoreSystems.Platform
                 FireCounter++;
                 List<NewVirtual> vProList = null;
                 var selfDamage = 0f;
+
                 for (int i = 0; i < System.Values.HardPoint.Loading.BarrelsPerShot; i++) {
 
                     #region Update ProtoWeaponAmmo state
@@ -250,7 +263,9 @@ namespace CoreSystems.Platform
                                 vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Muzzle = muzzle, VirtualId = _nextVirtual });
                             }
                             else
-                                s.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Normal});
+                            {
+                                s.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Normal });
+                            }
                         }
                         #endregion
                     }
@@ -393,8 +408,8 @@ namespace CoreSystems.Platform
         {
             PartState.Action = TriggerActions.TriggerOff;
             var hasShot = false;
-            for (int i = 0; i < Comp.Platform.Weapons.Count; i++) {
-                var w = Comp.Platform.Weapons[i];
+            for (int i = 0; i < Comp.Collection.Count; i++) {
+                var w = Comp.Collection[i];
 
                 if (w.ShootOnce)
                     hasShot = true;

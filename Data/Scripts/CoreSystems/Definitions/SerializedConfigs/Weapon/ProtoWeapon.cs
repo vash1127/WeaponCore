@@ -125,7 +125,7 @@ namespace CoreSystems
 
                 for (int i = 0; i < Targets.Length; i++)
                 {
-                    var w = comp.Platform.Weapons[i];
+                    var w = comp.Collection[i];
                     sync.Targets[i].SyncTarget(w, true);
                     Reloads[i].Sync(w, sync.Reloads[i], true);
                 }
@@ -256,7 +256,7 @@ namespace CoreSystems
         [ProtoMember(7)] public bool CountingDown;
         [ProtoMember(8)] public bool CriticalReaction;
 
-        public bool Sync(CoreComponent comp, ProtoWeaponState sync, Caller caller)
+        public bool Sync(Weapon.WeaponComponent comp, ProtoWeaponState sync, Caller caller)
         {
             if (sync.Revision > Revision || caller == Caller.CompData)
             {

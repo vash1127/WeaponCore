@@ -11,8 +11,6 @@ namespace CoreSystems.Support
         [ProtoMember(2)] internal ArmorDefinition[] ArmorDefs;
         [ProtoMember(3)] internal UpgradeDefinition[] UpgradeDefs;
         [ProtoMember(4)] internal SupportDefinition[] SupportDefs;
-        [ProtoMember(5)] internal PhantomDefinition[] PhantomDefs;
-
     }
 
     [ProtoContract]
@@ -180,69 +178,6 @@ namespace CoreSystems.Support
             [ProtoMember(11)] internal float ProtectionMax;
         }
     }
-
-    [ProtoContract]
-    public class PhantomDefinition
-    {
-        [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
-        [ProtoMember(2)] internal HardPointDef HardPoint;
-        [ProtoMember(3)] internal WeaponDefinition.AnimationDef Animations;
-        [ProtoMember(4)] internal string ModPath;
-
-        [ProtoContract]
-        public struct ModelAssignmentsDef
-        {
-            [ProtoMember(1)] internal MountPointDef[] MountPoints;
-
-            [ProtoContract]
-            public struct MountPointDef
-            {
-                [ProtoMember(1)] internal string SubtypeId;
-                [ProtoMember(2)] internal float DurabilityMod;
-                [ProtoMember(3)] internal string IconName;
-            }
-        }
-        [ProtoContract]
-        public struct HardPointDef
-        {
-            [ProtoMember(1)] internal string PartName;
-            [ProtoMember(2)] internal HardwareDef HardWare;
-            [ProtoMember(3)] internal UiDef Ui;
-            [ProtoMember(4)] internal OtherDef Other;
-
-
-            [ProtoContract]
-            public struct UiDef
-            {
-                [ProtoMember(1)] internal bool StrengthModifier;
-            }
-
-            [ProtoContract]
-            public struct HardwareDef
-            {
-                public enum HardwareType
-                {
-                    Default,
-                }
-
-                [ProtoMember(1)] internal float InventorySize;
-                [ProtoMember(2)] internal HardwareType Type;
-            }
-
-            [ProtoContract]
-            public struct OtherDef
-            {
-                [ProtoMember(1)] internal int ConstructPartCap;
-                [ProtoMember(2)] internal int EnergyPriority;
-                [ProtoMember(3)] internal bool Debug;
-                [ProtoMember(4)] internal double RestrictionRadius;
-                [ProtoMember(5)] internal bool CheckInflatedBox;
-                [ProtoMember(6)] internal bool CheckForAnySupport;
-                [ProtoMember(7)] internal bool StayCharged;
-            }
-        }
-    }
-
 
     [ProtoContract]
     public class ArmorDefinition

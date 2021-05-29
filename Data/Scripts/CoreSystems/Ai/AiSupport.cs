@@ -19,29 +19,61 @@ namespace CoreSystems.Support
                 case CoreComponent.CompType.Weapon:
                     var wComp = (Weapon.WeaponComponent)comp;
 
-                    if (add)
+                    if (comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom)
                     {
-                        if (WeaponIdx.ContainsKey(wComp))
+                        if (add)
                         {
-                            Log.Line($"CompAddFailed:<{wComp.CoreEntity.EntityId}> - comp({wComp.CoreEntity.DebugName}[{wComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
-                            return;
-                        }
+                            if (WeaponIdx.ContainsKey(wComp))
+                            {
+                                Log.Line($"CompAddFailed:<{wComp.CoreEntity.EntityId}> - comp({wComp.CoreEntity.DebugName}[{wComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
+                                return;
+                            }
 
-                        WeaponIdx.Add(wComp, WeaponComps.Count);
-                        WeaponComps.Add(wComp);
+                            WeaponIdx.Add(wComp, WeaponComps.Count);
+                            WeaponComps.Add(wComp);
+                        }
+                        else
+                        {
+                            if (!WeaponIdx.TryGetValue(wComp, out idx))
+                            {
+                                Log.Line($"CompRemoveFailed: <{wComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{WeaponIdx.Count}]({CompBase.Count}) - {WeaponComps.Contains(wComp)}[{WeaponComps.Count}] - {Session.EntityAIs[wComp.TopEntity].CompBase.ContainsKey(wComp.CoreEntity)} - {Session.EntityAIs[wComp.TopEntity].CompBase.Count} ");
+                                return;
+                            }
+
+                            WeaponComps.RemoveAtFast(idx);
+                            if (idx < WeaponComps.Count)
+                                WeaponIdx[WeaponComps[idx]] = idx;
+                            WeaponIdx.Remove(wComp);
+                        }
                     }
                     else
                     {
-                        if (!WeaponIdx.TryGetValue(wComp, out idx)) {
-                            Log.Line($"CompRemoveFailed: <{wComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{WeaponIdx.Count}]({CompBase.Count}) - {WeaponComps.Contains(wComp)}[{WeaponComps.Count}] - {Session.EntityAIs[wComp.TopEntity].CompBase.ContainsKey(wComp.CoreEntity)} - {Session.EntityAIs[wComp.TopEntity].CompBase.Count} ");
-                            return;
-                        }
+                        if (add)
+                        {
+                            if (PhantomIdx.ContainsKey(wComp))
+                            {
+                                Log.Line($"CompAddFailed:<{wComp.CoreEntity.EntityId}> - comp({wComp.CoreEntity.DebugName}[{wComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
+                                return;
+                            }
 
-                        WeaponComps.RemoveAtFast(idx);
-                        if (idx < WeaponComps.Count)
-                            WeaponIdx[WeaponComps[idx]] = idx;
-                        WeaponIdx.Remove(wComp);
+                            PhantomIdx.Add(wComp, PhantomComps.Count);
+                            PhantomComps.Add(wComp);
+                        }
+                        else
+                        {
+                            if (!PhantomIdx.TryGetValue(wComp, out idx))
+                            {
+                                Log.Line($"CompRemoveFailed: <{wComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{PhantomIdx.Count}]({CompBase.Count}) - {PhantomComps.Contains(wComp)}[{PhantomComps.Count}] - {Session.EntityAIs[wComp.TopEntity].CompBase.ContainsKey(wComp.CoreEntity)} - {Session.EntityAIs[wComp.TopEntity].CompBase.Count} ");
+                                return;
+                            }
+
+                            PhantomComps.RemoveAtFast(idx);
+                            if (idx < SupportComps.Count)
+                                PhantomIdx[PhantomComps[idx]] = idx;
+                            PhantomIdx.Remove(wComp);
+                        }
                     }
+
 
                     break;
                 case CoreComponent.CompType.Upgrade:
@@ -100,35 +132,6 @@ namespace CoreSystems.Support
                             SupportIdx[SupportComps[idx]] = idx;
                         SupportIdx.Remove(sComp);
                     }
-
-                    break;
-                case CoreComponent.CompType.Phantom:
-                    var pComp = (Phantom.PhantomComponent)comp;
-                    if (add)
-                    {
-                        if (PhantomIdx.ContainsKey(pComp))
-                        {
-                            Log.Line($"CompAddFailed:<{pComp.CoreEntity.EntityId}> - comp({pComp.CoreEntity.DebugName}[{pComp.SubtypeName}]) already existed in {TopEntity.DebugName}");
-                            return;
-                        }
-
-                        PhantomIdx.Add(pComp, PhantomComps.Count);
-                        PhantomComps.Add(pComp);
-                    }
-                    else
-                    {
-                        if (!PhantomIdx.TryGetValue(pComp, out idx))
-                        {
-                            Log.Line($"CompRemoveFailed: <{pComp.CoreEntity.EntityId}> - {WeaponComps.Count}[{PhantomIdx.Count}]({CompBase.Count}) - {PhantomComps.Contains(pComp)}[{PhantomComps.Count}] - {Session.EntityAIs[pComp.TopEntity].CompBase.ContainsKey(pComp.CoreEntity)} - {Session.EntityAIs[pComp.TopEntity].CompBase.Count} ");
-                            return;
-                        }
-
-                        PhantomComps.RemoveAtFast(idx);
-                        if (idx < SupportComps.Count)
-                            PhantomIdx[PhantomComps[idx]] = idx;
-                        PhantomIdx.Remove(pComp);
-                    }
-
                     break;
             }
         }
@@ -191,8 +194,8 @@ namespace CoreSystems.Support
             for (int i = 0; i < WeaponComps.Count; i++) {
 
                 var comp = WeaponComps[i];
-                for (int x = 0; x < comp.Platform.Weapons.Count; x++) {
-                    var w = comp.Platform.Weapons[x];
+                for (int x = 0; x < comp.Collection.Count; x++) {
+                    var w = comp.Collection[x];
                     w.StopReloadSound();
                     w.StopShooting();
                 }

@@ -432,7 +432,8 @@ namespace CoreSystems
 
             if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg("BaseComp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
 
-            var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
+            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+            var weapon = collection[hitPacket.WeaponId];
             var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
 
             if (targetEnt == null) return Error(data, Msg("TargetEnt"));

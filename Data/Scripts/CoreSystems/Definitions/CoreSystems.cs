@@ -77,30 +77,6 @@ namespace CoreSystems.Support
         }
     }
 
-    internal class PhantomSystem : CoreSystem
-    {
-        public readonly PhantomDefinition Values;
-
-        public bool AnimationsInited;
-
-        public PhantomSystem(Session session, MyStringHash partNameIdHash, PhantomDefinition values, string partName, int partIdHash, int partId)
-        {
-            Session = session;
-
-            PartNameIdHash = partNameIdHash;
-
-            Values = values;
-            PartIdHash = partIdHash;
-            PartId = partId;
-            PartName = partName;
-            PartType = (HardwareDef.HardwareType)Values.HardPoint.HardWare.Type;
-            StayCharged = values.HardPoint.Other.StayCharged;
-
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out PartEmissiveSet, out PartLinearMoveSet, out AnimationIdLookup, out PartAnimationLengths, out HeatingSubparts, out ParticleEvents);
-
-        }
-    }
-
     internal class WeaponSystem : CoreSystem
     {
         internal class AmmoType

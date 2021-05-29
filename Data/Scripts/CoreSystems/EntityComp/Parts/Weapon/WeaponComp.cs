@@ -20,7 +20,7 @@ namespace CoreSystems.Platform
             internal readonly WeaponCompData Data;
             internal readonly WeaponStructure Structure;
             internal Weapon TrackingWeapon;
-
+            internal readonly List<Weapon> Collection;
             internal uint LastRayCastTick;
             internal float EffectiveDps;
             internal float PeakDps;
@@ -72,14 +72,15 @@ namespace CoreSystems.Platform
                 Init(session, coreEntity, cube != null, Data, topEntity, id);
                 Structure = (WeaponStructure)Platform.Structure;
 
+                Collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
             }
 
             internal void WeaponInit()
             {
 
-                for (int i = 0; i < Platform.Weapons.Count; i++)
+                for (int i = 0; i < Collection.Count; i++)
                 {
-                    var w = Platform.Weapons[i];
+                    var w = Collection[i];
                     w.UpdatePivotPos();
 
                     if (Session.IsClient)
@@ -102,10 +103,10 @@ namespace CoreSystems.Platform
             internal void OnAddedToSceneWeaponTasks(bool firstRun)
             {
                 var maxTrajectory1 = 0f;
-                for (int i = 0; i < Platform.Weapons.Count; i++)
+                for (int i = 0; i < Collection.Count; i++)
                 {
 
-                    var w = Platform.Weapons[i];
+                    var w = Collection[i];
 
                     if (Session.IsServer)
                         w.ChangeActiveAmmoServer();
@@ -128,10 +129,10 @@ namespace CoreSystems.Platform
 
                 var maxTrajectory2 = 0d;
 
-                for (int i = 0; i < Platform.Weapons.Count; i++)
+                for (int i = 0; i < Collection.Count; i++)
                 {
 
-                    var weapon = Platform.Weapons[i];
+                    var weapon = Collection[i];
                     weapon.InitTracking();
 
                     double weaponMaxRange;
@@ -201,17 +202,17 @@ namespace CoreSystems.Platform
             }
 
 
-            internal static void SetRange(CoreComponent comp)
+            internal static void SetRange(Weapon.WeaponComponent comp)
             {
-                foreach (var w in comp.Platform.Weapons)
+                foreach (var w in comp.Collection)
                     w.UpdateWeaponRange();
             }
 
-            internal static void SetRof(CoreComponent comp)
+            internal static void SetRof(Weapon.WeaponComponent comp)
             {
-                for (int i = 0; i < comp.Platform.Weapons.Count; i++)
+                for (int i = 0; i < comp.Collection.Count; i++)
                 {
-                    var w = comp.Platform.Weapons[i];
+                    var w = comp.Collection[i];
 
                     //if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
@@ -221,13 +222,13 @@ namespace CoreSystems.Platform
                 SetDps(comp);
             }
 
-            internal static void SetDps(CoreComponent comp, bool change = false)
+            internal static void SetDps(Weapon.WeaponComponent comp, bool change = false)
             {
                 if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-                for (int i = 0; i < comp.Platform.Weapons.Count; i++)
+                for (int i = 0; i < comp.Collection.Count; i++)
                 {
-                    var w = comp.Platform.Weapons[i];
+                    var w = comp.Collection[i];
                     if (!change && (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                     comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
                 }
@@ -275,7 +276,7 @@ namespace CoreSystems.Platform
                         Session.SendComp(this);
                         if (action == TriggerActions.TriggerClick || action == TriggerActions.TriggerOn)
                         {
-                            foreach (var w in Platform.Weapons)
+                            foreach (var w in Collection)
                                 Session.SendWeaponAmmoData(w);
                         }
                     }
@@ -490,22 +491,22 @@ namespace CoreSystems.Platform
                     ClearTargets(comp);
             }
 
-            private static void ClearTargets(CoreComponent comp)
+            private static void ClearTargets(Weapon.WeaponComponent comp)
             {
-                for (int i = 0; i < comp.Platform.Weapons.Count; i++)
+                for (int i = 0; i < comp.Collection.Count; i++)
                 {
-                    var weapon = comp.Platform.Weapons[i];
+                    var weapon = comp.Collection[i];
                     if (weapon.Target.HasTarget)
-                        comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.ControlReset);
+                        comp.Collection[i].Target.Reset(comp.Session.Tick, Target.States.ControlReset);
                 }
             }
 
             internal void NotFunctional()
             {
-                for (int i = 0; i < Platform.Weapons.Count; i++)
+                for (int i = 0; i < Collection.Count; i++)
                 {
 
-                    var w = Platform.Weapons[i];
+                    var w = Collection[i];
                     PartAnimation[] partArray;
                     if (w.AnimationsSet.TryGetValue(WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.TurnOff, out partArray))
                     {
@@ -522,7 +523,7 @@ namespace CoreSystems.Platform
                 Session.SendComp(this);
                 if (IsWorking)
                 {
-                    foreach (var w in Platform.Weapons)
+                    foreach (var w in Collection)
                         Session.SendWeaponAmmoData(w);
                 }
             }
@@ -532,7 +533,7 @@ namespace CoreSystems.Platform
             {
                 if (Platform?.State == CorePlatform.PlatformState.Ready)
                 {
-                    foreach (var w in Platform.Weapons)
+                    foreach (var w in Collection)
                     {
 
                         w.RayCallBackClean();
@@ -550,7 +551,7 @@ namespace CoreSystems.Platform
             {
                 if (Platform?.State == CorePlatform.PlatformState.Ready)
                 {
-                    foreach (var w in Platform.Weapons)
+                    foreach (var w in Collection)
                     {
                         for (int i = 0; i < w.System.Values.Assignments.Muzzles.Length; i++)
                         {
@@ -582,7 +583,7 @@ namespace CoreSystems.Platform
                 if (Platform?.State == CorePlatform.PlatformState.Ready)
                 {
 
-                    foreach (var w in Platform.Weapons)
+                    foreach (var w in Collection)
                     {
 
                         if (w.AvCapable && w.System.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
@@ -608,7 +609,7 @@ namespace CoreSystems.Platform
 
             public void StopAllSounds()
             {
-                foreach (var w in Platform.Weapons)
+                foreach (var w in Collection)
                 {
                     w.StopReloadSound();
                     w.StopRotateSound();
@@ -618,12 +619,12 @@ namespace CoreSystems.Platform
 
             internal bool ShootOnceCheck()
             {
-                var numOfWeapons = Platform.Weapons.Count;
+                var numOfWeapons = Collection.Count;
                 var loadedWeapons = 0;
 
-                for (int i = 0; i < Platform.Weapons.Count; i++)
+                for (int i = 0; i < Collection.Count; i++)
                 {
-                    var w = Platform.Weapons[i];
+                    var w = Collection[i];
 
                     if (w.PartState.Overheated)
                         return false;
@@ -638,7 +639,7 @@ namespace CoreSystems.Platform
                     for (int i = 0; i < Platform.Weapons.Count; i++)
                     {
 
-                        var w = Platform.Weapons[i];
+                        var w = Collection[i];
 
                         if (Session.IsServer)
                             w.ShootOnce = true;

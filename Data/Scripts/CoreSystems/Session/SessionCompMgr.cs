@@ -57,6 +57,7 @@ namespace CoreSystems
             for (int i = 0; i < CompsToStart.Count; i++) {
 
                 var comp = CompsToStart[i];
+
                 if (comp.IsBlock && (comp.Cube.CubeGrid.IsPreview || CompRestricted(comp))) {
 
                     PlatFormPool.Return(comp.Platform);
@@ -64,6 +65,7 @@ namespace CoreSystems
                     CompsToStart.Remove(comp);
                     continue;
                 }
+
                 if (comp.IsBlock && (comp.Cube.CubeGrid.Physics == null && !comp.Cube.CubeGrid.MarkedForClose && comp.Cube.BlockDefinition.HasPhysics))
                     continue;
 
@@ -74,6 +76,7 @@ namespace CoreSystems
                         CompsToStart.Remove(comp);
                         continue;
                     }
+
                     if (comp.IsBlock && !GridToInfoMap.ContainsKey(comp.TopEntity))
                         continue;
 
@@ -110,9 +113,6 @@ namespace CoreSystems
                             break;
                         case CoreStructure.StructureTypes.Support:
                             CompsToStart.Add(new SupportSys.SupportComponent(this, entity, id.Value));
-                            break;
-                        case CoreStructure.StructureTypes.Phantom:
-                            CompsToStart.Add(new Phantom.PhantomComponent(this, entity, id.Value));
                             break;
                         case CoreStructure.StructureTypes.Weapon:
                             CompsToStart.Add(new Weapon.WeaponComponent(this, entity, id.Value));

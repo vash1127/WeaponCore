@@ -92,7 +92,8 @@ namespace CoreSystems
             {
                 foreach (var comp in ai.WeaponComps)
                 {
-                    foreach (var w in comp.Platform.Weapons)
+                    var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+                    foreach (var w in collection)
                     {
                         if ((!w.Comp.HasTurret && !w.Comp.OverrideLeads || w.Comp.HasTurret && w.Comp.OverrideLeads) && w.Comp.Data.Repo.Values.Set.Overrides.LeadGroup > 0)
                         {
@@ -291,8 +292,8 @@ namespace CoreSystems
 
                     if (Camera.IsInFrustum(ref lookSphere))
                     {
-
-                        foreach (var w in comp.Platform.Weapons)
+                        var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
+                        foreach (var w in collection)
                         {
 
                             if (!w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart)

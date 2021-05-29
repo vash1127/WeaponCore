@@ -250,9 +250,9 @@ namespace CoreSystems.Control
         {
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp?.Platform.State != CorePlatform.PlatformState.Ready) return;
-            for (int i = 0; i < comp.Platform.Weapons.Count; i++)
+            for (int i = 0; i < comp.Collection.Count; i++)
             {
-                var w = comp.Platform.Weapons[i];
+                var w = comp.Collection[i];
 
                 if (!w.System.HasAmmoSelection)
                     continue;
@@ -556,7 +556,7 @@ namespace CoreSystems.Control
         {
             var comp = blk.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready || comp.ConsumableSelectionPartIds.Count == 0) return;
-            var w = comp.Platform.Weapons[comp.ConsumableSelectionPartIds[0]];
+            var w = comp.Collection[comp.ConsumableSelectionPartIds[0]];
             sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreSystems.Support;
 using Sandbox.ModAPI;
 
 namespace CoreSystems.Platform
@@ -35,16 +36,16 @@ namespace CoreSystems.Platform
                         //Log.Line("Invalid PartState Loaded, Re-init");
                     }
                 }
-
+                var collection = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.Platform.Weapons : Comp.Platform.Phantoms;
                 if (validData && load.Version == Session.VersionControl)
                 {
                     Repo = load;
                     if (Comp.Session.IsServer)
-                        Repo.Values.Targets = new ProtoWeaponTransferTarget[Comp.Platform.Weapons.Count];
+                        Repo.Values.Targets = new ProtoWeaponTransferTarget[collection.Count];
 
-                    for (int i = 0; i < Comp.Platform.Weapons.Count; i++)
+                    for (int i = 0; i < collection.Count; i++)
                     {
-                        var w = Comp.Platform.Weapons[i];
+                        var w = collection[i];
 
                         w.PartState = Repo.Values.State.Weapons[i];
                         w.Reload = Repo.Values.Reloads[i];
@@ -74,21 +75,21 @@ namespace CoreSystems.Platform
                     {
                         Values = new ProtoWeaponComp
                         {
-                            State = new ProtoWeaponState { Weapons = new ProtoWeaponPartState[Comp.Platform.Weapons.Count] },
+                            State = new ProtoWeaponState { Weapons = new ProtoWeaponPartState[collection.Count] },
                             Set = new ProtoWeaponSettings(),
-                            Targets = new ProtoWeaponTransferTarget[Comp.Platform.Weapons.Count],
-                            Reloads = new ProtoWeaponReload[Comp.Platform.Weapons.Count],
+                            Targets = new ProtoWeaponTransferTarget[collection.Count],
+                            Reloads = new ProtoWeaponReload[collection.Count],
                         },
-                        Ammos = new ProtoWeaponAmmo[Comp.Platform.Weapons.Count],
+                        Ammos = new ProtoWeaponAmmo[collection.Count],
 
                     };
 
-                    for (int i = 0; i < Comp.Platform.Weapons.Count; i++)
+                    for (int i = 0; i < collection.Count; i++)
                     {
                         var state = Repo.Values.State.Weapons[i] = new ProtoWeaponPartState();
                         var reload = Repo.Values.Reloads[i] = new ProtoWeaponReload();
                         var ammo = Repo.Ammos[i] = new ProtoWeaponAmmo();
-                        var w = Comp.Platform.Weapons[i];
+                        var w = collection[i];
 
                         if (w != null)
                         {

@@ -49,8 +49,6 @@ namespace CoreSystems
                             break;
                         case CoreComponent.CompType.Support:
                             break;
-                        case CoreComponent.CompType.Phantom:
-                            break;
                         case CoreComponent.CompType.Weapon:
                             if (WeaponCharged(ai, (Weapon)part, assignedPower, rebalance)) 
                                 charger.Remove(part, i);
@@ -71,8 +69,6 @@ namespace CoreSystems
                             break;
                         case CoreComponent.CompType.Support:
                             break;
-                        case CoreComponent.CompType.Phantom:
-                            break;
                         case CoreComponent.CompType.Weapon:
                             if (WeaponCharged(ai, (Weapon)part,assignedPower, rebalance))
                                 charger.Remove(part, i);
@@ -91,8 +87,6 @@ namespace CoreSystems
                         case CoreComponent.CompType.Upgrade:
                             break;
                         case CoreComponent.CompType.Support:
-                            break;
-                        case CoreComponent.CompType.Phantom:
                             break;
                         case CoreComponent.CompType.Weapon:
                             if (WeaponCharged(ai, (Weapon)part, assignedPower, rebalance))

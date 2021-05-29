@@ -22,9 +22,6 @@ namespace CoreSystems
         SupportComp,
         SupportState,
 
-        PhantomComp,
-        PhantomState,
-
         AiData,
         Construct,
         ConstructFoci,
@@ -93,11 +90,9 @@ namespace CoreSystems
     [ProtoInclude(29, typeof(WeaponAmmoPacket))]
     [ProtoInclude(30, typeof(UpgradeCompPacket))]
     [ProtoInclude(31, typeof(UpgradeStatePacket))]
-    [ProtoInclude(30, typeof(SupportCompPacket))]
-    [ProtoInclude(31, typeof(SupportStatePacket))]
-    [ProtoInclude(30, typeof(PhantomCompPacket))]
-    [ProtoInclude(31, typeof(PhantomStatePacket))]
-    [ProtoInclude(32, typeof(EwaredBlocksPacket))]
+    [ProtoInclude(32, typeof(SupportCompPacket))]
+    [ProtoInclude(33, typeof(SupportStatePacket))]
+    [ProtoInclude(34, typeof(EwaredBlocksPacket))]
 
     public class Packet
     {
@@ -341,30 +336,6 @@ namespace CoreSystems
     public class SupportStatePacket : Packet
     {
         [ProtoMember(1)] internal ProtoSupportState Data;
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
-    public class PhantomCompPacket : Packet
-    {
-        [ProtoMember(1)] internal ProtoPhantomComp Data;
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
-    public class PhantomStatePacket : Packet
-    {
-        [ProtoMember(1)] internal ProtoPhantomState Data;
 
         public override void CleanUp()
         {

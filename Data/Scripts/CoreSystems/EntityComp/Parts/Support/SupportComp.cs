@@ -184,6 +184,26 @@ namespace CoreSystems.Platform
                     ClearParts(comp);
             }
 
+            internal static void SetRange(SupportComponent comp)
+            {
+                //foreach (var w in comp.Platform.Support)
+                    //w.UpdateWeaponRange();
+            }
+
+            internal static void SetRof(SupportComponent comp)
+            {
+                for (int i = 0; i < comp.Platform.Support.Count; i++)
+                {
+                    var w = comp.Platform.Support[i];
+
+                    //if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
+
+                    //w.UpdateRof();
+                }
+
+                //SetDps(comp);
+            }
+
             private static void ClearParts(SupportComponent comp)
             {
                 for (int i = 0; i < comp.Platform.Upgrades.Count; i++)

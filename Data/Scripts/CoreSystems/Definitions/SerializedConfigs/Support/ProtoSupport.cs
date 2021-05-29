@@ -96,7 +96,7 @@ namespace CoreSystems
         {
             Guidance = sync.Guidance;
             Range = sync.Range;
-            Weapon.WeaponComponent.SetRange(comp);
+            SupportSys.SupportComponent.SetRange(comp);
 
             Overrides.Sync(sync.Overrides);
 
@@ -108,7 +108,7 @@ namespace CoreSystems
                 Overload = sync.Overload;
                 RofModifier = sync.RofModifier;
                 DpsModifier = sync.DpsModifier;
-                if (rofChange) Weapon.WeaponComponent.SetRof(comp);
+                if (rofChange) SupportSys.SupportComponent.SetRof(comp);
             }
         }
 

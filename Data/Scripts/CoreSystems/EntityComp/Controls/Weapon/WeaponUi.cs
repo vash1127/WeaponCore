@@ -155,9 +155,9 @@ namespace CoreSystems
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return 0;
 
             var maxTrajectory = 0f;
-            for (int i = 0; i < comp.Platform.Weapons.Count; i++)
+            for (int i = 0; i < comp.Collection.Count; i++)
             {
-                var curMax = comp.Platform.Weapons[i].GetMaxWeaponRange();
+                var curMax = comp.Collection[i].GetMaxWeaponRange();
                 if (curMax > maxTrajectory)
                     maxTrajectory = (float)curMax;
             }

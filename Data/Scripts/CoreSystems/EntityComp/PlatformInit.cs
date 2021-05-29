@@ -19,7 +19,7 @@ namespace CoreSystems.Platform
         internal List<Weapon> Weapons = new List<Weapon>();
         internal List<SupportSys> Support = new List<SupportSys>();
         internal List<Upgrades> Upgrades = new List<Upgrades>();
-        internal List<Phantom> Phantoms = new List<Phantom>();
+        internal List<Weapon> Phantoms = new List<Weapon>();
         internal CoreStructure Structure;
         internal CoreComponent Comp;
         internal PlatformState State;
@@ -100,8 +100,9 @@ namespace CoreSystems.Platform
             else
                 return PlatformCrash(Comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
             
-            Parts.Entity = Comp.Entity as MyEntity;
-
+            Parts.Entity = (MyEntity)Comp.Entity;
+            Parts.NameToEntity["None"] = Parts.Entity;
+            Parts.EntityToName[Parts.Entity] = "None";
             return GetParts();
         }
 
@@ -132,10 +133,6 @@ namespace CoreSystems.Platform
                     if (UpgradeParts() == PlatformState.Invalid)
                         return State;
                     break;
-                case CoreStructure.StructureTypes.Phantom:
-                    if (PhantomParts() == PlatformState.Invalid)
-                        return State;
-                    break;
             }
 
             _orderToCreate.Clear();
@@ -148,7 +145,7 @@ namespace CoreSystems.Platform
         {
             foreach (var i in _orderToCreate)
             {
-                if (Phantoms.Count > 0 || Support.Count > 0 || Upgrades.Count > 0)
+                if (Support.Count > 0 || Upgrades.Count > 0)
                     return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
 
                 var partHashId = Structure.PartHashes[i];
@@ -158,29 +155,29 @@ namespace CoreSystems.Platform
 
                 var system = (WeaponSystem)coreSystem;
                 var muzzlePartName = system.MuzzlePartName.String != "Designator" ? system.MuzzlePartName.String : system.ElevationPartName.String;
+                var azimuthPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
+                var elevationPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
                 MyEntity muzzlePartEntity;
+
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
                     return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Invalid barrelPart, I am crashing now Dave.");
                 }
+
                 foreach (var part in Parts.NameToEntity)
                 {
                     part.Value.OnClose += Comp.SubpartClosed;
                     break;
                 }
 
-                //compatability with old configs of converted turrets
-                var azimuthPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
-                var elevationPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
-
-                MyEntity azimuthPart = null;
+                MyEntity azimuthPart;
                 if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
                     return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Weapon: {system.PartName} Invalid azimuthPart, I am crashing now Dave.");
 
-                MyEntity elevationPart = null;
+                MyEntity elevationPart;
                 if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
                     return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) Invalid elevationPart, I am crashing now Dave.");
-
+                
                 MyEntity spinPart = null;
                 if (system.HasBarrelRotation)
                 {
@@ -190,8 +187,10 @@ namespace CoreSystems.Platform
 
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
+
                 var weapon = new Weapon(muzzlePartEntity, system, i, (Weapon.WeaponComponent)Comp, Parts, elevationPart, azimuthPart, spinPart, azimuthPartName, elevationPartName);
-                Weapons.Add(weapon);
+                if (Comp.TypeSpecific != Phantom) Weapons.Add(weapon);
+                else Phantoms.Add(weapon);
                 CompileTurret(weapon);
             }
             return State;
@@ -231,30 +230,11 @@ namespace CoreSystems.Platform
             return State;
         }
 
-        private PlatformState PhantomParts()
-        {
-            foreach (var i in _orderToCreate)
-            {
-                if (Weapons.Count > 0 || Upgrades.Count > 0 || Support.Count > 0)
-                    return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) mixed functions, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
-
-                CoreSystem coreSystem;
-                if (Structure.PartSystems.TryGetValue(Structure.PartHashes[i], out coreSystem))
-                {
-                    Phantoms.Add(new Phantom((PhantomSystem)coreSystem, (Phantom.PhantomComponent)Comp, i));
-                }
-                else return PlatformCrash(Comp, true, true, $"Your block subTypeId ({Comp.SubtypeName}) missing part, cannot mix weapons/upgrades/armorSupport/phantoms, I am crashing now Dave.");
-
-            }
-            return State;
-        }
-
         private void CompileTurret(Weapon weapon)
         {
             MyEntity muzzlePart = null;
             var weaponSystem = weapon.System;
             var mPartName = weaponSystem.MuzzlePartName.String;
-
             if (Parts.NameToEntity.TryGetValue(mPartName, out muzzlePart) || weaponSystem.DesignatorWeapon)
             {
                 var azimuthPartName = Comp.TypeSpecific == VanillaTurret ? string.IsNullOrEmpty(weaponSystem.AzimuthPartName.String) ? "MissileTurretBase1" : weaponSystem.AzimuthPartName.String : weaponSystem.AzimuthPartName.String;
@@ -409,11 +389,9 @@ namespace CoreSystems.Platform
                         weapon.AzimuthPart.Entity.OnMarkForClose += weapon.EntPartClose;
                     }
                 }
-
                 for (int i = 0; i < weapon.Muzzles.Length; i++)
                 {
                     var muzzleName = weaponSystem.Muzzles[i];
-
                     if (weapon.Muzzles[i] == null)
                     {
                         weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, weapon, muzzleName);
@@ -472,9 +450,10 @@ namespace CoreSystems.Platform
         internal void ResetTurret()
         {
             var registered = false;
-            for (int x = 0; x < Weapons.Count; x++)
+            var collection = Comp.TypeSpecific != Phantom ? Comp.Platform.Weapons : Comp.Platform.Phantoms;
+            for (int x = 0; x < collection.Count; x++)
             {
-                var weapon = Weapons[x];
+                var weapon = collection[x];
                 var weaponSystem = weapon.System;
                 MyEntity muzzlePart = null;
                 var mPartName = weaponSystem.MuzzlePartName.String;
@@ -633,7 +612,7 @@ namespace CoreSystems.Platform
 
         internal void ResetParts()
         {
-            if (Structure.StructureType != CoreStructure.StructureTypes.Weapon)
+            if (Structure.StructureType != CoreStructure.StructureTypes.Weapon || Comp.TypeSpecific == Phantom)
                 return;
 
             Parts.Clean(Comp.Entity as MyEntity);
@@ -646,7 +625,8 @@ namespace CoreSystems.Platform
 
         internal void RemoveParts()
         {
-            foreach (var w in Comp.Platform.Weapons)
+            var collection = Comp.TypeSpecific != Phantom ? Comp.Platform.Weapons : Comp.Platform.Phantoms;
+            foreach (var w in collection)
             {
                 if (w.MuzzlePart.Entity == null) continue;
                 w.MuzzlePart.Entity.PositionComp.OnPositionChanged -= w.PositionChanged;

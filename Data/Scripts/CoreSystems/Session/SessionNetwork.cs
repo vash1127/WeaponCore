@@ -145,16 +145,6 @@ namespace CoreSystems
                         ClientSupportState(packetObj);
                         break;
                     }
-                    case PacketType.PhantomComp:
-                    {
-                        ClientPhantomComp(packetObj);
-                        break;
-                    }
-                    case PacketType.PhantomState:
-                    {
-                        ClientPhantomState(packetObj);
-                        break;
-                    }
                     case PacketType.WeaponReload:
                     {
                         ClientWeaponReloadUpdate(packetObj);
@@ -479,16 +469,6 @@ namespace CoreSystems
                     case PacketType.SupportState:
                     {
                         PacketSupportStatePool.Return((SupportStatePacket)pInfo.Packet);
-                        break;
-                    }
-                    case PacketType.PhantomComp:
-                    {
-                        PacketPhantomCompPool.Return((PhantomCompPacket)pInfo.Packet);
-                        break;
-                    }
-                    case PacketType.PhantomState:
-                    {
-                        PacketPhantomStatePool.Return((PhantomStatePacket)pInfo.Packet);
                         break;
                     }
                 }

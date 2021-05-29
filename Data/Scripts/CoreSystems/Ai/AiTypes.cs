@@ -331,12 +331,6 @@ namespace CoreSystems.Support
                 var signalInRange = true;
                 return signalInRange;
             }
-
-            internal bool ValidSignalExists(Phantom p)
-            {
-                var signalInRange = true;
-                return signalInRange;
-            }
         }
 
 

@@ -389,7 +389,7 @@ namespace CoreSystems.Api
         // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void PbMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
-            var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            var comp = weaponBlock.Components.Get<CoreComponent>();
             if (comp != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId].Add(callback);
         }
@@ -397,7 +397,7 @@ namespace CoreSystems.Api
         // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void PbUnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
-            var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            var comp = weaponBlock.Components.Get<CoreComponent>();
             if (comp != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId].Remove(callback);
         }
@@ -861,7 +861,7 @@ namespace CoreSystems.Api
         // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void MonitorProjectileCallback(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
-            var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            var comp = weaponBlock.Components.Get<CoreComponent>();
             if (comp != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId].Add(callback);
         }
@@ -869,7 +869,7 @@ namespace CoreSystems.Api
         // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
         internal static void UnMonitorProjectileCallback(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
-            var comp = weaponBlock.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            var comp = weaponBlock.Components.Get<CoreComponent>();
             if (comp != null && comp.Platform.Weapons.Count > weaponId)
                 comp.Monitors[weaponId].Remove(callback);
         }

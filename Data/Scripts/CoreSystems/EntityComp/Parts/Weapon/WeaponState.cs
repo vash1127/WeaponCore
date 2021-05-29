@@ -232,7 +232,8 @@ namespace CoreSystems.Platform
             {
                 if (--cSet.Overrides.ArmedTimer == 0)
                 {
-                    CriticalOnDestruction();
+                    Comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOnce, Comp.Session.PlayerId);
+                    Comp.GoingCritical = true;
                 }
             }
         }
@@ -241,7 +242,7 @@ namespace CoreSystems.Platform
         {
             if (Comp.Data.Repo.Values.Set.Overrides.Armed && !Comp.GoingCritical)
             {
-                Log.Line($"BOOM!");
+
                 Comp.GoingCritical = true;
             }
         }

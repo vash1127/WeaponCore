@@ -390,8 +390,6 @@ namespace CoreSystems.Platform
                 if (AvCapable && System.HardPointRotationSound)
                     comp.Platform.RotationSound.Init(System.Values.HardPoint.Audio.HardPointRotationSound, false);
             }
-
-            Log.Line($"{System.PartName}");
         }
 
         private void FuckMyLife()
