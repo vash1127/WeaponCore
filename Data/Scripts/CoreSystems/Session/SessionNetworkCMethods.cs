@@ -421,24 +421,5 @@ namespace CoreSystems
             return true;
 
         }
-
-        private bool ClientQueueShot(PacketObj data)
-        {
-            var packet = data.Packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var queueShot = (QueuedShotPacket) packet;
-            var comp = ent?.Components.Get<CoreComponent>();
-            if (comp?.Ai == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == CorePlatform.PlatformState.Ready));
-
-            var collection = comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? comp.Platform.Weapons : comp.Platform.Phantoms;
-            var w = collection[queueShot.PartId];
-            w.ShootOnce = true;
-            if (PlayerId == queueShot.PlayerId)
-                w.ClientStaticShot = true;
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
     }
 }

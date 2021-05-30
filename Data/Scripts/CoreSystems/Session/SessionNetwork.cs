@@ -165,11 +165,6 @@ namespace CoreSystems
                         ClientFullMouseUpdate(packetObj);
                         break;
                     }
-                    case PacketType.QueueShot: 
-                    {
-                        ClientQueueShot(packetObj);
-                        break;
-                    }
                     case PacketType.ProblemReport: 
                     {
                         ClientSentReport(packetObj);

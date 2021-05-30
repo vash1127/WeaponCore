@@ -279,6 +279,7 @@ namespace CoreSystems
             var earlyExit = false;
             IMySlimBlock rootBlock = null;
             var destroyed = 0;
+
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || earlyExit || outOfPew && !nova) break;
@@ -567,7 +568,13 @@ namespace CoreSystems
             }
 
             if (scaledDamage < objHp) info.BaseDamagePool = 0;
-            else info.BaseDamagePool -= objHp;
+            else
+            {
+                var damageLeft = scaledDamage - objHp;
+                var reduction = scaledDamage / damageLeft;
+
+                info.BaseDamagePool *= reduction;
+            }
 
             if (canDamage)
                 destObj.DoDamage(scaledDamage, !info.ShieldBypassed ? MyDamageType.Bullet : MyDamageType.Drill, sync, null, attackerId);

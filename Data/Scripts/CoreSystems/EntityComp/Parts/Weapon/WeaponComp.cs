@@ -19,8 +19,11 @@ namespace CoreSystems.Platform
             internal readonly IMyLargeTurretBase VanillaTurretBase;
             internal readonly WeaponCompData Data;
             internal readonly WeaponStructure Structure;
-            internal Weapon TrackingWeapon;
             internal readonly List<Weapon> Collection;
+            internal Weapon TrackingWeapon;
+            internal int DefaultAmmoId;
+            internal long DefaultReloads;
+            internal TriggerActions DefaultTrigger;
             internal uint LastRayCastTick;
             internal float EffectiveDps;
             internal float PeakDps;
@@ -40,8 +43,7 @@ namespace CoreSystems.Platform
                 var cube = coreEntity as MyCubeBlock;
 
                 MyEntity topEntity;
-                if (cube != null)
-                {
+                if (cube != null) {
 
                     topEntity = cube.CubeGrid;
 
@@ -52,13 +54,11 @@ namespace CoreSystems.Platform
                         VanillaTurretBase.EnableIdleRotation = false;
                     }
                 }
-                else
-                {
+                else {
 
                     var gun = coreEntity as IMyAutomaticRifleGun;
 
-                    if (gun != null)
-                    {
+                    if (gun != null) {
                         Rifle = gun;
                         GunBase = gun;
                         topEntity = Rifle.Owner;
@@ -71,7 +71,6 @@ namespace CoreSystems.Platform
                 Data = new WeaponCompData(this);
                 Init(session, coreEntity, cube != null, Data, topEntity, id);
                 Structure = (WeaponStructure)Platform.Structure;
-
                 Collection = TypeSpecific != CompTypeSpecific.Phantom ? Platform.Weapons : Platform.Phantoms;
             }
 
@@ -201,6 +200,18 @@ namespace CoreSystems.Platform
                     Ai.PointDefense = true;
             }
 
+            internal bool AllWeaponsOutOfAmmo()
+            {
+                var wCount = Collection.Count;
+                var outCount = 0;
+
+                for (int i = 0; i < wCount; i++) {
+                    var w = Collection[i];
+                    if (w.ProtoWeaponAmmo.CurrentMags == 0 && w.ProtoWeaponAmmo.CurrentAmmo == 0)
+                        ++outCount;
+                }
+                return outCount == wCount;
+            }
 
             internal static void SetRange(Weapon.WeaponComponent comp)
             {
@@ -622,8 +633,8 @@ namespace CoreSystems.Platform
                 var numOfWeapons = Collection.Count;
                 var loadedWeapons = 0;
 
-                for (int i = 0; i < Collection.Count; i++)
-                {
+                for (int i = 0; i < Collection.Count; i++) {
+
                     var w = Collection[i];
 
                     if (w.PartState.Overheated)
@@ -633,20 +644,15 @@ namespace CoreSystems.Platform
                         ++loadedWeapons;
                 }
 
-                if (numOfWeapons == loadedWeapons)
-                {
+                if (numOfWeapons == loadedWeapons) {
 
-                    for (int i = 0; i < Platform.Weapons.Count; i++)
-                    {
+                    if (Session.IsClient) {
+                        foreach (var w in Collection)
+                            w.PartState.Action = TriggerActions.TriggerOnce;
 
-                        var w = Collection[i];
-
-                        if (Session.IsServer)
-                            w.ShootOnce = true;
-                    }
-
-                    if (Session.IsClient)
                         Session.SendActionShootUpdate(this, TriggerActions.TriggerOnce);
+
+                    }
                     return true;
                 }
 

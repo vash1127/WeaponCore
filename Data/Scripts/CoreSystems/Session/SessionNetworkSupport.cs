@@ -1024,26 +1024,6 @@ namespace CoreSystems
             else Log.Line("SendPlayerControlRequest should never be called on Server");
         }
 
-        internal void SendQueuedShot(Weapon w)
-        {
-            if (IsServer)
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = w.BaseComp.CoreEntity,
-                    Packet = new QueuedShotPacket
-                    {
-                        EntityId = w.BaseComp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.QueueShot,
-                        PartId = w.PartId,
-                        PlayerId = w.Comp.Data.Repo.Values.State.PlayerId,
-                    }
-                });
-            }
-            else Log.Line("SendAmmoCycleRequest should never be called on Client");
-        }
-
         internal void SendEwaredBlocks()
         {
             if (IsServer)

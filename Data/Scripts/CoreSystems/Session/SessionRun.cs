@@ -54,10 +54,6 @@ namespace CoreSystems
                 if (SuppressWc)
                     return;
 
-                if (Tick300)
-                {
-                    PhantomEntityActivator("PhantomId");
-                }
                 if (!DelayedHandWeaponsSpawn.IsEmpty)
                     InitDelayedHandWeapons();
 

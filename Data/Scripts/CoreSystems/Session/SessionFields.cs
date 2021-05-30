@@ -136,7 +136,9 @@ namespace CoreSystems
         internal readonly ConcurrentDictionary<MyCubeGrid, GridMap> DirtyPowerGrids = new ConcurrentDictionary<MyCubeGrid, GridMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, HashSet<long>> PlayerGrids = new ConcurrentDictionary<MyCubeGrid, HashSet<long>>();
 
-        internal readonly Dictionary<string, Dictionary<ulong, MyEntity>> PhantomDatabase = new Dictionary<string, Dictionary<ulong, MyEntity>>();
+        internal readonly Dictionary<string, Dictionary<string, WeaponSystem.AmmoType>> AmmoMaps = new Dictionary<string, Dictionary<string, WeaponSystem.AmmoType>>();
+        internal readonly Dictionary<string, string> ModelMaps = new Dictionary<string, string>();
+        internal readonly Dictionary<string, Dictionary<long, Weapon.WeaponComponent>> PhantomDatabase = new Dictionary<string, Dictionary<long, Weapon.WeaponComponent>>();
         internal readonly Dictionary<CoreStructure, int> PowerGroups = new Dictionary<CoreStructure, int>();
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyDefinitionId, CoreStructure> PartPlatforms = new Dictionary<MyDefinitionId, CoreStructure>(MyDefinitionId.Comparer);

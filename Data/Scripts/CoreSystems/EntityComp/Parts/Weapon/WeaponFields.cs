@@ -194,8 +194,6 @@ namespace CoreSystems.Platform
         internal bool PauseShoot;
         internal bool LastEventCanDelay;
         internal bool ShowBurstDelayAsReload;
-        internal bool ClientStaticShot;
-        internal bool ShootOnce;
         internal bool ParentIsSubpart;
         internal bool CheckInventorySystem = true;
         internal bool ShotReady
@@ -365,7 +363,7 @@ namespace CoreSystems.Platform
             
             AiOnlyWeapon = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.VanillaTurret || (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.VanillaTurret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
-            CriticalReaction = System.Values.HardPoint.HardWare.CriticalReaction.Enable;
+            CriticalReaction = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom && System.Values.HardPoint.HardWare.CriticalReaction.Enable;
 
             string ejectorMatch;
             MyEntity ejectorPart;

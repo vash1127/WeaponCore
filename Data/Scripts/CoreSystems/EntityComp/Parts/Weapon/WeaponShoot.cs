@@ -14,18 +14,6 @@ namespace CoreSystems.Platform
 {
     public partial class Weapon 
     {
-        internal void PhantomAimAndShoot()
-        {
-            ProtoWeaponAmmo.CurrentAmmo = int.MaxValue;
-            var up = MatrixD.Identity.Up;
-            MatrixD matrix;
-            var newPos = Comp.Session.PlayerPos + (Comp.Session.Camera.ViewMatrix.Forward * 500f);
-            var targetDir = Vector3D.Normalize(Comp.Session.PlayerPos - newPos);
-            MatrixD.CreateWorld(ref newPos, ref targetDir, ref up, out matrix);
-            Comp.CoreEntity.PositionComp.SetWorldMatrix(ref matrix, null, false, false, false);
-            Shoot();
-        }
-
         internal void Shoot() // Inlined due to keens mod profiler
         {
             try
@@ -99,13 +87,10 @@ namespace CoreSystems.Platform
                 for (int i = 0; i < System.Values.HardPoint.Loading.BarrelsPerShot; i++) {
 
                     #region Update ProtoWeaponAmmo state
-                    var skipMuzzle = s.IsClient && ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
+                    var skipMuzzle = s.IsClient && ProtoWeaponAmmo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && PartState.Action == TriggerActions.TriggerOnce;
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
 
                         if (ProtoWeaponAmmo.CurrentAmmo == 0) {
-
-                            if (ShootOnce) 
-                                ShootOnce = false;
 
                             if (ClientMakeUpShots == 0) {
                                 if (s.MpActive && s.IsServer)
@@ -116,8 +101,9 @@ namespace CoreSystems.Platform
 
                         if (ProtoWeaponAmmo.CurrentAmmo > 0) {
 
+                            Log.Line($"{PartState.Action}");
                             --ProtoWeaponAmmo.CurrentAmmo;
-                            if (ShootOnce)
+                            if (PartState.Action == TriggerActions.TriggerOnce)
                                 DequeueShot();
 
                             if (ProtoWeaponAmmo.CurrentAmmo == 0) {
@@ -395,10 +381,9 @@ namespace CoreSystems.Platform
 
         private void DequeueShot()
         {
-            ShootOnce = false;
+            PartState.Action = TriggerActions.TriggerOff;
             if (System.Session.IsServer)
             {
-                if (System.Session.MpActive) System.Session.SendQueuedShot(this);
                 if (PartState.Action == TriggerActions.TriggerOnce && ShotQueueEmpty())
                     Comp.Data.Repo.Values.State.TerminalActionSetter(Comp, TriggerActions.TriggerOff, true, false);
             }
@@ -406,12 +391,11 @@ namespace CoreSystems.Platform
 
         private bool ShotQueueEmpty()
         {
-            PartState.Action = TriggerActions.TriggerOff;
             var hasShot = false;
             for (int i = 0; i < Comp.Collection.Count; i++) {
                 var w = Comp.Collection[i];
 
-                if (w.ShootOnce)
+                if (w.PartState.Action != TriggerActions.TriggerOnce)
                     hasShot = true;
             }
             return !hasShot;

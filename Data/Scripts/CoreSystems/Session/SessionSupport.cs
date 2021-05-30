@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using CoreSystems.Platform;
 using CoreSystems.Settings;
 using CoreSystems.Support;
@@ -19,7 +20,9 @@ using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
-
+using CoreSystems.Support;
+using static CoreSystems.Support.CoreComponent;
+using static CoreSystems.Support.CoreComponent.TriggerActions;
 namespace CoreSystems
 {
     public partial class Session
@@ -815,30 +818,53 @@ namespace CoreSystems
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
         }
 
-        private void PhantomEntityActivator(string phantomType)
+        internal Weapon.WeaponComponent CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = long.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, StringBuilder name = null, bool addToPrunning = false, bool shadows = false)
         {
             if (!Inited) lock (InitObj) Init();
 
-            var ent = new MyEntity
-            {
-                DefinitionId = new MyDefinitionId(MyObjectBuilderType.Invalid, phantomType),
-                Render = {CastShadows = false},
+            var ent = new MyEntity            {
+                DefinitionId = CoreSystemsDefs[phantomType],
+                Render = {CastShadows = shadows },
                 IsPreview = true,
                 Save = false,
                 SyncFlag = false,
-                NeedsWorldMatrix = false
+                NeedsWorldMatrix = false,
             };
-            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+
+            var comp = (Weapon.WeaponComponent)InitComp(ent, ref ent.DefinitionId);
+            Dictionary<long, Weapon.WeaponComponent> phantoms;
+            if (PhantomDatabase.TryGetValue(phantomType, out phantoms) && comp != null)
+                phantoms[ent.EntityId] = comp;
+            else
+            {
+                Log.Line($"phantom failed to be created - hasComp:{comp != null}");
+                return null;
+            }
+
+            string model = null;
+            if (ModelMaps.TryGetValue(phantomType, out model) || parnet != null || name != null) {
+                ent.Init(name, model, parnet, modelScale, null);
+            }
+
+            if (!addToPrunning)
+                ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             
             MyEntities.Add(ent, true);
 
-            Dictionary<ulong, MyEntity> phantoms;
-            if (PhantomDatabase.TryGetValue(phantomType, out phantoms))
-                phantoms[UniquePhantomId] = ent;
+            Dictionary<string, WeaponSystem.AmmoType> ammoMap;
 
-            InitComp(ent, ref ent.DefinitionId);
+            WeaponSystem.AmmoType ammoType;
+            if (ammoName != null && AmmoMaps.TryGetValue(phantomType, out ammoMap) && ammoMap.TryGetValue(ammoName, out ammoType))
+                comp.DefaultAmmoId = ammoType.AmmoDef.Const.AmmoIdxPos;
 
-            Log.Line("PhantomEntityActivator");
+            comp.DefaultReloads = defaultReloads;
+            comp.DefaultTrigger = trigger;
+            comp.HasCloseConsition = closeWhenOutOfAmmo;
+
+            if (maxAge > 0)
+                FutureEvents.Schedule(comp.ForceClose, phantomType, maxAge);
+
+            return comp;
         }
 
         private void InitDelayedHandWeapons()

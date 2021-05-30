@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CoreSystems.Platform;
 using CoreSystems.Settings;
 using CoreSystems.Support;
 using Sandbox.Definitions;
@@ -261,6 +262,7 @@ namespace CoreSystems
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
                     var spinPartId = mount.SpinPartId;
+                    var phantomModel = mount.PhantomModel;
 
                     var extraInfo = new MyTuple<string, string, string, string> { Item1 = x.HardPoint.PartName, Item2 = azimuthPartId, Item3 = elevationPartId, Item4 = spinPartId };
 
@@ -273,6 +275,16 @@ namespace CoreSystems
                     {
                         _subTypeMaps[subTypeId][partAttachmentId] = extraInfo;
                         _subTypeIdWeaponDefs[subTypeId].Add(x);
+                    }
+
+                    if (!string.IsNullOrEmpty(phantomModel))
+                        ModelMaps[subTypeId] = x.ModPath + phantomModel;
+
+                    AmmoMaps[subTypeId] = new Dictionary<string, WeaponSystem.AmmoType>();
+
+                    if (x.HardPoint.HardWare.Type == Phantom || x.HardPoint.HardWare.CriticalReaction.Enable)
+                    {
+                        PhantomDatabase[subTypeId] = new Dictionary<long, Weapon.WeaponComponent>();
                     }
                 }
             }

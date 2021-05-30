@@ -15,7 +15,7 @@ namespace CoreSystems
         [ProtoMember(1)] public ProtoWeaponAmmo[] Ammos;
         [ProtoMember(2)] public ProtoWeaponComp Values;
 
-        public void ResetToFreshLoadState()
+        public void ResetToFreshLoadState(Weapon.WeaponComponent comp)
         {
             //Values.Set.Overrides.Control = ProtoWeaponOverrides.ControlModes.Auto;
             //Values.PartState.Control = ProtoWeaponState.ControlMode.None;
@@ -28,17 +28,33 @@ namespace CoreSystems
 
             if (Values.State.TerminalAction == TriggerActions.TriggerOnce)
                 Values.State.TerminalAction = TriggerActions.TriggerOff;
+
+            if (comp.DefaultTrigger != TriggerActions.TriggerOff)
+                Values.State.TerminalAction = comp.DefaultTrigger;
+
             for (int i = 0; i < Ammos.Length; i++)
             {
                 var ws = Values.State.Weapons[i];
                 var wr = Values.Reloads[i];
                 var wa = Ammos[i];
-
-                wa.AmmoCycleId = 0;
+                var we = comp.Collection[i];
+                wa.AmmoCycleId = comp.DefaultAmmoId;
+                
+                if (comp.DefaultReloads != 0)
+                    we.ProtoWeaponAmmo.CurrentMags = comp.DefaultReloads;
+                
                 ws.Heat = 0;
                 ws.Overheated = false;
                 if (ws.Action == TriggerActions.TriggerOnce)
                     ws.Action = TriggerActions.TriggerOff;
+
+                if (comp.DefaultTrigger != TriggerActions.TriggerOff)
+                {
+                    ws.Action = comp.DefaultTrigger;
+                }
+
+                Log.Line($"ammoID: {comp.DefaultAmmoId} - wTrigger:{ws.Action} - tTrigger:{Values.State.TerminalAction}");
+
                 wr.StartId = 0;
             }
             ResetCompBaseRevisions();

@@ -206,7 +206,7 @@ namespace CoreSystems
                     }
                 }
 
-                part.ProtoWeaponAmmo.CurrentMags = part.BaseComp.CoreInventory.GetItemAmount(part.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                part.ProtoWeaponAmmo.CurrentMags = part.BaseComp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? part.BaseComp.CoreInventory.GetItemAmount(part.ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : long.MaxValue;
 
                 InventoryMoveRequestPool.Return(partConsumableToPull);
             }

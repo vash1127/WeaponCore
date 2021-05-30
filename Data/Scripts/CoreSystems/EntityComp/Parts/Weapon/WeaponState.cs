@@ -132,8 +132,6 @@ namespace CoreSystems.Platform
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
             FinishBurst = false;
-            if (System.Session.IsServer)
-                ShootOnce = false;
 
             if (PreFired)
                 UnSetPreFire();
@@ -226,24 +224,23 @@ namespace CoreSystems.Platform
             var cState = Comp.Data.Repo.Values.State;
             var cSet = Comp.Data.Repo.Values.Set;
 
-            if (cState.CriticalReaction)
-                Comp.GoingCritical = true;
+            if (cState.CriticalReaction && !Comp.CloseCondition)
+                CriticalOnDestruction(true);
             else if (cState.CountingDown && cSet.Overrides.ArmedTimer - 1 >= 0)
             {
                 if (--cSet.Overrides.ArmedTimer == 0)
                 {
-                    Comp.RequestShootUpdate(CoreComponent.TriggerActions.TriggerOnce, Comp.Session.PlayerId);
-                    Comp.GoingCritical = true;
+                    CriticalOnDestruction();
                 }
             }
         }
 
-        public void CriticalOnDestruction()
+        public void CriticalOnDestruction(bool force = false)
         {
-            if (Comp.Data.Repo.Values.Set.Overrides.Armed && !Comp.GoingCritical)
+            if ((force || Comp.Data.Repo.Values.Set.Overrides.Armed) && !Comp.CloseCondition)
             {
-
-                Comp.GoingCritical = true;
+                Comp.CloseCondition = true;
+                Comp.Session.CreatePhantomEntity(Comp.SubtypeName, 3600, true, 1, System.Values.HardPoint.HardWare.CriticalReaction.AmmoRound, CoreComponent.TriggerActions.TriggerOnce, null, Comp.CoreEntity);
             }
         }
     }

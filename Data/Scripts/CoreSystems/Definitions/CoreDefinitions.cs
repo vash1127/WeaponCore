@@ -224,6 +224,7 @@ namespace CoreSystems.Support
                 [ProtoMember(5)] internal string ElevationPartId;
                 [ProtoMember(6)] internal float DurabilityMod;
                 [ProtoMember(7)] internal string IconName;
+                [ProtoMember(8)] internal string PhantomModel;
             }
         }
 
@@ -490,6 +491,7 @@ namespace CoreSystems.Support
                     [ProtoMember(2)] internal int DefaultArmedTimer;
                     [ProtoMember(3)] internal bool PreArmed;
                     [ProtoMember(4)] internal bool TerminalControls;
+                    [ProtoMember(5)] internal string AmmoRound;
                 }
             }
 

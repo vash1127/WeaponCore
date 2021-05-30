@@ -1,6 +1,7 @@
 ﻿using System;
 using CoreSystems.Platform;
 using ProtoBuf;
+using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using static CoreSystems.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -89,6 +90,14 @@ namespace CoreSystems.Support
             }
             catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}", null, true);
             }
+        }
+
+        internal void ForceClose(object o)
+        {
+            var subtypeId = o as string;
+            Log.Line($"closing: {subtypeId} - critical:{CloseCondition}");
+            CloseCondition = true;
+            MyEntities.SendCloseRequest(CoreEntity);
         }
     }
 }

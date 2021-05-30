@@ -187,6 +187,12 @@ namespace CoreSystems
                 phantomType.Clear();
             PhantomDatabase.Clear();
 
+            foreach (var ammoMaps in AmmoMaps.Values)
+                ammoMaps.Clear();
+            AmmoMaps.Clear();
+
+            ModelMaps.Clear();
+
             PlayerEntityIdInRange.Clear();
             DirtyGridInfos.Clear();
 

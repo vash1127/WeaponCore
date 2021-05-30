@@ -29,7 +29,7 @@ namespace CoreSystems.Support
         }
 
         private volatile bool Active = true;
-        private const int _maxDelay = 7200;
+        private const int _maxDelay = 14400;
         private List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay + 1]; // and fill with list instances
         private uint _offset;
         private uint _lastTick;
@@ -81,7 +81,7 @@ namespace CoreSystems.Support
         {
             try
             {
-                for (int i = tick; i < tick + 7200; i++)
+                for (int i = tick; i < tick + _maxDelay; i++)
                     Tick((uint)i, true);
 
                 lock (_callbacks)

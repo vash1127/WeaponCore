@@ -96,12 +96,13 @@ namespace CoreSystems
             CompsToStart.ApplyRemovals();
         }
 
-        private void InitComp(MyEntity entity, ref MyDefinitionId? id)
+        private CoreComponent InitComp(MyEntity entity, ref MyDefinitionId? id)
         {
+            CoreComponent comp = null;
             using (entity.Pin())
             {
                 if (entity.MarkedForClose)
-                    return;
+                    return null;
 
                 CoreStructure c;
                 if (id.HasValue && PartPlatforms.TryGetValue(id.Value, out c))
@@ -109,13 +110,16 @@ namespace CoreSystems
                     switch (c.StructureType)
                     {
                         case CoreStructure.StructureTypes.Upgrade:
-                            CompsToStart.Add(new Upgrade.UpgradeComponent(this, entity, id.Value));
+                            comp = new Upgrade.UpgradeComponent(this, entity, id.Value);
+                            CompsToStart.Add(comp);
                             break;
                         case CoreStructure.StructureTypes.Support:
-                            CompsToStart.Add(new SupportSys.SupportComponent(this, entity, id.Value));
+                            comp = new SupportSys.SupportComponent(this, entity, id.Value);
+                            CompsToStart.Add(comp);
                             break;
                         case CoreStructure.StructureTypes.Weapon:
-                            CompsToStart.Add(new Weapon.WeaponComponent(this, entity, id.Value));
+                            comp = new Weapon.WeaponComponent(this, entity, id.Value);
+                            CompsToStart.Add(comp);
                             break;
                     }
 
@@ -123,6 +127,7 @@ namespace CoreSystems
                 }
                 else Log.Line("failed InitComp");
             }
+            return comp;
         }
 
         private void ChangeReAdds()

@@ -85,7 +85,8 @@ namespace CoreSystems.Support
         internal bool ManualMode;
         internal bool PainterMode;
         internal bool FakeMode;
-        internal bool GoingCritical;
+        internal bool CloseCondition;
+        internal bool HasCloseConsition;
 
         internal string CustomIcon;
 
@@ -203,7 +204,7 @@ namespace CoreSystems.Support
 
             PowerGroupId = Session.PowerGroups[Platform.Structure];
             CoreEntity.OnClose += Session.CloseComps;
-            GoingCritical = false;
+            CloseCondition = false;
         }        
     }
 }

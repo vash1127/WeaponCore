@@ -16,10 +16,10 @@ namespace CoreSystems.Platform
             //Log.Line($"[Add] Id:{PartId} - Sink:{wasSink}({BaseComp.SinkPower}) - grid:{wasGrid}({BaseComp.Ai.GridAssignedPower}) - assigned:{assignedPower} - requested:{AssignedPower} - desired:{DesiredPower}");
             Charging = true;
 
-            if (BaseComp.Cube.MarkedForClose)
+            if (BaseComp.CoreEntity.MarkedForClose)
                 return;
-
-            BaseComp.Cube.ResourceSink.Update();
+            if (BaseComp.IsBlock)
+                BaseComp.Cube.ResourceSink.Update();
         }
 
         internal void AdjustPower(float assignedPower, Ai ai)
@@ -38,11 +38,11 @@ namespace CoreSystems.Platform
 
             NewPowerNeeds = false;
 
-            if (BaseComp.Cube.MarkedForClose)
+            if (BaseComp.CoreEntity.MarkedForClose)
                 return;
 
-            BaseComp.Cube.ResourceSink.Update();
-
+            if (BaseComp.IsBlock)
+                BaseComp.Cube.ResourceSink.Update();
         }
 
         internal void StopPowerDraw(bool hardStop, Ai ai)
@@ -62,10 +62,11 @@ namespace CoreSystems.Platform
             if (BaseComp.SinkPower < BaseComp.IdlePower) BaseComp.SinkPower = BaseComp.IdlePower;
             Charging = false;
 
-            if (BaseComp.Cube.MarkedForClose)
+            if (BaseComp.CoreEntity.MarkedForClose)
                 return;
 
-            BaseComp.Cube.ResourceSink.Update();
+            if (BaseComp.IsBlock)
+                BaseComp.Cube.ResourceSink.Update();
         }
 
     }

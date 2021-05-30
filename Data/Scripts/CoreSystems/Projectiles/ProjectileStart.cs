@@ -17,8 +17,7 @@ namespace CoreSystems.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer = w.Comp.Data.Repo.Values.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
-                w.ClientStaticShot = false;
+                var firingPlayer = w.Comp.Data.Repo.Values.State.PlayerId == w.Comp.Session.PlayerId || w.Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
 
                 var patternCycle = gen.PatternCycle;
                 var targetable = w.ActiveAmmoDef.AmmoDef.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;

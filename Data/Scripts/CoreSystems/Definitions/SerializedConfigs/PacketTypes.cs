@@ -86,7 +86,7 @@ namespace CoreSystems
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
     [ProtoInclude(26, typeof(ServerPacket))]
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
-    [ProtoInclude(28, typeof(QueuedShotPacket))]
+    // empty 28
     [ProtoInclude(29, typeof(WeaponAmmoPacket))]
     [ProtoInclude(30, typeof(UpgradeCompPacket))]
     [ProtoInclude(31, typeof(UpgradeStatePacket))]

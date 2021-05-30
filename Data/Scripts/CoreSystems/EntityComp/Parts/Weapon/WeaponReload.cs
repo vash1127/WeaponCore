@@ -23,14 +23,14 @@ namespace CoreSystems.Platform
                 ProtoWeaponAmmo.AmmoTypeId = ProposedAmmoId;
                 ProposedAmmoId = -1;
                 ProtoWeaponAmmo.CurrentAmmo = 0;
-                ProtoWeaponAmmo.CurrentMags = 0;
+                ProtoWeaponAmmo.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? 0 : long.MaxValue;
             }
 
             ActiveAmmoDef = System.AmmoTypes[ProtoWeaponAmmo.AmmoTypeId];
             PrepAmmoShuffle();
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                ProtoWeaponAmmo.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : long.MaxValue;
             
             CheckInventorySystem = true;
 
@@ -108,7 +108,8 @@ namespace CoreSystems.Platform
                 {
                     ProtoWeaponAmmo.CurrentAmmo = 0;
                     canReload = true;
-                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = ProtoWeaponAmmo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
+                    if (Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom) 
+                        System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = ProtoWeaponAmmo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
                 }
 
                 if (instantChange)
@@ -130,7 +131,7 @@ namespace CoreSystems.Platform
                 return true;
             }
 
-            ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+            ProtoWeaponAmmo.CurrentMags = Comp.TypeSpecific != CoreComponent.CompTypeSpecific.Phantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : ProtoWeaponAmmo.CurrentMags;
             var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
             var nothingToLoad = ProtoWeaponAmmo.CurrentMags <= 0 && !energyDrainable;
 
@@ -205,9 +206,10 @@ namespace CoreSystems.Platform
         internal bool ComputeServerStorage()
         {
             var s = Comp.Session;
-            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.InventoryEntity.HasInventory ) return false;
+            var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
+            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.InventoryEntity.HasInventory && !isPhantom) return false;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !isPhantom)
             {
                 if (!s.IsCreative)
                 {
@@ -238,6 +240,7 @@ namespace CoreSystems.Platform
                         CheckInventorySystem = false;
                 }
             }
+
             var invalidStates = ProtoWeaponAmmo.CurrentAmmo != 0 || Loading;
             return !invalidStates && ServerReload();
         }
@@ -253,7 +256,6 @@ namespace CoreSystems.Platform
             var hasAmmo = HasAmmo();
 
             FinishBurst = false;
-            ShootOnce = false;
 
             if (!hasAmmo) 
                 return false;
@@ -264,15 +266,15 @@ namespace CoreSystems.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                
-                if (Comp.CoreInventory.ItemsCanBeRemoved(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
+
+                var isPhantom = Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
+                if (!isPhantom && Comp.CoreInventory.ItemsCanBeRemoved(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
                     Comp.CoreInventory.RemoveItems(ActiveAmmoDef.AmmoDef.Const.AmmoItem.ItemId, 1);
-                else if (Comp.CoreInventory.ItemCount > 0 && Comp.CoreInventory.ContainItems(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content))
-                {
+                else if (!isPhantom && Comp.CoreInventory.ItemCount > 0 && Comp.CoreInventory.ContainItems(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)) {
                     Comp.CoreInventory.Remove(ActiveAmmoDef.AmmoDef.Const.AmmoItem, 1);
                 }
 
-                ProtoWeaponAmmo.CurrentMags = Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                ProtoWeaponAmmo.CurrentMags = !isPhantom ? Comp.CoreInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe() : --ProtoWeaponAmmo.CurrentMags;
                 if (System.Session.IsServer && ProtoWeaponAmmo.CurrentMags == 0)
                     CheckInventorySystem = true;
             }
@@ -317,7 +319,6 @@ namespace CoreSystems.Platform
         internal void Reloaded(object o = null)
         {
             var callBack = o as bool? ?? false;
-
             using (Comp.CoreEntity.Pin()) {
 
                 LastLoadedTick = Comp.Session.Tick;
@@ -350,16 +351,20 @@ namespace CoreSystems.Platform
 
                         ++Reload.EndId;
                         ClientEndId = Reload.EndId;
-                        ShootOnce = false;
                         if (System.Session.MpActive)
                             System.Session.SendWeaponReload(this);
+
+                        if (Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                            --ProtoWeaponAmmo.CurrentMags;
                     }
                     else {
                         ClientReloading = false;
                         ClientMakeUpShots = 0;
                         ClientEndId = Reload.EndId;
                     }
+
                 }
+
                 Loading = false;
             }
         }
