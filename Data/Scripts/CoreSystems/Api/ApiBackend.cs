@@ -64,8 +64,10 @@ namespace CoreSystems.Api
                 ["SetActiveAmmo"] = new Action<Sandbox.ModAPI.IMyTerminalBlock, int, string>(SetActiveAmmo),
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
-                ["UnMonitorProjectile"] = new Action<Sandbox.ModAPI.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(UnMonitorProjectileCallback),
-                ["MonitorProjectile"] = new Action<Sandbox.ModAPI.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(MonitorProjectileCallback),
+                ["UnMonitorProjectile"] = new Action<Sandbox.ModAPI.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(UnMonitorProjectileCallbackLegacy),
+                ["MonitorProjectile"] = new Action<Sandbox.ModAPI.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(MonitorProjectileCallbackLegacy),
+                ["RemoveProjectileMonitor"] = new Action<MyEntity, int, Action<long, int, ulong, long, Vector3D, bool>>(UnMonitorProjectileCallback),
+                ["AddProjectileMonitor"] = new Action<MyEntity, int, Action<long, int, ulong, long, Vector3D, bool>>(MonitorProjectileCallback),
                 ["GetProjectileState"] = new Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>>(GetProjectileState),
                 ["GetConstructEffectiveDps"] = new Func<IMyEntity, float>(GetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, long>(GetPlayerController),
@@ -74,6 +76,15 @@ namespace CoreSystems.Api
                 ["IsTargetValid"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, IMyEntity, bool, bool, bool>(IsTargetValid),
                 ["GetWeaponScope"] = new Func<Sandbox.ModAPI.IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>>(GetWeaponScope),
                 ["IsInRange"] = new Func<IMyEntity, MyTuple<bool, bool>>(IsInRange),
+
+                // Phantoms
+                ["GetTargetAssessment"] = new Func<MyEntity, MyEntity, int, bool, bool, MyTuple<bool, bool, Vector3D?>>(GetTargetAssessment),
+                //["GetPhantomInfo"] = new Action<string, ICollection<MyTuple<MyEntity, long, int, float, uint, long>>>(GetPhantomInfo),
+                ["SetTriggerState"] = new Action<MyEntity, WcApi.TriggerActions>(SetTriggerState),
+                ["AddMagazines"] = new Action<MyEntity, int, long>(AddMagazines),
+                ["SetAmmo"] = new Action<MyEntity, int, string>(SetAmmo),
+                ["ClosePhantom"] = new Func<MyEntity, bool>(ClosePhantom),
+                ["SpawnPhantom"] = new Func<string, uint, bool, long, string, WcApi.TriggerActions, float?, MyEntity, bool, bool, MyEntity>(SpawnPhantom),
             };
         }
 
@@ -859,19 +870,31 @@ namespace CoreSystems.Api
         }
 
         // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
-        internal static void MonitorProjectileCallback(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
+        internal static void MonitorProjectileCallbackLegacy(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
-            var comp = weaponBlock.Components.Get<CoreComponent>();
-            if (comp != null && comp.Platform.Weapons.Count > weaponId)
-                comp.Monitors[weaponId].Add(callback);
+            MonitorProjectileCallback(weaponBlock as MyEntity, weaponId, callback);
         }
 
         // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
-        internal static void UnMonitorProjectileCallback(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
+        internal static void UnMonitorProjectileCallbackLegacy(Sandbox.ModAPI.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
-            var comp = weaponBlock.Components.Get<CoreComponent>();
+            UnMonitorProjectileCallback(weaponBlock as MyEntity, weaponId, callback);
+        }
+
+        // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
+        internal static void MonitorProjectileCallback(MyEntity entity, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
+        {
+            var comp = entity.Components.Get<CoreComponent>();
             if (comp != null && comp.Platform.Weapons.Count > weaponId)
-                comp.Monitors[weaponId].Remove(callback);
+                comp.Monitors[weaponId]?.Add(callback);
+        }
+
+        // Block EntityId, PartId, ProjectileId, LastHitId, LastPos, Start 
+        internal static void UnMonitorProjectileCallback(MyEntity entity, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
+        {
+            var comp = entity.Components.Get<CoreComponent>();
+            if (comp != null && comp.Platform.Weapons.Count > weaponId)
+                comp.Monitors[weaponId]?.Remove(callback);
         }
 
         // POs, Dir, baseDamageLeft, HealthLeft, TargetEntityId, AmmoName 
@@ -955,6 +978,121 @@ namespace CoreSystems.Api
                 return new MyTuple<bool, bool>(ai.DetectionInfo.PriorityInRange, ai.DetectionInfo.OtherInRange);
             }
             return new MyTuple<bool, bool>();
+        }
+        ///
+        /// Phantoms
+        /// 
+        private static MyTuple<bool, bool, Vector3D?> GetTargetAssessment(MyEntity phantom, MyEntity target, int weaponId = 0, bool mustBeInRange = false, bool checkTargetObb = false)
+        {
+            var result = new MyTuple<bool, bool, Vector3D?>(false, false, null);
+            var comp = phantom.Components.Get<CoreComponent>() as Weapon.WeaponComponent;
+            if (comp != null && target != null && comp.Platform.State == Ready && comp.Platform.Weapons.Count > weaponId)
+            {
+                var w = comp.Collection[weaponId];
+
+                var dist = Vector3D.DistanceSquared(comp.CoreEntity.PositionComp.WorldMatrixRef.Translation, target.PositionComp.WorldMatrixRef.Translation);
+                var topMost = target.GetTopMostParent();
+                var inRange = dist <= w.MaxTargetDistanceSqr;
+
+                if (!inRange && mustBeInRange || topMost?.Physics == null)
+                    return result;
+
+                Vector3D targetPos;
+                bool targetAligned;
+                if (checkTargetObb) {
+
+                    var targetVel = topMost.Physics.LinearVelocity;
+                    var targetAccel = topMost.Physics.AngularAcceleration;
+                    targetAligned =  Weapon.CanShootTargetObb(w, target, targetVel, targetAccel, out targetPos);
+                }
+                else
+                {
+                    targetAligned = Weapon.TargetAligned(w, w.NewTarget, out targetPos);
+                }
+
+                return new MyTuple<bool, bool, Vector3D?>(targetAligned, inRange, targetAligned ? targetPos : (Vector3D?)null);
+            }
+            return result;
+        }
+
+
+        private MyEntity SpawnPhantom(string phantomType, uint maxAge, bool closeWhenOutOfAmmo, long defaultReloads, string ammoOverideName, WcApi.TriggerActions trigger, float? modelScale, MyEntity parnet, bool addToPrunning, bool shadows)
+        {
+            var ent = _session.CreatePhantomEntity(phantomType, maxAge, closeWhenOutOfAmmo, defaultReloads, ammoOverideName, (CoreComponent.TriggerActions)trigger, modelScale, parnet, addToPrunning, shadows);
+            return ent;
+        }
+
+        private bool ClosePhantom(MyEntity phantom)
+        {
+            Ai ai;
+            CoreComponent comp;
+            if (_session.EntityAIs.TryGetValue(phantom, out ai) && ai.CompBase.TryGetValue(phantom, out comp) && !comp.CloseCondition)
+            {
+                comp.ForceClose(comp.SubtypeName);
+                return true;
+            }
+            return false;
+        }
+
+        private void SetAmmo(MyEntity phantom, int weaponId, string ammoName)
+        {
+            Ai ai;
+            CoreComponent comp;
+            if (_session.EntityAIs.TryGetValue(phantom, out ai) && ai.CompBase.TryGetValue(phantom, out comp) && comp is Weapon.WeaponComponent)
+            {
+                var wComp = (Weapon.WeaponComponent)comp;
+                if (weaponId < wComp.Collection.Count)
+                {
+                    var w = wComp.Collection[weaponId];
+                    foreach (var ammoType in w.System.AmmoTypes)
+                    {
+                        if (ammoType.AmmoName == ammoName)
+                        {
+                            if (_session.IsServer)
+                            {
+                                w.ProposedAmmoId = ammoType.AmmoDef.Const.AmmoIdxPos;
+                                w.ChangeActiveAmmoServer();
+                            }
+                            else
+                            {
+                                w.ProtoWeaponAmmo.AmmoTypeId = ammoType.AmmoDef.Const.AmmoIdxPos;
+                                w.ChangeActiveAmmoClient();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void AddMagazines(MyEntity phantom, int weaponId, long magCount)
+        {
+            Ai ai;
+            CoreComponent comp;
+            if (_session.EntityAIs.TryGetValue(phantom, out ai) && ai.CompBase.TryGetValue(phantom, out comp) && comp is Weapon.WeaponComponent)
+            {
+                var wComp = (Weapon.WeaponComponent)comp;
+                if (weaponId < wComp.Collection.Count)
+                {
+                    var w = wComp.Collection[weaponId];
+                    w.ProtoWeaponAmmo.CurrentMags = magCount;
+                }
+            }
+        }
+
+        private void SetTriggerState(MyEntity phantom, WcApi.TriggerActions trigger)
+        {
+            Ai ai;
+            CoreComponent comp;
+            if (_session.EntityAIs.TryGetValue(phantom, out ai) && ai.CompBase.TryGetValue(phantom, out comp) && comp is Weapon.WeaponComponent)
+            {
+                var wComp = (Weapon.WeaponComponent)comp;
+                wComp.Data.Repo.Values.State.TerminalActionSetter(wComp, (CoreComponent.TriggerActions) trigger, false, true);
+            }
+        }
+
+        private void GetPhantomInfo(string phantomSubtypeId, ICollection<MyTuple<MyEntity, long, int, float, uint, long>> collection)
+        {
         }
     }
 }

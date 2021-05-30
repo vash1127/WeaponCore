@@ -123,7 +123,7 @@ namespace CoreSystems
                 {
                     var pComp = ai.PhantomComps[i];
 
-                    if (pComp.HasCloseConsition && pComp.AllWeaponsOutOfAmmo()) {
+                    if (pComp.CloseCondition || pComp.HasCloseConsition && pComp.AllWeaponsOutOfAmmo()) {
                         if (!pComp.CloseCondition) 
                             pComp.ForceClose(pComp.SubtypeName);
                         continue;

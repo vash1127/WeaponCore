@@ -18,9 +18,9 @@ namespace CoreSystems.Support
     {
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
         internal readonly List<int> ConsumableSelectionPartIds = new List<int>();
+        internal List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
-        internal List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
 
         internal bool InventoryInited;
         internal CompType Type;

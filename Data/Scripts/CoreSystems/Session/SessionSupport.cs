@@ -818,7 +818,7 @@ namespace CoreSystems
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}", null, true); }
         }
 
-        internal Weapon.WeaponComponent CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = long.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, StringBuilder name = null, bool addToPrunning = false, bool shadows = false)
+        internal MyEntity CreatePhantomEntity(string phantomType, uint maxAge = 0, bool closeWhenOutOfAmmo = false, long defaultReloads = long.MaxValue, string ammoName = null, TriggerActions trigger = TriggerOff, float? modelScale = null, MyEntity parnet = null, bool addToPrunning = false, bool shadows = false)
         {
             if (!Inited) lock (InitObj) Init();
 
@@ -842,14 +842,14 @@ namespace CoreSystems
             }
 
             string model = null;
-            if (ModelMaps.TryGetValue(phantomType, out model) || parnet != null || name != null) {
-                ent.Init(name, model, parnet, modelScale, null);
+            if (ModelMaps.TryGetValue(phantomType, out model) || parnet != null) {
+                ent.Init(null, model, parnet, modelScale, null);
             }
 
             if (!addToPrunning)
                 ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             
-            MyEntities.Add(ent, true);
+            MyEntities.Add(ent);
 
             Dictionary<string, WeaponSystem.AmmoType> ammoMap;
 
@@ -864,7 +864,7 @@ namespace CoreSystems
             if (maxAge > 0)
                 FutureEvents.Schedule(comp.ForceClose, phantomType, maxAge);
 
-            return comp;
+            return ent;
         }
 
         private void InitDelayedHandWeapons()
