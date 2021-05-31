@@ -110,7 +110,7 @@ namespace CoreSystems.Support
                     if (!Session.EntityAIs.TryGetValue(TopEntity, out ai)) {
 
                         var newAi = Session.GridAiPool.Get();
-                        newAi.Init(TopEntity, Session);
+                        newAi.Init(TopEntity, Session, TypeSpecific);
                         Session.EntityAIs[TopEntity] = newAi;
                         Ai = newAi;
                     }

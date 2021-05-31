@@ -26,7 +26,7 @@ namespace CoreSystems.Support
                 if (TopEntity.MarkedForClose || !TopEntity.InScene)
                     return;
 
-                if (IsGrid) {
+                if (AiType == AiTypes.Grid) {
                     var bigOwners = GridEntity.BigOwners;
                     AiOwner = bigOwners.Count > 0 ? bigOwners[0] : 0;
                 }
@@ -63,7 +63,7 @@ namespace CoreSystems.Support
                     GridMap gridMap = null;
                     if (grid != null)
                     {
-                        if (IsGrid && GridEntity.IsSameConstructAs(grid))
+                        if (AiType == AiTypes.Grid && GridEntity.IsSameConstructAs(grid))
                         {
                             PrevSubGrids.Add(grid);
                             continue;
@@ -181,7 +181,7 @@ namespace CoreSystems.Support
                 
                 if (shieldGrid != null) {
 
-                    if (shield.Id == TopEntity.EntityId || IsGrid && GridEntity.IsSameConstructAs(shieldGrid))  {
+                    if (shield.Id == TopEntity.EntityId || AiType == AiTypes.Grid && GridEntity.IsSameConstructAs(shieldGrid))  {
                         MyShield = shield.ShieldEnt;
                     }
                     else {

@@ -206,7 +206,7 @@ namespace CoreSystems.Support
                     UpdatePartCounters(ai);
                     return;
                 }
-                if (!ai.IsGrid)
+                if (ai.AiType != AiTypes.Grid)
                 {
                     RootAi = ai;
                     LargestAi = ai;
@@ -247,7 +247,7 @@ namespace CoreSystems.Support
 
             internal void UpdateConstructsPlayers(MyEntity entity, long playerId, bool updateAdd)
             {
-                if (RootAi.IsGrid) {
+                if (RootAi.AiType == AiTypes.Grid) {
                     foreach (var sub in RootAi.SubGrids) {
 
                         Ai ai;

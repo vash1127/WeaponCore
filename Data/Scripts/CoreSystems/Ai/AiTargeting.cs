@@ -602,7 +602,7 @@ namespace CoreSystems.Support
 
                     if (hitGrid != null)
                     {
-                        if (hitGrid.MarkedForClose || (hitGrid != block.CubeGrid && ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity)) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0) continue;
+                        if (hitGrid.MarkedForClose || (hitGrid != block.CubeGrid && ai.AiType == AiTypes.Grid && hitGrid.IsSameConstructAs(ai.GridEntity)) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0) continue;
                         var isTarget = hitGrid == block.CubeGrid || hitGrid.IsSameConstructAs(block.CubeGrid);
 
                         var bigOwners = hitGrid.BigOwners;
@@ -704,7 +704,7 @@ namespace CoreSystems.Support
                                     if (hitGrid != null)
                                     {
 
-                                        if (hitGrid.MarkedForClose || hitGrid != cube.CubeGrid && ai.IsGrid && (hitGrid.IsSameConstructAs(ai.GridEntity) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
+                                        if (hitGrid.MarkedForClose || hitGrid != cube.CubeGrid && ai.AiType == AiTypes.Grid && (hitGrid.IsSameConstructAs(ai.GridEntity) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
                                         var bigOwners = hitGrid.BigOwners;
                                         var isTarget = hitGrid == cube.CubeGrid || hitGrid.IsSameConstructAs(cube.CubeGrid);
                                         var noOwner = bigOwners.Count == 0;
@@ -849,7 +849,7 @@ namespace CoreSystems.Support
                 var card = deck[x];
                 var lp = collection[card];
                 var cube = lp.Info.Target.TargetEntity as MyCubeBlock;
-                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && w.Comp.Ai.IsGrid && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.GridEntity)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, weaponPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, weaponPos) < w.MinTargetDistanceBufferSqr) continue;
+                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && w.Comp.Ai.AiType == AiTypes.Grid && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.GridEntity)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, weaponPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, weaponPos) < w.MinTargetDistanceBufferSqr) continue;
 
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, ref lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
@@ -896,7 +896,7 @@ namespace CoreSystems.Support
                     else
                     {
                         Vector3D? hitInfo;
-                        if (ai.IsGrid && GridIntersection.BresenhamGridIntersection(ai.GridEntity, ref weaponPos, ref lp.Position, out hitInfo, w.Comp.Cube, w.Comp.Ai))
+                        if (ai.AiType == AiTypes.Grid && GridIntersection.BresenhamGridIntersection(ai.GridEntity, ref weaponPos, ref lp.Position, out hitInfo, w.Comp.Cube, w.Comp.Ai))
                             continue;
 
                         double hitDist;

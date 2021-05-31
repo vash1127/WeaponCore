@@ -113,7 +113,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
                 var hitGrid = closestEnt as MyCubeGrid;
 
-                if (hitGrid != null && ai.IsGrid && hitGrid.IsSameConstructAs(ai.GridEntity))
+                if (hitGrid != null && ai.AiType == Ai.AiTypes.Grid && hitGrid.IsSameConstructAs(ai.GridEntity))
                 {
                     rayHitSelf = true;
                     rayOnlyHitSelf = true;

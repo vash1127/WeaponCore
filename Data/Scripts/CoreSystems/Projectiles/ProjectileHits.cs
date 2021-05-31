@@ -50,6 +50,7 @@ namespace CoreSystems.Projectiles
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
                 var firingCube = p.Info.Target.CoreCube;
                 var goCritical = p.Info.AmmoDef.Const.IsCriticalReaction;
+                var isGrid = p.Info.Ai.AiType == Ai.AiTypes.Grid;
                 WaterData water = null;
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
                     Session.WaterMap.TryGetValue(p.Info.MyPlanet.EntityId, out water);
@@ -61,7 +62,7 @@ namespace CoreSystems.Projectiles
                     var grid = ent as MyCubeGrid;
                     var entIsSelf = grid != null && firingCube != null && (grid == firingCube.CubeGrid || firingCube.CubeGrid.IsSameConstructAs(grid));
 
-                    if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield || firingCube == null && ent == p.Info.Ai.TopEntity) continue;
+                    if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield || !isGrid && ent == p.Info.Ai.TopEntity) continue;
 
                     var character = ent as IMyCharacter;
                     if (p.Info.EwarActive && character != null && !genericFields) continue;

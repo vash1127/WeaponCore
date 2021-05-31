@@ -176,7 +176,7 @@ namespace CoreSystems
                         ai.MyStaticInfo();
 
                         ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
-                        ai.BlockCount = ai.IsGrid ? ai.GridEntity.BlocksCount : 0;
+                        ai.BlockCount = ai.AiType == Ai.AiTypes.Grid ? ai.GridEntity.BlocksCount : 0;
                         ai.NearByEntities = ai.NearByEntitiesTmp;
 
                         if (!ai.DetectionInfo.PriorityInRange && ai.LiveProjectile.Count > 0)

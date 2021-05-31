@@ -102,6 +102,7 @@ namespace CoreSystems.Support
         internal BoundingSphereD ScanVolume;
         internal BoundingSphereD WaterVolume;
         internal BoundingBox BlockChangeArea = BoundingBox.CreateInvalid();
+        internal AiTypes AiType;
         internal long AiOwner;
         internal bool BlockMonitoring;
         internal bool AiSleep;
@@ -132,7 +133,6 @@ namespace CoreSystems.Support
         internal bool Closed;
         internal bool ScanInProgress;
         internal bool TouchingWater;
-        internal bool IsGrid;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
@@ -175,6 +175,13 @@ namespace CoreSystems.Support
             None,
         }
 
+        internal enum AiTypes
+        {
+            Grid,
+            Player,
+            Phantom,
+        }
+
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private uint _pCacheTick;
 
@@ -187,12 +194,11 @@ namespace CoreSystems.Support
             Charger = new AiCharger(this);
         }
 
-        internal void Init(MyEntity topEntity, Session session)
+        internal void Init(MyEntity topEntity, Session session, CoreComponent.CompTypeSpecific type)
         {
             TopEntity = topEntity;
             GridEntity = topEntity as MyCubeGrid;
-            IsGrid = GridEntity != null;
-            
+            AiType = GridEntity != null ? AiTypes.Grid : type == CoreComponent.CompTypeSpecific.Rifle ? AiTypes.Player : AiTypes.Phantom;
             DeadSphereRadius = GridEntity?.GridSizeHalf + 0.1 ?? 1.35;
 
             TopEntity.Flags |= (EntityFlags)(1 << 31);

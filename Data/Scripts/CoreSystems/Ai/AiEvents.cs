@@ -22,7 +22,7 @@ namespace CoreSystems.Support
                     Log.Line("Ai RegisterMyGridEvents error");
 
                 Registered = true;
-                if (IsGrid)
+                if (AiType == AiTypes.Grid)
                 {
                     GridEntity.OnFatBlockAdded += FatBlockAdded;
                     GridEntity.OnFatBlockRemoved += FatBlockRemoved;
@@ -44,7 +44,7 @@ namespace CoreSystems.Support
 
                     Registered = false;
 
-                    if (IsGrid)
+                    if (AiType == AiTypes.Grid)
                     {
                         GridEntity.OnFatBlockAdded -= FatBlockAdded;
                         GridEntity.OnFatBlockRemoved -= FatBlockRemoved;
@@ -67,7 +67,7 @@ namespace CoreSystems.Support
 
         internal void DelayedEventRegistration(bool register = false)
         {
-            if (IsGrid)
+            if (AiType == AiTypes.Grid)
             {
                 if (register && Registered)
                 {

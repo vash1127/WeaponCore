@@ -43,13 +43,13 @@ namespace CoreSystems
                 var enemyProjectiles = ai.LiveProjectile.Count > 0;
                 ai.CheckProjectiles = Tick - ai.NewProjectileTick <= 1;
 
-                if (ai.IsGrid && (ai.UpdatePowerSources || !ai.HadPower && ai.GridEntity.IsPowered || ai.HasPower && !ai.GridEntity.IsPowered || Tick10))
+                if (ai.AiType == Ai.AiTypes.Grid && (ai.UpdatePowerSources || !ai.HadPower && ai.GridEntity.IsPowered || ai.HasPower && !ai.GridEntity.IsPowered || Tick10))
                     ai.UpdateGridPower();
 
-                if (ai.IsGrid && !ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
+                if (ai.AiType == Ai.AiTypes.Grid && !ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
-                if (Tick60 && ai.IsGrid && ai.BlockChangeArea != BoundingBox.Invalid)
+                if (Tick60 && ai.AiType == Ai.AiTypes.Grid && ai.BlockChangeArea != BoundingBox.Invalid)
                 {
                     ai.BlockChangeArea.Min *= ai.GridEntity.GridSize;
                     ai.BlockChangeArea.Max *= ai.GridEntity.GridSize;
@@ -400,7 +400,7 @@ namespace CoreSystems
                     }
                 }
                 
-                if (ai.IsGrid && Tick60 && ai.BlockChangeArea != BoundingBox.Invalid) {
+                if (ai.AiType == Ai.AiTypes.Grid && Tick60 && ai.BlockChangeArea != BoundingBox.Invalid) {
                     ai.BlockChangeArea = BoundingBox.CreateInvalid();
                     ai.AddedBlockPositions.Clear();
                     ai.RemovedBlockPositions.Clear();

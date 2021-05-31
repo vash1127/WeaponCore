@@ -76,7 +76,7 @@ namespace CoreSystems.Platform
 
                     if (topAsGrid == null)
                         return;
-                    if (Weapon.Target.TargetEntity != null && (Weapon.Comp.Ai.IsGrid && topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.GridEntity)))
+                    if (Weapon.Target.TargetEntity != null && (Weapon.Comp.Ai.AiType == Ai.AiTypes.Grid && topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.GridEntity)))
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);

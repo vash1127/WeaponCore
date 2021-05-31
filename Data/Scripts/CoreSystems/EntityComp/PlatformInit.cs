@@ -74,7 +74,7 @@ namespace CoreSystems.Platform
             if (!Comp.Session.EntityAIs.TryGetValue(Comp.TopEntity, out Comp.Ai)) {
                 newAi = true;
                 Comp.Ai = Comp.Session.GridAiPool.Get();
-                Comp.Ai.Init(Comp.TopEntity, Comp.Session);
+                Comp.Ai.Init(Comp.TopEntity, Comp.Session, Comp.TypeSpecific);
                 Comp.Session.EntityAIs.TryAdd(Comp.TopEntity, Comp.Ai);
             }
 

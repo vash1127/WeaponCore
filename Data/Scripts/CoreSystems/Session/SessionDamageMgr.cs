@@ -210,7 +210,7 @@ namespace CoreSystems
                 return;
             }
 
-            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| !t.AmmoDef.Const.IsCriticalReaction && (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.IsGrid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| !t.AmmoDef.Const.IsCriticalReaction && (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.AiType == Ai.AiTypes.Grid && t.Ai.GridEntity.IsInSameLogicalGroupAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
             {
                 t.BaseDamagePool = 0;
                 return;
@@ -246,7 +246,7 @@ namespace CoreSystems
             var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
             var areaDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.AreaDamageModifer;
             var detDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.DetonationDamageModifer;
-
+            var playerAi = t.Ai.AiType == Ai.AiTypes.Player;
             float gridDamageModifier = grid.GridGeneralDamageModifier;
 
             var distTraveled = t.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist ?? t.DistanceTraveled: t.DistanceTraveled;
@@ -303,7 +303,7 @@ namespace CoreSystems
 
                 var fatBlock = rootBlock.FatBlock as MyCubeBlock;
                 var door = fatBlock as MyDoorBase;
-                if (door != null && door.Open && !HitDoor(hitEnt, door))
+                if (door != null && door.Open && !HitDoor(hitEnt, door) || playerAi && !RayAccuracyCheck(hitEnt, rootBlock))
                     continue;
 
                 var radiate = radiantCascade || nova;
@@ -759,13 +759,33 @@ namespace CoreSystems
             {
                 var hitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * (rayHit.Value + 0.25f));
                 IHitInfo hitInfo;
-                if (MyAPIGateway.Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15))
+                if (Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15))
                 {
                     var obb = new MyOrientedBoundingBoxD(door.PositionComp.LocalAABB, door.PositionComp.WorldMatrixRef);
 
                     var sphere = new BoundingSphereD(hitInfo.Position + (hitEnt.Intersection.Direction * 0.15f), 0.01f);
                     if (obb.Intersects(ref sphere))
                         return true;
+                }
+            }
+            return false;
+        }
+
+        private bool RayAccuracyCheck(HitEntity hitEnt, IMySlimBlock block)
+        {
+            BoundingBoxD box;
+            block.GetWorldBoundingBox(out box);
+            var ray = new RayD(ref hitEnt.Intersection.From, ref hitEnt.Intersection.Direction);
+            var rayHit = ray.Intersects(box);
+            if (rayHit != null)
+            {
+                var hitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * (rayHit.Value + 0.1f));
+                IHitInfo hitInfo;
+                if (Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15))
+                {
+                    var hit = (MyEntity)hitInfo.HitEntity;
+                    var rayHitTarget = box.Contains(hitInfo.Position) != ContainmentType.Disjoint && hit == block.CubeGrid;
+                    return rayHitTarget;
                 }
             }
             return false;

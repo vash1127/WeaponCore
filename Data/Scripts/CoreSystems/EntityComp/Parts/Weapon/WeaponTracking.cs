@@ -45,7 +45,7 @@ namespace CoreSystems.Platform
 
             bool selfHit = false;
             weapon.LastHitInfo = null;
-            if (checkSelfHit && target != null && weapon.Comp.Ai.IsGrid)
+            if (checkSelfHit && target != null && weapon.Comp.Ai.AiType == AiTypes.Grid)
             {
 
                 var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
@@ -795,7 +795,7 @@ namespace CoreSystems.Platform
 
         public bool MuzzleHitSelf()
         {
-            if (!Comp.Ai.IsGrid)
+            if (Comp.Ai.AiType != Ai.AiTypes.Grid)
                 return false;
 
             for (int i = 0; i < Muzzles.Length; i++)
