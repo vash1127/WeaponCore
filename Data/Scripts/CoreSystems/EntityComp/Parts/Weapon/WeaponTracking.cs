@@ -45,7 +45,7 @@ namespace CoreSystems.Platform
 
             bool selfHit = false;
             weapon.LastHitInfo = null;
-            if (checkSelfHit && target != null && weapon.Comp.Ai.AiType == AiTypes.Grid)
+            if (checkSelfHit && target != null && weapon.Comp.Ai.AiType == Ai.AiTypes.Grid)
             {
 
                 var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
