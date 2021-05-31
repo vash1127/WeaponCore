@@ -54,15 +54,14 @@ namespace CoreSystems.Projectiles
                 if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
                     Session.WaterMap.TryGetValue(p.Info.MyPlanet.EntityId, out water);
 
-                for (int i = 0; i < collectionCount; i++)
-                {
+                for (int i = 0; i < collectionCount; i++) {
 
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
 
                     var grid = ent as MyCubeGrid;
                     var entIsSelf = grid != null && firingCube != null && (grid == firingCube.CubeGrid || firingCube.CubeGrid.IsSameConstructAs(grid));
 
-                    if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
+                    if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield || firingCube == null && ent == p.Info.Ai.TopEntity) continue;
 
                     var character = ent as IMyCharacter;
                     if (p.Info.EwarActive && character != null && !genericFields) continue;
