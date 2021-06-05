@@ -355,7 +355,7 @@ namespace WeaponCore
 
         internal static void RequestBlockCamera(IMyTerminalBlock block, float newValue)
         {
-            var value = Convert.ToInt64(newValue);
+            var value = (long)Math.Round(newValue, 0);
             var customData = block.CustomData;
             long valueLong;
             if (string.IsNullOrEmpty(customData) || long.TryParse(block.CustomData, out valueLong))
@@ -377,7 +377,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            var value = Convert.ToInt32(newValue);
+            var value = (int)Math.Round(newValue, 0);
             if (value != comp.Data.Repo.Base.Set.Overrides.CameraChannel)
             {
                 WeaponComponent.RequestSetValue(comp, "CameraChannel", value, comp.Session.PlayerId);
@@ -396,7 +396,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            var value = Convert.ToInt32(newValue);
+            var value = (int)Math.Round(newValue, 0);
             if (value != comp.Data.Repo.Base.Set.Overrides.LeadGroup)
             {
                 if (comp.Session.HandlesInput)
