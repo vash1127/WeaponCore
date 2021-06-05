@@ -37,6 +37,7 @@ namespace WeaponCore.Api
                 ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<IMyEntity, MyTuple<bool, int, int>>(GetProjectilesLockedOn),
                 ["GetSortedThreats"] = new Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>>(GetSortedThreats),
+                ["GetObstructions"] = new Action<IMyEntity, ICollection<IMyEntity>>(GetObstructions),
                 ["GetAiFocus"] = new Func<IMyEntity, int, IMyEntity>(GetAiFocus),
                 ["SetAiFocus"] = new Func<IMyEntity, IMyEntity, int, bool>(SetAiFocus),
                 ["GetWeaponTarget"] = new Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>(GetWeaponTarget),
@@ -86,6 +87,7 @@ namespace WeaponCore.Api
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool>(PbGetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<long, MyTuple<bool, int, int>>(PbGetProjectilesLockedOn),
                 ["GetSortedThreats"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo, float>>(PbGetSortedThreats),
+                ["GetObstructions"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>>(PbGetObstructions),
                 ["GetAiFocus"] = new Func<long, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetAiFocus),
                 ["SetAiFocus"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool>(PbSetAiFocus),
                 ["GetWeaponTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetWeaponTarget),
@@ -126,6 +128,32 @@ namespace WeaponCore.Api
             pb.Getter = (b) => PbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
             _session.PbApiInited = true;
+        }
+
+
+        private void GetObstructions(IMyEntity shooter, ICollection<IMyEntity> collection)
+        {
+            var grid = shooter?.GetTopMostParent() as MyCubeGrid;
+            GridAi gridAi;
+            if (grid != null && collection != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+            {
+                for (int i = 0; i < gridAi.Obstructions.Count; i++)
+                    collection.Add(gridAi.Obstructions[i]);
+            }
+        }
+
+        private readonly ICollection<IMyEntity> _tmpPbGetObstructions = new List<IMyEntity>();
+        private void PbGetObstructions(Sandbox.ModAPI.Ingame.IMyTerminalBlock shooter, ICollection<MyDetectedEntityInfo> collection)
+        {
+            if (shooter != null && collection != null)
+            {
+                collection.Clear();
+                GetObstructions((IMyEntity)shooter, _tmpPbGetObstructions);
+                foreach (var i in _tmpPbGetObstructions)
+                    collection.Add(GetDetailedEntityInfo(new MyTuple<bool, bool, bool, IMyEntity>(true, false, false, i), (MyEntity)shooter));
+             
+                _tmpPbGetObstructions.Clear();
+            }
         }
 
         private float PbGetConstructEffectiveDps(long arg)
@@ -250,6 +278,7 @@ namespace WeaponCore.Api
             var shooterGrid = shooter?.GetTopMostParent() as MyCubeGrid;
             var topTarget = e?.GetTopMostParent() as MyEntity;
             var block = e as IMyTerminalBlock;
+            var voxel = e as MyVoxelBase;
 
             var player = e as IMyCharacter;
             long entityId = 0;
@@ -269,8 +298,12 @@ namespace WeaponCore.Api
                     return new MyDetectedEntityInfo();
                 }
             }
+            else if (voxel != null)
+            {
+                type = voxel.RootVoxel is MyPlanet ? MyDetectedEntityType.Planet : MyDetectedEntityType.Asteroid;
+                name = voxel.GetFriendlyName();
+            }
 
-            
 
             if (!target.Item1 || e == null || topTarget?.Physics == null) {
                 var projectile = target.Item2;
@@ -318,6 +351,7 @@ namespace WeaponCore.Api
             var grid = e.GetTopMostParent() as MyCubeGrid;
             var block = e as IMyTerminalBlock;
             var player = e as IMyCharacter;
+            var voxel = e as MyVoxelBase;
 
             string name;
             MyDetectedEntityType type;
@@ -331,6 +365,11 @@ namespace WeaponCore.Api
                 type = MyDetectedEntityType.CharacterOther;
                 name = player.GetFriendlyName();
 
+            }
+            else if (voxel != null)
+            {
+                type = voxel.RootVoxel is MyPlanet ? MyDetectedEntityType.Planet : MyDetectedEntityType.Asteroid;
+                name = voxel.GetFriendlyName();
             }
             else {
                 type = MyDetectedEntityType.Unknown;

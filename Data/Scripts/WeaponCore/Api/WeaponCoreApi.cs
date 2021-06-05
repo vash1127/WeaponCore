@@ -23,6 +23,7 @@ namespace WeaponCore.Api
         private Func<IMyTerminalBlock, IDictionary<string, int>, bool> _getBlockWeaponMap;
         private Func<IMyEntity, MyTuple<bool, int, int>> _getProjectilesLockedOn;
         private Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>> _getSortedThreats;
+        private Action<IMyEntity, ICollection<IMyEntity>> _getObstructions;
         private Func<IMyEntity, int, IMyEntity> _getAiFocus;
         private Func<IMyEntity, IMyEntity, int, bool> _setAiFocus;
         private Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>> _getWeaponTarget;
@@ -129,6 +130,7 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetBlockWeaponMap", ref _getBlockWeaponMap);
             AssignMethod(delegates, "GetProjectilesLockedOn", ref _getProjectilesLockedOn);
             AssignMethod(delegates, "GetSortedThreats", ref _getSortedThreats);
+            AssignMethod(delegates, "GetSortedThreats", ref _getObstructions);
             AssignMethod(delegates, "GetAiFocus", ref _getAiFocus);
             AssignMethod(delegates, "SetAiFocus", ref _setAiFocus);
             AssignMethod(delegates, "GetWeaponTarget", ref _getWeaponTarget);
@@ -209,6 +211,10 @@ namespace WeaponCore.Api
 
         public void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection) =>
             _getSortedThreats?.Invoke(shooter, collection);
+
+        public void GetObstructions(IMyEntity shooter, ICollection<IMyEntity> collection) =>
+            _getObstructions?.Invoke(shooter, collection);
+
 
         public IMyEntity GetAiFocus(IMyEntity shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
 
