@@ -53,8 +53,6 @@ namespace CoreSystems
                     ws.Action = comp.DefaultTrigger;
                 }
 
-                Log.Line($"ammoID: {comp.DefaultAmmoId} - wTrigger:{ws.Action} - tTrigger:{Values.State.TerminalAction}");
-
                 wr.StartId = 0;
             }
             ResetCompBaseRevisions();

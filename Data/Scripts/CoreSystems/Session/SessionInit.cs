@@ -180,11 +180,12 @@ namespace CoreSystems
                 else
                     PowerGroups.Add(t, 2);
             }
-
+            /*
             foreach (var g in PowerGroups)
             {
                 Log.Line($"ChargePowerRequired: {g.Key.ApproximatePeakPowerCombined} - assingedPowerGroup:{g.Value}");
             }
+            */
             _tmpStructureSorting.Clear();
         }
 

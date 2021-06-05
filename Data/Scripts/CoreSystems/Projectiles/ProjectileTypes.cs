@@ -35,6 +35,8 @@ namespace CoreSystems.Support
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
+        internal Vector3D PrevProjectilePos;
+        internal Vector3D PrevTargetPos;
         internal Hit Hit;
         internal WeaponRandomGenerator WeaponRng;
         internal FakeTargets DummyTargets;
@@ -51,12 +53,13 @@ namespace CoreSystems.Support
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal double ProjectileDisplacement;
+        internal double ClosestDistSqrToTarget = double.MaxValue;
+        internal double TracerLength;
         internal double MaxTrajectory;
         internal float ShotFade;
         internal float BaseDamagePool;
         internal float BaseHealthPool;
         internal float BaseEwarPool;
-        internal double TracerLength;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool EwarAreaPulse;
@@ -132,7 +135,6 @@ namespace CoreSystems.Support
                 System.Session.TriggerEntityPool.Return(TriggerEntity);
                 TriggerEntity = null;
             }
-
             AvShot = null;
             System = null;
             Ai = null;
@@ -162,6 +164,7 @@ namespace CoreSystems.Support
             FireCounter = 0;
             AiVersion = 0;
             UniqueMuzzleId = 0;
+            ClosestDistSqrToTarget = double.MinValue; 
             ShieldResistMod = 1f;
             ShieldBypassMod = 1f;
             EnableGuidance = true;
@@ -170,6 +173,8 @@ namespace CoreSystems.Support
             Origin = Vector3D.Zero;
             ShooterVel = Vector3D.Zero;
             TriggerMatrix = MatrixD.Identity;
+            PrevTargetPos = Vector3D.Zero;
+            PrevProjectilePos = Vector3D.Zero;
         }
     }
 
@@ -350,6 +355,7 @@ namespace CoreSystems.Support
         internal IMySlimBlock HitBlock;
         internal int VirutalId = -1;
         internal VoxelParallelHits[] VoxelHits;
+        internal double MissDistance;
 
         internal WeaponFrameCache(int size)
         {

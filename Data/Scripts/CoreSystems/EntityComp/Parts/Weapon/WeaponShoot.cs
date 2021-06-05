@@ -101,7 +101,6 @@ namespace CoreSystems.Platform
 
                         if (ProtoWeaponAmmo.CurrentAmmo > 0) {
 
-                            Log.Line($"{PartState.Action}");
                             --ProtoWeaponAmmo.CurrentAmmo;
                             if (PartState.Action == TriggerActions.TriggerOnce)
                                 DequeueShot();

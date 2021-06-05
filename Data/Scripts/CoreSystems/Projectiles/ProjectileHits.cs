@@ -632,7 +632,10 @@ namespace CoreSystems.Projectiles
             var finalCount = p.Info.HitList.Count;
             if (finalCount > 0)
             {
-
+                if (!p.Info.IsShrapnel)
+                {
+                    Log.Line("hit");
+                }
                 var checkHit = (!p.Info.AmmoDef.Const.IsBeamWeapon || !p.Info.ShieldBypassed || finalCount > 1); ;
 
                 var blockingEnt = !p.Info.ShieldBypassed || finalCount == 1 ? 0 : 1;

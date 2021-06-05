@@ -305,7 +305,7 @@ namespace CoreSystems.Control
         internal static void SliderWeaponCameraWriterRange(IMyTerminalBlock block, StringBuilder builder)
         {
 
-            var value = Convert.ToInt64(BlockUi.GetWeaponCamera(block));
+            var value = (long)Math.Round(BlockUi.GetWeaponCamera(block), 0);
             var message = value > 0 ? value.ToString() : "Disabled";
 
             builder.Append(message);
@@ -332,7 +332,7 @@ namespace CoreSystems.Control
         internal static void SliderLeadGroupWriterRange(IMyTerminalBlock block, StringBuilder builder)
         {
 
-            var value = Convert.ToInt64(BlockUi.GetLeadGroup(block));
+            var value = (long)Math.Round(BlockUi.GetLeadGroup(block), 0);
             var message = value > 0 ? value.ToString() : "Disabled";
 
             builder.Append(message);

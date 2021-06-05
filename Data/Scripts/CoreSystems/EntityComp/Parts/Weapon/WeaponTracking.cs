@@ -525,9 +525,9 @@ namespace CoreSystems.Platform
 
             double closingSpeed;
             Vector3D.Dot(ref deltaVel, ref deltaPosNorm, out closingSpeed);
-
             Vector3D closingVel = closingSpeed * deltaPosNorm;
             Vector3D lateralVel = deltaVel - closingVel;
+
             double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
             double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
 
@@ -552,13 +552,22 @@ namespace CoreSystems.Platform
 
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             double shooterVelScaleFactor = 1;
-            bool projectileAccelerates = projectileAccMag > 1e-6;
+            bool projectileAccelerates = projectileAccMag > 1e-6;   
             bool hasGravity = gravityMultiplier > 1e-6 && !MyUtils.IsZero(weapon.GravityPoint);
 
             if (!basic && projectileAccelerates)
                 shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
 
             Vector3D estimatedImpactPoint = targetPos + timeToIntercept * (targetVel - shooterVel * shooterVelScaleFactor);
+            if (weapon.WeaponCache.MissDistance > 0)
+            {
+                var diffDirNorm = Vector3D.Normalize(targetPos - estimatedImpactPoint);
+                var offsetPrediction = estimatedImpactPoint + diffDirNorm * weapon.WeaponCache.MissDistance;
+                DsDebugDraw.DrawSingleVec(offsetPrediction, 35, Color.Yellow);
+                DsDebugDraw.DrawSingleVec(estimatedImpactPoint, 35, Color.Orange);
+                estimatedImpactPoint = offsetPrediction;
+            }
+
             if (basic) return estimatedImpactPoint;
             Vector3D aimDirection = estimatedImpactPoint - shooterPos;
 
@@ -610,6 +619,7 @@ namespace CoreSystems.Platform
                 }
 
                 targetPos += targetVel * dt;
+
                 if (projectileAccelerates)
                 {
 
@@ -633,7 +643,8 @@ namespace CoreSystems.Platform
             }
             Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
             Vector3D gravityOffset = hasGravity ? -0.5 * minTime * minTime * gravity : Vector3D.Zero;
-            return estimatedImpactPoint + perpendicularAimOffset + gravityOffset;
+            var finalEstimate = estimatedImpactPoint + perpendicularAimOffset + gravityOffset;
+            return finalEstimate;
         }
         private bool RayCheckTest()
         {

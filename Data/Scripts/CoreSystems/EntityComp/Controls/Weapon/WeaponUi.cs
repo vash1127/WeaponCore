@@ -419,7 +419,7 @@ namespace CoreSystems
 
         internal static void RequestBlockCamera(IMyTerminalBlock block, float newValue)
         {
-            var value = Convert.ToInt64(newValue);
+            var value = (long)Math.Round(newValue, 0);
             var customData = block.CustomData;
             long valueLong;
             if (string.IsNullOrEmpty(customData) || long.TryParse(block.CustomData, out valueLong))
@@ -441,7 +441,7 @@ namespace CoreSystems
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            var value = Convert.ToInt32(newValue);
+            var value = (int)Math.Round(newValue);
             if (value != comp.Data.Repo.Values.Set.Overrides.CameraChannel)
             {
                 Weapon.WeaponComponent.RequestSetValue(comp, "CameraChannel", value, comp.Session.PlayerId);
@@ -471,7 +471,7 @@ namespace CoreSystems
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            var value = Convert.ToInt32(newValue);
+            var value = (int)Math.Round(newValue, 0);
             if (value != comp.Data.Repo.Values.Set.Overrides.LeadGroup)
             {
                 if (comp.Session.HandlesInput)
@@ -494,7 +494,7 @@ namespace CoreSystems
             var comp = block?.Components?.Get<CoreComponent>() as Weapon.WeaponComponent;
             if (comp == null || comp.Platform.State != CorePlatform.PlatformState.Ready) return;
 
-            var value = Convert.ToInt32(newValue);
+            var value = (int)Math.Round(newValue, 0);
             if (value != comp.Data.Repo.Values.Set.Overrides.ArmedTimer)
             {
                 Weapon.WeaponComponent.RequestSetValue(comp, "ArmedTimer", value, comp.Session.PlayerId);

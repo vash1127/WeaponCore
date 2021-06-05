@@ -263,11 +263,20 @@ namespace CoreSystems
 
                 }
             }
-
-            for (int i = 0; i < _uninitializedBlocks.Count; i++)
+            for (int i = _uninitializedBlocks.Count - 1; i >= 0; i--)
             {
 
                 var badBlock = _uninitializedBlocks[i];
+
+                Ai gridAi;
+                CoreComponent comp;
+                if (EntityAIs.TryGetValue(badBlock.CubeGrid, out gridAi) && gridAi.CompBase.TryGetValue(badBlock, out comp))
+                {
+                    _uninitializedBlocks.RemoveAtFast(i);
+                    Log.Line($"quick remove");
+                    continue;
+                }
+
                 if (badBlock.InScene)
                 {
 

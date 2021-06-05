@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using CoreSystems.Platform;
 using VRage;
 using VRage.Game;
@@ -117,7 +118,8 @@ namespace CoreSystems.Support
                     Session.AmmoDefIds.Add(ammoDefId);
                     Session.AmmoDamageMap[ammo] = null;
                     var ammoType = new WeaponSystem.AmmoType { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) }; 
-                    Session.AmmoMaps[tDef.Key].Add(ammoType.AmmoName, ammoType);
+
+                    Session.AmmoMaps[tDef.Key][ammoType.AmmoName] = ammoType;
                     weaponAmmo[i] = ammoType;
                 }
 
