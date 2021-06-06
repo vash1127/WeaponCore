@@ -458,7 +458,7 @@ namespace WeaponCore.Projectiles
                     var targetPos = Vector3D.Zero;
 
                     FakeWorldTargetInfo fakeTargetInfo = null;
-                    if (fake) {
+                    if (fake && Info.DummyTargets != null) {
                         var fakeTarget = Info.DummyTargets.PaintedTarget.EntityId != 0 && !Info.DummyTargets.PaintedTarget.Dirty ? Info.DummyTargets.PaintedTarget : Info.DummyTargets.ManualTarget;
                         fakeTargetInfo = fakeTarget.LastInfoTick != Info.System.Session.Tick ? fakeTarget.GetFakeTargetInfo(Info.Ai) : fakeTarget.FakeInfo;
                         targetPos = fakeTargetInfo.WorldPosition;

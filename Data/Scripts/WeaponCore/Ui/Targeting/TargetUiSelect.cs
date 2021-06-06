@@ -60,6 +60,7 @@ namespace WeaponCore
         {
             var s = _session;
             var ai = s.TrackingAi;
+
             if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 

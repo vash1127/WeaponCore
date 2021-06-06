@@ -38,7 +38,9 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
-                p.Info.DummyTargets = w.Comp.FakeMode ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
+                p.Info.DummyTargets = null;
+                if (w.Comp.FakeMode)
+                    w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Base.State.PlayerId, out p.Info.DummyTargets);
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;

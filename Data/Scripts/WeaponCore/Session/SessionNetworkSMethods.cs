@@ -128,11 +128,12 @@ namespace WeaponCore
             long playerId;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
+                GridAi.FakeTargets fakeTargets;
                 uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId && PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))  {
                     mIds[(int) packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].ManualTarget.Sync(targetPacket, ai);
+                    fakeTargets.ManualTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;
@@ -158,12 +159,13 @@ namespace WeaponCore
             long playerId;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
+                GridAi.FakeTargets fakeTargets;
                 uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId && PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
                 {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].PaintedTarget.Sync(targetPacket, ai);
+                    fakeTargets.PaintedTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;
