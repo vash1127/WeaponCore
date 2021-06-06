@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
+using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Projectiles;
 using static WeaponCore.WeaponRandomGenerator;
@@ -305,6 +306,7 @@ namespace WeaponCore.Support
             TargetAisTmp.Clear();
             EntitiesInRange.Clear();
             Batteries.Clear();
+            NoTargetLos.Clear();
             Targets.Clear();
             Weapons.Clear();
             WeaponsIdx.Clear();

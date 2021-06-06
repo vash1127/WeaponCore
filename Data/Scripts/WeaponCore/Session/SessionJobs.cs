@@ -89,7 +89,6 @@ namespace WeaponCore
                             continue;
                         }
 
-
                         if (ai.MyPlanetTmp != null)
                             ai.MyPlanetInfo();
 

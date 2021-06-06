@@ -386,12 +386,17 @@ namespace WeaponCore.Api
             
             var dict = arg2 as IDictionary<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo, float>;
 
-            foreach (var i in _tmpTargetList)
-                if (dict != null)
-                    dict[GetDetailedEntityInfo(new MyTuple<bool, bool, bool, IMyEntity>(true, false, false, i.Item1), (MyEntity) shooter)] = i.Item2;
+            GridAi gridAi;
+            if (shooter != null && dict != null && _session.GridTargetingAIs.TryGetValue((MyCubeGrid)shooter.CubeGrid, out gridAi)) {
 
+                foreach (var i in _tmpTargetList) {
+
+                    var ent = i.Item1 as MyEntity;
+                    if (ent != null && !gridAi.NoTargetLos.ContainsKey(ent)) 
+                        dict[GetDetailedEntityInfo(new MyTuple<bool, bool, bool, IMyEntity>(true, false, false, i.Item1), (MyEntity)shooter)] = i.Item2;
+                }
+            }
             _tmpTargetList.Clear();
-
         }
 
         private MyTuple<bool, int, int> PbGetProjectilesLockedOn(long arg)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -422,7 +423,7 @@ namespace WeaponCore
             return ai.Construct.Data.Repo.FocusData.HasFocus;
         }
 
-        internal void SetTarget(MyEntity entity, GridAi ai, Dictionary<MyEntity, float> masterTargets)
+        internal void SetTarget(MyEntity entity, GridAi ai, Dictionary<MyEntity, MyTuple<float, TargetUi.TargetControl>> masterTargets)
         {
             
             TrackingAi = ai;
@@ -437,8 +438,8 @@ namespace WeaponCore
             }
             else {
 
-                float offenseRating;
-                if (!masterTargets.TryGetValue(entity, out offenseRating)) return;
+                MyTuple<float, TargetUi.TargetControl> targetInfo;
+                if (!masterTargets.TryGetValue(entity, out targetInfo)) return;
                 ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
 
                 var tGrid = entity as MyCubeGrid;

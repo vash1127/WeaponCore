@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -10,6 +11,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Support
 {
@@ -290,6 +292,7 @@ namespace WeaponCore.Support
             internal bool Drone;
             internal int PartCount;
             internal int FatCount;
+            internal int LosHits;
             internal float OffenseRating;
             internal MyEntity Target;
             internal MyCubeGrid MyGrid;
@@ -309,6 +312,7 @@ namespace WeaponCore.Support
                 TargetAi = targetAi;
                 Velocity = Target.Physics.LinearVelocity;
                 VelLenSqr = Velocity.LengthSquared();
+                LosHits = 0;
                 var targetSphere = Target.PositionComp.WorldVolume;
                 TargetPos = targetSphere.Center;
                 TargetRadius = targetSphere.Radius;
@@ -345,6 +349,25 @@ namespace WeaponCore.Support
                 
                 if (Drone && OffenseRating < 10) 
                     OffenseRating = 10;
+
+                if (detectInfo.Armed && (targetAi != null || IsGrid && targetSphere.Radius > 25 || Target is IMyCharacter))
+                {
+
+                    TargetLosCheck();
+                }
+            }
+
+            private void TargetLosCheck()
+            {
+                var to = MyAi.GridVolume.Center;
+                var from = TargetPos;
+
+                var perpDir = Vector3D.CalculatePerpendicularVector(to - from);
+                var fromPerp = from + (perpDir * TargetRadius);
+                var toPerp = to + (perpDir * MyAi.GridVolume.Radius);
+
+                MyAi.Session.Physics.CastRayParallel(ref from, ref to, CollisionLayers.VoxelCollisionLayer, TargetLostCallBack);
+                MyAi.Session.Physics.CastRayParallel(ref fromPerp, ref toPerp, CollisionLayers.VoxelCollisionLayer, TargetLostCallBack);
             }
 
             internal void Clean()
@@ -353,6 +376,21 @@ namespace WeaponCore.Support
                 MyGrid = null;
                 MyAi = null;
                 TargetAi = null;
+            }
+
+            internal void TargetLostCallBack(IHitInfo hitInfo)
+            {
+                if (hitInfo?.HitEntity?.Physics != null && MyAi != null)
+                {
+                    var hitEnt = (MyEntity)hitInfo.HitEntity;
+                    if (hitEnt != Target && hitEnt is MyVoxelBase)
+                    {
+                        if (++LosHits >= 2)
+                        {
+                            MyAi.NoTargetLos[Target] = MyAi.Session.Tick;
+                        }
+                    }
+                }
             }
         }
 

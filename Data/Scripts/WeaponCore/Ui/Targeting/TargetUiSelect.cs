@@ -1,5 +1,7 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game.Entity;
 using VRage.Input;
 using VRageMath;
@@ -208,7 +210,7 @@ namespace WeaponCore
                 else _currentIdx = _endIdx;
 
             var ent = _sortedMasterList[_currentIdx];
-            if (ent == null || ent.MarkedForClose)
+            if (ent == null || ent.MarkedForClose || ai.NoTargetLos.ContainsKey(ent))
             {
                 _endIdx = -1;
                 return;
@@ -240,7 +242,9 @@ namespace WeaponCore
                 for (int j = 0; j < subTargets.Count; j++) {
                     var tInfo = subTargets[j];
                     if (tInfo.Target.MarkedForClose) continue;
-                    _masterTargets[tInfo.Target] = tInfo.OffenseRating;
+                    HashSet<long> playerSet;
+                    var controlType = tInfo.Drone ? TargetControl.Drone : tInfo.IsGrid && _session.PlayerGrids.TryGetValue((MyCubeGrid)tInfo.Target, out playerSet) ? TargetControl.Player : tInfo.IsGrid && !_session.GridHasPower((MyCubeGrid)tInfo.Target) ? TargetControl.Trash : TargetControl.Other;
+                    _masterTargets[tInfo.Target] = new MyTuple<float, TargetControl>(tInfo.OffenseRating, controlType);
                     _toPruneMasterDict[tInfo.Target] = tInfo;
                 }
             }

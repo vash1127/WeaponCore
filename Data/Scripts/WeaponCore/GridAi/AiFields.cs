@@ -36,7 +36,7 @@ namespace WeaponCore.Support
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly ConcurrentDictionary<MyCubeBlock, MyInventory> InventoryMonitor = new ConcurrentDictionary<MyCubeBlock, MyInventory>();
-
+        internal readonly ConcurrentDictionary<MyEntity, uint> NoTargetLos = new ConcurrentDictionary<MyEntity, uint>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
         internal readonly HashSet<IMyCubeGrid> PrevSubGrids = new HashSet<IMyCubeGrid>();

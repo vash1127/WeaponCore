@@ -555,7 +555,7 @@ namespace WeaponCore.Projectiles
                     {
                         double angle = Info.WeaponRng.ClientProjectileRandom.NextDouble() * MathHelper.TwoPi;
                         Info.WeaponRng.ClientProjectileCurrentCounter += 1;
-                        var up = Vector3D.Normalize(Vector3D.CalculatePerpendicularVector(Info.Direction));
+                        var up = Vector3D.CalculatePerpendicularVector(Info.Direction);
                         var right = Vector3D.Cross(Info.Direction, up);
                         OffsetDir = Math.Sin(angle) * up + Math.Cos(angle) * right;
                         OffsetDir *= Info.AmmoDef.Trajectory.Smarts.OffsetRatio;
