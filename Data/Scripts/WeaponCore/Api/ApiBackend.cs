@@ -198,22 +198,46 @@ namespace WeaponCore.Api
 
         private Vector3D? PbGetPredictedTargetPosition(object arg1, long arg2, int arg3)
         {
-            return GetPredictedTargetPosition(arg1 as IMyTerminalBlock, MyEntities.GetEntityById(arg2), arg3);
+            var block = arg1 as IMyTerminalBlock;
+            var target = MyEntities.GetEntityById(arg2);
+            GridAi ai;
+            if (block != null && target != null && _session.GridToMasterAi.TryGetValue((MyCubeGrid)block.CubeGrid, out ai) && ai.NoTargetLos.ContainsKey(target))
+                return null;
+
+            return GetPredictedTargetPosition(block, target, arg3);
         }
 
         private bool PbCanShootTarget(object arg1, long arg2, int arg3)
         {
-            return CanShootTarget(arg1 as IMyTerminalBlock, MyEntities.GetEntityById(arg2), arg3);
+            var block = arg1 as IMyTerminalBlock;
+            var target = MyEntities.GetEntityById(arg2);
+            GridAi ai;
+            if (block != null && target != null && _session.GridToMasterAi.TryGetValue((MyCubeGrid)block.CubeGrid, out ai) && ai.NoTargetLos.ContainsKey(target))
+                return false;
+
+            return CanShootTarget(block, target, arg3);
         }
 
         private bool PbIsTargetAligned(object arg1, long arg2, int arg3)
         {
-            return IsTargetAligned(arg1 as IMyTerminalBlock, MyEntities.GetEntityById(arg2), arg3);
+            var block = arg1 as IMyTerminalBlock;
+            var target = MyEntities.GetEntityById(arg2);
+            GridAi ai;
+            if (block != null && target != null && _session.GridToMasterAi.TryGetValue((MyCubeGrid)block.CubeGrid, out ai) && ai.NoTargetLos.ContainsKey(target))
+                return false;
+
+            return IsTargetAligned(block, target, arg3);
         }
 
         private MyTuple<bool, Vector3D?> PbIsTargetAlignedExtended(object arg1, long arg2, int arg3)
         {
-            return IsTargetAlignedExtended(arg1 as IMyTerminalBlock, MyEntities.GetEntityById(arg2), arg3);
+            var block = arg1 as IMyTerminalBlock;
+            var target = MyEntities.GetEntityById(arg2);
+            GridAi ai;
+            if (block != null && target != null && _session.GridToMasterAi.TryGetValue((MyCubeGrid)block.CubeGrid, out ai) && ai.NoTargetLos.ContainsKey(target))
+                return new MyTuple<bool, Vector3D?>();
+
+            return IsTargetAlignedExtended(block, target, arg3);
         }
         
         private void PbSetBlockTrackingRange(object arg1, float arg2)
@@ -258,7 +282,16 @@ namespace WeaponCore.Api
 
         private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetWeaponTarget(object arg1, int arg2)
         {
-            return GetDetailedEntityInfo(GetWeaponTarget(arg1 as IMyTerminalBlock, arg2), (MyEntity)arg1);
+            var block = arg1 as IMyTerminalBlock;
+            var target = GetWeaponTarget(block, arg2);
+
+            GridAi ai;
+            if (block != null && target.Item4 != null && _session.GridToMasterAi.TryGetValue((MyCubeGrid)block.CubeGrid, out ai) && ai.NoTargetLos.ContainsKey((MyEntity) target.Item4))
+                return new MyDetectedEntityInfo();
+
+            var result = GetDetailedEntityInfo(target, (MyEntity)arg1);
+
+            return result;
         }
 
         private bool PbSetAiFocus(object arg1, long arg2, int arg3)
@@ -426,7 +459,14 @@ namespace WeaponCore.Api
 
         private bool PbIsTargetValid(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, long arg2, bool arg3, bool arg4)
         {
-            return IsTargetValid(arg1 as IMyTerminalBlock, MyEntities.GetEntityById(arg2), arg3, arg4);
+
+            var block = arg1 as IMyTerminalBlock;
+            var target = MyEntities.GetEntityById(arg2);
+            GridAi ai;
+            if (block != null && target != null && _session.GridToMasterAi.TryGetValue((MyCubeGrid)block.CubeGrid, out ai) && ai.NoTargetLos.ContainsKey(target))
+                return false;
+
+            return IsTargetValid(block, target, arg3, arg4);
         }
 
         private MyTuple<Vector3D, Vector3D> PbGetWeaponScope(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, int arg2)

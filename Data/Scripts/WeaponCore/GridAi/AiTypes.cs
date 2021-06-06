@@ -385,9 +385,9 @@ namespace WeaponCore.Support
                     var hitEnt = (MyEntity)hitInfo.HitEntity;
                     if (hitEnt != Target && hitEnt is MyVoxelBase)
                     {
-                        if (++LosHits >= 2)
+                        if (++LosHits >= 2 && MyAi?.Construct.RootAi != null)
                         {
-                            MyAi.NoTargetLos[Target] = MyAi.Session.Tick;
+                            MyAi.Construct.RootAi.NoTargetLos[Target] = MyAi.Session.Tick;
                         }
                     }
                 }
