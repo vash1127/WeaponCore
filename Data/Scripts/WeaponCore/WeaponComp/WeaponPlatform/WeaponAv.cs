@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using VRage.Game;
 using VRageMath;
@@ -350,7 +350,10 @@ namespace WeaponCore.Platform
                 return;
 
             if (FiringEmitter.Loop)
+			{
                 FiringEmitter.StopSound(true);
+				FiringEmitter.PlaySound(FiringSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+			}
             else
                 FiringEmitter.StopSound(false);
         }
@@ -368,7 +371,13 @@ namespace WeaponCore.Platform
             if (RotateEmitter == null)
                 return;
 
-            RotateEmitter.StopSound(true);
+            if (RotateEmitter.Loop)
+			{
+				RotateEmitter.StopSound(true);
+				RotateEmitter.PlaySound(RotateSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+			}
+            else
+                RotateEmitter.StopSound(true);
         }
     }
 }
