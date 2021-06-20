@@ -347,7 +347,10 @@ namespace CoreSystems.Platform
                 return;
 
             if (FiringEmitter.Loop)
+			{
                 FiringEmitter.StopSound(true);
+				FiringEmitter.PlaySound(FiringSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+			}
             else
                 FiringEmitter.StopSound(false);
         }
@@ -365,9 +368,14 @@ namespace CoreSystems.Platform
             if (RotateEmitter == null)
                 return;
 
-            RotateEmitter.StopSound(true);
+            if (RotateEmitter.Loop)
+			{
+				RotateEmitter.StopSound(true);
+				RotateEmitter.PlaySound(RotateSound, stopPrevious: false, skipIntro: true, force2D: false, alwaysHearOnRealistic: false, skipToEnd: true);
+			}
+            else
+                RotateEmitter.StopSound(true);
         }
-
 
     }
 }
