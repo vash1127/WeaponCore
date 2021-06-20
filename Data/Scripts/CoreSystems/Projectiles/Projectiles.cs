@@ -268,7 +268,7 @@ namespace CoreSystems.Projectiles
                 if (p.Info.AmmoDef.Const.Ewar)
                     p.RunEwar();
 
-                if (!p.Info.IsShrapnel && !p.DynamicGuidance && p.Info.System.Prediction != WeaponDefinition.HardPointDef.Prediction.Advanced && p.Info.Target.TargetEntity != null)
+                if (!p.Info.IsShrapnel && !p.DynamicGuidance && p.Info.Target.TargetEntity != null)
                 {
                     var distSqrToTarget = Vector3D.DistanceSquared(p.Info.Target.TargetEntity.PositionComp.WorldAABB.Center, p.Position);
                     if (distSqrToTarget < p.Info.ClosestDistSqrToTarget || p.Info.ClosestDistSqrToTarget < 0)
