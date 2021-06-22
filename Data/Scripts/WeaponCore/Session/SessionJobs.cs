@@ -227,7 +227,7 @@ namespace WeaponCore
                         WaterMap[planet.EntityId] = data;
                     }
 
-                    var radiusInfo = WaterApi.GetRadiusData(data.WaterId);
+                    var radiusInfo = WaterApi.GetPhysical(data.WaterId);
                     data.Center = radiusInfo.Item1;
                     data.Radius = radiusInfo.Item2;
                     data.MinRadius = radiusInfo.Item3;

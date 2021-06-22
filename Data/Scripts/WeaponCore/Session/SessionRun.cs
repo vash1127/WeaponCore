@@ -299,23 +299,7 @@ namespace WeaponCore
         {
             try
             {
-                foreach (var mod in Session.Mods)
-                {
-                    if (mod.PublishedFileId == 1365616918 || mod.PublishedFileId == 2189703321) ShieldMod = true;
-                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\DefenseShields"))
-                        ShieldMod = true;
-                    else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719 || mod.PublishedFileId == 2006751214 || mod.PublishedFileId == 2015560129)
-                        ReplaceVanilla = true;
-                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
-                        ReplaceVanilla = true;
-                    else if (mod.PublishedFileId == 2123506303 || mod.PublishedFileId == 2496225055)
-                    {
-                        if (mod.Name != ModContext.ModId)
-                            SuppressWc = true;
-                    }
-                    else if (mod.PublishedFileId == 2200451495)
-                        WaterMod = true;
-                }
+                ModChecker();
 
                 if (SuppressWc)
                     return;

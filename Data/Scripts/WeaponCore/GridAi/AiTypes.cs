@@ -177,12 +177,10 @@ namespace WeaponCore.Support
                 var rootConstruct = ai.Construct.RootAi.Construct;
                 DroneCount++;
 
-                if (DroneCount > rootConstruct.DroneCount) {
-                    rootConstruct.DroneCount = DroneCount;
-                    rootConstruct.LastDroneTick = ai.Session.Tick + 1;
-                }
+                rootConstruct.DroneCount = DroneCount;
+                rootConstruct.LastDroneTick = ai.Session.Tick + 1;
 
-                if (info.DistSqr < 9000000) 
+                if (info.DistSqr < 36000000) 
                     rootConstruct.DroneAlert = true;
             }
 
