@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -412,10 +413,10 @@ namespace WeaponCore.Projectiles
 
                 if (branch == VoxelIntersectBranch.DeferFullCheck) {
 
-                    if (p.Beam.Length > 85) {
+                    if (p.Beam.Length > 85)
+                    {
                         IHitInfo hit;
-                        p.Info.System.Session.Physics.CastLongRay(p.Beam.From, p.Beam.To, out hit, false);
-                        if (hit?.HitEntity is MyVoxelBase)
+                        if (p.Info.System.Session.Physics.CastRay(p.Beam.From, p.Beam.To, out hit, CollisionLayers.VoxelCollisionLayer, false) && hit != null)
                             voxelHit = hit.Position;
                     }
                     else {
@@ -434,7 +435,13 @@ namespace WeaponCore.Projectiles
                 else if (branch == VoxelIntersectBranch.DeferedMissUpdate) {
 
                     using (voxel.Pin()) {
-                        if (!voxel.GetIntersectionWithLine(ref p.Beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, p.Beam.From))
+
+                        if (p.Info.AmmoDef.Const.IsBeamWeapon && p.Info.AmmoDef.Const.RealShotsPerMin < 10) {
+                            IHitInfo hit;
+                            if (p.Info.System.Session.Physics.CastRay(p.Beam.From, p.Beam.To, out hit, CollisionLayers.VoxelCollisionLayer, false) && hit != null)
+                                voxelHit = hit.Position;
+                        }
+                        else if (!voxel.GetIntersectionWithLine(ref p.Beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, p.Beam.From))
                             voxelHit = p.Beam.From;
                     }
                 }
