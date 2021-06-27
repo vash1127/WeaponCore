@@ -20,7 +20,7 @@ namespace CoreSystems.Projectiles
                 var firingPlayer = w.Comp.Data.Repo.Values.State.PlayerId == w.Comp.Session.PlayerId || w.Comp.TypeSpecific == CoreComponent.CompTypeSpecific.Phantom;
 
                 var patternCycle = gen.PatternCycle;
-                var targetable = w.ActiveAmmoDef.AmmoDef.Override.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
+                var targetable = w.ActiveAmmoDef.AmmoDef.Const.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
                 p.Info.System = w.System;
@@ -47,7 +47,7 @@ namespace CoreSystems.Projectiles
                 p.Info.ShooterVel = w.Comp.Ai.GridVel;
 
                 p.Info.OriginUp = t != Kind.Client ? w.MyPivotUp : gen.OriginUp;
-                p.Info.MaxTrajectory = t != Kind.Client ? a.Const.MaxTrajectoryGrows && w.FireCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * w.FireCounter : a.Override.MaxTrajectory : gen.MaxTrajectory;
+                p.Info.MaxTrajectory = t != Kind.Client ? a.Const.MaxTrajectoryGrows && w.FireCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * w.FireCounter : a.Const.MaxTrajectory : gen.MaxTrajectory;
                 p.Info.MuzzleId = t != Kind.Virtual ? muzzle.MuzzleId : -1;
                 p.Info.UniqueMuzzleId = muzzle.UniqueId;
                 p.Info.WeaponCache.VirutalId = t != Kind.Virtual ? -1 : p.Info.WeaponCache.VirutalId;

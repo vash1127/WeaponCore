@@ -71,7 +71,7 @@ namespace CoreSystems
 
             normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
             if (info.System.Session.IsServer)
-                hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Override.AreaEffectDamage * hitEnt.Entity.Physics.Mass), forcePosition, Vector3.Zero);
+                hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), forcePosition, Vector3.Zero);
 
             if (depletable)
                 info.BaseHealthPool -= healthPool;
@@ -93,7 +93,7 @@ namespace CoreSystems
 
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
-            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Override.AreaEffectDamage, ref healthPool, attackerId, info.System.WeaponIdHash, hitEnt.Blocks);
+            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, ref healthPool, attackerId, info.System.WeaponIdHash, hitEnt.Blocks);
 
             if (depletable)
                 info.BaseHealthPool -= healthPool;
@@ -120,7 +120,7 @@ namespace CoreSystems
                     GridEffect gridEffect;
                     if (effects.TryGetValue(info.AmmoDef.AreaEffect.AreaEffect, out gridEffect))
                     {
-                        gridEffect.Damage += info.AmmoDef.Override.AreaEffectDamage;
+                        gridEffect.Damage += info.AmmoDef.Const.AreaEffectDamage;
                         gridEffect.Ai = info.Ai;
                         gridEffect.AttackerId = attackerId;
                         gridEffect.Hits++;
@@ -135,7 +135,7 @@ namespace CoreSystems
                     effects = GridEffectsPool.Get();
                     var gridEffect = GridEffectPool.Get();
                     gridEffect.System = info.System;
-                    gridEffect.Damage = info.AmmoDef.Override.AreaEffectDamage;
+                    gridEffect.Damage = info.AmmoDef.Const.AreaEffectDamage;
                     gridEffect.Ai = info.Ai;
                     gridEffect.AmmoDef = info.AmmoDef;
                     gridEffect.AttackerId = attackerId;
@@ -295,7 +295,7 @@ namespace CoreSystems
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    var healthPool = v.Value.AmmoDef.Override.Health;
+                    var healthPool = v.Value.AmmoDef.Const.Health;
                     ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, v.Value.System.WeaponIdHash, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     GridEffectPool.Return(v.Value);

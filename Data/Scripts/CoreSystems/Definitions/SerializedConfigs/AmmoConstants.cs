@@ -15,6 +15,8 @@ using static CoreSystems.Support.WeaponDefinition;
 using static CoreSystems.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
 using static CoreSystems.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static CoreSystems.Support.WeaponDefinition.AmmoDef.ShapeDef.Shapes;
+using static CoreSystems.Settings.CoreSettings.ServerSettings;
+
 namespace CoreSystems.Support
 {
     public class AmmoConstants
@@ -132,6 +134,7 @@ namespace CoreSystems.Support
         public readonly float ShieldDamageBypassMod;
         public readonly float MagMass;
         public readonly float MagVolume;
+        public readonly float Health;
         public readonly float BaseDamage;
         public readonly float AreaEffectDamage;
         public readonly float DetonationDamage;
@@ -231,26 +234,31 @@ namespace CoreSystems.Support
 
             MaxChaseTime = ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
             MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            BaseDamage = ammo.AmmoDef.Override.BaseDamage;
+            BaseDamage = ammo.AmmoDef.BaseDamage;
+            Health = ammo.AmmoDef.Health;
             MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
-            ShieldModifier = ammo.AmmoDef.Override.ShieldModifer;
+            ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier;
             
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
             FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
-            MaxTrajectory = ammo.AmmoDef.Override.MaxTrajectory;
+            MaxTrajectory = ammo.AmmoDef.Trajectory.MaxTrajectory;
             HasBackKickForce = ammo.AmmoDef.BackKickForce > 0;
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
 
+            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
+            AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out DetonationRadius, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
+
+            AmmoModifer ammoModifer;
+            session.AmmoValuesMap.TryGetValue(ammo.AmmoDef, out ammoModifer);
+            if (ammoModifer != null) GetEnforcementValues(ammoModifer, out BaseDamage, out AreaEffectDamage, out DetonationDamage, out Health, out MaxTrajectory, out ShieldModifier);
+
             ComputeShieldBypass(ammo, out ShieldDamageBypassMod);
 
             ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out GuidedAmmoDetected);
-
-            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
-            AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out DetonationRadius, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
 
             DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage, out HealthHitModifier, out VoxelHitModifier);
             Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
@@ -592,7 +600,7 @@ namespace CoreSystems.Support
             if (a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
                 return 0;
 
-            var areaEffectDamage = a.Override.AreaEffectDamage;
+            var areaEffectDamage = a.AreaEffect.Base.EffectStrength > 0 ? a.AreaEffect.Base.EffectStrength : a.AreaEffect.AreaEffectDamage;
             var areaEffectSize = a.AreaEffect.Base.Radius > 0 ? a.AreaEffect.Base.Radius : a.AreaEffect.AreaEffectRadius;
             if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
             {
@@ -609,7 +617,7 @@ namespace CoreSystems.Support
             }
             if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
             {
-                return a.Override.DetonationDamage;
+                return a.AreaEffect.Detonation.DetonationDamage;
             }
             return (float)(a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d));
         }
@@ -625,9 +633,9 @@ namespace CoreSystems.Support
         private void AreaEffects(AmmoDef ammoDef, out AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out float detonationRadius, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange, out int minArmingTime)
         {
             areaEffect = ammoDef.AreaEffect.AreaEffect;
-            areaEffectDamage = ammoDef.Override.AreaEffectDamage;
+            areaEffectDamage = ammoDef.AreaEffect.Base.EffectStrength > 0 ? ammoDef.AreaEffect.Base.EffectStrength : ammoDef.AreaEffect.AreaEffectDamage;
             areaEffectSize = ammoDef.AreaEffect.Base.Radius > 0 ? ammoDef.AreaEffect.Base.Radius : ammoDef.AreaEffect.AreaEffectRadius;
-            detonationDamage = ammoDef.Override.DetonationDamage;
+            detonationDamage = ammoDef.AreaEffect.Detonation.DetonationDamage;
             detonationRadius = ammoDef.AreaEffect.Detonation.DetonationRadius;
 
             ammoAreaEffect = ammoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled;
@@ -796,25 +804,16 @@ namespace CoreSystems.Support
             var pair = (MySoundPair)o;
             CustomSoundPairs.Push(pair);
         }
-    }
 
-    public class AmmoOverrides
-    {
-        public float BaseDamage;
-        public float AreaEffectDamage;
-        public float DetonationDamage;
-        public float Health;
-        public float MaxTrajectory;
-        public float ShieldModifer;
-
-        internal AmmoOverrides(WeaponSystem.AmmoType ammo)
+        private void GetEnforcementValues(AmmoModifer ammoModifer, out float baseDamage, out float areaEffectDamage, out float detonationDamage, out float health, out float maxTrajectory, out double shieldModifier)
         {
-            BaseDamage = ammo.AmmoDef.BaseDamage;
-            AreaEffectDamage = ammo.AmmoDef.AreaEffect.Base.EffectStrength > 0 ? ammo.AmmoDef.AreaEffect.Base.EffectStrength : ammo.AmmoDef.AreaEffect.AreaEffectDamage;
-            DetonationDamage = ammo.AmmoDef.AreaEffect.Detonation.DetonationDamage;
-            Health = ammo.AmmoDef.Health;
-            MaxTrajectory = ammo.AmmoDef.Trajectory.MaxTrajectory;
-            ShieldModifer = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
+            baseDamage = ammoModifer.BaseDamage;
+            areaEffectDamage = ammoModifer.AreaEffectDamage;
+            detonationDamage = ammoModifer.DetonationDamage;
+            health = ammoModifer.Health;
+            maxTrajectory = ammoModifer.MaxTrajectory;
+            shieldModifier = ammoModifer.ShieldModifer;
+
         }
     }
 }

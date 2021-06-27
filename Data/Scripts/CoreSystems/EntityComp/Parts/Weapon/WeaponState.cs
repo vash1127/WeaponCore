@@ -85,7 +85,7 @@ namespace CoreSystems.Platform
         internal void UpdateShotEnergy()
         {
             var ewar = (int)ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffect > 3;
-            ShotEnergyCost = ewar ? ActiveAmmoDef.AmmoDef.EnergyCost * ActiveAmmoDef.AmmoDef.Override.AreaEffectDamage : ActiveAmmoDef.AmmoDef.EnergyCost * BaseDamage;
+            ShotEnergyCost = ewar ? ActiveAmmoDef.AmmoDef.EnergyCost * ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage : ActiveAmmoDef.AmmoDef.EnergyCost * BaseDamage;
         }
 
         internal void UpdateBarrelRotation()
@@ -166,7 +166,7 @@ namespace CoreSystems.Platform
 
         internal double GetMaxWeaponRange()
         {
-            var ammoMax = ActiveAmmoDef.AmmoDef.Override.MaxTrajectory;
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
             return Math.Min(hardPointMax, ammoMax);
         }
@@ -175,7 +175,7 @@ namespace CoreSystems.Platform
         {
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
             var range = Comp.Data.Repo.Values.Set.Range < 0 ? hardPointMax : Comp.Data.Repo.Values.Set.Range;
-            var ammoMax = ActiveAmmoDef.AmmoDef.Override.MaxTrajectory;
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var weaponRange = Math.Min(hardPointMax, ammoMax);
             MaxTargetDistance = Math.Min(range, weaponRange);
             MaxTargetDistanceSqr = MaxTargetDistance * MaxTargetDistance;

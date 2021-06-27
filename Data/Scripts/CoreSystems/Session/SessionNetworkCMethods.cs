@@ -353,18 +353,22 @@ namespace CoreSystems
             data.Report.PacketValid = true;
             Log.Line("Server enforcement received");
 
-            foreach (var wep in WeaponDefinitions)
+            foreach (var platform in PartPlatforms)
             {
-                foreach (var ammo in wep.Ammos)
+                var core = platform.Value;
+                if (core.StructureType != CoreStructure.StructureTypes.Weapon) continue;
+                foreach (var system in core.PartSystems)
                 {
-                    AmmoModifer ammoModifer;
-                    AmmoDamageMap.TryGetValue(ammo, out ammoModifer);
-                    if (ammoModifer == null) continue;
-
-                    ammo.Override.BaseDamage = ammoModifer.BaseDamage;
-                    ammo.Override.AreaEffectDamage = ammoModifer.AreaEffectDamage;
-                    ammo.Override.DetonationDamage = ammoModifer.DetonationDamage;
-                    ammo.Override.MaxTrajectory = ammoModifer.MaxTrajectory;
+                    var part = (system.Value as WeaponSystem);
+                    for (int i = 0; i < part.AmmoTypes.Length; i++)
+                    {
+                        var ammo = part.AmmoTypes[i];
+                        AmmoModifer ammoModifer;
+                        if (AmmoValuesMap.TryGetValue(ammo.AmmoDef, out ammoModifer))
+                        {
+                            ammo.AmmoDef.Const = new AmmoConstants(ammo, part.Values, part.Session, part, i);
+                        }
+                    }
                 }
             }
             return true;

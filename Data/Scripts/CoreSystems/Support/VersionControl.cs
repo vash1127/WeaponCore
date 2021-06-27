@@ -68,7 +68,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
 
 
                 GenerateBlockDmgMap();
-                GenerateAmmoDmgMap();
+                GenerateAmmoValuesMap();
             }
 
             if (VersionChange)
@@ -82,7 +82,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
             Core.Enforcement = data;
             Core.ClientWaiting = false;
             GenerateBlockDmgMap();
-            GenerateAmmoDmgMap();
+            GenerateAmmoValuesMap();
         }
 
         private void GenerateConfig(CoreSettings.ServerSettings oldSettings = null)
@@ -226,18 +226,18 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
             }
         }
 
-        private void GenerateAmmoDmgMap()
+        private void GenerateAmmoValuesMap()
         {
             if (Core.Enforcement.AmmoModifers == null)
                 return;
 
             foreach (var modifer in Core.Enforcement.AmmoModifers)
-                foreach (var pair in Core.Session.AmmoDamageMap)
+                foreach (var pair in Core.Session.AmmoValuesMap)
                     if (modifer.Name == pair.Key.AmmoRound)
                         _tmpAmmoModiferMap[pair.Key] = modifer;
 
             foreach (var t in _tmpAmmoModiferMap)
-                Core.Session.AmmoDamageMap[t.Key] = t.Value;
+                Core.Session.AmmoValuesMap[t.Key] = t.Value;
 
             _tmpAmmoModiferMap.Clear();
         }

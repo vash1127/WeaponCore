@@ -193,8 +193,8 @@ namespace CoreSystems.Platform
                 }
 
                 maxTrajectory = 0;
-                if (weapon.ActiveAmmoDef.AmmoDef.Override.MaxTrajectory > maxTrajectory)
-                    maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Override.MaxTrajectory;
+                if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
+                    maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
                 if (weapon.System.TrackProjectile)
                     Ai.PointDefense = true;

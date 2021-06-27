@@ -240,7 +240,7 @@ namespace CoreSystems.Platform
                                 }
                                 else shotFade = 0;
 
-                                var maxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Override.MaxTrajectory;
+                                var maxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
                                 var info = s.Projectiles.VirtInfoPool.Get();
                                 
                                 info.AvShot = s.Av.AvShotPool.Get();

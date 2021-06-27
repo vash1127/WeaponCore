@@ -247,7 +247,6 @@ namespace CoreSystems.Support
             {
 
                 var ammo = AmmoTypes[i];
-                ammo.AmmoDef.Override = new AmmoOverrides(ammo);
                 ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
                 if (ammo.AmmoDef.Const.GuidedAmmoDetected)
                     HasGuidedAmmo = true;
