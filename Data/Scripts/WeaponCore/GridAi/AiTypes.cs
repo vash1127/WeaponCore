@@ -31,8 +31,8 @@ namespace WeaponCore.Support
 
         public class FakeTargets
         {
-            public FakeTarget ManualTarget = new FakeTarget(FakeTarget.FakeType.Manual);
-            public FakeTarget PaintedTarget = new FakeTarget(FakeTarget.FakeType.Painted);
+            public readonly FakeTarget ManualTarget = new FakeTarget(FakeTarget.FakeType.Manual);
+            public readonly FakeTarget PaintedTarget = new FakeTarget(FakeTarget.FakeType.Painted);
         }
 
         public class FakeTarget

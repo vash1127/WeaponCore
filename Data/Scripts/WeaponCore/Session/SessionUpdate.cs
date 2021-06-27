@@ -92,7 +92,7 @@ namespace WeaponCore
                     if (comp.ManualMode || comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter)
                         PlayerDummyTargets.TryGetValue(comp.Data.Repo.Base.State.PlayerId, out fakeTargets);
 
-                    comp.PainterMode = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && fakeTargets?.PaintedTarget.EntityId != 0 && !fakeTargets.PaintedTarget.Dirty;
+                    comp.PainterMode = fakeTargets != null && comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && fakeTargets.PaintedTarget.EntityId != 0 && !fakeTargets.PaintedTarget.Dirty;
                     comp.FakeMode = comp.ManualMode || comp.PainterMode;
                     comp.WasControlled = comp.UserControlled;
                     comp.UserControlled = comp.Data.Repo.Base.State.Control != ControlMode.None;
@@ -168,7 +168,7 @@ namespace WeaponCore
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
                             if (!IsClient && noAmmo)
                                 w.Target.Reset(Tick, States.Expired);
-                            else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && Tick - fakeTargets?.ManualTarget.LastUpdateTick > 120)
+                            else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && fakeTargets != null && Tick - fakeTargets.ManualTarget.LastUpdateTick > 120)
                                 w.Target.Reset(Tick, States.Expired, !comp.ManualMode);
                             else if (!IsClient && w.Target.Entity != null && (comp.UserControlled && !w.System.SuppressFire || w.Target.Entity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);
