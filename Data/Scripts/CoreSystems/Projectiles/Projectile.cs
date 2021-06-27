@@ -228,8 +228,8 @@ namespace CoreSystems.Projectiles
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
-            Info.BaseHealthPool = Info.AmmoDef.Health;
-            Info.BaseEwarPool = Info.AmmoDef.Health;
+            Info.BaseHealthPool = Info.AmmoDef.Override.Health;
+            Info.BaseEwarPool = Info.AmmoDef.Override.Health;
             Info.TracerLength = Info.AmmoDef.Const.TracerLength <= Info.MaxTrajectory ? Info.AmmoDef.Const.TracerLength : Info.MaxTrajectory;
 
             MaxTrajectorySqr = Info.MaxTrajectory * Info.MaxTrajectory;
@@ -297,7 +297,7 @@ namespace CoreSystems.Projectiles
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, SmartsOn, AccelInMetersPerSec * StepConst, MaxSpeed, ref originDir);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr); //Pool initted sounds per Projectile type... this is expensive
-                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.Const.AreaEffectSize > 0 && Info.AmmoDef.Const.AreaEffectDamage > 0)
+                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.Const.AreaEffectSize > 0 && Info.AmmoDef.Override.AreaEffectDamage > 0)
                 {
                     var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
                     Info.AvShot.HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);

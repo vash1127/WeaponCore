@@ -557,6 +557,7 @@ namespace CoreSystems.Support
             [ProtoMember(23)] internal bool IgnoreWater;
 
             internal AmmoConstants Const;
+            internal AmmoOverrides Override;
 
             [ProtoContract]
             public struct DamageScaleDef

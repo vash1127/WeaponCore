@@ -14,6 +14,7 @@ using VRage.Input;
 using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
+using static CoreSystems.Settings.CoreSettings.ServerSettings;
 using static CoreSystems.Support.WeaponDefinition.HardPointDef.HardwareDef.HardwareType;
 namespace CoreSystems
 {
@@ -75,7 +76,25 @@ namespace CoreSystems
             GenerateButtonMap();
             Settings = new CoreSettings(this);
             CounterKeenLogMessage();
-            
+
+            if (IsServer || DedicatedServer)
+            {
+                foreach (var wep in WeaponDefinitions)
+                {
+                    foreach (var ammo in wep.Ammos)
+                    {
+                        AmmoModifer ammoModifer;
+                        AmmoDamageMap.TryGetValue(ammo, out ammoModifer);
+                        if (ammoModifer == null) continue;
+
+                        ammo.Override.BaseDamage = ammoModifer.BaseDamage;
+                        ammo.Override.AreaEffectDamage = ammoModifer.AreaEffectDamage;
+                        ammo.Override.DetonationDamage = ammoModifer.DetonationDamage;
+                        ammo.Override.MaxTrajectory = ammoModifer.MaxTrajectory;
+                    }
+                }
+            }
+
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
             {
                 ShieldApiLoaded = true;

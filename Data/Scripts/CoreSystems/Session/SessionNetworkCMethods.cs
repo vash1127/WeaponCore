@@ -1,6 +1,7 @@
 ﻿using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
+using static CoreSystems.Settings.CoreSettings.ServerSettings;
 using static CoreSystems.Support.Ai;
 namespace CoreSystems
 {
@@ -351,6 +352,21 @@ namespace CoreSystems
             Settings.VersionControl.UpdateClientEnforcements(updatePacket.Data);
             data.Report.PacketValid = true;
             Log.Line("Server enforcement received");
+
+            foreach (var wep in WeaponDefinitions)
+            {
+                foreach (var ammo in wep.Ammos)
+                {
+                    AmmoModifer ammoModifer;
+                    AmmoDamageMap.TryGetValue(ammo, out ammoModifer);
+                    if (ammoModifer == null) continue;
+
+                    ammo.Override.BaseDamage = ammoModifer.BaseDamage;
+                    ammo.Override.AreaEffectDamage = ammoModifer.AreaEffectDamage;
+                    ammo.Override.DetonationDamage = ammoModifer.DetonationDamage;
+                    ammo.Override.MaxTrajectory = ammoModifer.MaxTrajectory;
+                }
+            }
             return true;
         }
 

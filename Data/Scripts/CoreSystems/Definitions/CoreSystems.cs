@@ -232,8 +232,6 @@ namespace CoreSystems.Support
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackTopMostEntities);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
-            HardPointSoundSetup(out WeaponReloadSound, out HardPointRotationSound, out BarrelRotationSound, out NoAmmoSound, out PreFireSound, out HardPointAvMaxDistSqr, out FiringSound);
-            HardPointSoundDistMaxSqr(AmmoTypes, out FiringSoundDistSqr, out ReloadSoundDistSqr, out BarrelSoundDistSqr, out HardPointSoundDistSqr, out NoAmmoSoundDistSqr, out HardPointAvMaxDistSqr);
 
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
 
@@ -249,6 +247,7 @@ namespace CoreSystems.Support
             {
 
                 var ammo = AmmoTypes[i];
+                ammo.AmmoDef.Override = new AmmoOverrides(ammo);
                 ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
                 if (ammo.AmmoDef.Const.GuidedAmmoDetected)
                     HasGuidedAmmo = true;
@@ -260,6 +259,8 @@ namespace CoreSystems.Support
                     ApproximatePeakPower = ammo.AmmoDef.Const.ChargSize;
             }
             HasAmmoSelection = ammoSelections > 1;
+            HardPointSoundSetup(out WeaponReloadSound, out HardPointRotationSound, out BarrelRotationSound, out NoAmmoSound, out PreFireSound, out HardPointAvMaxDistSqr, out FiringSound);
+            HardPointSoundDistMaxSqr(AmmoTypes, out FiringSoundDistSqr, out ReloadSoundDistSqr, out BarrelSoundDistSqr, out HardPointSoundDistSqr, out NoAmmoSoundDistSqr, out HardPointAvMaxDistSqr);
         }
 
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)

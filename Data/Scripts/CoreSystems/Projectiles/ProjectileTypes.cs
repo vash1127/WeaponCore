@@ -491,14 +491,14 @@ namespace CoreSystems.Support
                 p.DeadSphere = frag.DeadSphere;
                 p.StartSpeed = frag.Velocity;
                 p.Info.LockOnFireState = frag.LockOnFireState;
-                p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
+                p.Info.MaxTrajectory = frag.AmmoDef.Override.MaxTrajectory;
                 p.Info.ShotFade = 0;
                 p.Info.ShieldBypassed = frag.IgnoreShield;
 
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
 
-                if (p.Info.AmmoDef.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
+                if (p.Info.AmmoDef.Override.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
                     frag.System.Session.Projectiles.AddTargets.Add(p);
 
 

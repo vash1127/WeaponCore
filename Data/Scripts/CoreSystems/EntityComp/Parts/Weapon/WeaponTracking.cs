@@ -127,7 +127,7 @@ namespace CoreSystems.Platform
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
                     if (weapon.Comp.Debug)
-                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
+                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Override.MaxTrajectory));
                 }
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
@@ -186,7 +186,7 @@ namespace CoreSystems.Platform
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
                     if (weapon.Comp.Debug)
-                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
+                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Override.MaxTrajectory));
                 }
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
