@@ -1,6 +1,8 @@
-﻿using CoreSystems.Support;
+﻿using System.Collections.Generic;
+using CoreSystems.Support;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game.Entity;
 using VRage.Input;
 using VRageMath;
@@ -58,6 +60,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         {
             var s = _session;
             var ai = s.TrackingAi;
+
             if (s.Tick - MasterUpdateTick > 300 || MasterUpdateTick < 300 && _masterTargets.Count == 0)
                 BuildMasterCollections(ai);
 
@@ -113,7 +116,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
                 var hitGrid = closestEnt as MyCubeGrid;
 
-                if (hitGrid != null && ai.AiType == Ai.AiTypes.Grid && hitGrid.IsSameConstructAs(ai.GridEntity))
+                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.GridEntity))
                 {
                     rayHitSelf = true;
                     rayOnlyHitSelf = true;
@@ -133,7 +136,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     {
                         if (hitGrid == _firstStageEnt)
                             s.SetTarget(hitGrid, ai, _masterTargets);
-                        
+
                         _firstStageEnt = null;
                     }
 
@@ -208,7 +211,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 else _currentIdx = _endIdx;
 
             var ent = _sortedMasterList[_currentIdx];
-            if (ent == null || ent.MarkedForClose)
+            if (ent == null || ent.MarkedForClose || ai.NoTargetLos.ContainsKey(ent))
             {
                 _endIdx = -1;
                 return;
@@ -242,7 +245,9 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                 {
                     var tInfo = subTargets[j];
                     if (tInfo.Target.MarkedForClose) continue;
-                    _masterTargets[tInfo.Target] = tInfo.OffenseRating;
+                    HashSet<long> playerSet;
+                    var controlType = tInfo.Drone ? TargetControl.Drone : tInfo.IsGrid && _session.PlayerGrids.TryGetValue((MyCubeGrid)tInfo.Target, out playerSet) ? TargetControl.Player : tInfo.IsGrid && !_session.GridHasPower((MyCubeGrid)tInfo.Target) ? TargetControl.Trash : TargetControl.Other;
+                    _masterTargets[tInfo.Target] = new MyTuple<float, TargetControl>(tInfo.OffenseRating, controlType);
                     _toPruneMasterDict[tInfo.Target] = tInfo;
                 }
             }

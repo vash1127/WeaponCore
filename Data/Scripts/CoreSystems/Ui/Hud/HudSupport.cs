@@ -57,6 +57,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
         {
             if (_agingTextRequests.ContainsKey(elementId) || string.IsNullOrEmpty(text))
                 return;
+
             AgingTextures = true;
 
             var request = _agingTextRequestPool.Get();

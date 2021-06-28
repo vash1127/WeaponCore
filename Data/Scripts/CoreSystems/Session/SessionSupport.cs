@@ -115,6 +115,10 @@ namespace CoreSystems
                                 if (blast || name.Contains("Heavy")) HeavyArmorBaseDefinitions.Add(t);
                             }
                         }
+                        else if (name.StartsWith("DSControl") || name.StartsWith("NPCControl") || name.StartsWith("Emitter") || name.StartsWith("NPCEmitter"))
+                        {
+                            CoreShieldBlockTypes.Add(t);
+                        }
                     }
                 }
             }

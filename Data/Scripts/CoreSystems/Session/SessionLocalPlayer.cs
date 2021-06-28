@@ -6,12 +6,14 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
+using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting;
 using static CoreSystems.Support.Ai;
 using static CoreSystems.Support.WeaponDefinition.TargetingDef;
 using static CoreSystems.Support.WeaponDefinition.TargetingDef.BlockTypes;
@@ -462,27 +464,29 @@ namespace CoreSystems
             return ai.Construct.Data.Repo.FocusData.HasFocus;
         }
 
-        internal void SetTarget(MyEntity entity, Ai newAi, Dictionary<MyEntity, float> masterTargets)
+        internal void SetTarget(MyEntity entity, Ai ai, Dictionary<MyEntity, MyTuple<float, TargetUi.TargetControl>> masterTargets)
         {
-            
-            TrackingAi = newAi;
-            newAi.Construct.Focus.RequestAddFocus(entity, newAi);
 
-            Ai ai;
+            TrackingAi = ai;
+            ai.Construct.Focus.RequestAddFocus(entity, ai);
+
+            Ai gridAi;
             TargetArmed = false;
             var grid = entity as MyCubeGrid;
-            if (grid != null && EntityToMasterAi.TryGetValue(grid, out ai))
+            if (grid != null && EntityToMasterAi.TryGetValue(grid, out gridAi))
             {
                 TargetArmed = true;
             }
-            else {
+            else
+            {
 
-                float offenseRating;
-                if (!masterTargets.TryGetValue(entity, out offenseRating)) return;
+                MyTuple<float, TargetUi.TargetControl> targetInfo;
+                if (!masterTargets.TryGetValue(entity, out targetInfo)) return;
                 ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
 
                 var tGrid = entity as MyCubeGrid;
-                if (tGrid != null && GridToBlockTypeMap.TryGetValue(tGrid, out typeDict)) {
+                if (tGrid != null && GridToBlockTypeMap.TryGetValue(tGrid, out typeDict))
+                {
 
                     ConcurrentCachingList<MyCubeBlock> fatList;
                     if (typeDict.TryGetValue(Offense, out fatList))

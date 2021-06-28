@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using CoreSystems;
 using CoreSystems.Support;
+using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -22,6 +23,13 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         internal readonly char FocusChar = "_"[0];
         internal Hud.Hud.TextureMap FocusTextureMap;
 
+        public enum TargetControl
+        {
+            Player,
+            Drone,
+            Trash,
+            Other
+        }
 
         private const string ActiveNoShield = "ActiveNoShield";
         private const string ActiveShield = "ActiveShield";
@@ -38,7 +46,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         private readonly Dictionary<MyEntity, Ai.TargetInfo> _toPruneMasterDict = new Dictionary<MyEntity, Ai.TargetInfo>(64);
         private readonly List<Ai.TargetInfo> _toSortMasterList = new List<Ai.TargetInfo>(64);
         private readonly List<MyEntity> _sortedMasterList = new List<MyEntity>(64);
-        private readonly Dictionary<MyEntity, float> _masterTargets = new Dictionary<MyEntity, float>(64);
+
+        private readonly Dictionary<MyEntity, MyTuple<float, TargetControl>> _masterTargets = new Dictionary<MyEntity, MyTuple<float, TargetControl>>(64);
         private readonly Session _session;
         private Vector2 _pointerPosition = new Vector2(0, 0.0f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
@@ -46,6 +55,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
         private readonly HudInfo _alertHudInfo = new HudInfo(MyStringId.GetOrCompute("WC_HUD_DroneAlert"), new Vector2(0.55f, 0.66f), 0.33f);
 
         internal readonly int[] ExpChargeReductions = { 1, 2, 3, 5, 8, 10, 12, 14, 16, 18, 20 };
+        internal readonly string[] TargetControllerNames = { "P:", "D: ", "T:", "O:" };
 
         private readonly Dictionary<string, HudInfo> _primaryMinimalHuds = new Dictionary<string, HudInfo>
         {

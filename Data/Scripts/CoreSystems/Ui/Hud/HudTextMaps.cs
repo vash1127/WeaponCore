@@ -229,7 +229,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Hud
                             ['|'] = GenerateMap(_shadowEnglishFontAtlas1, 925, 90, 22, 45, 1024, 1024),
                             ['}'] = GenerateMap(_shadowEnglishFontAtlas1, 947, 90, 25, 45, 1024, 1024),
                             ['~'] = GenerateMap(_shadowEnglishFontAtlas1, 972, 90, 34, 45, 1024, 1024),
-                            [' '] = GenerateMap(_shadowEnglishFontAtlas1, 0, 135, 23, 45, 1024, 1024),
+                            [' '] = GenerateMap(_shadowEnglishFontAtlas1, 0, 135, 23, 45, 1024, 1024),
                             ['¡'] = GenerateMap(_shadowEnglishFontAtlas1, 23, 135, 24, 45, 1024, 1024),
                             ['¢'] = GenerateMap(_shadowEnglishFontAtlas1, 47, 135, 32, 45, 1024, 1024),
                             ['£'] = GenerateMap(_shadowEnglishFontAtlas1, 79, 135, 33, 45, 1024, 1024),

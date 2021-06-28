@@ -218,7 +218,12 @@ namespace CoreSystems
                     }
 
                     wComp.ManualMode = wComp.Data.Repo.Values.State.TrackingReticle && wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Manual;
-                    wComp.PainterMode = wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && PlayerDummyTargets[wComp.Data.Repo.Values.State.PlayerId].PaintedTarget.EntityId != 0 && !PlayerDummyTargets[wComp.Data.Repo.Values.State.PlayerId].PaintedTarget.Dirty;
+
+                    Ai.FakeTargets fakeTargets = null;
+                    if (wComp.ManualMode || wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter)
+                        PlayerDummyTargets.TryGetValue(wComp.Data.Repo.Values.State.PlayerId, out fakeTargets);
+
+                    wComp.PainterMode = fakeTargets != null && wComp.Data.Repo.Values.Set.Overrides.Control == ProtoWeaponOverrides.ControlModes.Painter && fakeTargets.PaintedTarget.EntityId != 0 && !fakeTargets.PaintedTarget.Dirty;
                     wComp.FakeMode = wComp.ManualMode || wComp.PainterMode;
                     wComp.WasControlled = wComp.UserControlled;
                     wComp.UserControlled = wComp.Data.Repo.Values.State.Control != ControlMode.None;
@@ -275,8 +280,7 @@ namespace CoreSystems
                         /// Update Weapon Hud Info
                         /// 
                         var addWeaponToHud = HandlesInput && (w.HeatPerc >= 0.01 || w.Loading && (w.System.ReloadTime >= 240 || w.ShowBurstDelayAsReload && Tick - w.ReloadEndTick > 0 && w.System.Values.HardPoint.Loading.DelayAfterBurst >= 240));
-                        if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid))
-                        {
+                        if (addWeaponToHud && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
@@ -300,7 +304,7 @@ namespace CoreSystems
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
                             if (!IsClient && noAmmo)
                                 w.Target.Reset(Tick, States.Expired);
-                            else if (!IsClient && w.Target.TargetEntity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && Tick - PlayerDummyTargets[comp.Data.Repo.Values.State.PlayerId].ManualTarget.LastUpdateTick > 120)
+                            else if (!IsClient && w.Target.TargetEntity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && fakeTargets != null && Tick - fakeTargets.ManualTarget.LastUpdateTick > 120)
                                 w.Target.Reset(Tick, States.Expired, !comp.ManualMode);
                             else if (!IsClient && w.Target.TargetEntity != null && (comp.UserControlled && !w.System.SuppressFire || w.Target.TargetEntity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);

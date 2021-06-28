@@ -36,7 +36,9 @@ namespace CoreSystems.Projectiles
                 p.Info.Target.CoreCube = w.Comp.Cube;
                 p.Info.Target.CoreEntity = w.Comp.CoreEntity;
 
-                p.Info.DummyTargets = w.Comp.FakeMode ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Values.State.PlayerId] : null;
+                p.Info.DummyTargets = null;
+                if (w.Comp.FakeMode)
+                    w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.Values.State.PlayerId, out p.Info.DummyTargets);
 
                 p.Info.PartId = w.PartId;
                 p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;

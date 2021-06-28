@@ -464,8 +464,7 @@ namespace CoreSystems.Projectiles
                     if (p.Beam.Length > 85)
                     {
                         IHitInfo hit;
-                        p.Info.System.Session.Physics.CastLongRay(p.Beam.From, p.Beam.To, out hit, false);
-                        if (hit?.HitEntity is MyVoxelBase)
+                        if (p.Info.System.Session.Physics.CastRay(p.Beam.From, p.Beam.To, out hit, CollisionLayers.VoxelCollisionLayer, false) && hit != null)
                             voxelHit = hit.Position;
                     }
                     else
@@ -489,7 +488,14 @@ namespace CoreSystems.Projectiles
 
                     using (voxel.Pin())
                     {
-                        if (!voxel.GetIntersectionWithLine(ref p.Beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, p.Beam.From))
+
+                        if (p.Info.AmmoDef.Const.IsBeamWeapon && p.Info.AmmoDef.Const.RealShotsPerMin < 10)
+                        {
+                            IHitInfo hit;
+                            if (p.Info.System.Session.Physics.CastRay(p.Beam.From, p.Beam.To, out hit, CollisionLayers.VoxelCollisionLayer, false) && hit != null)
+                                voxelHit = hit.Position;
+                        }
+                        else if (!voxel.GetIntersectionWithLine(ref p.Beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, p.Beam.From))
                             voxelHit = p.Beam.From;
                     }
                 }
@@ -532,7 +538,6 @@ namespace CoreSystems.Projectiles
             }
             DeferedVoxels.ClearImmediate();
         }
-
         internal void FinalizeHits()
         {
             FinalHitCheck.ApplyAdditions();
@@ -906,6 +911,8 @@ namespace CoreSystems.Projectiles
                                 break;
                             case EmpField:
                             case DotField:
+                                if (fieldType == EmpField && cube is IMyUpgradeModule && system.Session.CoreShieldBlockTypes.Contains(cube.BlockDefinition))
+                                    continue;
                                 break;
                             default: continue;
                         }

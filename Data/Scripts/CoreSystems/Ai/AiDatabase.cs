@@ -166,6 +166,14 @@ namespace CoreSystems.Support
 
                 ObstructionsTmp.Add(ent);
             }
+
+            foreach (var pair in NoTargetLos) {
+                if (Session.Tick - pair.Value > 120) {
+                    uint lastLosTick;
+                    NoTargetLos.TryRemove(pair.Key, out lastLosTick);
+                }
+            }
+
             ValidGrids.Clear();
             _possibleTargets.Clear();
         }
