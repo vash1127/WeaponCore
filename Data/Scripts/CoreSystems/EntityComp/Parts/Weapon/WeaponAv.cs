@@ -130,7 +130,7 @@ namespace CoreSystems.Platform
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            if (Comp?.Data.Repo == null || Comp.Cube == null || Comp.Cube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != CorePlatform.PlatformState.Ready) return;
+            if (Comp.Data.Repo == null || Comp.Cube == null || Comp.Cube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != CorePlatform.PlatformState.Ready && Comp.Platform.State != CorePlatform.PlatformState.Inited) return;
             try
             {
                 var session = Comp.Session;
@@ -139,7 +139,6 @@ namespace CoreSystems.Platform
 
                 if (canPlay)
                     PlayParticleEvent(state, active, distance, muzzles);
-
                 if (!AnimationsSet.ContainsKey(state)) return;
                 if (AnimationDelayTick < Comp.Session.Tick)
                     AnimationDelayTick = Comp.Session.Tick;
@@ -276,6 +275,7 @@ namespace CoreSystems.Platform
                                     set = true;
 
                                     animation.StartTick = session.Tick + animation.MotionDelay;
+                                    
                                     session.ThreadedAnimations.Enqueue(animation);
 
                                     animation.Running = true;
