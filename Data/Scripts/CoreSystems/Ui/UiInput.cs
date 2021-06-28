@@ -1,11 +1,12 @@
 ﻿using System;
+using CoreSystems;
 using CoreSystems.Support;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage.Input;
 using VRageMath;
 
-namespace CoreSystems
+namespace WeaponCore.Data.Scripts.CoreSystems.Ui
 {
     internal class UiInput
     {
@@ -98,13 +99,14 @@ namespace CoreSystems
 
                 _session.PlayerMouseStates[_session.PlayerId] = ClientInputState;
 
-                if (_session.MpActive)  {
+                if (_session.MpActive)
+                {
                     var shootButtonActive = ClientInputState.MouseButtonLeft || ClientInputState.MouseButtonRight;
 
                     MouseShootWasOn = MouseShootOn;
-                    if ((_session.ManualShot  || s.Tick - _lastInputUpdate >= 29) && shootButtonActive && !MouseShootOn)
+                    if ((_session.ManualShot || s.Tick - _lastInputUpdate >= 29) && shootButtonActive && !MouseShootOn)
                     {
-                        _lastInputUpdate = s.Tick; 
+                        _lastInputUpdate = s.Tick;
                         MouseShootOn = true;
                     }
                     else if (MouseShootOn && !shootButtonActive)
@@ -138,9 +140,8 @@ namespace CoreSystems
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
-               
-                CameraBlockView = !PlayerCamera && !FirstPersonView && s.ActiveCameraBlock != null && s.ActiveCameraBlock.IsActive && s.ActiveCameraBlock.IsWorking;
 
+                CameraBlockView = !PlayerCamera && !FirstPersonView && s.ActiveCameraBlock != null && s.ActiveCameraBlock.IsActive && s.ActiveCameraBlock.IsWorking;
                 if (CameraBlockView && s.ActiveCameraBlock != null)
                     CameraChannelId = s.CameraChannelMappings[s.ActiveCameraBlock];
                 else CameraChannelId = 0;
@@ -240,7 +241,7 @@ namespace CoreSystems
 
             if (_session.MpActive && !s.InGridAiBlock)
             {
-                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight ||  ClientInputState.MouseButtonMenu || ClientInputState.MouseButtonRight)
+                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight || ClientInputState.MouseButtonMenu || ClientInputState.MouseButtonRight)
                 {
                     ClientInputState.InMenu = false;
                     ClientInputState.MouseButtonLeft = false;
@@ -328,4 +329,5 @@ namespace CoreSystems
             }
             catch (Exception ex) { Log.Line($"Exception in BlackList1: {ex}"); }
         }
-    }}
+    }
+}

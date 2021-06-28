@@ -25,6 +25,7 @@ namespace CoreSystems.Api
         private Action<ICollection<MyDefinitionId>> _getCoreRifles; 
 
         private Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>> _getSortedThreats;
+        private Action<IMyEntity, ICollection<IMyEntity>> _getObstructions;
 
         private Func<MyDefinitionId, float> _getMaxPower;
         private Func<IMyEntity, MyTuple<bool, int, int>> _getProjectilesLockedOn;
@@ -49,6 +50,8 @@ namespace CoreSystems.Api
             _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
         public void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection) =>
             _getSortedThreats?.Invoke(shooter, collection);
+        public void GetObstructions(IMyEntity shooter, ICollection<IMyEntity> collection) =>
+            _getObstructions?.Invoke(shooter, collection);
         public IMyEntity GetAiFocus(IMyEntity shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
         public bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0) =>
             _setAiFocus?.Invoke(shooter, target, priority) ?? false;
@@ -148,6 +151,7 @@ namespace CoreSystems.Api
             AssignMethod(delegates, "GetCoreRifles", ref _getCoreRifles);
             AssignMethod(delegates, "GetBlockWeaponMap", ref _getBlockWeaponMap);
             AssignMethod(delegates, "GetSortedThreats", ref _getSortedThreats);
+            AssignMethod(delegates, "GetSortedThreats", ref _getObstructions);
             AssignMethod(delegates, "GetMaxPower", ref _getMaxPower);
             AssignMethod(delegates, "GetProjectilesLockedOn", ref _getProjectilesLockedOn);
             AssignMethod(delegates, "GetAiFocus", ref _getAiFocus);

@@ -158,7 +158,7 @@ namespace CoreSystems
 
                 if (!DedicatedServer && !InMenu) {
                     UpdateLocalAiAndCockpit();
-                    if (UiInput.PlayerCamera && ActiveCockPit != null || ActiveControlBlock is MyRemoteControl && !UiInput.PlayerCamera || UiInput.CameraBlockView) 
+                    if ((UiInput.PlayerCamera && ActiveCockPit != null || ActiveControlBlock is MyRemoteControl && !UiInput.PlayerCamera || UiInput.CameraBlockView) && PlayerDummyTargets.ContainsKey(PlayerId))
                         TargetSelection();
                 }
 
@@ -261,7 +261,7 @@ namespace CoreSystems
                     if (HudUi.TexturesToAdd > 0 || HudUi.KeepBackground) 
                         HudUi.DrawTextures();
 
-                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.CameraBlockView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.CameraBlockView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible && PlayerDummyTargets.ContainsKey(PlayerId))
                         TargetUi.DrawTargetUi();
 
                     if (HudUi.AgingTextures)
@@ -290,14 +290,14 @@ namespace CoreSystems
                         SendMouseUpdate(TrackingAi, ActiveControlBlock);
                     }
 
-                    if (TrackingAi != null && TargetUi.DrawReticle)  {
-                        var dummyTargets = PlayerDummyTargets[PlayerId];
+                    Ai.FakeTargets fakeTargets;
+                    if (TrackingAi != null && TargetUi.DrawReticle && PlayerDummyTargets.TryGetValue(PlayerId, out fakeTargets)) {
 
-                        if (dummyTargets.ManualTarget.LastUpdateTick == Tick)
-                            SendAimTargetUpdate(TrackingAi, dummyTargets.ManualTarget);
+                        if (fakeTargets.ManualTarget.LastUpdateTick == Tick)
+                            SendAimTargetUpdate(TrackingAi, fakeTargets.ManualTarget);
 
-                        if (dummyTargets.PaintedTarget.LastUpdateTick == Tick)
-                            SendPaintedTargetUpdate(TrackingAi, dummyTargets.PaintedTarget);
+                        if (fakeTargets.PaintedTarget.LastUpdateTick == Tick)
+                            SendPaintedTargetUpdate(TrackingAi, fakeTargets.PaintedTarget);
                     }
 
                     if (PacketsToServer.Count > 0)

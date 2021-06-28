@@ -14,7 +14,7 @@ using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace CoreSystems.Platform
 {
-    public partial class Weapon 
+    public partial class Weapon
     {
         internal static bool CanShootTarget(Weapon weapon, ref Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos, bool checkSelfHit = false, MyEntity target = null)
         {
@@ -45,7 +45,7 @@ namespace CoreSystems.Platform
 
             bool selfHit = false;
             weapon.LastHitInfo = null;
-            if (checkSelfHit && target != null && weapon.Comp.Ai.AiType == Ai.AiTypes.Grid)
+            if (checkSelfHit && target != null)
             {
 
                 var testLine = new LineD(targetCenter, weapon.BarrelOrigin);
@@ -74,6 +74,36 @@ namespace CoreSystems.Platform
             }
 
             return !selfHit && (inRange && canTrack || weapon.Comp.Data.Repo.Values.State.TrackingReticle);
+        }
+
+        internal static bool CheckSelfHit(Weapon w, ref Vector3D targetPos, ref Vector3D testPos, out Vector3D predictedMuzzlePos)
+        {
+
+            var testLine = new LineD(targetPos, testPos);
+            predictedMuzzlePos = testLine.To + (-testLine.Direction * w.MuzzleDistToBarrelCenter);
+            var ai = w.Comp.Ai;
+            var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.GridEntity.PositionComp.WorldMatrixNormalizedInv) * ai.GridEntity.GridSizeR);
+
+            MyCube cube;
+            var noCubeAtPosition = !ai.GridEntity.TryGetCube(localPredictedPos, out cube);
+            if (noCubeAtPosition || cube.CubeBlock == w.Comp.Cube.SlimBlock)
+            {
+
+                var noCubeInLine = !ai.GridEntity.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
+                var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == w.Comp.Cube.Position;
+
+                if (noCubesInLineOrHitSelf)
+                {
+
+                    w.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out w.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
+
+                    if (w.LastHitInfo != null && w.LastHitInfo.HitEntity == ai.GridEntity)
+                        return true;
+                }
+            }
+            else return true;
+
+            return false;
         }
 
         internal static void LeadTarget(Weapon weapon, MyEntity target, out Vector3D targetPos, out bool couldHit, out bool willHit)
@@ -201,7 +231,8 @@ namespace CoreSystems.Platform
             Vector3D targetCenter;
 
             Ai.FakeTarget.FakeWorldTargetInfo fakeTargetInfo = null;
-            if (weapon.Comp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Auto && weapon.ValidFakeTargetInfo(weapon.Comp.Data.Repo.Values.State.PlayerId, out fakeTargetInfo)) {
+            if (weapon.Comp.Data.Repo.Values.Set.Overrides.Control != ProtoWeaponOverrides.ControlModes.Auto && weapon.ValidFakeTargetInfo(weapon.Comp.Data.Repo.Values.State.PlayerId, out fakeTargetInfo))
+            {
                 targetCenter = fakeTargetInfo.WorldPosition;
             }
             else if (target.IsProjectile)
@@ -212,22 +243,27 @@ namespace CoreSystems.Platform
                 targetCenter = Vector3D.Zero;
 
             var validEstimate = true;
-            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)) {
+            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
+            {
 
-                if (fakeTargetInfo != null) {
+                if (fakeTargetInfo != null)
+                {
                     targetLinVel = fakeTargetInfo.LinearVelocity;
                     targetAccel = fakeTargetInfo.Acceleration;
                 }
-                else {
+                else
+                {
 
                     var cube = target.TargetEntity as MyCubeBlock;
                     var topMostEnt = cube != null ? cube.CubeGrid : target.TargetEntity;
 
-                    if (target.Projectile != null) {
+                    if (target.Projectile != null)
+                    {
                         targetLinVel = target.Projectile.Velocity;
                         targetAccel = target.Projectile.AccelVelocity;
                     }
-                    else if (topMostEnt?.Physics != null) {
+                    else if (topMostEnt?.Physics != null)
+                    {
                         targetLinVel = topMostEnt.Physics.LinearVelocity;
                         targetAccel = topMostEnt.Physics.LinearAcceleration;
                     }
@@ -343,9 +379,9 @@ namespace CoreSystems.Platform
             var alignedChange = wasAligned != isAligned;
             if (w.System.DesignatorWeapon && session.IsServer && alignedChange)
             {
-                for (int i = 0; i < w.Comp.Collection.Count; i++)
+                for (int i = 0; i < w.Comp.Platform.Weapons.Count; i++)
                 {
-                    var weapon = w.Comp.Collection[i];
+                    var weapon = w.Comp.Platform.Weapons[i];
                     if (isAligned && !weapon.System.DesignatorWeapon)
                         weapon.Target.Reset(session.Tick, Target.States.Designator);
                     else if (!isAligned && weapon.System.DesignatorWeapon)
@@ -486,7 +522,7 @@ namespace CoreSystems.Platform
             }
         }
 
-        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid, bool forceAdvanced = false, bool overrideMode = false, bool setAdvOverride = false)
+        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid, bool overrideMode = false, bool setAdvOverride = false)
         {
             valid = true;
             var ai = weapon.Comp.Ai;
@@ -494,8 +530,8 @@ namespace CoreSystems.Platform
             var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
             if (ai.VelocityUpdateTick != session.Tick)
             {
-                ai.GridVel = ai.TopEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
-                ai.IsStatic = ai.TopEntity.Physics?.IsStatic ?? false;
+                ai.GridVel = ai.GridEntity.Physics?.LinearVelocity ?? Vector3D.Zero;
+                ai.IsStatic = ai.GridEntity.Physics?.IsStatic ?? false;
                 ai.VelocityUpdateTick = session.Tick;
             }
 
@@ -525,9 +561,9 @@ namespace CoreSystems.Platform
 
             double closingSpeed;
             Vector3D.Dot(ref deltaVel, ref deltaPosNorm, out closingSpeed);
+
             Vector3D closingVel = closingSpeed * deltaPosNorm;
             Vector3D lateralVel = deltaVel - closingVel;
-
             double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
             double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
 
@@ -552,22 +588,13 @@ namespace CoreSystems.Platform
 
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             double shooterVelScaleFactor = 1;
-            bool projectileAccelerates = projectileAccMag > 1e-6;   
+            bool projectileAccelerates = projectileAccMag > 1e-6;
             bool hasGravity = gravityMultiplier > 1e-6 && !MyUtils.IsZero(weapon.GravityPoint);
 
             if (!basic && projectileAccelerates)
                 shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
 
             Vector3D estimatedImpactPoint = targetPos + timeToIntercept * (targetVel - shooterVel * shooterVelScaleFactor);
-            if (weapon.WeaponCache.MissDistance > 0)
-            {
-                var diffDirNorm = Vector3D.Normalize(targetPos - estimatedImpactPoint);
-                var offsetPrediction = estimatedImpactPoint + diffDirNorm * weapon.WeaponCache.MissDistance;
-                DsDebugDraw.DrawSingleVec(offsetPrediction, 35, Color.Yellow);
-                DsDebugDraw.DrawSingleVec(estimatedImpactPoint, 35, Color.Orange);
-                estimatedImpactPoint = offsetPrediction;
-            }
-
             if (basic) return estimatedImpactPoint;
             Vector3D aimDirection = estimatedImpactPoint - shooterPos;
 
@@ -619,7 +646,6 @@ namespace CoreSystems.Platform
                 }
 
                 targetPos += targetVel * dt;
-
                 if (projectileAccelerates)
                 {
 
@@ -643,9 +669,69 @@ namespace CoreSystems.Platform
             }
             Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
             Vector3D gravityOffset = hasGravity ? -0.5 * minTime * minTime * gravity : Vector3D.Zero;
-            var finalEstimate = estimatedImpactPoint + perpendicularAimOffset + gravityOffset;
-            return finalEstimate;
+            return estimatedImpactPoint + perpendicularAimOffset + gravityOffset;
         }
+
+        public void ManualShootRayCallBack(IHitInfo hitInfo)
+        {
+            Casting = false;
+            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+
+            var grid = hitInfo.HitEntity as MyCubeGrid;
+            if (grid != null)
+            {
+                if (grid.IsSameConstructAs(Comp.Cube.CubeGrid))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
+                }
+            }
+        }
+
+        public bool HitFriendlyShield(Vector3D weaponPos, Vector3D targetPos, Vector3D dir)
+        {
+            var testRay = new RayD(weaponPos, dir);
+            Comp.Ai.TestShields.Clear();
+            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, weaponPos);
+
+            for (int i = 0; i < Comp.Ai.NearByFriendlyShields.Count; i++)
+            {
+                var shield = Comp.Ai.NearByFriendlyShields[i];
+                var dist = testRay.Intersects(shield.PositionComp.WorldVolume);
+                if (dist != null && dist.Value * dist.Value <= checkDistanceSqr)
+                    Comp.Ai.TestShields.Add(shield);
+            }
+
+            if (Comp.Ai.TestShields.Count == 0)
+                return false;
+
+            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.AiOwner, checkDistanceSqr);
+
+            return result.Item1 && result.Item2 > 0;
+        }
+
+        public bool MuzzleHitSelf()
+        {
+            for (int i = 0; i < Muzzles.Length; i++)
+            {
+                var m = Muzzles[i];
+                var grid = Comp.Ai.GridEntity;
+                var dummy = Dummies[i];
+                var newInfo = dummy.Info;
+                m.Direction = newInfo.Direction;
+                m.Position = newInfo.Position;
+                m.LastUpdateTick = Comp.Session.Tick;
+
+                var start = m.Position;
+                var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
+
+                Vector3D? hit;
+                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.Cube, Comp.Ai))
+                    return true;
+            }
+            return false;
+        }
+
         private bool RayCheckTest()
         {
             var trackingCheckPosition = GetScope.Info.Position;
@@ -764,69 +850,6 @@ namespace CoreSystems.Platform
 
             Comp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
             return true;
-        }
-
-        public void ManualShootRayCallBack(IHitInfo hitInfo)
-        {
-            Casting = false;
-            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
-
-            var grid = hitInfo.HitEntity as MyCubeGrid;
-            if (grid != null)
-            {
-                if (grid.IsSameConstructAs(Comp.Cube.CubeGrid))
-                {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
-                }
-            }
-        }
-
-        public bool HitFriendlyShield(Vector3D weaponPos, Vector3D targetPos, Vector3D dir)
-        {
-            var testRay = new RayD(weaponPos, dir);
-            Comp.Ai.TestShields.Clear();
-            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, weaponPos);
-
-            for (int i = 0; i < Comp.Ai.NearByFriendlyShields.Count; i++)
-            {
-                var shield = Comp.Ai.NearByFriendlyShields[i];
-                var dist = testRay.Intersects(shield.PositionComp.WorldVolume);
-                if (dist != null && dist.Value * dist.Value <= checkDistanceSqr)
-                    Comp.Ai.TestShields.Add(shield);
-            }
-
-            if (Comp.Ai.TestShields.Count == 0)
-                return false;
-
-            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.AiOwner, checkDistanceSqr);
-
-            return result.Item1 && result.Item2 > 0;
-        }
-
-        public bool MuzzleHitSelf()
-        {
-            if (Comp.Ai.AiType != Ai.AiTypes.Grid)
-                return false;
-
-            for (int i = 0; i < Muzzles.Length; i++)
-            {
-                var m = Muzzles[i];
-                var grid = Comp.Ai.GridEntity;
-                var dummy = Dummies[i];
-                var newInfo = dummy.Info;
-                m.Direction = newInfo.Direction;
-                m.Position = newInfo.Position;
-                m.LastUpdateTick = Comp.Session.Tick;
-
-                var start = m.Position;
-                var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
-
-                Vector3D? hit;
-                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.Cube, Comp.Ai))
-                    return true;
-            }
-            return false;
         }
 
         internal void InitTracking()

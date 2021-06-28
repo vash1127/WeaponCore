@@ -467,7 +467,7 @@ namespace CoreSystems.Projectiles
                     var targetPos = Vector3D.Zero;
 
                     Ai.FakeTarget.FakeWorldTargetInfo fakeTargetInfo = null;
-                    if (fake)
+                    if (fake && Info.DummyTargets != null)
                     {
                         var fakeTarget = Info.DummyTargets.PaintedTarget.EntityId != 0 && !Info.DummyTargets.PaintedTarget.Dirty ? Info.DummyTargets.PaintedTarget : Info.DummyTargets.ManualTarget;
                         fakeTargetInfo = fakeTarget.LastInfoTick != Info.System.Session.Tick ? fakeTarget.GetFakeTargetInfo(Info.Ai) : fakeTarget.FakeInfo;
@@ -576,7 +576,7 @@ namespace CoreSystems.Projectiles
                     {
                         double angle = Info.WeaponRng.ClientProjectileRandom.NextDouble() * MathHelper.TwoPi;
                         Info.WeaponRng.ClientProjectileCurrentCounter += 1;
-                        var up = Vector3D.Normalize(Vector3D.CalculatePerpendicularVector(Info.Direction));
+                        var up = Vector3D.CalculatePerpendicularVector(Info.Direction);
                         var right = Vector3D.Cross(Info.Direction, up);
                         OffsetDir = Math.Sin(angle) * up + Math.Cos(angle) * right;
                         OffsetDir *= Info.AmmoDef.Trajectory.Smarts.OffsetRatio;

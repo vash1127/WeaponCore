@@ -127,12 +127,13 @@ namespace CoreSystems
             long playerId;
             if (EntityAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
+                Ai.FakeTargets fakeTargets;
                 uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId && PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
                 {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].ManualTarget.Sync(targetPacket, ai);
+                    fakeTargets.ManualTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;
@@ -154,16 +155,17 @@ namespace CoreSystems
             if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
 
 
+            Ai.FakeTargets fakeTargets;
             Ai ai;
             long playerId;
-            if (EntityAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (EntityAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId) && PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
             {
                 uint[] mIds;
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)
                 {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].PaintedTarget.Sync(targetPacket, ai);
+                    fakeTargets.PaintedTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;

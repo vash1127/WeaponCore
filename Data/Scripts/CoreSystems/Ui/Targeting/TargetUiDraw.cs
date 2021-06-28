@@ -708,9 +708,9 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
             for (int i = 0; i < ai.Construct.Data.Repo.FocusData.Target.Length; i++)
             {
                 var targetId = ai.Construct.Data.Repo.FocusData.Target[i];
-                float offenseRating;
+                MyTuple<float, TargetControl> targetInfo;
                 MyEntity target;
-                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !_masterTargets.TryGetValue(target, out offenseRating)) continue;
+                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !_masterTargets.TryGetValue(target, out targetInfo) || ai.NoTargetLos.ContainsKey(target)) continue;
                 validFocus = true;
                 if (!s.Tick20) continue;
                 var grid = target as MyCubeGrid;
@@ -731,21 +731,22 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
 
                 state.Aware = targetAi != null ? AggressionState(ai, targetAi) : TargetStatus.Awareness.WONDERING;
                 var displayName = target.DisplayName;
-                var name = string.IsNullOrEmpty(displayName) ? string.Empty : displayName.Length <= maxNameLength ? displayName : displayName.Substring(0, maxNameLength);
 
+                var combinedName = TargetControllerNames[(int)targetInfo.Item2] + displayName;
+                var name = string.IsNullOrEmpty(combinedName) ? string.Empty : combinedName.Length <= maxNameLength ? combinedName : combinedName.Substring(0, maxNameLength);
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
                 if (MyUtils.IsZero(targetVel, 1E-01F)) targetVel = Vector3.Zero;
                 var targetDir = Vector3D.Normalize(targetVel);
                 var targetRevDir = -targetDir;
                 var targetPos = target.PositionComp.WorldAABB.Center;
-                var myPos = ai.TopEntity.PositionComp.WorldAABB.Center;
+                var myPos = ai.GridEntity.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, s.ApproachDegrees);
                 var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, s.ApproachDegrees);
 
-                var distanceFromCenters = Vector3D.Distance(ai.TopEntity.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
-                distanceFromCenters -= ai.TopEntity.PositionComp.LocalVolume.Radius;
+                var distanceFromCenters = Vector3D.Distance(ai.GridEntity.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
+                distanceFromCenters -= ai.GridEntity.PositionComp.LocalVolume.Radius;
                 distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
                 distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
 
@@ -796,23 +797,23 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     int shieldBonus = 0;
                     if (s.ShieldApiLoaded)
                     {
-                        var myShieldInfo = s.SApi.GetShieldInfo(ai.TopEntity);
+                        var myShieldInfo = s.SApi.GetShieldInfo(ai.GridEntity);
                         if (shieldInfo.Item1 && myShieldInfo.Item1)
                             shieldBonus = shieldInfo.Item5 > myShieldInfo.Item5 ? 1 : -1;
                         else if (shieldInfo.Item1) shieldBonus = 1;
                         else if (myShieldInfo.Item1) shieldBonus = -1;
                     }
 
-                    if (offenseRating > 5) state.ThreatLvl = shieldBonus < 0 ? 8 : 9;
-                    else if (offenseRating > 4) state.ThreatLvl = 8 + shieldBonus;
-                    else if (offenseRating > 3) state.ThreatLvl = 7 + shieldBonus;
-                    else if (offenseRating > 2) state.ThreatLvl = 6 + shieldBonus;
-                    else if (offenseRating > 1) state.ThreatLvl = 5 + shieldBonus;
-                    else if (offenseRating > 0.5) state.ThreatLvl = 4 + shieldBonus;
-                    else if (offenseRating > 0.25) state.ThreatLvl = 3 + shieldBonus;
-                    else if (offenseRating > 0.125) state.ThreatLvl = 2 + shieldBonus;
-                    else if (offenseRating > 0.0625) state.ThreatLvl = 1 + shieldBonus;
-                    else if (offenseRating > 0) state.ThreatLvl = shieldBonus > 0 ? 1 : 0;
+                    if (targetInfo.Item1 > 5) state.ThreatLvl = shieldBonus < 0 ? 8 : 9;
+                    else if (targetInfo.Item1 > 4) state.ThreatLvl = 8 + shieldBonus;
+                    else if (targetInfo.Item1 > 3) state.ThreatLvl = 7 + shieldBonus;
+                    else if (targetInfo.Item1 > 2) state.ThreatLvl = 6 + shieldBonus;
+                    else if (targetInfo.Item1 > 1) state.ThreatLvl = 5 + shieldBonus;
+                    else if (targetInfo.Item1 > 0.5) state.ThreatLvl = 4 + shieldBonus;
+                    else if (targetInfo.Item1 > 0.25) state.ThreatLvl = 3 + shieldBonus;
+                    else if (targetInfo.Item1 > 0.125) state.ThreatLvl = 2 + shieldBonus;
+                    else if (targetInfo.Item1 > 0.0625) state.ThreatLvl = 1 + shieldBonus;
+                    else if (targetInfo.Item1 > 0) state.ThreatLvl = shieldBonus > 0 ? 1 : 0;
                     else state.ThreatLvl = -1;
                 }
             }
@@ -834,8 +835,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Ui.Targeting
                     }
                 }
             }
-            var tracking = targetAi.Targets.ContainsKey(ai.TopEntity);
-            var hasAggressed = targetAi.Construct.RootAi.Construct.PreviousTargets.Contains(ai.TopEntity);
+            var tracking = targetAi.Targets.ContainsKey(ai.GridEntity);
+            var hasAggressed = targetAi.Construct.RootAi.Construct.PreviousTargets.Contains(ai.GridEntity);
             var stalking = tracking && hasAggressed;
             var seeking = !tracking && hasAggressed;
 
