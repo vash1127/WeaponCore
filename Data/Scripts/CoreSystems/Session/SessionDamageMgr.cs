@@ -107,11 +107,9 @@ namespace CoreSystems
             if (!info.ShieldBypassed)
                 info.ObjectsHit++;
 
-            AmmoModifer ammoModifer;
-            AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
-            var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
-            var areaDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.AreaDamageModifer;
-            var detDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.DetonationDamageModifer;
+            var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
+            var areaDmgGlobal = Settings.Enforcement.AreaDamageModifer;
+            var shieldDmgGlobal = Settings.Enforcement.ShieldDamageModifer;
 
             var damageScale = 1 * directDmgGlobal;
             var distTraveled = info.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist ?? info.DistanceTraveled : info.DistanceTraveled;
@@ -126,7 +124,7 @@ namespace CoreSystems
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;
             var scaledBaseDamage = info.BaseDamagePool * damageScale;
 
-            var scaledDamage = (scaledBaseDamage + areaDamage) * info.AmmoDef.Const.ShieldModifier;
+            var scaledDamage = (scaledBaseDamage + areaDamage) * info.AmmoDef.Const.ShieldModifier * shieldDmgGlobal;
 
             if (fallOff)
             {
@@ -136,7 +134,7 @@ namespace CoreSystems
 
             scaledDamage = (scaledDamage * info.ShieldResistMod) * info.ShieldBypassMod;
             var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
-            var detonateDamage = detonateOnEnd ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * detDmgGlobal) * info.ShieldResistMod : 0;
+            var detonateDamage = detonateOnEnd ? (unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * areaDmgGlobal * shieldDmgGlobal) * info.ShieldResistMod : 0;
             if (heal)
             {
                 var heat = SApi.GetShieldHeat(shield);
@@ -241,11 +239,10 @@ namespace CoreSystems
             var damageType = t.ShieldBypassed ? ShieldBypassDamageType : explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var minAoeOffset = largeGrid ? 1.25 : 0.5f;
             var gridMatrix = grid.PositionComp.WorldMatrixRef;
-            AmmoModifer ammoModifer;
-            AmmoDamageMap.TryGetValue(t.AmmoDef, out ammoModifer);
-            var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
-            var areaDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.AreaDamageModifer;
-            var detDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.DetonationDamageModifer;
+
+            var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
+            var areaDmgGlobal = Settings.Enforcement.AreaDamageModifer;
+
             var playerAi = t.Ai.AiType == Ai.AiTypes.Player;
             float gridDamageModifier = grid.GridGeneralDamageModifier;
 
@@ -333,7 +330,6 @@ namespace CoreSystems
                     float damageScale = hits;
                     float directDamageScale = directDmgGlobal;
                     float areaDamageScale = areaDmgGlobal;
-                    float detDamageScale = detDmgGlobal;
 
                     if (t.AmmoDef.Const.DamageScaling || !MyUtils.IsEqual(blockDmgModifier, 1f) || !MyUtils.IsEqual(gridDamageModifier, 1f))
                     {
@@ -469,7 +465,7 @@ namespace CoreSystems
                         var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
                         if ((areaEffectDmg * areaDamageScale) > 0) SUtils.CreateMissileExplosion(this, (areaEffectDmg  * damageScale) * areaDamageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
-                         SUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * detDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                         SUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * areaDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
@@ -485,7 +481,7 @@ namespace CoreSystems
                             i--;
                             t.BaseDamagePool = 0;
                             t.ObjectsHit = objectsHit;
-                            if (t.AmmoDef.Const.DetonationDamage > 0) damagePool = (detonateDmg * detDamageScale);
+                            if (t.AmmoDef.Const.DetonationDamage > 0) damagePool = (detonateDmg * areaDamageScale);
                             else if (t.AmmoDef.Const.AreaEffectDamage > 0) damagePool = (areaEffectDmg * areaDamageScale);
                             else damagePool = scaledDamage;
                             break;
@@ -530,10 +526,9 @@ namespace CoreSystems
             var destObj = hitEnt.Entity as IMyDestroyableObject;
 
             if (destObj == null || entity == null) return;
-            AmmoModifer ammoModifer;
-            AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
-            var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
-            var areaDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.AreaDamageModifer;
+
+            var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
+            var areaDmgGlobal = Settings.Enforcement.AreaDamageModifer;
 
             var shieldHeal = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal;
             var sync = MpActive && IsServer;
@@ -651,7 +646,7 @@ namespace CoreSystems
                             sTarget.Info.BaseHealthPool = 0;
                             sTarget.State = Projectile.ProjectileState.Destroy;
                         }
-                        else sTarget.Info.BaseHealthPool -= attacker.AmmoDef.Health;
+                        else sTarget.Info.BaseHealthPool -= attacker.AmmoDef.Const.Health;
                     }
                 }
             }
@@ -669,10 +664,8 @@ namespace CoreSystems
                 return;
             }
 
-            AmmoModifer ammoModifer;
-            AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
-            var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
-            var detDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.DetonationDamageModifer;
+            var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
+            var detDmgGlobal = Settings.Enforcement.AreaDamageModifer;
 
             using (destObj.Pin())
             {

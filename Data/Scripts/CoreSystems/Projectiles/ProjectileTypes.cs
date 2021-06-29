@@ -498,7 +498,7 @@ namespace CoreSystems.Support
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
 
-                if (p.Info.AmmoDef.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
+                if (p.Info.AmmoDef.Const.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
                     frag.System.Session.Projectiles.AddTargets.Add(p);
 
 

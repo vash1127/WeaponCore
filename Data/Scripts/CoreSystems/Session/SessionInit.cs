@@ -14,6 +14,7 @@ using VRage.Input;
 using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
+using static CoreSystems.Settings.CoreSettings.ServerSettings;
 using static CoreSystems.Support.WeaponDefinition.HardPointDef.HardwareDef.HardwareType;
 namespace CoreSystems
 {
@@ -75,7 +76,29 @@ namespace CoreSystems
             GenerateButtonMap();
             Settings = new CoreSettings(this);
             CounterKeenLogMessage();
-            
+
+            if (IsServer || DedicatedServer)
+            {
+                foreach (var platform in PartPlatforms)
+                {
+                    var core = platform.Value;
+                    if (core.StructureType != CoreStructure.StructureTypes.Weapon) continue;
+                    foreach (var system in core.PartSystems)
+                    {
+                        var part = (system.Value as WeaponSystem);
+                        for (int i = 0; i < part.AmmoTypes.Length; i++)
+                        {
+                            var ammo = part.AmmoTypes[i];
+                            AmmoModifer ammoModifer;
+                            if (AmmoValuesMap.TryGetValue(ammo.AmmoDef, out ammoModifer))
+                            {
+                                ammo.AmmoDef.Const = new AmmoConstants(ammo, part.Values, part.Session, part, i);
+                            }
+                        }
+                    }
+                }
+            }
+
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
             {
                 ShieldApiLoaded = true;

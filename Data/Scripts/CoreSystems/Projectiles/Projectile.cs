@@ -228,8 +228,8 @@ namespace CoreSystems.Projectiles
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
-            Info.BaseHealthPool = Info.AmmoDef.Health;
-            Info.BaseEwarPool = Info.AmmoDef.Health;
+            Info.BaseHealthPool = Info.AmmoDef.Const.Health;
+            Info.BaseEwarPool = Info.AmmoDef.Const.Health;
             Info.TracerLength = Info.AmmoDef.Const.TracerLength <= Info.MaxTrajectory ? Info.AmmoDef.Const.TracerLength : Info.MaxTrajectory;
 
             MaxTrajectorySqr = Info.MaxTrajectory * Info.MaxTrajectory;
