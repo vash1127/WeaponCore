@@ -116,7 +116,7 @@ namespace CoreSystems.Support
 
 
                     Session.AmmoDefIds.Add(ammoDefId);
-                    Session.AmmoDamageMap[ammo] = null;
+                    Session.AmmoValuesMap[ammo] = null;
                     var ammoType = new WeaponSystem.AmmoType { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) }; 
 
                     Session.AmmoMaps[tDef.Key][ammoType.AmmoName] = ammoType;

@@ -68,7 +68,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
 
 
                 GenerateBlockDmgMap();
-                GenerateAmmoDmgMap();
+                GenerateAmmoValuesMap();
             }
 
             if (VersionChange)
@@ -82,7 +82,7 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
             Core.Enforcement = data;
             Core.ClientWaiting = false;
             GenerateBlockDmgMap();
-            GenerateAmmoDmgMap();
+            GenerateAmmoValuesMap();
         }
 
         private void GenerateConfig(CoreSettings.ServerSettings oldSettings = null)
@@ -169,6 +169,9 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
             if (Core.Enforcement.DirectDamageModifer < 0)
                 Core.Enforcement.DirectDamageModifer = 1f;
 
+            if (Core.Enforcement.ShieldDamageModifer < 0)
+                Core.Enforcement.ShieldDamageModifer = 1f;
+
             if (Core.Enforcement.ShipSizes == null || Core.Enforcement.ShipSizes.Length != 7)
             {
                 Core.Enforcement.ShipSizes = new[]
@@ -196,8 +199,8 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
             {
                 Core.Enforcement.AmmoModifers = new[]
                 {
-                    new CoreSettings.ServerSettings.AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
-                    new CoreSettings.ServerSettings.AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
+                    new CoreSettings.ServerSettings.AmmoModifer {Name = "TestAmmo1", BaseDamage = 1f, AreaEffectDamage = 2500f, DetonationDamage = 0f, Health = 5f, MaxTrajectory = 3500f, ShieldModifer = 2.2f},
+                    new CoreSettings.ServerSettings.AmmoModifer {Name = "TestAmmo2", BaseDamage = 2100f, AreaEffectDamage = 0f, DetonationDamage = 1000f, Health = 0f, MaxTrajectory = 1000f, ShieldModifer = 1f},
                 };
             }
             if (write)
@@ -223,18 +226,18 @@ namespace WeaponCore.Data.Scripts.CoreSystems.Support
             }
         }
 
-        private void GenerateAmmoDmgMap()
+        private void GenerateAmmoValuesMap()
         {
             if (Core.Enforcement.AmmoModifers == null)
                 return;
 
             foreach (var modifer in Core.Enforcement.AmmoModifers)
-                foreach (var pair in Core.Session.AmmoDamageMap)
+                foreach (var pair in Core.Session.AmmoValuesMap)
                     if (modifer.Name == pair.Key.AmmoRound)
                         _tmpAmmoModiferMap[pair.Key] = modifer;
 
             foreach (var t in _tmpAmmoModiferMap)
-                Core.Session.AmmoDamageMap[t.Key] = t.Value;
+                Core.Session.AmmoValuesMap[t.Key] = t.Value;
 
             _tmpAmmoModiferMap.Clear();
         }

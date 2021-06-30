@@ -30,6 +30,7 @@ namespace CoreSystems.Settings
                 [ProtoMember(1)] public string SubTypeId;
                 [ProtoMember(2)] public float DirectDamageModifer;
                 [ProtoMember(3)] public float AreaDamageModifer;
+                [ProtoMember(4)] public float ShieldDamageModifer;
             }
 
             [ProtoContract]
@@ -44,9 +45,12 @@ namespace CoreSystems.Settings
             public class AmmoModifer
             {
                 [ProtoMember(1)] public string Name;
-                [ProtoMember(2)] public float DirectDamageModifer;
-                [ProtoMember(3)] public float AreaDamageModifer;
-                [ProtoMember(4)] public float DetonationDamageModifer;
+                [ProtoMember(2)] public float BaseDamage;
+                [ProtoMember(3)] public float AreaEffectDamage;
+                [ProtoMember(4)] public float DetonationDamage;
+                [ProtoMember(5)] public float Health;
+                [ProtoMember(6)] public float MaxTrajectory;
+                [ProtoMember(7)] public float ShieldModifer;
             }
 
             [ProtoMember(1)] public int Version = -1;
@@ -54,15 +58,16 @@ namespace CoreSystems.Settings
             [ProtoMember(3)] public bool DisableWeaponGridLimits;
             [ProtoMember(4)] public float DirectDamageModifer = 1;
             [ProtoMember(5)] public float AreaDamageModifer = 1;
-            [ProtoMember(6)] public bool ServerOptimizations = true;
-            [ProtoMember(7)] public bool ServerSleepSupport = false;
-            [ProtoMember(8)]
+            [ProtoMember(6)] public float ShieldDamageModifer = 1;
+            [ProtoMember(7)] public bool ServerOptimizations = true;
+            [ProtoMember(8)] public bool ServerSleepSupport = false;
+            [ProtoMember(9)]
             public BlockModifer[] BlockModifers =
             {
                 new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
                 new BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
             };
-            [ProtoMember(9)]
+            [ProtoMember(10)]
             public ShipSize[] ShipSizes =
             {
                 new ShipSize {Name = "Scout", BlockCount = 0, LargeGrid = false },
@@ -73,15 +78,15 @@ namespace CoreSystems.Settings
                 new ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true },
                 new ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true },
             };
-            [ProtoMember(10)]
+            [ProtoMember(11)]
             public AmmoModifer[] AmmoModifers =
             {
-                new AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
-                new AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
+                new AmmoModifer {Name = "TestAmmo1", BaseDamage = 1f, AreaEffectDamage = 2500f, DetonationDamage = 0f, Health = 5f, MaxTrajectory = 3500f, ShieldModifer = 2.2f},
+                new AmmoModifer {Name = "TestAmmo2", BaseDamage = 2100f, AreaEffectDamage = 0f, DetonationDamage = 1000f, Health = 0f, MaxTrajectory = 1000f, ShieldModifer = 1f},
             };
-            [ProtoMember(11)] public double MinHudFocusDistance;
-            [ProtoMember(12)] public bool DisableAi;
-            [ProtoMember(13)] public bool DisableLeads;
+            [ProtoMember(12)] public double MinHudFocusDistance;
+            [ProtoMember(13)] public bool DisableAi;
+            [ProtoMember(14)] public bool DisableLeads;
         }
 
         [ProtoContract]

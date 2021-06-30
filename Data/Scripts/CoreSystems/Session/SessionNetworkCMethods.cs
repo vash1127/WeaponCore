@@ -1,6 +1,7 @@
 ﻿using CoreSystems.Platform;
 using CoreSystems.Support;
 using Sandbox.Game.Entities;
+using static CoreSystems.Settings.CoreSettings.ServerSettings;
 using static CoreSystems.Support.Ai;
 namespace CoreSystems
 {
@@ -351,6 +352,25 @@ namespace CoreSystems
             Settings.VersionControl.UpdateClientEnforcements(updatePacket.Data);
             data.Report.PacketValid = true;
             Log.Line("Server enforcement received");
+
+            foreach (var platform in PartPlatforms)
+            {
+                var core = platform.Value;
+                if (core.StructureType != CoreStructure.StructureTypes.Weapon) continue;
+                foreach (var system in core.PartSystems)
+                {
+                    var part = (system.Value as WeaponSystem);
+                    for (int i = 0; i < part.AmmoTypes.Length; i++)
+                    {
+                        var ammo = part.AmmoTypes[i];
+                        AmmoModifer ammoModifer;
+                        if (AmmoValuesMap.TryGetValue(ammo.AmmoDef, out ammoModifer))
+                        {
+                            ammo.AmmoDef.Const = new AmmoConstants(ammo, part.Values, part.Session, part, i);
+                        }
+                    }
+                }
+            }
             return true;
         }
 

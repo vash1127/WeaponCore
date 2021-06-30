@@ -295,7 +295,7 @@ namespace CoreSystems
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    var healthPool = v.Value.AmmoDef.Health;
+                    var healthPool = v.Value.AmmoDef.Const.Health;
                     ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, v.Value.System.WeaponIdHash, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     GridEffectPool.Return(v.Value);
