@@ -73,17 +73,22 @@ namespace WeaponCore
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose || comp.IsDisabled) 
                         continue;
 
+
+
                     if (HandlesInput) {
+
                         var wasTrack = comp.Data.Repo.Base.State.TrackingReticle;
-
                         var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId) && (!UiInput.CameraBlockView && comp.Data.Repo.Base.Set.Overrides.CameraChannel == 0|| UiInput.CameraChannelId > 0 && UiInput.CameraChannelId == comp.Data.Repo.Base.Set.Overrides.CameraChannel));
-                        if (!MpActive && IsServer)
-                            comp.Data.Repo.Base.State.TrackingReticle = track;
+                        var track = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId) && (!UiInput.CameraBlockView && comp.Data.Repo.Base.Set.Overrides.CameraChannel == 0|| UiInput.CameraChannelId > 0 && UiInput.CameraChannelId == comp.Data.Repo.Base.Set.Overrides.CameraChannel);
 
-                        var needsUpdate = MpActive && track != wasTrack && (comp.Data.Repo.Base.State.PlayerId <= 0 || isControllingPlayer);
-                        if (needsUpdate)
-                            comp.Session.SendTrackReticleUpdate(comp, track);
+                        if (isControllingPlayer) {
+
+                            if (MpActive && wasTrack != track)
+                                comp.Session.SendTrackReticleUpdate(comp, track);
+                            else if (IsServer)
+                                comp.Data.Repo.Base.State.TrackingReticle = track;
+                        }
+
                     }
 
                     comp.ManualMode = comp.Data.Repo.Base.State.TrackingReticle && comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual;
@@ -168,7 +173,7 @@ namespace WeaponCore
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
                             if (!IsClient && noAmmo)
                                 w.Target.Reset(Tick, States.Expired);
-                            else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && fakeTargets != null && Tick - fakeTargets.ManualTarget.LastUpdateTick > 120)
+                            else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && !comp.FakeMode || comp.ManualMode && (fakeTargets == null || Tick - fakeTargets.ManualTarget.LastUpdateTick > 120))
                                 w.Target.Reset(Tick, States.Expired, !comp.ManualMode);
                             else if (!IsClient && w.Target.Entity != null && (comp.UserControlled && !w.System.SuppressFire || w.Target.Entity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);

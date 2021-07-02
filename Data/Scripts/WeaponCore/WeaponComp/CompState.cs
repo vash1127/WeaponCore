@@ -142,6 +142,7 @@ namespace WeaponCore.Support
             Data.Repo.Base.State.PlayerId = -1;
             Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
+            Data.Repo.Base.State.TrackingReticle = false;
 
             var tAction = Data.Repo.Base.State.TerminalAction;
             if (tAction == ShootActions.ShootOnce || tAction == ShootActions.ShootClick) 

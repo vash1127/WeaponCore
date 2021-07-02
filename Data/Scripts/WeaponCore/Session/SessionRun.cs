@@ -277,7 +277,7 @@ namespace WeaponCore
                     }
 
                     GridAi.FakeTargets fakeTargets;
-                    if (TrackingAi != null && TargetUi.DrawReticle && PlayerDummyTargets.TryGetValue(PlayerId, out fakeTargets))  {
+                    if (TrackingAi != null && PlayerDummyTargets.TryGetValue(PlayerId, out fakeTargets))  {
 
                         if (fakeTargets.ManualTarget.LastUpdateTick == Tick)
                             SendAimTargetUpdate(TrackingAi, fakeTargets.ManualTarget);
