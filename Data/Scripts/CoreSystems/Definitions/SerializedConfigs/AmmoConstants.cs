@@ -67,7 +67,6 @@ namespace CoreSystems.Support
         public readonly int MagazineSize;
         public readonly int PatternIndexCnt;
         public readonly int AmmoIdxPos;
-        public readonly int ChargSize;
 
         public readonly bool HasEjectEffect;
         public readonly bool Pulse;
@@ -128,6 +127,7 @@ namespace CoreSystems.Support
         public readonly bool FixedFireAmmo;
         public readonly bool ClientPredictedAmmo;
         public readonly bool IsCriticalReaction;
+        public readonly float ChargSize;
         public readonly float RealShotsPerMin;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
@@ -719,10 +719,10 @@ namespace CoreSystems.Support
             voxelHitModifer = ammoDef.DamageScales.VoxelHitModifier > 0 ? ammoDef.DamageScales.VoxelHitModifier : 1;
         }
 
-        private void Energy(WeaponSystem.AmmoType ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
+        private void Energy(WeaponSystem.AmmoType ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out float chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
-            mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
+            mustCharge = (energyAmmo || IsHybrid);
 
             reloadable = !energyAmmo || mustCharge;
 
@@ -734,16 +734,19 @@ namespace CoreSystems.Support
             {
                 var ewar = (int)ammoPair.AmmoDef.AreaEffect.AreaEffect > 3;
                 var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
-                var requiredPower = (((shotEnergyCost * ((system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel);
+                var shotsPerTick = system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_MINUTE;
+                var energyPerTick = shotEnergyCost * shotsPerTick;
+                var requiredPowerPerTick = (energyPerTick * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel;
 
-                chargeSize = (int)Math.Ceiling(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+                var reloadTime = system.ReloadTime > 0 ? system.ReloadTime : 1;
+                chargeSize = requiredPowerPerTick * reloadTime;
+                var chargeCeil = (int)Math.Ceiling(requiredPowerPerTick * reloadTime);
 
-                energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;
+                energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeCeil;
                 return;
             }
             chargeSize = 0;
-            energyMagSize = int.MaxValue;
-
+            energyMagSize = 0;
         }
 
         private void Sound(AmmoDef ammoDef, Session session, out bool hitSound, out bool altHitSounds, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)
