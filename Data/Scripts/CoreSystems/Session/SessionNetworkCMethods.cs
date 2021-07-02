@@ -85,13 +85,8 @@ namespace CoreSystems
             Ai ai;
             if (EntityToMasterAi.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    var rootConstruct = ai.Construct.RootAi.Construct;
-                    rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data);
-                }
-                else Log.Line($"ClientConstructFoci MID failure - mId:{packet.MId}");
+                var rootConstruct = ai.Construct.RootAi.Construct;
+                rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data);
 
                 data.Report.PacketValid = true;
             }
@@ -111,12 +106,7 @@ namespace CoreSystems
             Ai ai;
             if (EntityAIs.TryGetValue(myGrid, out ai)) {
 
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    ai.Data.Repo.Sync(aiSyncPacket.Data);
-                }
-                else Log.Line($"ClientAiDataUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
+                ai.Data.Repo.Sync(aiSyncPacket.Data);
 
                 data.Report.PacketValid = true;
             }

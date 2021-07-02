@@ -797,7 +797,6 @@ namespace CoreSystems
                 {
                     PacketsToServer.Add(new InputPacket
                     {
-                        MId = ++mIds[(int)PacketType.ClientMouseEvent],
                         EntityId = entity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ClientMouseEvent,
@@ -813,7 +812,6 @@ namespace CoreSystems
                     Entity = entity,
                     Packet = new InputPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.ClientMouseEvent],
                         EntityId = entity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ClientMouseEvent,
@@ -947,7 +945,6 @@ namespace CoreSystems
                     Entity = ai.TopEntity,
                     Packet = new FakeTargetPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.AimTargetUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.AimTargetUpdate,
@@ -968,7 +965,6 @@ namespace CoreSystems
                 {
                     PacketsToServer.Add(new FakeTargetPacket
                     {
-                        MId = ++mIds[(int)PacketType.PaintedTargetUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.PaintedTargetUpdate,
@@ -985,7 +981,6 @@ namespace CoreSystems
                     Entity = ai.TopEntity,
                     Packet = new FakeTargetPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.PaintedTargetUpdate],
                         EntityId = ai.TopEntity.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.PaintedTargetUpdate,
