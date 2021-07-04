@@ -740,13 +740,14 @@ namespace CoreSystems
                     ReplaceVanilla = true;
                 else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement") || mod.Name.StartsWith("WCVanilla") || mod.FriendlyName.StartsWith("WCVanilla"))
                     ReplaceVanilla = true;
-                else if (mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055)
-                {
+                else if (mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055) {
                     if (mod.Name != ModContext.ModId)
                         SuppressWc = true;
                 }
                 else if (mod.PublishedFileId == 2200451495)
                     WaterMod = true;
+                else if ((mod.Name == "WeaponCore" || mod.Name == "CoreSystems") && ModContext.ModId != mod.Name)
+                    SuppressWc = true;
             }
             if (!validId && Session.SessionSettings.OnlineMode != MyOnlineModeEnum.OFFLINE)
                 SuppressWc = true;
