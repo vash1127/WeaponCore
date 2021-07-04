@@ -428,8 +428,8 @@ namespace CoreSystems.Support
                     effect.Play();
                 }
                 else if (effectExists) {
-                   // effect.WorldMatrix = matrix;
-                    effect.SetTranslation(ref pos);
+                    effect.WorldMatrix = matrix;
+                    //effect.SetTranslation(ref pos);
                 }
             }
         }
