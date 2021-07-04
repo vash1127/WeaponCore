@@ -729,7 +729,7 @@ namespace WeaponCore
                 }
                 else if (mod.PublishedFileId == 2200451495)
                     WaterMod = true;
-                else if (mod.Name == "WeaponCore" && ModContext.ModId != mod.Name)
+                else if ((mod.Name == "WeaponCore" || mod.Name == "CoreSystems") && ModContext.ModId != mod.Name)
                     SuppressWc = true;
             }
             if (!validId && Session.SessionSettings.OnlineMode != MyOnlineModeEnum.OFFLINE)
