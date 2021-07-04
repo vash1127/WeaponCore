@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer = w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -29,13 +29,13 @@ namespace WeaponCore.Projectiles
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
-                p.Info.ClientSent = t == Kind.Client || firingPlayer && w.System.Session.IsServer;
+                p.Info.ClientSent = t == Kind.Client || (firingPlayer || w.Comp.Data.Repo.Base.State.PlayerId < 0) && w.System.Session.IsServer;
                 p.Info.AmmoDef = a;
                 p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
+                p.Info.Target.IsFakeTarget = w.Comp.FakeMode;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
                 p.Info.DummyTargets = null;

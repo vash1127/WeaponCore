@@ -714,6 +714,7 @@ namespace WeaponCore
                 if (mod.PublishedFileId == 1918681825 || mod.PublishedFileId == 2189703321 || mod.PublishedFileId == 2496225055)
                     validId = true;
 
+
                 if (mod.PublishedFileId == 1365616918 || mod.PublishedFileId == 2372872458) ShieldMod = true;
                 else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\DefenseShields"))
                     ShieldMod = true;
@@ -728,6 +729,8 @@ namespace WeaponCore
                 }
                 else if (mod.PublishedFileId == 2200451495)
                     WaterMod = true;
+                else if (mod.Name == "WeaponCore" && ModContext.ModId != mod.Name)
+                    SuppressWc = true;
             }
             if (!validId && Session.SessionSettings.OnlineMode != MyOnlineModeEnum.OFFLINE)
                 SuppressWc = true;

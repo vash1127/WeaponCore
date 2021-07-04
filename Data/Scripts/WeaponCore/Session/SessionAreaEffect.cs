@@ -389,7 +389,7 @@ namespace WeaponCore
                 BlockState state;
                 MyEntity ent;
                 var entId = ewarPair.Key;
-                if (MyEntities.TryGetEntityById(entId, out ent)) {
+                if (MyEntities.TryGetEntityById(entId, out ent) && ValidEwarBlock(ent as IMyTerminalBlock)) {
 
                     var cube = (MyCubeBlock)ent;
                     var func = (IMyFunctionalBlock)cube;
@@ -436,24 +436,32 @@ namespace WeaponCore
         private static void DeactivateClientEwarState(ref BlockState state)
         {
             state.FunctBlock.EnabledChanged -= ForceDisable;
-            state.FunctBlock.Enabled = state.FirstState;
             state.Endtick = 0;
-            state.FunctBlock.RefreshCustomInfo();
-            state.FunctBlock.AppendingCustomInfo -= state.AppendCustomInfo;
-            state.FunctBlock.RefreshCustomInfo();
+            var valid = ValidEwarBlock(state.FunctBlock);
 
-            state.FunctBlock.SetDamageEffect(false);
+            if (valid) {
+                state.FunctBlock.Enabled = state.FirstState;
+                state.FunctBlock.RefreshCustomInfo();
+            }
+
+            state.FunctBlock.AppendingCustomInfo -= state.AppendCustomInfo;
+
+            if (valid) {
+                state.FunctBlock.RefreshCustomInfo();
+                state.FunctBlock.SetDamageEffect(false);
+            }
         }
 
         private static void ForceDisable(IMyTerminalBlock myTerminalBlock)
         {
-            var cube = (MyCubeBlock)myTerminalBlock;
-            if (cube == null || myTerminalBlock?.SlimBlock == null || myTerminalBlock.SlimBlock.IsDestroyed || cube.MarkedForClose || cube.Closed || cube.CubeGrid.MarkedForClose || !cube.IsFunctional || !cube.InScene) // keen is failing to check for null when they null out functional block types
-                return;
-
-            ((IMyFunctionalBlock)myTerminalBlock).Enabled = false;
+            if (ValidEwarBlock(myTerminalBlock))
+                ((IMyFunctionalBlock)myTerminalBlock).Enabled = false;
         }
 
+        private static bool ValidEwarBlock(IMyTerminalBlock myTerminalBlock)
+        {
+            return myTerminalBlock?.SlimBlock != null && !myTerminalBlock.SlimBlock.IsDestroyed && !myTerminalBlock.MarkedForClose && !myTerminalBlock.Closed && !myTerminalBlock.CubeGrid.MarkedForClose && myTerminalBlock.IsFunctional && myTerminalBlock.InScene;
+        }
 
         private readonly List<IMySlimBlock> _tmpEffectCubes = new List<IMySlimBlock>();
         internal static void GetCubesForEffect(GridAi ai, MyCubeGrid grid, Vector3D hitPos, AreaEffectType effectType, List<IMySlimBlock> cubes)
