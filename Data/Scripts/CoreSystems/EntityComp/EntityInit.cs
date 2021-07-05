@@ -65,7 +65,7 @@ namespace CoreSystems.Support
                     return;
                 }
 
-                if (TypeSpecific != CompTypeSpecific.Rifle)
+                if (TypeSpecific == CompTypeSpecific.Rifle)
                 {
                     InventoryInited = true;
                     return;
