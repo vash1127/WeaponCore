@@ -4,16 +4,20 @@ title: "(Suggestion / Enhancement) "
 labels: Enhancement Request
 
 body:
+  - type: markdown
+    attributes:
+      value: |
+        (Make sure you filled out the title!)
+
   - type: textarea
     id: is-this-a-bug
     attributes:
       label: Describe the enhancement or feature you'd like
       description: Be as descriptive as possible!
       placeholder: Enter details here
+
   - type: textarea
     id: extras
     attributes:
       label: Additional context
-      description: Add any other context or screenshots about the feature request here.
-      placeholder: Enter details here
-
+      placeholder: Add any other context or screenshots about the feature request here.

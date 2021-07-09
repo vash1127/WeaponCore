@@ -4,20 +4,19 @@ title: "(Wiki) "
 labels: Wiki Issue
 
 body:
+  - type: markdown
+    attributes:
+      value: |
+        (Make sure you filled out the title!)
+
   - type: input
     id: link
     attributes:
       label: Please link to the page with an error
       placeholder: https://github.com/sstixrud/WeaponCore/wiki
+
   - type: textarea
     id: description
     attributes:
       label: Where is the issue, and what should be changed?
-      description: Be descriptive!
       placeholder: Enter details here
-
-## Please link to the page with an error:
-
-
-
-## Where is the issue, and what should be changed?

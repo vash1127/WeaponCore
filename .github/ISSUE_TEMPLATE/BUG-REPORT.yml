@@ -6,6 +6,12 @@ labels: Bug Report
 
 body:
 
+  - type: markdown
+    attributes:
+      value: |
+        (Make sure you filled out the title!)
+
+
   - type: dropdown
     id: environment
     attributes:
