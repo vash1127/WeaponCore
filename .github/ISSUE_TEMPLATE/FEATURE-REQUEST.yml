@@ -1,0 +1,24 @@
+name: Feature request
+about: Suggest an idea for this project
+title: "(Suggestion / Enhancement) "
+labels: Enhancement Request
+assignees: ''
+
+body:
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+
+
+##Is your feature request related to a problem? Please describe:
+
+
+##Describe the solution or feature you'd like:
+
+
+##Additional context:
+
+##Add any other context or screenshots about the feature request here.

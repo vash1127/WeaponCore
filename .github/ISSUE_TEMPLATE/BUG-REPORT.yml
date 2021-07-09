@@ -1,0 +1,57 @@
+name: Bug Report
+description: Leave a bug report, tell us whats wrong! Please read the issue posting guidelines
+  before posting, it's in the wiki!
+title: '(Bug) '
+labels: Bug Report
+assignees: ''
+
+body:
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Did you encounter this issue in Multiplayer or Singleplayer?
+      multiple: true
+      options:
+        - Singleplayer
+        - Multiplayer (Dedicated Server)
+        - Multiplayer (Locally Hosted)
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Please describe the issue, be as verbose as possible, as every little bit of information helps!
+      placeholder: Enter details here
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-reproduction
+    attributes:
+      label: Issue Reproduction
+      description: Please describe accurately how you caused this issue to happen, leave no details to assumptions!
+      placeholder: Enter steps here
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: Enter details here
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        *WeaponCore lets you generate an error report for a specific weapon, while ingame, hold Ctrl+R and aim the red line at the Weapon that is erroring, and an error report will be generated in WeaponCores log cache: `Users\UserName\AppData\Roaming\SpaceEngineers\Storage\1918681825.sbm_WeaponCore`
+
+        Zip up that folder and drop it onto this issue!
+
+
+

@@ -1,0 +1,20 @@
+name: Wiki Issue
+about: Find an issue with the wiki? Please describe it here!
+title: ''
+labels: Wiki Issue
+assignees: ''
+
+body:
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+
+
+## Please link to the page with an error:
+
+
+
+## Where is the issue, and what should be changed?
