@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        (Make sure you filled out the title!)
+        Make sure you filled out the title! AFTER THE PARENTHESIS!
 
   - type: textarea
     id: is-this-a-bug
