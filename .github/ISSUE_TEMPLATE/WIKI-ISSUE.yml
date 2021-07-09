@@ -4,13 +4,17 @@ title: "(Wiki) "
 labels: Wiki Issue
 
 body:
-  - type: textarea
-    id: logs
+  - type: input
+    id: link
     attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
-
+      label: Please link to the page with an error
+      placeholder: https://github.com/sstixrud/WeaponCore/wiki
+  - type: textarea
+    id: description
+    attributes:
+      label: Where is the issue, and what should be changed?
+      description: Be descriptive!
+      placeholder: Enter details here
 
 ## Please link to the page with an error:
 
