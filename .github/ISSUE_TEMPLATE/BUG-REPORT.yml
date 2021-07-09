@@ -69,7 +69,7 @@ body:
       options:
         - label: I have submitted as much information as possible
           required: true
-        - label: I have given the issue a good title
+        - label: I have given the issue an accurate title
           required: true
 
   - type: markdown
