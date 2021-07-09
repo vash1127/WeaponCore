@@ -53,11 +53,13 @@ body:
         - an error report will be generated in WeaponCores log cache: 
         - `Users\UserName\AppData\Roaming\SpaceEngineers\Storage\1918681825.sbm_WeaponCore`
 
-        ### Zip up that folder and drop it onto this text area!
+        ### Zip up that folder and drop it onto the text area below!
   
   - type: textarea
     id: logs
     attributes:
+      label: User Report
+      description: Give us the logs!
       placeholder: Drop your 1918681825.sbm_WeaponCore.zip file here. If you cannot attach files, upload the zip file somewhere public, like DropBox or MEGA, and paste a link to it here.
 
 
