@@ -47,9 +47,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## WeaponCore lets you generate an error report for a specific weapon, while ingame, hold Ctrl+R and aim the red line at the Weapon that is erroring, and an error report will be generated in WeaponCores log cache: `Users\UserName\AppData\Roaming\SpaceEngineers\Storage\1918681825.sbm_WeaponCore`
+        ## WeaponCore lets you generate an error report for a specific weapon: 
 
-        Zip up that folder and drop it onto this issue!
+        - hold Ctrl+R and aim the red line at the Weapon that is erroring
+        - an error report will be generated in WeaponCores log cache: 
+        - `Users\UserName\AppData\Roaming\SpaceEngineers\Storage\1918681825.sbm_WeaponCore`
+
+        ### Zip up that folder and drop it onto this issue!
 
 
 
