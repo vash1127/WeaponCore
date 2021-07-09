@@ -10,7 +10,6 @@ body:
     id: environment
     attributes:
       label: Did you encounter this issue in Multiplayer or Singleplayer?
-      multiple: true
       options:
         - Singleplayer
         - Multiplayer (Dedicated Server)
