@@ -62,8 +62,8 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: Zip up that folder and drop it onto the text area below!
-      description: Give us the logs!
+      label: User Error Report
+      description: Zip up your error report and drop it onto the text area below!
       placeholder: Drop your 1918681825.sbm_WeaponCore.zip file here. If you cannot attach files, upload the zip file somewhere public, like DropBox or MEGA, and paste a link to it here.
 
 
