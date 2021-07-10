@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an idea for this project
+title: "(Suggestion / Enhancement) "
+labels: Enhancement Request
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Make sure you filled out the title! AFTER THE PARENTHESIS!
+
+  - type: textarea
+    id: is-this-a-bug
+    attributes:
+      label: Describe the enhancement or feature you'd like
+      description: Be as descriptive as possible!
+      placeholder: Enter details here
+
+  - type: textarea
+    id: extras
+    attributes:
+      label: Additional context
+      placeholder: Add any other context or screenshots about the feature request here.

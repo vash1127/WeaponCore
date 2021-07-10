@@ -1,0 +1,22 @@
+name: Wiki Issue
+description: Find an issue with the wiki? Please describe it here!
+title: "(Wiki) "
+labels: Wiki Issue
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Make sure you filled out the title! AFTER THE PARENTHESIS!
+
+  - type: input
+    id: link
+    attributes:
+      label: Please link to the page with an error
+      placeholder: https://github.com/sstixrud/WeaponCore/wiki
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Where is the issue, and what should be changed?
+      placeholder: Enter details here
