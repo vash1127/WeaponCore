@@ -1,0 +1,85 @@
+name: Bug Report
+description: Leave a bug report, tell us whats wrong! Please read the issue posting guidelines
+  before posting, it's in the wiki!
+title: "(Bug) "
+labels: Bug Report
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        Make sure you filled out the title! AFTER THE PARENTHESIS!
+
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Did you encounter this issue in Multiplayer or Singleplayer?
+      options:
+        - Singleplayer
+        - Multiplayer (Dedicated Server)
+        - Multiplayer (Locally Hosted)
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Please describe the issue, be as verbose as possible, as every little bit of information helps!
+      placeholder: Enter details here
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-reproduction
+    attributes:
+      label: Issue Reproduction
+      description: Please describe accurately how you caused this issue to happen, leave no details to assumptions!
+      placeholder: Enter steps here
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: Enter details here
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## WeaponCore lets you generate an error report for a specific weapon: 
+
+        - Hold Ctrl+R and aim the red line at the Weapon that is erroring
+        - An error report will be generated in WeaponCores log cache: 
+        - `Users\UserName\AppData\Roaming\SpaceEngineers\Storage\1918681825.sbm_WeaponCore`
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Zip up that folder and drop it onto the text area below!
+      description: Give us the logs!
+      placeholder: Drop your 1918681825.sbm_WeaponCore.zip file here. If you cannot attach files, upload the zip file somewhere public, like DropBox or MEGA, and paste a link to it here.
+
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      description: By submitting this issue, you guarantee that you have given us enough information to accurately diagnose and reproduce your issue.
+      options:
+        - label: I have submitted as much information as possible
+          required: true
+        - label: I have given the issue an accurate title
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Failure to give us enough information will result in this issue being closed
+        ### Failure to properly title your issue will result in this issue being closed
