@@ -267,9 +267,10 @@ namespace CoreSystems
                     gridMap.MyCubeBocks.ApplyAdditions();
                     DirtyGridInfos.Add(myCubeBlock.CubeGrid);
                 }
-                else Log.Line($"ToGridMap missing grid");
+                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
+
             }
-            catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}", null, true); }
+            catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
 
         private void FromGridMap(MyCubeBlock myCubeBlock)
@@ -282,9 +283,9 @@ namespace CoreSystems
                     gridMap.MyCubeBocks.Remove(myCubeBlock, true);
                     DirtyGridInfos.Add(myCubeBlock.CubeGrid);
                 }
-                else Log.Line($"FromGridMap missing grid");
+                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
             }
-            catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}", null, true); }
+            catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
 
         internal void BeforeDamageHandler(object o, ref MyDamageInformation info)
