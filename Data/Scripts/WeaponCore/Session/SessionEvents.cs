@@ -250,9 +250,15 @@ namespace WeaponCore
         {
             try
             {
-                GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
-                GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
-                DirtyGridInfos.Add(myCubeBlock.CubeGrid);
+                GridMap gridMap;
+                if (GridToInfoMap.TryGetValue(myCubeBlock.CubeGrid, out gridMap))
+                {
+                    gridMap.MyCubeBocks.Add(myCubeBlock);
+                    gridMap.MyCubeBocks.ApplyAdditions();
+                    DirtyGridInfos.Add(myCubeBlock.CubeGrid);
+                }
+                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
+
             }
             catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
@@ -261,8 +267,13 @@ namespace WeaponCore
         {
             try
             {
-                GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
-                DirtyGridInfos.Add(myCubeBlock.CubeGrid);
+                GridMap gridMap;
+                if (GridToInfoMap.TryGetValue(myCubeBlock.CubeGrid, out gridMap))
+                {
+                    gridMap.MyCubeBocks.Remove(myCubeBlock, true);
+                    DirtyGridInfos.Add(myCubeBlock.CubeGrid);
+                }
+                else Log.Line($"ToGridMap missing grid: cubeMark:{myCubeBlock.MarkedForClose} - gridMark:{myCubeBlock.CubeGrid.MarkedForClose}");
             }
             catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
