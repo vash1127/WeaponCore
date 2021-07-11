@@ -460,7 +460,8 @@ namespace WeaponCore
 
         private static bool ValidEwarBlock(IMyTerminalBlock myTerminalBlock)
         {
-            return myTerminalBlock?.SlimBlock != null && !myTerminalBlock.SlimBlock.IsDestroyed && !myTerminalBlock.MarkedForClose && !myTerminalBlock.Closed && !myTerminalBlock.CubeGrid.MarkedForClose && myTerminalBlock.IsFunctional && myTerminalBlock.InScene;
+            var thruster = myTerminalBlock as MyThrust;
+            return myTerminalBlock?.SlimBlock != null && !myTerminalBlock.SlimBlock.IsDestroyed && !myTerminalBlock.MarkedForClose && !myTerminalBlock.Closed && !myTerminalBlock.CubeGrid.MarkedForClose && myTerminalBlock.IsFunctional && myTerminalBlock.InScene && (thruster == null || thruster.IsPowered);
         }
 
         private readonly List<IMySlimBlock> _tmpEffectCubes = new List<IMySlimBlock>();
