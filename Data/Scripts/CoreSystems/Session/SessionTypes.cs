@@ -122,6 +122,7 @@ namespace CoreSystems
                 LastRequestTick = Session.Tick;
                 TargetEntity = targetEntity;
                 TargetTopEntity = topMost;
+                
                 MyData = new DataReport();
 
                 if (!Session.DedicatedServer)
@@ -149,6 +150,7 @@ namespace CoreSystems
             {
                 MyData = new DataReport();
                 TargetEntity = targetEntity;
+                TargetTopEntity = targetEntity.GetTopMostParent();
 
                 Compile();
 
