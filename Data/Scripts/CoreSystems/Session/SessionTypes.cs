@@ -36,7 +36,8 @@ namespace CoreSystems
             internal bool Draw(uint tick)
             {
                 Color color = new Color();
-                switch (Type) {
+                switch (Type)
+                {
                     case LineType.MainTravel:
                         color = Color.Blue;
                         break;
@@ -63,7 +64,7 @@ namespace CoreSystems
             internal LineD Line;
             internal uint HitTick;
         }
-        
+
         internal class ProblemReport
         {
             internal readonly Dictionary<string, Dictionary<string, Func<string>>> AllDicts = new Dictionary<string, Dictionary<string, Func<string>>>();
@@ -106,15 +107,16 @@ namespace CoreSystems
                 var cube = targetEntity as MyCubeBlock;
                 var rifle = targetEntity as IMyAutomaticRifleGun;
                 var subName = cube != null ? cube.BlockDefinition.Id.SubtypeName : rifle != null ? rifle.DefinitionId.SubtypeName : "Unknown";
-                   
+
                 Ai ai;
-                if (Generating || Session.Tick - LastRequestTick < RequestTime || topMost == null) {
+                if (Generating || Session.Tick - LastRequestTick < RequestTime || topMost == null)
+                {
                     return;
                 }
-                
+
                 if (!Session.EntityAIs.TryGetValue(topMost, out ai) || !ai.CompBase.ContainsKey(targetEntity))
                     Log.Line("Failed to generate user report, either grid does not have Weaponcore or this block this wc block is not initialized.");
-                
+
                 Log.Line("Generate User Weapon Report");
                 Generating = true;
                 LastRequestTick = Session.Tick;
@@ -125,15 +127,18 @@ namespace CoreSystems
                 if (!Session.DedicatedServer)
                     MyAPIGateway.Utilities.ShowNotification($"Generating a error report for WC Block: {subName} - with id: {TargetEntity.EntityId}", 7000, "Red");
 
-                if (Session.IsServer) {
+                if (Session.IsServer)
+                {
 
                     Compile();
-                    if (Session.MpActive) {
+                    if (Session.MpActive)
+                    {
                         foreach (var player in Session.Players)
                             NetworkTransfer(false, player.Value.SteamUserId);
                     }
                 }
-                else {
+                else
+                {
                     Compile();
                     NetworkTransfer(true);
                 }
@@ -146,7 +151,7 @@ namespace CoreSystems
                 TargetEntity = targetEntity;
 
                 Compile();
-                
+
                 return MyData;
             }
 
@@ -161,8 +166,10 @@ namespace CoreSystems
 
             internal void BuildData(DataReport data)
             {
-                foreach (var d in AllDicts) {
-                    foreach (var f in d.Value) {
+                foreach (var d in AllDicts)
+                {
+                    foreach (var f in d.Value)
+                    {
                         var value = f.Value.Invoke();
                         GetStorage(data, d.Key)[f.Key] = value;
                     }
@@ -192,7 +199,8 @@ namespace CoreSystems
 
             internal void NetworkTransfer(bool toServer, ulong clientId = 0, DataReport data = null)
             {
-                if (toServer) {
+                if (toServer)
+                {
                     Session.PacketsToServer.Add(new ProblemReportPacket
                     {
                         SenderId = Session.MultiplayerId,
@@ -201,9 +209,12 @@ namespace CoreSystems
                         Type = ProblemReportPacket.RequestType.RequestServerReport,
                     });
                 }
-                else {
-                    Session.PacketsToClient.Add(new PacketInfo {
-                        Packet = new ProblemReportPacket {
+                else
+                {
+                    Session.PacketsToClient.Add(new PacketInfo
+                    {
+                        Packet = new ProblemReportPacket
+                        {
                             SenderId = clientId,
                             PType = PacketType.ProblemReport,
                             Data = data,
@@ -219,7 +230,7 @@ namespace CoreSystems
             {
                 if (Session.MpActive && (RemoteData == null || MyData == null))
                 {
-                    Log.Line($"RemoteData:{RemoteData !=null} - MyData:{MyData!= null}, null data detected, waiting 10 second");
+                    Log.Line($"RemoteData:{RemoteData != null} - MyData:{MyData != null}, null data detected, waiting 10 second");
                     Clean();
                     return;
                 }
@@ -240,7 +251,7 @@ namespace CoreSystems
 
                 for (int x = 0; x < loopCnt; x++)
                 {
-                    
+
                     if (x != lastLoop)
                         Report += "\n== Mismatched variables ==\n";
                     else if (x == lastLoop && lastLoop > 0)
@@ -270,9 +281,9 @@ namespace CoreSystems
                     }
                 }
             }
-            
+
             internal HashSet<string> MatchSkip = new HashSet<string> { "AcquireEnabled", "AcquireAsleep", "WeaponReadyTick", "AwakeComps" };
-        
+
             internal Dictionary<string, Func<string>> InitSessionFields()
             {
                 var sessionFields = new Dictionary<string, Func<string>>
@@ -551,7 +562,8 @@ namespace CoreSystems
             }
             internal void Monitor()
             {
-                if (IsActive()) {
+                if (IsActive())
+                {
                     if (Comp.IsBlock && Session.Tick20)
                         Comp.TerminalRefresh();
                 }
@@ -567,14 +579,14 @@ namespace CoreSystems
                 var sameGrid = Comp.TopEntity == Comp.Ai.TopEntity;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
                 var compReady = Comp.Platform.State == CorePlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Data.Repo.ActiveTerminal || Session.IsClient && (Comp.Ai.Data.Repo.ActiveTerminal == 0 || Comp.Ai.Data.Repo.ActiveTerminal ==  Comp.CoreEntity.EntityId));
+                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Data.Repo.ActiveTerminal || Session.IsClient && (Comp.Ai.Data.Repo.ActiveTerminal == 0 || Comp.Ai.Data.Repo.ActiveTerminal == Comp.CoreEntity.EntityId));
                 var isActive = (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
                 return isActive;
             }
 
             internal void HandleInputUpdate(CoreComponent comp)
             {
-                if (Active && (Comp != comp || OriginalAiVersion !=  comp.Ai.Version))
+                if (Active && (Comp != comp || OriginalAiVersion != comp.Ai.Version))
                     Clean();
 
                 Session.LastTerminal = (IMyTerminalBlock)comp.CoreEntity;
@@ -586,7 +598,7 @@ namespace CoreSystems
                 if (comp.IsAsleep)
                     comp.WakeupComp();
 
-                if (Session.IsClient && !Active)  
+                if (Session.IsClient && !Active)
                     Session.SendActiveTerminal(comp);
                 else if (Session.IsServer)
                     ServerUpdate(Comp);
@@ -596,19 +608,15 @@ namespace CoreSystems
 
             internal void Clean(bool purge = false)
             {
-                if (Session.MpActive && Session.IsClient && Comp != null && !purge) {
-                    uint[] mIds;
-                    if (Session.PlayerMIds.TryGetValue(Session.MultiplayerId, out mIds))
+                if (Session.MpActive && Session.IsClient && Comp != null && !purge)
+                {
+                    Session.PacketsToServer.Add(new TerminalMonitorPacket
                     {
-                        Session.PacketsToServer.Add(new TerminalMonitorPacket
-                        {
-                            SenderId = Session.MultiplayerId,
-                            PType = PacketType.TerminalMonitor,
-                            EntityId = Comp.CoreEntity.EntityId,
-                            State = TerminalMonitorPacket.Change.Clean,
-                            MId = ++mIds[(int)PacketType.TerminalMonitor],
-                        });
-                    }
+                        SenderId = Session.MultiplayerId,
+                        PType = PacketType.TerminalMonitor,
+                        EntityId = Comp.CoreEntity.EntityId,
+                        State = TerminalMonitorPacket.Change.Clean,
+                    });
                 }
 
                 if (!purge && Session.IsServer)
@@ -623,11 +631,13 @@ namespace CoreSystems
             internal void ServerUpdate(CoreComponent comp)
             {
                 long aTermId;
-                if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
+                if (!ServerTerminalMaps.TryGetValue(comp, out aTermId))
+                {
                     ServerTerminalMaps[comp] = comp.CoreEntity.EntityId;
                     //if (!Session.LocalVersion) Log.Line($"ServerUpdate added Id");
                 }
-                else {
+                else
+                {
 
                     var entity = MyEntities.GetEntityByIdOrDefault(aTermId);
                     if (entity != null && entity.GetTopMostParent()?.EntityId != comp.Ai.TopEntity.EntityId)
@@ -713,16 +723,19 @@ namespace CoreSystems
 
             internal void Observer()
             {
-                foreach (var wa in MonitorState) {
+                foreach (var wa in MonitorState)
+                {
 
                     var w = wa.Part as Weapon;
 
-                    if (w != null && w.Target.HasTarget || w == null) {
+                    if (w != null && w.Target.HasTarget || w == null)
+                    {
                         ToRemove.Add(wa);
                         continue;
                     }
 
-                    if (Session.Tick - wa.CreatedTick > 599) {
+                    if (Session.Tick - wa.CreatedTick > 599)
+                    {
 
                         if (LastSleepSlot < AsleepBuckets - 1)
                             wa.SlotId = ++LastSleepSlot;
@@ -735,7 +748,8 @@ namespace CoreSystems
                     }
                 }
 
-                for (int i = 0; i < ToRemove.Count; i++) {
+                for (int i = 0; i < ToRemove.Count; i++)
+                {
                     var wa = ToRemove[i];
                     wa.Monitoring = false;
                     MonitorState.Remove(wa);
@@ -746,13 +760,15 @@ namespace CoreSystems
 
             internal void ReorderSleep()
             {
-                foreach (var wa in Asleep) {
+                foreach (var wa in Asleep)
+                {
 
                     var w = wa.Part as Weapon;
 
                     var remove = w != null && (w.Target.HasTarget || !w.TrackTarget) || wa.Part.BaseComp.IsAsleep || !wa.Part.BaseComp.IsWorking || w == null;
 
-                    if (remove) {
+                    if (remove)
+                    {
                         ToRemove.Add(wa);
                         continue;
                     }
@@ -761,7 +777,8 @@ namespace CoreSystems
 
                 Asleep.Clear();
 
-                for (int i = 0; i < ToRemove.Count; i++) {
+                for (int i = 0; i < ToRemove.Count; i++)
+                {
                     var wa = ToRemove[i];
                     wa.IsSleeping = false;
                     MonitorState.Remove(wa);
@@ -773,7 +790,8 @@ namespace CoreSystems
 
                 LastSleepSlot = -1;
 
-                for (int i = 0; i < Collector.Count; i++) {
+                for (int i = 0; i < Collector.Count; i++)
+                {
 
                     var wa = Collector[i];
                     if (LastSleepSlot < AsleepBuckets - 1)
@@ -874,7 +892,7 @@ namespace CoreSystems
             public int Amount
             {
                 get { return _amount; }
-                set { Interlocked.Exchange(ref _amount, value);  }
+                set { Interlocked.Exchange(ref _amount, value); }
             }
         }
 

@@ -43,8 +43,9 @@ namespace CoreSystems
         private bool Error(PacketObj data, params NetResult[] messages)
         {
             var fakeTargetUpdateError = data.Packet.PType == PacketType.AimTargetUpdate;
-            
-            if (fakeTargetUpdateError) {
+
+            if (fakeTargetUpdateError)
+            {
                 if (data.Packet.EntityId == _lastFakeTargetUpdateErrorId)
                     return false;
                 _lastFakeTargetUpdateErrorId = data.Packet.EntityId;
@@ -97,19 +98,22 @@ namespace CoreSystems
         #region ServerOnly
         internal void SendConstruct(Ai ai)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
                 PrunedPacketsToClient.Remove(ai.Construct.Data.Repo.FocusData);
                 ++ai.Construct.Data.Repo.FocusData.Revision;
 
                 PacketInfo oldInfo;
                 ConstructPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo, out oldInfo))
+                {
                     iPacket = (ConstructPacket)oldInfo.Packet;
                     iPacket.EntityId = ai.TopEntity.EntityId;
                     iPacket.Data = ai.Construct.Data.Repo;
                 }
-                else {
+                else
+                {
                     iPacket = PacketConstructPool.Get();
                     iPacket.EntityId = ai.TopEntity.EntityId;
                     iPacket.SenderId = MultiplayerId;
@@ -117,7 +121,8 @@ namespace CoreSystems
                     iPacket.Data = ai.Construct.Data.Repo;
                 }
 
-                PrunedPacketsToClient[ai.Construct.Data.Repo] = new PacketInfo {
+                PrunedPacketsToClient[ai.Construct.Data.Repo] = new PacketInfo
+                {
                     Entity = ai.TopEntity,
                     Packet = iPacket,
                 };
@@ -127,19 +132,23 @@ namespace CoreSystems
 
         internal void SendConstructFoci(Ai ai)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
                 ++ai.Construct.Data.Repo.FocusData.Revision;
 
-                if (!PrunedPacketsToClient.ContainsKey(ai.Construct.Data.Repo)) {
+                if (!PrunedPacketsToClient.ContainsKey(ai.Construct.Data.Repo))
+                {
                     PacketInfo oldInfo;
                     ConstructFociPacket iPacket;
-                    if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo.FocusData, out oldInfo)) {
+                    if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo.FocusData, out oldInfo))
+                    {
                         iPacket = (ConstructFociPacket)oldInfo.Packet;
                         iPacket.EntityId = ai.TopEntity.EntityId;
                         iPacket.Data = ai.Construct.Data.Repo.FocusData;
                     }
-                    else {
+                    else
+                    {
                         iPacket = PacketConstructFociPool.Get();
                         iPacket.EntityId = ai.TopEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
@@ -147,7 +156,8 @@ namespace CoreSystems
                         iPacket.Data = ai.Construct.Data.Repo.FocusData;
                     }
 
-                    PrunedPacketsToClient[ai.Construct.Data.Repo.FocusData] = new PacketInfo {
+                    PrunedPacketsToClient[ai.Construct.Data.Repo.FocusData] = new PacketInfo
+                    {
                         Entity = ai.TopEntity,
                         Packet = iPacket,
                     };
@@ -160,16 +170,19 @@ namespace CoreSystems
 
         internal void SendAiData(Ai ai)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
                 PacketInfo oldInfo;
                 AiDataPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(ai.Data.Repo, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(ai.Data.Repo, out oldInfo))
+                {
                     iPacket = (AiDataPacket)oldInfo.Packet;
                     iPacket.EntityId = ai.TopEntity.EntityId;
                     iPacket.Data = ai.Data.Repo;
                 }
-                else {
+                else
+                {
 
                     iPacket = PacketAiPool.Get();
                     iPacket.EntityId = ai.TopEntity.EntityId;
@@ -180,7 +193,8 @@ namespace CoreSystems
 
                 ++ai.Data.Repo.Revision;
 
-                PrunedPacketsToClient[ai.Data.Repo] = new PacketInfo {
+                PrunedPacketsToClient[ai.Data.Repo] = new PacketInfo
+                {
                     Entity = ai.TopEntity,
                     Packet = iPacket,
                 };
@@ -190,19 +204,22 @@ namespace CoreSystems
 
         internal void SendWeaponAmmoData(Weapon w)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
                 const PacketType type = PacketType.WeaponAmmo;
                 ++w.ProtoWeaponAmmo.Revision;
 
                 PacketInfo oldInfo;
                 WeaponAmmoPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(w.ProtoWeaponAmmo, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(w.ProtoWeaponAmmo, out oldInfo))
+                {
                     iPacket = (WeaponAmmoPacket)oldInfo.Packet;
                     iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
                     iPacket.Data = w.ProtoWeaponAmmo;
                 }
-                else {
+                else
+                {
 
                     iPacket = PacketAmmoPool.Get();
                     iPacket.EntityId = w.BaseComp.CoreEntity.EntityId;
@@ -213,7 +230,8 @@ namespace CoreSystems
                 }
 
 
-                PrunedPacketsToClient[w.ProtoWeaponAmmo] = new PacketInfo {
+                PrunedPacketsToClient[w.ProtoWeaponAmmo] = new PacketInfo
+                {
                     Entity = w.BaseComp.CoreEntity,
                     Packet = iPacket,
                 };
@@ -223,19 +241,22 @@ namespace CoreSystems
 
         internal void SendComp(Weapon.WeaponComponent comp)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
                 const PacketType type = PacketType.WeaponComp;
                 comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
 
                 PacketInfo oldInfo;
                 WeaponCompPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo))
+                {
                     iPacket = (WeaponCompPacket)oldInfo.Packet;
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.Data = comp.Data.Repo.Values;
                 }
-                else {
+                else
+                {
 
                     iPacket = PacketWeaponCompPool.Get();
                     iPacket.EntityId = comp.CoreEntity.EntityId;
@@ -244,7 +265,8 @@ namespace CoreSystems
                     iPacket.Data = comp.Data.Repo.Values;
                 }
 
-                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo {
+                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo
+                {
                     Entity = comp.CoreEntity,
                     Packet = iPacket,
                 };
@@ -254,19 +276,22 @@ namespace CoreSystems
 
         internal void SendComp(Upgrade.UpgradeComponent comp)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
                 const PacketType type = PacketType.UpgradeComp;
                 comp.Data.Repo.Values.UpdateCompPacketInfo(comp, true);
 
                 PacketInfo oldInfo;
                 UpgradeCompPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo)) {
+                if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values, out oldInfo))
+                {
                     iPacket = (UpgradeCompPacket)oldInfo.Packet;
                     iPacket.EntityId = comp.CoreEntity.EntityId;
                     iPacket.Data = comp.Data.Repo.Values;
                 }
-                else {
+                else
+                {
 
                     iPacket = PacketUpgradeCompPool.Get();
                     iPacket.EntityId = comp.CoreEntity.EntityId;
@@ -275,7 +300,8 @@ namespace CoreSystems
                     iPacket.Data = comp.Data.Repo.Values;
                 }
 
-                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo {
+                PrunedPacketsToClient[comp.Data.Repo.Values] = new PacketInfo
+                {
                     Entity = comp.CoreEntity,
                     Packet = iPacket,
                 };
@@ -361,21 +387,25 @@ namespace CoreSystems
 
         internal void SendState(SupportSys.SupportComponent comp)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
-                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values)) {
+                if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo.Values))
+                {
 
                     const PacketType type = PacketType.SupportState;
                     comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
 
                     PacketInfo oldInfo;
                     SupportStatePacket iPacket;
-                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo)) {
+                    if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo))
+                    {
                         iPacket = (SupportStatePacket)oldInfo.Packet;
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.Data = comp.Data.Repo.Values.State;
                     }
-                    else {
+                    else
+                    {
                         iPacket = PacketSupportStatePool.Get();
                         iPacket.EntityId = comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
@@ -383,7 +413,8 @@ namespace CoreSystems
                         iPacket.Data = comp.Data.Repo.Values.State;
                     }
 
-                    PrunedPacketsToClient[comp.Data.Repo.Values.State] = new PacketInfo {
+                    PrunedPacketsToClient[comp.Data.Repo.Values.State] = new PacketInfo
+                    {
                         Entity = comp.CoreEntity,
                         Packet = iPacket,
                     };
@@ -407,7 +438,7 @@ namespace CoreSystems
                     comp.Data.Repo.Values.UpdateCompPacketInfo(comp);
 
                     PacketInfo oldInfo;
-                   UpgradeStatePacket iPacket;
+                    UpgradeStatePacket iPacket;
                     if (PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Values.State, out oldInfo))
                     {
                         iPacket = (UpgradeStatePacket)oldInfo.Packet;
@@ -481,21 +512,25 @@ namespace CoreSystems
 
         internal void SendWeaponReload(Weapon w)
         {
-            if (IsServer) {
+            if (IsServer)
+            {
 
-                if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Values)) {
+                if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.Values))
+                {
 
                     const PacketType type = PacketType.WeaponReload;
                     w.Comp.Data.Repo.Values.UpdateCompPacketInfo(w.Comp);
 
                     PacketInfo oldInfo;
                     WeaponReloadPacket iPacket;
-                    if (PrunedPacketsToClient.TryGetValue(w.Reload, out oldInfo)) {
+                    if (PrunedPacketsToClient.TryGetValue(w.Reload, out oldInfo))
+                    {
                         iPacket = (WeaponReloadPacket)oldInfo.Packet;
                         iPacket.EntityId = w.Comp.CoreEntity.EntityId;
                         iPacket.Data = w.Reload;
                     }
-                    else {
+                    else
+                    {
                         iPacket = PacketReloadPool.Get();
                         iPacket.EntityId = w.Comp.CoreEntity.EntityId;
                         iPacket.SenderId = MultiplayerId;
@@ -504,12 +539,13 @@ namespace CoreSystems
                         iPacket.PartId = w.PartId;
                     }
 
-                    PrunedPacketsToClient[w.Reload] = new PacketInfo {
+                    PrunedPacketsToClient[w.Reload] = new PacketInfo
+                    {
                         Entity = w.Comp.CoreEntity,
                         Packet = iPacket,
                     };
                 }
-                else 
+                else
                     SendComp(w.Comp);
             }
             else Log.Line("SendWeaponReload should never be called on Client");
@@ -584,18 +620,12 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new Packet
                 {
-                    PacketsToServer.Add(new Packet
-                    {
-                        MId = ++mIds[(int)ptype],
-                        EntityId = entityId,
-                        SenderId = MultiplayerId,
-                        PType = ptype
-                    });
-                }
-                else Log.Line("SendUpdateRequest no player MIds found");
+                    EntityId = entityId,
+                    SenderId = MultiplayerId,
+                    PType = ptype
+                });
             }
             else Log.Line("SendUpdateRequest should only be called on clients");
         }
@@ -604,20 +634,14 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new OverRidesPacket
                 {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        MId = ++mIds[(int)PacketType.OverRidesUpdate],
-                        PType = PacketType.OverRidesUpdate,
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        Setting = settings,
-                        Value = value,
-                    });
-                }
-                else Log.Line("SendOverRidesClientComp no player MIds found");
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    Setting = settings,
+                    Value = value,
+                });
             }
             else Log.Line("SendOverRidesClientComp should only be called on clients");
         }
@@ -655,19 +679,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FocusPacket
                 {
-                    PacketsToServer.Add(new FocusPacket
-                    {
-                        MId = ++mIds[(int)PacketType.FocusUpdate],
-                        EntityId = ai.TopEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.FocusUpdate,
-                        TargetId = targetId
-                    });
-                }
-                else Log.Line("SendFocusTargetUpdate no player MIds found");
+                    EntityId = ai.TopEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.FocusUpdate,
+                    TargetId = targetId
+                });
 
             }
             else if (HandlesInput)
@@ -690,18 +708,12 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FocusPacket
                 {
-                    PacketsToServer.Add(new FocusPacket
-                    {
-                        MId = ++mIds[(int)PacketType.FocusLockUpdate],
-                        EntityId = ai.TopEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.FocusLockUpdate,
-                    });
-                }
-                else Log.Line("SendFocusLockUpdate no player MIds found");
+                    EntityId = ai.TopEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.FocusLockUpdate,
+                });
 
             }
             else if (HandlesInput)
@@ -723,19 +735,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FocusPacket
                 {
-                    PacketsToServer.Add(new FocusPacket
-                    {
-                        MId = ++mIds[(int)PacketType.NextActiveUpdate],
-                        EntityId = ai.TopEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.NextActiveUpdate,
-                        AddSecondary = addSecondary
-                    });
-                }
-                else Log.Line("SendNextActiveUpdate no player MIds found");
+                    EntityId = ai.TopEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.NextActiveUpdate,
+                    AddSecondary = addSecondary
+                });
 
             }
             else if (HandlesInput)
@@ -758,18 +764,12 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FocusPacket
                 {
-                    PacketsToServer.Add(new FocusPacket
-                    {
-                        MId = ++mIds[(int)PacketType.ReleaseActiveUpdate],
-                        EntityId = ai.TopEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.ReleaseActiveUpdate
-                    });
-                }
-                else Log.Line("SendReleaseActiveUpdate no player MIds found");
+                    EntityId = ai.TopEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ReleaseActiveUpdate
+                });
             }
             else if (HandlesInput)
             {
@@ -792,18 +792,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new InputPacket
                 {
-                    PacketsToServer.Add(new InputPacket
-                    {
-                        EntityId = entity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.ClientMouseEvent,
-                        Data = UiInput.ClientInputState
-                    });
-                }
-                else Log.Line("SendMouseUpdate no player MIds found");
+                    EntityId = entity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ClientMouseEvent,
+                    Data = UiInput.ClientInputState
+                });
             }
             else if (HandlesInput)
             {
@@ -826,19 +821,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new BoolUpdatePacket
                 {
-                    PacketsToServer.Add(new BoolUpdatePacket
-                    {
-                        MId = ++mIds[(int)PacketType.ActiveControlUpdate],
-                        EntityId = entity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.ActiveControlUpdate,
-                        Data = active
-                    });
-                }
-                else Log.Line("SendActiveControlUpdate no player MIds found");
+                    EntityId = entity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ActiveControlUpdate,
+                    Data = active
+                });
             }
             else if (HandlesInput)
             {
@@ -851,20 +840,14 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                comp.Session.PacketsToServer.Add(new ShootStatePacket
                 {
-                    comp.Session.PacketsToServer.Add(new ShootStatePacket
-                    {
-                        MId = ++mIds[(int)PacketType.RequestShootUpdate],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        PType = PacketType.RequestShootUpdate,
-                        Action = action,
-                        PlayerId = PlayerId,
-                    });
-                }
-                else Log.Line("SendActionShootUpdate no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = comp.Session.MultiplayerId,
+                    PType = PacketType.RequestShootUpdate,
+                    Action = action,
+                    PlayerId = PlayerId,
+                });
             }
             else if (HandlesInput)
             {
@@ -888,19 +871,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new TerminalMonitorPacket
                 {
-                    PacketsToServer.Add(new TerminalMonitorPacket
-                    {
-                        SenderId = MultiplayerId,
-                        PType = PacketType.TerminalMonitor,
-                        EntityId = comp.CoreEntity.EntityId,
-                        State = TerminalMonitorPacket.Change.Update,
-                        MId = ++mIds[(int)PacketType.TerminalMonitor],
-                    });
-                }
-                else Log.Line("SendActiveTerminal no player MIds found");
+                    SenderId = MultiplayerId,
+                    PType = PacketType.TerminalMonitor,
+                    EntityId = comp.CoreEntity.EntityId,
+                    State = TerminalMonitorPacket.Change.Update,
+                });
             }
             else if (HandlesInput)
             {
@@ -923,20 +900,14 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FakeTargetPacket
                 {
-                    PacketsToServer.Add(new FakeTargetPacket
-                    {
-                        MId = ++mIds[(int)PacketType.AimTargetUpdate],
-                        EntityId = ai.TopEntity.EntityId,
-                        SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.AimTargetUpdate,
-                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
-                        TargetId = fake.EntityId,
-                    });
-                }
-                else Log.Line($"SendFakeTargetUpdate no player MIds found");
+                    EntityId = ai.TopEntity.EntityId,
+                    SenderId = ai.Session.MultiplayerId,
+                    PType = PacketType.AimTargetUpdate,
+                    Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
+                    TargetId = fake.EntityId,
+                });
             }
             else if (HandlesInput)
             {
@@ -960,19 +931,14 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FakeTargetPacket
                 {
-                    PacketsToServer.Add(new FakeTargetPacket
-                    {
-                        EntityId = ai.TopEntity.EntityId,
-                        SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.PaintedTargetUpdate,
-                        Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
-                        TargetId = fake.EntityId,
-                    });
-                }
-                else Log.Line($"SendFakeTargetUpdate no player MIds found");
+                    EntityId = ai.TopEntity.EntityId,
+                    SenderId = ai.Session.MultiplayerId,
+                    PType = PacketType.PaintedTargetUpdate,
+                    Pos = fake.EntityId != 0 ? fake.LocalPosition : fake.FakeInfo.WorldPosition,
+                    TargetId = fake.EntityId,
+                });
             }
             else if (HandlesInput)
             {
@@ -997,20 +963,14 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new PlayerControlRequestPacket
                 {
-                    PacketsToServer.Add(new PlayerControlRequestPacket
-                    {
-                        MId = ++mIds[(int)PacketType.PlayerControlRequest],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.PlayerControlRequest,
-                        PlayerId = playerId,
-                        Mode = mode,
-                    });
-                }
-                else Log.Line("SendPlayerControlRequest no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.PlayerControlRequest,
+                    PlayerId = playerId,
+                    Mode = mode,
+                });
             }
             else if (HandlesInput)
             {
@@ -1040,21 +1000,15 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new AmmoCycleRequestPacket
                 {
-                    PacketsToServer.Add(new AmmoCycleRequestPacket
-                    {
-                        MId = ++mIds[(int)PacketType.AmmoCycleRequest],
-                        EntityId = w.BaseComp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.AmmoCycleRequest,
-                        PartId = w.PartId,
-                        NewAmmoId = newAmmoId,
-                        PlayerId = PlayerId,
-                    });
-                }
-                else Log.Line("SendAmmoCycleRequest no player MIds found");
+                    EntityId = w.BaseComp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.AmmoCycleRequest,
+                    PartId = w.PartId,
+                    NewAmmoId = newAmmoId,
+                    PlayerId = PlayerId,
+                });
             }
             else Log.Line("SendAmmoCycleRequest should never be called on Non-Client");
         }
@@ -1063,19 +1017,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new FloatUpdatePacket
                 {
-                    PacketsToServer.Add(new FloatUpdatePacket
-                    {
-                        MId = ++mIds[(int)type],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = type,
-                        Data = newDps,
-                    });
-                }
-                else Log.Line("SendSetFloatRequest no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = type,
+                    Data = newDps,
+                });
             }
             else if (HandlesInput)
             {
@@ -1098,19 +1046,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new BoolUpdatePacket
                 {
-                    PacketsToServer.Add(new BoolUpdatePacket
-                    {
-                        MId = ++mIds[(int)type],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = type,
-                        Data = newBool,
-                    });
-                }
-                else Log.Line("SendSetCompBoolRequest no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = type,
+                    Data = newBool,
+                });
             }
             else if (HandlesInput)
             {
@@ -1131,23 +1073,18 @@ namespace CoreSystems
 
         internal void SendTrackReticleUpdate(Weapon.WeaponComponent comp, bool track)
         {
-            if (IsClient) {
-
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+            if (IsClient)
+            {
+                PacketsToServer.Add(new BoolUpdatePacket
                 {
-                    PacketsToServer.Add(new BoolUpdatePacket
-                    {
-                        MId = ++mIds[(int)PacketType.ReticleUpdate],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.ReticleUpdate,
-                        Data = track
-                    });
-                }
-                else Log.Line("SendTrackReticleUpdate no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ReticleUpdate,
+                    Data = track
+                });
             }
-            else if (HandlesInput) {
+            else if (HandlesInput)
+            {
                 comp.Data.Repo.Values.State.TrackingReticle = track;
                 SendComp(comp);
             }
@@ -1158,20 +1095,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new BoolUpdatePacket
                 {
-                    PacketsToServer.Add(new BoolUpdatePacket
-                    {
-                        MId = ++mIds[(int)PacketType.CountingDownUpdate],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.CountingDownUpdate,
-                        Data = countingDown
-                    });
-                }
-                else Log.Line("SendCountingDowneUpdate no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.CountingDownUpdate,
+                    Data = countingDown
+                });
             }
             else if (IsServer)
             {
@@ -1184,20 +1114,13 @@ namespace CoreSystems
         {
             if (IsClient)
             {
-
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                PacketsToServer.Add(new BoolUpdatePacket
                 {
-                    PacketsToServer.Add(new BoolUpdatePacket
-                    {
-                        MId = ++mIds[(int)PacketType.CountingDownUpdate],
-                        EntityId = comp.CoreEntity.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.CountingDownUpdate,
-                        Data = true
-                    });
-                }
-                else Log.Line("SendTriggerCriticalReaction no player MIds found");
+                    EntityId = comp.CoreEntity.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.CountingDownUpdate,
+                    Data = true
+                });
             }
             else if (IsServer)
             {

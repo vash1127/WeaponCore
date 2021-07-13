@@ -394,7 +394,6 @@ namespace CoreSystems
                     PlayerEntityIdInRange.Remove(removedPlayer.SteamUserId);
                     PlayerMouseStates.Remove(playerId);
                     PlayerDummyTargets.Remove(playerId);
-                    PlayerMIds.Remove(removedPlayer.SteamUserId);
                     if (PlayerControllerMonitor.Remove(removedPlayer))
                         removedPlayer.Controller.ControlledEntityChanged -= OnPlayerController;
 
@@ -417,7 +416,6 @@ namespace CoreSystems
                 PlayerMouseStates[id] = new InputStateData();
                 PlayerDummyTargets[id] = new FakeTargets();
                 PlayerEntityIdInRange[player.SteamUserId] = new HashSet<long>();
-                PlayerMIds[player.SteamUserId] = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
                 var controller = player.Controller;
                 if (controller != null && PlayerControllerMonitor.Add(player))
