@@ -96,14 +96,12 @@ namespace CoreSystems
 
     public class Packet
     {
-        [ProtoMember(1)] internal uint MId;
-        [ProtoMember(2)] internal long EntityId;
-        [ProtoMember(3)] internal ulong SenderId;
-        [ProtoMember(4)] internal PacketType PType;
+        [ProtoMember(1)] internal long EntityId;
+        [ProtoMember(2)] internal ulong SenderId;
+        [ProtoMember(3)] internal PacketType PType;
 
         public virtual void CleanUp()
         {
-            MId = 0;
             EntityId = 0;
             SenderId = 0;
             PType = PacketType.Invalid;
@@ -112,7 +110,7 @@ namespace CoreSystems
         //can override in other packet
         protected bool Equals(Packet other)
         {
-            return (EntityId.Equals(other.EntityId) && SenderId.Equals(other.SenderId) && PType.Equals(other.PType) && MId.Equals(other.MId));
+            return (EntityId.Equals(other.EntityId) && SenderId.Equals(other.SenderId) && PType.Equals(other.PType));
         }
 
         public override bool Equals(object obj)
