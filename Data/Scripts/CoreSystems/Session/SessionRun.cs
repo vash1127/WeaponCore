@@ -80,9 +80,10 @@ namespace CoreSystems
                     TerminalMon.Monitor();
 
                 MyCubeBlock cube;
-                if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && CoreSystemsDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                if (Tick60 && UiInput.ControlKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && CoreSystemsDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                {
                     ProblemRep.GenerateReport(cube);
-
+                }
                 if (!IsClient && !InventoryUpdate && PartToPullConsumable.Count > 0 && ITask.IsComplete)
                     StartAmmoTask();
 
