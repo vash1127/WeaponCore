@@ -20,20 +20,14 @@ namespace WeaponCore
             long playerId;
             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                    mIds[(int)packet.PType] = packet.MId;
+                if (PlayerMouseStates.ContainsKey(playerId))
+                    PlayerMouseStates[playerId].Sync(inputPacket.Data);
+                else
+                    PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
 
-                    if (PlayerMouseStates.ContainsKey(playerId))
-                        PlayerMouseStates[playerId].Sync(inputPacket.Data);
-                    else
-                        PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
+                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
 
-                    PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
-
-                    data.Report.PacketValid = true;
-                }
-                else Log.Line($"ServerClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+                data.Report.PacketValid = true;
             }
             else
                 return Error(data, Msg("Player Not Found"));
@@ -53,14 +47,8 @@ namespace WeaponCore
             long playerId = 0;
             if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
-                    mIds[(int)packet.PType] = packet.MId;
-
-                    ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
-                    data.Report.PacketValid = true;
-                }
-                else Log.Line($"ServerActiveControlUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+                ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
+                data.Report.PacketValid = true;
             }
             else Log.Line($"ServerActiveControlUpdate: ai:{ai != null} - targetingAi:{GridTargetingAIs.ContainsKey(cube.CubeGrid)} - masterAi:{GridToMasterAi.ContainsKey(cube.CubeGrid)} - IdToComp:{IdToCompMap.ContainsKey(cube.EntityId)} - {cube.BlockDefinition.Id.SubtypeName} - playerId:{playerId}({packet.SenderId}) - marked:{cube.MarkedForClose}({cube.CubeGrid.MarkedForClose}) - active:{dPacket.Data}");
 
@@ -74,42 +62,37 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
-                mIds[(int)packet.PType] = packet.MId;
 
-                switch (packet.PType)
-                {
-                    case PacketType.RequestSetRof:
-                        {
-                            WepUi.RequestSetRof(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
-                            break;
-                        }
-                    case PacketType.RequestSetRange:
-                        {
-                            WepUi.RequestSetRange(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
-                            break;
-                        }
-                    case PacketType.RequestSetDps:
-                        {
-                            WepUi.RequestSetDps(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
-                            break;
-                        }
-                    case PacketType.RequestSetGuidance:
-                        {
-                            WepUi.RequestSetGuidance(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
-                            break;
-                        }
-                    case PacketType.RequestSetOverload:
-                        {
-                            WepUi.RequestSetOverload(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
-                            break;
-                        }
-                }
-
-                data.Report.PacketValid = true;
+            switch (packet.PType)
+            {
+                case PacketType.RequestSetRof:
+                    {
+                        WepUi.RequestSetRof(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                        break;
+                    }
+                case PacketType.RequestSetRange:
+                    {
+                        WepUi.RequestSetRange(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                        break;
+                    }
+                case PacketType.RequestSetDps:
+                    {
+                        WepUi.RequestSetDps(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                        break;
+                    }
+                case PacketType.RequestSetGuidance:
+                    {
+                        WepUi.RequestSetGuidance(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                        break;
+                    }
+                case PacketType.RequestSetOverload:
+                    {
+                        WepUi.RequestSetOverload(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                        break;
+                    }
             }
-            else Log.Line($"ServerUpdateSetting: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+
+            data.Report.PacketValid = true;
 
 
             return true;
@@ -123,22 +106,19 @@ namespace WeaponCore
 
             if (myGrid == null) return Error(data, Msg($"GridId:{packet.EntityId} - entityExists:{MyEntities.EntityExists(packet.EntityId)}"));
 
-
             GridAi ai;
             long playerId;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
                 GridAi.FakeTargets fakeTargets;
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId && PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))  {
-                    mIds[(int) packet.PType] = packet.MId;
+                if (PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))  {
 
                     fakeTargets.ManualTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;
                 }
-                else Log.Line($"ServerFakeTargetUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+                else Log.Line($"ServerFakeTargetUpdate: - senderId:{packet.SenderId} - playerID:{playerId}");
             }
             else
                 return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
@@ -160,17 +140,14 @@ namespace WeaponCore
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
                 GridAi.FakeTargets fakeTargets;
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId && PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
+                if (PlayerDummyTargets.TryGetValue(playerId, out fakeTargets))
                 {
-                    mIds[(int)packet.PType] = packet.MId;
-
                     fakeTargets.PaintedTarget.Sync(targetPacket, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;
                 }
-                else Log.Line($"ServerFakeTargetUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+                else Log.Line($"ServerFakeTargetUpdate: senderId:{packet.SenderId} - playerId:{playerId}");
             }
             else
                 return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
@@ -187,15 +164,9 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
-                mIds[(int) packet.PType] = packet.MId;
-
-                comp.Data.Repo.Base.State.PlayerId = cyclePacket.PlayerId;
-                comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
-                data.Report.PacketValid = true;
-            }
-            else Log.Line($"ServerAmmoCycleRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            comp.Data.Repo.Base.State.PlayerId = cyclePacket.PlayerId;
+            comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
+            data.Report.PacketValid = true;
 
             return true;
         }
@@ -209,16 +180,10 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                mIds[(int)packet.PType] = packet.MId;
-
-                comp.Data.Repo.Base.State.PlayerId = controlPacket.PlayerId;
-                comp.Data.Repo.Base.State.Control = controlPacket.Mode;
-                SendCompBaseData(comp);
-                data.Report.PacketValid = true;
-            }
-            else Log.Line($"ServerPlayerControlRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            comp.Data.Repo.Base.State.PlayerId = controlPacket.PlayerId;
+            comp.Data.Repo.Base.State.Control = controlPacket.Mode;
+            SendCompBaseData(comp);
+            data.Report.PacketValid = true;
 
             return true;
         }
@@ -232,16 +197,10 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
-                mIds[(int) packet.PType] = packet.MId;
+            comp.Data.Repo.Base.State.TrackingReticle = reticlePacket.Data;
+            SendCompState(comp);
 
-                comp.Data.Repo.Base.State.TrackingReticle = reticlePacket.Data;
-                SendCompState(comp);
-
-                data.Report.PacketValid = true;
-            }
-            else Log.Line($"ServerReticleUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            data.Report.PacketValid = true;
 
             return true;
         }
@@ -254,14 +213,9 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                mIds[(int)packet.PType] = packet.MId;
 
-                WeaponComponent.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
-                data.Report.PacketValid = true;
-            }
-            else Log.Line($"ServerOverRidesUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            WeaponComponent.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
+            data.Report.PacketValid = true;
             
             return true;
         }
@@ -270,22 +224,16 @@ namespace WeaponCore
         {
             MyEntity exists;
             var packet = data.Packet;
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId) {
-                mIds[(int)packet.PType] = packet.MId;
 
-                if (packet.PType == PacketType.ClientAiRemove && PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                    PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
-                else if ((packet.PType == PacketType.ClientAiAdd))
-                {
-                    PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
-                }
-                else return Error(data, Msg("SenderId not found"));
-                
-                data.Report.PacketValid = true;
+            if (packet.PType == PacketType.ClientAiRemove && PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
+            else if ((packet.PType == PacketType.ClientAiAdd))
+            {
+                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
             }
-            else Log.Line($"ServerClientAiExists: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - entityExists:{MyEntities.TryGetEntityById(packet.EntityId, out exists, true)}({packet.EntityId}) - entityName:{exists?.DebugName} - entityMarked:{exists?.MarkedForClose} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
-
+            else return Error(data, Msg("SenderId not found"));
+            
+            data.Report.PacketValid = true;
 
             return true;
         }
@@ -299,15 +247,8 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                mIds[(int)packet.PType] = packet.MId;
-
-                comp.RequestShootUpdate(shootStatePacket.Action, shootStatePacket.PlayerId);
-                data.Report.PacketValid = true;
-            }
-            else Log.Line($"ServerRequestShootUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
-
+            comp.RequestShootUpdate(shootStatePacket.Action, shootStatePacket.PlayerId);
+            data.Report.PacketValid = true;
 
             return true;
         }
@@ -321,9 +262,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            uint[] mIds;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai) && PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
-                mIds[(int)packet.PType] = packet.MId;
+            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
 
                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
@@ -360,18 +299,12 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
-                mIds[(int)packet.PType] = packet.MId;
+            if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update)
+                TerminalMon.ServerUpdate(comp);
+            else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean)
+                TerminalMon.ServerClean(comp);
 
-                if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update)
-                    TerminalMon.ServerUpdate(comp);
-                else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean)
-                    TerminalMon.ServerClean(comp);
-
-                data.Report.PacketValid = true;
-            }
-            else Log.Line($"ServerTerminalMonitor: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            data.Report.PacketValid = true;
 
             return true;
         }

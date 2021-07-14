@@ -66,7 +66,6 @@ namespace WeaponCore.Support
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
-        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal readonly AiData Data = new AiData();
         internal TargetStatus[] TargetState = new TargetStatus[2];
         internal readonly AiComponent AiComp;

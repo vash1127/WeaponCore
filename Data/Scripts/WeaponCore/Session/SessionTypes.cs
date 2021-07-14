@@ -600,18 +600,14 @@ namespace WeaponCore
             internal void Clean(bool purge = false)
             {
                 if (Session.MpActive && Session.IsClient && Comp != null && !purge) {
-                    uint[] mIds;
-                    if (Session.PlayerMIds.TryGetValue(Session.MultiplayerId, out mIds))
+
+                    Session.PacketsToServer.Add(new TerminalMonitorPacket
                     {
-                        Session.PacketsToServer.Add(new TerminalMonitorPacket
-                        {
-                            SenderId = Session.MultiplayerId,
-                            PType = PacketType.TerminalMonitor,
-                            EntityId = Comp.MyCube.EntityId,
-                            State = TerminalMonitorPacket.Change.Clean,
-                            MId = ++mIds[(int)PacketType.TerminalMonitor],
-                        });
-                    }
+                        SenderId = Session.MultiplayerId,
+                        PType = PacketType.TerminalMonitor,
+                        EntityId = Comp.MyCube.EntityId,
+                        State = TerminalMonitorPacket.Change.Clean,
+                    });
                 }
 
                 if (!purge && Session.IsServer)
