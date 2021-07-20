@@ -72,7 +72,7 @@ namespace CoreSystems.Api
             AssignMethod(delegates, "GetBlockWeaponMap", ref _getBlockWeaponMap);
             AssignMethod(delegates, "GetProjectilesLockedOn", ref _getProjectilesLockedOn);
             AssignMethod(delegates, "GetSortedThreats", ref _getSortedThreats);
-            AssignMethod(delegates, "GetSortedThreats", ref _getObstructions);
+            AssignMethod(delegates, "GetObstructions", ref _getObstructions);
             AssignMethod(delegates, "GetAiFocus", ref _getAiFocus);
             AssignMethod(delegates, "SetAiFocus", ref _setAiFocus);
             AssignMethod(delegates, "GetWeaponTarget", ref _getWeaponTarget);
